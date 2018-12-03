@@ -186,7 +186,7 @@ class CarlaRosBridge(Parent):
         try:
             for publisher, msg in self.msgs_to_publish:
                 publisher.publish(msg)
-        except:
+        except:  # pylint: disable=bare-except
             rospy.logwarn("Failed to publish messages")
         self.msgs_to_publish = []
 

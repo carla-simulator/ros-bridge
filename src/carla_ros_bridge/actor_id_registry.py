@@ -6,7 +6,8 @@ Actor registry class for carla-id mapping
 class ActorIdRegistry(object):
 
     """
-    Registry class to map carla-ids (potentially 64 bit) to increasing numbers (usually not exceeding 32 bit)
+    Registry class to map carla-ids (potentially 64 bit)
+    to increasing numbers (usually not exceeding 32 bit)
     """
 
     def __init__(self):

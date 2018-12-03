@@ -28,7 +28,7 @@ class CarlaRosBridgeWithBag(CarlaRosBridge):
         super(CarlaRosBridgeWithBag, self).__init__(
             carla_world=carla_world, params=params)
 
-        prefix, ext = os.path.splitext(self.get_param('rosbag_fname'))
+        prefix, dummy_ext = os.path.splitext(self.get_param('rosbag_fname'))
         rosbag_fname = os.path.abspath(prefix + self.get_param('curr_episode'))
         self.bag = rosbag.Bag(rosbag_fname, mode='w')
 

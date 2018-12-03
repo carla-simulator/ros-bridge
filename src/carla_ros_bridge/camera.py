@@ -13,6 +13,7 @@ from sensor_msgs.msg import CameraInfo
 
 import carla
 from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.transforms import np_quaternion_to_ros_quaternion
 
 
 class Camera(Sensor):
@@ -69,21 +70,6 @@ class Camera(Sensor):
                               self.carla_actor.type_id, self.carla_actor.attributes))
         else:
             self._build_camera_info()
-            self.carla_actor.listen(self.update_camera_data)
-
-    def destroy(self):
-        """
-        Function (override) to destroy this object.
-
-        Stop listening to the carla.Sensor actor.
-        Finally forward call to super class.
-
-        :return:
-        """
-        rospy.logdebug("Destroy Camera(id={})".format(self.get_id()))
-        if self.carla_actor.is_listening:
-            self.carla_actor.stop()
-        super(Camera, self).destroy()
 
     def _build_camera_info(self):
         """
@@ -97,6 +83,7 @@ class Camera(Sensor):
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
+        # pylint: disable=invalid-name
         cx = camera_info.width / 2.0
         cy = camera_info.height / 2.0
         fx = camera_info.width / (
@@ -108,9 +95,10 @@ class Camera(Sensor):
         camera_info.P = [fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1.0, 0]
         self._camera_info = camera_info
 
-    def update_camera_data(self, carla_image):
+    def sensor_data_updated(self, carla_image):
         """
-        Function to transform the a received carla image into a ROS image message
+        Function (override) to transform the received carla image data
+        into a ROS image message
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
@@ -133,28 +121,17 @@ class Camera(Sensor):
         self.publish_ros_message(
             self.topic_name() + '/' + self.get_image_topic_name(), img_msg)
 
-    def update(self):
+    def get_tf_msg(self):
         """
-        Function (override) to update this object.
-
-        On update camera sends:
-        - its own tf used by the camera data
-
-        :return:
-        """
-        self.send_tf_msg()
-        super(Camera, self).update()
-
-    def send_tf_msg(self):
-        """
-        Function (override) to send tf messages of this camera.
+        Function (override) to modify the tf messages sent by this camera.
 
         The camera transformation has to be altered to look at the same axis
         as the opencv projection in order to get easy depth cloud for RGBD camera
 
-        :return:
+        :return: the filled tf message
+        :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = self.get_tf_msg()
+        tf_msg = super(Camera, self).get_tf_msg()
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         quat_swap = tf.transformations.quaternion_from_matrix(
@@ -164,11 +141,8 @@ class Camera(Sensor):
              [0, 0, 0, 1]])
         quat = tf.transformations.quaternion_multiply(quat, quat_swap)
 
-        tf_msg.transform.rotation.x = quat[0]
-        tf_msg.transform.rotation.y = quat[1]
-        tf_msg.transform.rotation.z = quat[2]
-        tf_msg.transform.rotation.w = quat[3]
-        self.publish_ros_message('tf', tf_msg)
+        tf_msg.transform.rotation = np_quaternion_to_ros_quaternion(quat)
+        return tf_msg
 
     @abstractmethod
     def get_carla_image_data_array(self, carla_image):

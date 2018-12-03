@@ -34,8 +34,8 @@ class Child(Parent):
         :type topic_prefix: string
         """
         if carla_id == 0:
-            raise ValueError(
-                "A child can never have an carla_id of zero. Reserved for the parent root (the bridge object)")
+            raise ValueError("A child can never have an carla_id of zero. "
+                             "Reserved for the parent root (the bridge object)")
         self.topic_prefix = topic_prefix.replace(".", "/").replace("-", "_")
         # each Child defines its own frame
         super(Child, self).__init__(
@@ -119,7 +119,7 @@ class Child(Parent):
         """
         return self.parent.get_id()
 
-    def get_msg_header(self, use_parent_frame=True):
+    def get_msg_header(self, use_parent_frame=True):  # pylint: disable=arguments-differ
         """
         Helper function to create a ROS message Header
 

@@ -13,7 +13,8 @@ from carla_ros_bridge.bridge_with_rosbag import CarlaRosBridgeWithBag
 
 def main():
     """
-    main function for carla simulator ROS bridge maintaiing the communication client and the CarlaRosBridge objects
+    main function for carla simulator ROS bridge
+    maintaiing the communication client and the CarlaRosBridge objects
     """
     rospy.init_node("carla_client", anonymous=True)
 

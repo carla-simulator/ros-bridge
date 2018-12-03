@@ -9,7 +9,10 @@ from std_msgs.msg import ColorRGBA
 
 from carla_ros_bridge.child import Child
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
-from carla_ros_bridge.transforms import carla_transform_to_ros_transform, carla_transform_to_ros_pose, carla_velocity_to_ros_twist, carla_acceleration_to_ros_accel
+from carla_ros_bridge.transforms import carla_transform_to_ros_transform
+from carla_ros_bridge.transforms import carla_transform_to_ros_pose
+from carla_ros_bridge.transforms import carla_velocity_to_ros_twist
+from carla_ros_bridge.transforms import carla_acceleration_to_ros_accel
 
 
 class Actor(Child):
@@ -42,15 +45,20 @@ class Actor(Child):
                 topic_prefix += '/' + \
                     str(Actor.global_id_registry.get_id(carla_actor.id))
         super(Actor, self).__init__(
-            carla_id=carla_actor.id, carla_world=carla_actor.get_world(), parent=parent, topic_prefix=topic_prefix)
+            carla_id=carla_actor.id, carla_world=carla_actor.get_world(),
+            parent=parent, topic_prefix=topic_prefix)
         self.carla_actor = carla_actor
-        rospy.logdebug("Created Actor-{}(id={}, parent_id={}, type={}, topic_name={}, attributes={}".format(
-            self.__class__.__name__, self.get_id(), self.get_parent_id(),
-            self.carla_actor.type_id, self.topic_name(), self.carla_actor.attributes))
+        rospy.logdebug("Created Actor-{}(id={}, parent_id={},"
+                       " type={}, topic_name={}, attributes={}".format(
+                           self.__class__.__name__, self.get_id(),
+                           self.get_parent_id(), self.carla_actor.type_id,
+                           self.topic_name(), self.carla_actor.attributes))
 
         if self.__class__.__name__ == "Actor":
-            rospy.logwarn("Created Unsupported Actor(id={}, parent_id={}, type={}, attributes={}".format(
-                self.get_id(), self.get_parent_id(), self.carla_actor.type_id, self.carla_actor.attributes))
+            rospy.logwarn("Created Unsupported Actor(id={}, parent_id={},"
+                          " type={}, attributes={}".format(
+                              self.get_id(), self.get_parent_id(),
+                              self.carla_actor.type_id, self.carla_actor.attributes))
 
     def destroy(self):
         """
@@ -66,7 +74,7 @@ class Actor(Child):
         self.carla_actor = None
         super(Actor, self).destroy()
 
-    def get_marker_color(self):
+    def get_marker_color(self):  # pylint: disable=no-self-use
         """
         Virtual (non-abstract) function to get the ROS std_msgs.msg.ColorRGBA
         used for rviz objects of this actor

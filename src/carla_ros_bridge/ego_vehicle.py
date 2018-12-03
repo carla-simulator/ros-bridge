@@ -106,7 +106,9 @@ class EgoVehicle(Vehicle):
             80
         )  # 80 degrees is the approximate max steering angle of a car
         #  would be nice if we could use the value provided by carla
-        max_speed = 27  # just a value for me, 27 m/sec seems to be a reasonable max speed for now
+        # just a value for me, 27 m/sec seems to be a reasonable max speed for
+        # now
+        max_speed = 27
 
         vehicle_control = VehicleControl()
         vehicle_control.hand_brake = False
@@ -117,8 +119,10 @@ class EgoVehicle(Vehicle):
                 steering_angle_ctrl, -max_steering_angle, max_steering_angle)
 
         # todo:
-        # This will not work when slowing down/braking. In this case we need to use vehicle_control.brake.
-        # The problem is that when slowing down, first vehicle_control.throttle will get smaller (eventually zero),
+        # This will not work when slowing down/braking.
+        # In this case we need to use vehicle_control.brake.
+        # The problem is that when slowing down, first vehicle_control.throttle
+        # will get smaller (eventually zero),
         # and then, vehicle_control.brake has to be set.
         # Maybe we can make use of the acceleration part in the ackermann msgs to find out,
         # when a reduction of throttle is sufficient, and when we have to use

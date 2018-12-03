@@ -43,7 +43,7 @@ class Parent(object):
 
         :return:
         """
-        for actor_id, actor in self.child_actors.iteritems():
+        for dummy_actor_id, actor in self.child_actors.iteritems():
             actor.destroy()
         self.child_actors.clear()
         self.carla_world = None
@@ -95,6 +95,9 @@ class Parent(object):
                     elif actor.type_id.startswith("sensor"):
                         self.child_actors[actor.id] = Sensor.create_actor(
                             carla_actor=actor, parent=self)
+                    elif actor.type_id.startswith("spectator"):
+                        self.child_actors[actor.id] = Spectator(
+                            carla_actor=actor, parent=self)
                     else:
                         self.child_actors[actor.id] = Actor(
                             carla_actor=actor, parent=self)
@@ -145,7 +148,7 @@ class Parent(object):
         """
         self._create_new_children()
         self._destroy_dead_children()
-        for actor_id, actor in self.child_actors.iteritems():
+        for dummy_actor_id, actor in self.child_actors.iteritems():
             actor.update()
 
     def get_msg_header(self):
@@ -235,7 +238,8 @@ class Parent(object):
             "If this error becomes visible the class hierarchy is somehow broken")
 
 # these imports have to be at the end to resolve cyclic dependency
-from carla_ros_bridge.actor import Actor
-from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge.traffic import Traffic
-from carla_ros_bridge.vehicle import Vehicle
+from carla_ros_bridge.actor import Actor         # pylint: disable=wrong-import-position
+from carla_ros_bridge.spectator import Spectator  # pylint: disable=wrong-import-position
+from carla_ros_bridge.sensor import Sensor       # pylint: disable=wrong-import-position
+from carla_ros_bridge.traffic import Traffic     # pylint: disable=wrong-import-position
+from carla_ros_bridge.vehicle import Vehicle     # pylint: disable=wrong-import-position
