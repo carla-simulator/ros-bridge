@@ -9,10 +9,7 @@ from std_msgs.msg import ColorRGBA
 
 from carla_ros_bridge.child import Child
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
-from carla_ros_bridge.transforms import carla_transform_to_ros_transform
-from carla_ros_bridge.transforms import carla_transform_to_ros_pose
-from carla_ros_bridge.transforms import carla_velocity_to_ros_twist
-from carla_ros_bridge.transforms import carla_acceleration_to_ros_accel
+import carla_ros_bridge.transforms as trans
 
 
 class Actor(Child):
@@ -117,7 +114,7 @@ class Actor(Child):
         :return: the ROS transform of this actor
         :rtype: geometry_msgs.msg.Transform
         """
-        return carla_transform_to_ros_transform(
+        return trans.carla_transform_to_ros_transform(
             self.carla_actor.get_transform())
 
     def get_current_ros_pose(self):
@@ -127,7 +124,7 @@ class Actor(Child):
         :return: the ROS pose of this actor
         :rtype: geometry_msgs.msg.Pose
         """
-        return carla_transform_to_ros_pose(
+        return trans.carla_transform_to_ros_pose(
             self.carla_actor.get_transform())
 
     def get_current_ros_twist(self):
@@ -137,7 +134,7 @@ class Actor(Child):
         :return: the ROS twist of this actor
         :rtype: geometry_msgs.msg.Twist
         """
-        return carla_velocity_to_ros_twist(
+        return trans.carla_velocity_to_ros_twist(
             self.carla_actor.get_velocity())
 
     def get_current_ros_accel(self):
@@ -147,7 +144,7 @@ class Actor(Child):
         :return: the ROS acceleration of this actor
         :rtype: geometry_msgs.msg.Accel
         """
-        return carla_acceleration_to_ros_accel(
+        return trans.carla_acceleration_to_ros_accel(
             self.carla_actor.get_acceleration())
 
     def get_global_id(self):

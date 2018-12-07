@@ -4,7 +4,7 @@ Class to handle Carla camera sensors
 from abc import abstractmethod
 
 import math
-import numpy as np
+import numpy
 
 import rospy
 import tf
@@ -13,7 +13,7 @@ from sensor_msgs.msg import CameraInfo
 
 import carla
 from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge.transforms import np_quaternion_to_ros_quaternion
+import carla_ros_bridge.transforms as trans
 
 
 class Camera(Sensor):
@@ -83,7 +83,6 @@ class Camera(Sensor):
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
-        # pylint: disable=invalid-name
         cx = camera_info.width / 2.0
         cy = camera_info.height / 2.0
         fx = camera_info.width / (
@@ -141,7 +140,8 @@ class Camera(Sensor):
              [0, 0, 0, 1]])
         quat = tf.transformations.quaternion_multiply(quat, quat_swap)
 
-        tf_msg.transform.rotation = np_quaternion_to_ros_quaternion(quat)
+        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
+            quat)
         return tf_msg
 
     @abstractmethod
@@ -153,7 +153,7 @@ class Camera(Sensor):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         :return numpy data array containing the image information
-        :rtype np.ndarray
+        :rtype numpy.ndarray
         """
         raise NotImplementedError(
             "This function has to be re-implemented by derived classes")
@@ -203,11 +203,11 @@ class RgbCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         :return numpy data array containing the image information
-        :rtype np.ndarray
+        :rtype numpy.ndarray
         """
-        carla_image_data_array = np.ndarray(
+        carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
-            dtype=np.uint8, buffer=carla_image.raw_data)
+            dtype=numpy.uint8, buffer=carla_image.raw_data)
 
         return carla_image_data_array
 
@@ -255,13 +255,13 @@ class DepthCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         :return numpy data array containing the image information
-        :rtype np.ndarray
+        :rtype numpy.ndarray
         """
 
         carla_image.convert(carla.ColorConverter.LogarithmicDepth)
-        carla_image_data_array = np.ndarray(
+        carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 1),
-            dtype=np.float32, buffer=carla_image.raw_data)
+            dtype=numpy.float32, buffer=carla_image.raw_data)
         return carla_image_data_array
 
     def get_image_topic_name(self):
@@ -309,13 +309,13 @@ class SemanticSegmentationCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         :return numpy data array containing the image information
-        :rtype np.ndarray
+        :rtype numpy.ndarray
         """
 
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        carla_image_data_array = np.ndarray(
+        carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
-            dtype=np.uint8, buffer=carla_image.raw_data)
+            dtype=numpy.uint8, buffer=carla_image.raw_data)
         return carla_image_data_array
 
     def get_image_topic_name(self):

@@ -2,14 +2,14 @@
 Classes to handle Carla lidars
 """
 
-import numpy as np
+import numpy
 
 import tf
 
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 
 from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge.transforms import np_quaternion_to_ros_quaternion
+import carla_ros_bridge.transforms as trans
 
 
 class Lidar(Sensor):
@@ -57,7 +57,8 @@ class Lidar(Sensor):
             quat)
         # set roll and pitch to zero
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-        tf_msg.transform.rotation = np_quaternion_to_ros_quaternion(quat)
+        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
+            quat)
         return tf_msg
 
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -69,9 +70,10 @@ class Lidar(Sensor):
         """
         header = self.get_msg_header(use_parent_frame=False)
 
-        lidar_data = np.frombuffer(
-            carla_lidar_measurement.raw_data, dtype=np.float32)
-        lidar_data = np.reshape(lidar_data, (int(lidar_data.shape[0] / 3), 3))
+        lidar_data = numpy.frombuffer(
+            carla_lidar_measurement.raw_data, dtype=numpy.float32)
+        lidar_data = numpy.reshape(
+            lidar_data, (int(lidar_data.shape[0] / 3), 3))
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         # we need a copy here, because the data are read only in carla numpy

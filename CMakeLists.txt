@@ -2,11 +2,27 @@ cmake_minimum_required(VERSION 2.8.3)
 project(carla_ros_bridge)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  sensor_msgs
+  tf
+)
+
+catkin_python_setup()
+
+add_message_files(
+  FILES
+  CarlaVehicleControl.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+)
 
 catkin_package()
 
-catkin_python_setup()
+
 
 include_directories(
    ${catkin_INCLUDE_DIRS}

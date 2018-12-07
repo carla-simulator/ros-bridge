@@ -48,12 +48,12 @@ def carla_location_to_ros_point(carla_location):
     return ros_point
 
 
-def np_quaternion_to_ros_quaternion(numpy_quaternion):
+def numpy_quaternion_to_ros_quaternion(numpy_quaternion):
     """
     Convert a quaternion from transforms to a ROS msg quaternion
 
-    :param numpy_quaternion: the carla rotation
-    :type numpy_quaternion: carla.Rotation
+    :param numpy_quaternion: a numpy quaternion
+    :type numpy_quaternion: numpy.array
     :return: a ROS quaternion
     :rtype: geometry_msgs.msg.Quaternion
     """
@@ -65,7 +65,7 @@ def np_quaternion_to_ros_quaternion(numpy_quaternion):
     return ros_quaternion
 
 
-def carla_rotation_to_ros_quaternion(carla_rotation):  # pylint: disable=invalid-name
+def carla_rotation_to_ros_quaternion(carla_rotation):
     """
     Convert a carla rotation to a ROS quaternion
 
@@ -85,7 +85,7 @@ def carla_rotation_to_ros_quaternion(carla_rotation):  # pylint: disable=invalid
 
     quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
 
-    ros_quaternion = np_quaternion_to_ros_quaternion(quat)
+    ros_quaternion = numpy_quaternion_to_ros_quaternion(quat)
 
     return ros_quaternion
 
@@ -132,7 +132,7 @@ def carla_acceleration_to_ros_accel(carla_acceleration):
     return ros_accel
 
 
-def carla_transform_to_ros_transform(carla_transform):  # pylint: disable=invalid-name
+def carla_transform_to_ros_transform(carla_transform):
     """
     Convert a carla transform to a ROS transform
 

@@ -11,7 +11,7 @@ from geometry_msgs.msg import TransformStamped
 
 from carla_ros_bridge.actor import Actor
 
-from carla_ros_bridge.transforms import carla_transform_to_ros_transform
+import carla_ros_bridge.transforms as trans
 
 
 class Sensor(Actor):
@@ -140,7 +140,7 @@ class Sensor(Actor):
         :return: the ROS transform of this actor
         :rtype: geometry_msgs.msg.Transform
         """
-        return carla_transform_to_ros_transform(
+        return trans.carla_transform_to_ros_transform(
             self.current_sensor_data.transform)
 
     @abstractmethod
