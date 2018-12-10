@@ -2,5 +2,24 @@ carla:
   # the network connection for the python connection to CARLA
   host: localhost
   port: 2000
-  # the vehicle that acts as ego vehicle for this ros bridge instance
-  ego_vehicle_role_name: hero
+  # configuration values for the ego vehicle
+  ego_vehicle:
+    # the role name of the vehicle that acts as ego vehicle for this ros bridge instance
+    # (the vehicle from CARLA is selected which has the attribute 'role_name' set to this value
+    role_name: hero
+    # select the ego vehicle control mode:
+    # pedal: CarlaVehicleControl ROS messages from /carla/ego_vehicle/vehicle_control_cmd are forwarded
+    #   to CARLA (this is the default)
+    # ackermann: AckermannDrive ROS messages from /carla/ego_vehicle/ackermann_cmd provide the target values, a 
+    #   cascaded PID controller tries to achieve
+    control_mode: ackermann
+    # override the default values of the pid speed controller
+    # (only relevant for ackermann control mode) 
+    speed_Kp: 0.05
+    speed_Ki: 0.00
+    speed_Kd: 0.50
+    # override the default values of the pid acceleration controller
+    # (only relevant for ackermann control mode)
+    accel_Kp: 0.02
+    accel_Ki: 0.00
+    accel_Kd: 0.05

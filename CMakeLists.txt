@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   tf
+  dynamic_reconfigure
 )
 
 catkin_python_setup()
@@ -13,15 +14,19 @@ catkin_python_setup()
 add_message_files(
   FILES
   CarlaVehicleControl.msg
+  EgoVehicleControlInfo.msg
 )
 
 generate_messages(
   DEPENDENCIES
-  sensor_msgs
+  std_msgs
+)
+
+generate_dynamic_reconfigure_options(
+   config/EgoVehicleControlParameter.cfg
 )
 
 catkin_package()
-
 
 
 include_directories(

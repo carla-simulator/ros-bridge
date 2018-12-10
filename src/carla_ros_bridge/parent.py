@@ -209,7 +209,7 @@ class Parent(object):
             "If this error becomes visible the class hierarchy is somehow broken")
 
     @abstractmethod
-    def get_param(self, key):
+    def get_param(self, key, default=None):
         """
         Pure virtual function to query global parameters passed from the outside.
 
@@ -219,6 +219,8 @@ class Parent(object):
 
         :param key: the key of the parameter
         :type key: string
+        :param default: the default value of the parameter to return if key is not found
+        :type default: string
         :return: the parameter string
         :rtype: string
         """
