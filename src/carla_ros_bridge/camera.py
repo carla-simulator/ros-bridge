@@ -107,9 +107,9 @@ class Camera(Sensor):
             rospy.logerr(
                 "Camera{} received image not matching configuration".format(self.topic_name()))
 
-        image_data_array = self.get_carla_image_data_array(
+        image_data_array, encoding = self.get_carla_image_data_array(
             carla_image=carla_image)
-        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array)
+        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
         # the camera data is in respect to the camera's own frame
         img_msg.header = self.get_msg_header(use_parent_frame=False)
 
@@ -152,8 +152,8 @@ class Camera(Sensor):
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return numpy data array containing the image information
-        :rtype numpy.ndarray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
         """
         raise NotImplementedError(
             "This function has to be re-implemented by derived classes")
@@ -202,14 +202,14 @@ class RgbCamera(Camera):
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return numpy data array containing the image information
-        :rtype numpy.ndarray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
         """
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
             dtype=numpy.uint8, buffer=carla_image.raw_data)
 
-        return carla_image_data_array
+        return carla_image_data_array, 'bgra8'
 
     def get_image_topic_name(self):
         """
@@ -254,15 +254,17 @@ class DepthCamera(Camera):
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return numpy data array containing the image information
-        :rtype numpy.ndarray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
         """
 
-        carla_image.convert(carla.ColorConverter.LogarithmicDepth)
+        carla_image.convert(carla.ColorConverter.Depth)
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 1),
             dtype=numpy.float32, buffer=carla_image.raw_data)
-        return carla_image_data_array
+        # actually we want encoding '32FC1'
+        # which is automatically selected by cv bridge with passthrough
+        return carla_image_data_array, 'passthrough'
 
     def get_image_topic_name(self):
         """
@@ -308,15 +310,15 @@ class SemanticSegmentationCamera(Camera):
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return numpy data array containing the image information
-        :rtype numpy.ndarray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
         """
 
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
             dtype=numpy.uint8, buffer=carla_image.raw_data)
-        return carla_image_data_array
+        return carla_image_data_array, 'bgra8'
 
     def get_image_topic_name(self):
         """

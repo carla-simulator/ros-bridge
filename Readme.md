@@ -16,8 +16,8 @@ This ros package aims at providing a simple ros bridge for carla simulator.
 - [x] Manual control using ackermann msg
 - [x] Handle ros dependencies
 - [x] Marker/bounding box messages for cars/pedestrian
-- [ ] Rosbag in the bridge (in order to avoid rosbag recoard -a small time errors)
-- [ ] Lidar sensor support
+- [X] Lidar sensor support
+- [ ] Rosbag in the bridge (in order to avoid rosbag record -a small time errors)
 - [ ] Add traffic light support
 
 # Setup
@@ -67,7 +67,7 @@ Run the following command after replacing [PATH_TO_ROS_BRIDGE] with the actual p
 
 ### Test your installation (section outdated)
 
-If you use the builded binary (0.8.2):
+If you use the builded binary (0.9.1):
 
      ./CarlaUE4.sh  -carla-server -windowed -ResX=320 -ResY=240
 
