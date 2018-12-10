@@ -10,9 +10,29 @@ Tool functions to convert transforms from carla to ROS coordinate system
 """
 
 import math
+import numpy
 
 import tf
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel
+
+
+def carla_location_to_numpy_vector(carla_location):
+    """
+    Convert a carla location to a ROS vector3
+
+    Considers the conversion from left-handed system (unreal) to right-handed
+    system (ROS)
+
+    :param carla_location: the carla location
+    :type carla_location: carla.Location
+    :return: a numpy.array with 3 elements
+    :rtype: numpy.array
+    """
+    return numpy.array([
+        carla_location.x,
+        -carla_location.y,
+        carla_location.z
+    ])
 
 
 def carla_location_to_ros_vector3(carla_location):
@@ -72,6 +92,45 @@ def numpy_quaternion_to_ros_quaternion(numpy_quaternion):
     return ros_quaternion
 
 
+def carla_rotation_to_RPY(carla_rotation):
+    """
+    Convert a carla rotation to a roll, pitch, yaw tuple
+
+    Considers the conversion from left-handed system (unreal) to right-handed
+    system (ROS).
+    Considers the conversion from degrees (carla) to radians (ROS).
+
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a tuple with 3 elements (roll, pitch, yaw)
+    :rtype: tuple
+    """
+    roll = -math.radians(carla_rotation.roll)
+    pitch = math.radians(carla_rotation.pitch)
+    yaw = -math.radians(carla_rotation.yaw)
+
+    return (roll, pitch, yaw)
+
+
+def carla_rotation_to_numpy_quaternion(carla_rotation):
+    """
+    Convert a carla rotation to a numpy quaternion
+
+    Considers the conversion from left-handed system (unreal) to right-handed
+    system (ROS).
+    Considers the conversion from degrees (carla) to radians (ROS).
+
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a numpy.array with 4 elements (quaternion)
+    :rtype: numpy.array
+    """
+    roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
+    quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+
+    return quat
+
+
 def carla_rotation_to_ros_quaternion(carla_rotation):
     """
     Convert a carla rotation to a ROS quaternion
@@ -85,16 +144,46 @@ def carla_rotation_to_ros_quaternion(carla_rotation):
     :return: a ROS quaternion
     :rtype: geometry_msgs.msg.Quaternion
     """
-
-    roll = -math.radians(carla_rotation.roll)
-    pitch = math.radians(carla_rotation.pitch)
-    yaw = -math.radians(carla_rotation.yaw)
-
-    quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
-
+    quat = carla_rotation_to_numpy_quaternion(carla_rotation)
     ros_quaternion = numpy_quaternion_to_ros_quaternion(quat)
 
     return ros_quaternion
+
+
+def carla_rotation_to_numpy_rotation_matrix(carla_rotation):
+    """
+    Convert a carla rotation to a ROS quaternion
+
+    Considers the conversion from left-handed system (unreal) to right-handed
+    system (ROS).
+    Considers the conversion from degrees (carla) to radians (ROS).
+
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a numpy.array with 3x3 elements
+    :rtype: numpy.array
+    """
+    roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
+    numpy_array = tf.transformations.euler_matrix(roll, pitch, yaw)
+    rotation_matrix = numpy_array[:3, :3]
+    return rotation_matrix
+
+
+def carla_rotation_to_directional_numpy_vector(carla_rotation):
+    """
+    Convert a carla rotation (as orientation) into a numpy directional vector
+
+    ros_quaternion = np_quaternion_to_ros_quaternion(quat)
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a numpy.array with 3 elements as directional vector
+        representation of the orientation
+    :rtype: numpy.array
+    """
+    rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
+    directional_vector = numpy.array([1, 0, 0])
+    rotated_directional_vector = rotation_matrix.dot(directional_vector)
+    return rotated_directional_vector
 
 
 def carla_velocity_to_ros_twist(carla_velocity):
@@ -116,6 +205,25 @@ def carla_velocity_to_ros_twist(carla_velocity):
     ros_twist.linear.z = carla_velocity.z
 
     return ros_twist
+
+
+def carla_velocity_to_numpy_vector(carla_velocity):
+    """
+    Convert a carla velocity to a numpy array
+
+    Considers the conversion from left-handed system (unreal) to right-handed
+    system (ROS)
+
+    :param carla_velocity: the carla velocity
+    :type carla_velocity: carla.Vector3D
+    :return: a numpy.array with 3 elements
+    :rtype: numpy.array
+    """
+    return numpy.array([
+        carla_velocity.x,
+        -carla_velocity.y,
+        carla_velocity.z
+    ])
 
 
 def carla_acceleration_to_ros_accel(carla_acceleration):

@@ -113,16 +113,18 @@ class CarlaRosBridge(Parent):
                     topic, type(msg), queue_size=10)
             self.msgs_to_publish.append((self.publishers[topic], msg))
 
-    def get_param(self, key):
+    def get_param(self, key, default=None):
         """
         Function (override) to query global parameters passed from the outside.
 
         :param key: the key of the parameter
         :type key: string
+        :param default: the default value of the parameter to return if key is not found
+        :type default: string
         :return: the parameter string
         :rtype: string
         """
-        return self.params[key]
+        return self.params.get(key, default)
 
     def topic_name(self):
         """
