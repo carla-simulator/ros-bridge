@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+#
+# Copyright (c) 2018 Intel Labs.
+#
+# authors: Bernd Gassmann (bernd.gassmann@intel.com)
+#
 """
 Entry point for carla simulator ROS bridge
 """

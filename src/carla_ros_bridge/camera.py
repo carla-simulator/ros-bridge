@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2018 Intel Labs.
+#
+# authors: Bernd Gassmann (bernd.gassmann@intel.com)
+#
 """
 Class to handle Carla camera sensors
 """
@@ -205,6 +212,7 @@ class RgbCamera(Camera):
         :return tuple (numpy data array containing the image information, encoding)
         :rtype tuple(numpy.ndarray, string)
         """
+
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
             dtype=numpy.uint8, buffer=carla_image.raw_data)
@@ -258,10 +266,40 @@ class DepthCamera(Camera):
         :rtype tuple(numpy.ndarray, string)
         """
 
-        carla_image.convert(carla.ColorConverter.Depth)
+        # color conversion within C++ code is broken, when transforming a
+        #  4-channel uint8 color pixel into a 1-channel float32 grayscale pixel
+        # therefore, we do it on our own here
+        # furthermore, it's not clear what the scaling factor of the depth camera is.
+        # The result of the below conversion is between [0.; 1.]
+        # But as a user, one would rather expect an actual distance value of each pixel in meters.
+        #
+        # @todo: fix the depth calculation within C++
+        #
+        # The final code in here should look like:
+        #
+        # carla_image.convert(carla.ColorConverter.Depth)
+        #
+        # carla_image_data_array = numpy.ndarray(
+        #    shape=(carla_image.height, carla_image.width, 1),
+        #    dtype=numpy.float32, buffer=carla_image.raw_data)
+        #
+        bgra_image_data_array = numpy.ndarray(
+            shape=(carla_image.height, carla_image.width, 4),
+            dtype=numpy.uint8, buffer=carla_image.raw_data)
+
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 1),
-            dtype=numpy.float32, buffer=carla_image.raw_data)
+            dtype=numpy.float32)
+
+        for h_index in xrange(0, carla_image.height):
+            for w_index in xrange(0, carla_image.width):
+                b_value = bgra_image_data_array[h_index][w_index][0]
+                g_value = bgra_image_data_array[h_index][w_index][1]
+                r_value = bgra_image_data_array[h_index][w_index][2]
+                depth = (float(b_value) * 256. * 256. + float(g_value)
+                         * 256. + float(r_value)) / (256. * 256. * 256. - 1.)
+                carla_image_data_array[h_index][w_index] = depth
+
         # actually we want encoding '32FC1'
         # which is automatically selected by cv bridge with passthrough
         return carla_image_data_array, 'passthrough'

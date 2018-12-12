@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2018 Intel Labs.
+#
+# authors: Bernd Gassmann (bernd.gassmann@intel.com)
+#
 """
 Class to handle the carla map
 """
@@ -31,7 +38,7 @@ class Map(Child):
         self.carla_map = self.get_carla_world().get_map()
 
         self.open_drive_publisher = rospy.Publisher(
-            'map', String, queue_size=1, latch=True)
+            '/carla/map', String, queue_size=1, latch=True)
         open_drive_msg = String()
         open_drive_msg.data = self.carla_map.to_opendrive()
         self.open_drive_publisher.publish(open_drive_msg)

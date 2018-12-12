@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2018 Intel Labs.
+#
+# authors: Bernd Gassmann (bernd.gassmann@intel.com)
+#
 """
 Rosbridge class:
 

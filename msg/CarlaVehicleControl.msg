@@ -1,3 +1,8 @@
+# 
+# Copyright (c) 2018 Intel Labs.
+#
+# authors: Bernd Gassmann (bernd.gassmann@intel.com)
+#
 # This represents a vehicle control message sent to CARLA simulator
 
 Header header
