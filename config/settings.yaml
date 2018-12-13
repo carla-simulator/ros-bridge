@@ -1,3 +1,4 @@
+use_sim_time: true
 carla:
   # the network connection for the python connection to CARLA
   host: localhost
