@@ -12,17 +12,13 @@ This ros package aims at providing a simple ros bridge for carla simulator.
 # Features
 
 - [x] Cameras (depth, segmentation, rgb) support
-- [x] Add camera matrix
-- [x] Lidar sensor support
 - [x] Transform publications
 - [x] Manual control using ackermann msg
-- [x] Autopilot mode using rosparam
-- [x] Rosbag in the bridge (in order to avoid rosbag recoard -a small time errors)
 - [x] Handle ros dependencies
 - [x] Marker/bounding box messages for cars/pedestrian
+- [X] Lidar sensor support
+- [ ] Rosbag in the bridge (in order to avoid rosbag record -a small time errors)
 - [ ] Add traffic light support
-- [ ] Support dynamic change (restarting simulation using a topic/rosparam)
-
 
 # Setup
 
@@ -39,9 +35,9 @@ This ros package aims at providing a simple ros bridge for carla simulator.
 For more information about configuring a ros environment see
 http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 
-## Install carla python client in your workspace
+## Install carla python client API in your workspace
 
-    cd carla/Deprecated/PythonClient
+    cd carla/PythonAPI
     pip2 install -e .  --user --upgrade
 
 Check the installation is successfull by trying to import carla from python:
@@ -58,9 +54,9 @@ You should see the Success message without any errors.
 
 ### Add the carla_ros_bridge in the catkin workspace
 
-Run the following command after replacing [PATH_TO_CARLA] with the actual path to carla directory on your machine:
+Run the following command after replacing [PATH_TO_ROS_BRIDGE] with the actual path to carla ros bridge directory on your machine:
 
-    ln -s [PATH_TO_CARLA]/carla_ros_bridge/ ~/ros/catkin_ws_for_carla/src/
+    ln -s [PATH_TO_ROS_BRIDGE]/carla_ros_bridge/ ~/ros/catkin_ws_for_carla/src/
     source ~/ros/catkin_ws_for_carla/devel/setup.bash
     rosdep update
     rosdep install --from-paths ~/ros/catkin_ws_for_carla
@@ -69,9 +65,9 @@ Run the following command after replacing [PATH_TO_CARLA] with the actual path t
     source ~/ros/catkin_ws_for_carla/devel/setup.bash
 
 
-### Test your installation
+### Test your installation (section outdated)
 
-If you use the builded binary (0.8.2):
+If you use the builded binary (0.9.1):
 
      ./CarlaUE4.sh  -carla-server -windowed -ResX=320 -ResY=240
 
@@ -113,32 +109,25 @@ To start the ros bridge with rviz use:
 
     roslaunch carla_ros_bridge client_with_rviz.launch
 
-You can setup the wanted camera/sensors in config/settings.yaml.
+You can setup the vehicle wanted to used as ego vehicle in config/settings.yaml.
 
-# Autopilot control
+Then you can make use of the CARLA python API scripts manual_control.py. This spawns a vehicle with role_name='hero' which is interpreted
+as the ego vehicle as defined by the config/settings.yaml.
 
-To enable autopilot control set the ros param carla_autopilot to True
+You can then further spawn other vehicles using spawn_npc.py from CARLA python API. Then those vehicles will show up also on ROS side.
 
-    rosparam set carla_autopilot True
-
-# Manual control
-
-To enable manual control set the ros param carla_autopilot to False
-
-    rosparam set carla_autopilot False
-
-
-Then you can send command to the car using the /ackermann_cmd topic.
+# Test control messages
+You can send command to the car using the /carla/ego_vehicle/ackermann_cmd topic.
 
 Example of forward movements, speed in in meters/sec.
 
-     rostopic pub /ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
+     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
       jerk: 0.0}" -r 10
 
 
 Example of forward with steering
 
-     rostopic pub /ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 5.41, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
+     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 5.41, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
       jerk: 0.0}" -r 10
 
   Warning: the steering_angle is the driving angle (in radians) not the wheel angle, for now max wheel is set to 500 degrees.
@@ -146,11 +135,32 @@ Example of forward with steering
 
 Example for backward :
 
-     rostopic pub /ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0, steering_angle_velocity: 0.0, speed: -10, acceleration: 0.0,
+     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0, steering_angle_velocity: 0.0, speed: -10, acceleration: 0.0,
       jerk: 0.0}" -r 10
 
+# Test sensor messages
 
-# ROSBAG recording
+## Object information
+
+### Ego vehicle
+
+The ego vehicle status is provided via the topic /carla/ego_vehicle/odometry (nav_msgs.Odometry)
+
+### Other vehicles
+
+The other vehicles data is provided via the 'ideal' object list /carla/objects (derived_object_msgs.ObjectArray)
+
+## Map information
+
+The OPEN Drive map description is published via /map topic (std_msgs.String)
+
+## Sensor information
+
+### Ego vehicle
+The ego Vehicle sensors are provided via topics with prefix /carla/ego_vehicle/<sensor_topic>
+
+
+# ROSBAG recording (not yet tested)
 
 The carla_ros_bridge could also be used to record all published topics into a rosbag:
 
