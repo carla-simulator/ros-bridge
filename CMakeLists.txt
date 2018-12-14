@@ -14,7 +14,11 @@ catkin_python_setup()
 add_message_files(
   FILES
   CarlaVehicleControl.msg
+  EgoVehicleControlCurrent.msg
   EgoVehicleControlInfo.msg
+  EgoVehicleControlMaxima.msg
+  EgoVehicleControlState.msg
+  EgoVehicleControlTarget.msg
 )
 
 generate_messages(

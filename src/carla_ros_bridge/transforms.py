@@ -106,7 +106,7 @@ def carla_rotation_to_RPY(carla_rotation):
     :rtype: tuple
     """
     roll = -math.radians(carla_rotation.roll)
-    pitch = math.radians(carla_rotation.pitch)
+    pitch = -math.radians(carla_rotation.pitch)
     yaw = -math.radians(carla_rotation.yaw)
 
     return (roll, pitch, yaw)

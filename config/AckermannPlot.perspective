@@ -5,10 +5,32 @@
       "keys": {
         "running-plugins": {
           "type": "repr",
-          "repr": "{u'rqt_reconfigure/Param': [1], u'rqt_plot/Plot': [3, 2, 1], u'rqt_topic/TopicPlugin': [1], u'rqt_publisher/Publisher': [1]}"
+          "repr": "{u'rqt_plot/Plot': [3, 2, 1], u'rqt_graph/RosGraph': [1]}"
         }
       },
       "groups": {
+        "plugin__mo2ive_status_monitor__Mo2IVe Status Monitor__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__StatusMonitorUI": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Mo2IVe Status Monitor'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
         "plugin__rqt_msg__Messages__1": {
           "keys": {},
           "groups": {
@@ -38,7 +60,7 @@
               "keys": {
                 "dockable": {
                   "type": "repr",
-                  "repr": "True"
+                  "repr": "u'true'"
                 },
                 "parent": {
                   "type": "repr",
@@ -71,6 +93,23 @@
         "plugin__rqt_image_view__ImageView__1": {
           "keys": {},
           "groups": {
+            "dock_widget__ImageViewWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Image View'"
+                }
+              },
+              "groups": {}
+            },
             "plugin": {
               "keys": {
                 "max_range": {
@@ -87,7 +126,7 @@
                 },
                 "mouse_pub_topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/sensor/camera/rgb/image_raw_mouse_left'"
+                  "repr": "u'/carla/ego_vehicle/camera/depth/front/image_depth'"
                 },
                 "num_gridlines": {
                   "type": "repr",
@@ -107,7 +146,7 @@
                 },
                 "topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/sensor/camera/rgb/image_raw'"
+                  "repr": "u'/carla/ego_vehicle/camera/depth/front/image_depth'"
                 },
                 "publish_click_location": {
                   "type": "repr",
@@ -150,15 +189,15 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/target_speed_abs', u'/carla/ego_vehicle/ego_vehicle_control_info/current_speed_abs']"
+                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/state/speed_control_activation_count', u'/carla/ego_vehicle/ego_vehicle_control_info/target/speed_abs', u'/carla/ego_vehicle/ego_vehicle_control_info/current/speed_abs']"
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[0.0, 10.0]"
+                  "repr": "[0.0, 11.121379852294922]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[96.72015870599716, 97.72015870599716]"
+                  "repr": "[789.135796021, 790.135796021]"
                 }
               },
               "groups": {}
@@ -197,15 +236,15 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/speed_control_accel_delta', u'/carla/ego_vehicle/ego_vehicle_control_info/speed_control_accel_target', u'/carla/ego_vehicle/ego_vehicle_control_info/current_accel']"
+                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/target/jerk', u'/carla/ego_vehicle/ego_vehicle_control_info/target/accel', u'/carla/ego_vehicle/ego_vehicle_control_info/current/accel', u'/carla/ego_vehicle/ego_vehicle_control_info/state/speed_control_accel_target']"
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[-3.895254899912703, 4.734989355153215]"
+                  "repr": "[-8.235246658325195, 5.247461795806885]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[96.83249355900625, 97.83249355900625]"
+                  "repr": "[780.918297879, 781.918297879]"
                 }
               },
               "groups": {}
@@ -244,15 +283,15 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/accel_control_pedal_delta', u'/carla/ego_vehicle/ego_vehicle_control_info/throttle_lower_border', u'/carla/ego_vehicle/ego_vehicle_control_info/brake_upper_border', u'/carla/ego_vehicle/ego_vehicle_control_info/accel_control_pedal_target']"
+                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/state/throttle_lower_border', u'/carla/ego_vehicle/ego_vehicle_control_info/state/brake_upper_border', u'/carla/ego_vehicle/ego_vehicle_control_info/output/throttle', u'/carla/ego_vehicle/ego_vehicle_control_info/output/brake', u'/carla/ego_vehicle/ego_vehicle_control_info/state/accel_control_pedal_target']"
                 },
                 "y_limits": {
                   "type": "repr",
-                  "repr": "[-4.976509219499873, 6.023490780500127]"
+                  "repr": "[-0.3841038942337036, 1.0]"
                 },
                 "x_limits": {
                   "type": "repr",
-                  "repr": "[97.05394369999703, 98.05394369999703]"
+                  "repr": "[125.35065189599982, 126.35065189599982]"
                 }
               },
               "groups": {}
@@ -266,7 +305,7 @@
               "keys": {
                 "dockable": {
                   "type": "repr",
-                  "repr": "u'true'"
+                  "repr": "True"
                 },
                 "parent": {
                   "type": "repr",
@@ -283,7 +322,7 @@
               "keys": {
                 "graph_type_combo_box_index": {
                   "type": "repr",
-                  "repr": "u'0'"
+                  "repr": "0"
                 },
                 "topic_filter_line_edit_text": {
                   "type": "repr",
@@ -295,35 +334,35 @@
                 },
                 "highlight_connections_check_box_state": {
                   "type": "repr",
-                  "repr": "u'true'"
+                  "repr": "True"
                 },
                 "unreachable_check_box_state": {
                   "type": "repr",
-                  "repr": "u'false'"
+                  "repr": "False"
                 },
                 "actionlib_check_box_state": {
                   "type": "repr",
-                  "repr": "u'true'"
+                  "repr": "True"
                 },
                 "quiet_check_box_state": {
                   "type": "repr",
-                  "repr": "u'false'"
+                  "repr": "True"
                 },
                 "dead_sinks_check_box_state": {
                   "type": "repr",
-                  "repr": "u'false'"
+                  "repr": "False"
                 },
                 "leaf_topics_check_box_state": {
                   "type": "repr",
-                  "repr": "u'false'"
+                  "repr": "False"
                 },
                 "namespace_cluster_check_box_state": {
                   "type": "repr",
-                  "repr": "u'true'"
+                  "repr": "True"
                 },
                 "auto_fit_graph_check_box_state": {
                   "type": "repr",
-                  "repr": "u'true'"
+                  "repr": "True"
                 }
               },
               "groups": {}
@@ -337,7 +376,7 @@
               "keys": {
                 "dockable": {
                   "type": "repr",
-                  "repr": "True"
+                  "repr": "u'true'"
                 },
                 "parent": {
                   "type": "repr",
@@ -354,7 +393,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'topic_name': '/carla/ego_vehicle/ackermann_cmd', 'type_name': 'ackermann_msgs/AckermannDrive', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/ego_vehicle/ackermann_cmd/speed': '1'}, 'publisher_id': 0, 'counter': 0}]\""
+                  "repr": "u\"[{'topic_name': '/carla/ego_vehicle/vehicle_control_cmd', 'type_name': 'carla_ros_bridge/CarlaVehicleControl', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/ego_vehicle/vehicle_control_cmd/throttle': '0.5', u'/carla/ego_vehicle/vehicle_control_cmd/hand_brake': 'False', u'/carla/ego_vehicle/vehicle_control_cmd/steer': '0', u'/carla/ego_vehicle/vehicle_control_cmd/reverse': 'False', u'/carla/ego_vehicle/vehicle_control_cmd/brake': '0'}, 'publisher_id': 0, 'counter': 0}]\""
                 }
               },
               "groups": {}
@@ -368,8 +407,8 @@
               "keys": {
                 "tree_widget_header_state": {
                   "type": "repr(QByteArray.hex)",
-                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000000000010000000000000000010000000000000000000000000000000000000479000000050101000100000000000000000500000064ffffffff0000008100000003000000050000018800000001000000030000011700000001000000030000007200000001000000030000003d00000001000000030000012b0000000100000003000003e800')",
-                  "pretty-print": "                              d                     r     =     +      "
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff0000000000000001000000000000000001000000000000000000000000000000000000070e000000050101000100000000000000000500000064ffffffff000000810000000300000005000002c100000001000000030000022d00000001000000030000007200000001000000030000003d0000000100000003000001710000000100000003000003e800')",
+                  "pretty-print": "                              d               -     r     =     q      "
                 }
               },
               "groups": {}
@@ -378,7 +417,7 @@
               "keys": {
                 "dockable": {
                   "type": "repr",
-                  "repr": "True"
+                  "repr": "u'true'"
                 },
                 "parent": {
                   "type": "repr",
@@ -435,11 +474,11 @@
               "keys": {
                 "highlight_connections_check_box_state": {
                   "type": "repr",
-                  "repr": "True"
+                  "repr": "u'true'"
                 },
                 "auto_fit_graph_check_box_state": {
                   "type": "repr",
-                  "repr": "True"
+                  "repr": "u'true'"
                 }
               },
               "groups": {}
@@ -452,13 +491,13 @@
       "keys": {
         "geometry": {
           "type": "repr(QByteArray.hex)",
-          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0002000000000037000000180000077f000004af00000037000000180000077f000004af00000000000000000780')",
-          "pretty-print": "     7       7           "
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0002000000000037000000180000077f000002a600000037000000340000077f000002a600000000000000000780')",
+          "pretty-print": "     7       7 4         "
         },
         "state": {
           "type": "repr(QByteArray.hex)",
-          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000074900000482fc0100000009fb00000044007200710074005f00670072006100700068005f005f0052006f007300470072006100700068005f005f0031005f005f0052006f007300470072006100700068005500690100000000000003ef0000000000000000fb00000042007200710074005f006d00730067005f005f004d0065007300730061006700650073005f005f0031005f005f006d0065007300730061006700650073002e0075006901000003f5000002690000000000000000fc00000000000002820000026500fffffffc0200000003fb0000004c007200710074005f0074006f007000690063005f005f0054006f0070006900630050006c007500670069006e005f005f0031005f005f0054006f0070006900630057006900640067006500740100000000000001f60000007200fffffffb0000006c007200710074005f007200650063006f006e006600690067007500720065005f005f0050006100720061006d005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f00770069006400670065007401000001fc0000019d0000010f00fffffffb00000058007200710074005f007000750062006c00690073006800650072005f005f005000750062006c00690073006800650072005f005f0031005f005f005000750062006c00690073006800650072005700690064006700650074010000039f000000e30000009300fffffffb0000005a007200710074005f0069006d006100670065005f0076006900650077005f005f0049006d0061006700650056006900650077005f005f0031005f005f0049006d00610067006500560069006500770057006900640067006500740100000434000003070000000000000000fb0000004c007200710074005f00740066005f0074007200650065005f005f0052006f0073005400660054007200650065005f005f0031005f005f0052006f0073005400660054007200650065005500690100000147000002200000000000000000fb0000004c007200710074005f00740066005f0074007200650065005f005f0052006f0073005400660054007200650065005f005f0032005f005f0052006f007300540066005400720065006500550069010000058e000001ad0000000000000000fb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0031005f005f00440061007400610050006c006f007400570069006400670065007401000002880000017b0000017800fffffffb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0032005f005f00440061007400610050006c006f00740057006900640067006500740100000409000001c20000017800fffffffb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0033005f005f00440061007400610050006c006f007400570069006400670065007401000005d1000001780000017800ffffff000007490000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
-          "pretty-print": "                 Drqt_graph__RosGraph__1__RosGraphUi          Brqt_msg__Messages__1__messages.ui              e                                                   r                                                                                                                                                                           4                                                G                                                                                              { x                                           x                                         x x   I                                                      "
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000074900000235fc0100000009fb00000044007200710074005f00670072006100700068005f005f0052006f007300470072006100700068005f005f0031005f005f0052006f007300470072006100700068005500690200000037000000e9000003f10000037afb00000042007200710074005f006d00730067005f005f004d0065007300730061006700650073005f005f0031005f005f006d0065007300730061006700650073002e0075006901000003f5000002690000000000000000fc000000000000021c0000000000fffffffc0200000003fb0000004c007200710074005f0074006f007000690063005f005f0054006f0070006900630050006c007500670069006e005f005f0031005f005f0054006f007000690063005700690064006700650074030000003d0000028b0000073100000193fb0000006c007200710074005f007200650063006f006e006600690067007500720065005f005f0050006100720061006d005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f0077006900640067006500740100000000000002190000000000000000fb00000058007200710074005f007000750062006c00690073006800650072005f005f005000750062006c00690073006800650072005f005f0031005f005f005000750062006c0069007300680065007200570069006400670065007401000000000000034c0000000000000000fb0000005a007200710074005f0069006d006100670065005f0076006900650077005f005f0049006d0061006700650056006900650077005f005f0031005f005f0049006d00610067006500560069006500770057006900640067006500740100000274000003200000000000000000fb0000004c007200710074005f00740066005f0074007200650065005f005f0052006f0073005400660054007200650065005f005f0031005f005f0052006f0073005400660054007200650065005500690100000147000002200000000000000000fb0000004c007200710074005f00740066005f0074007200650065005f005f0052006f0073005400660054007200650065005f005f0032005f005f0052006f007300540066005400720065006500550069010000058e000001ad0000000000000000fc000000000000037c0000017800fffffffa000000000200000002fb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0033005f005f00440061007400610050006c006f00740057006900640067006500740100000000ffffffff0000008c00fffffffb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0031005f005f00440061007400610050006c006f00740057006900640067006500740100000092000001a30000008c00fffffffb00000080006d006f0032006900760065005f007300740061007400750073005f006d006f006e00690074006f0072005f005f004d006f003200490056006500200053007400610074007500730020004d006f006e00690074006f0072005f005f0031005f005f005300740061007400750073004d006f006e00690074006f0072005500490100000507000002420000000000000000fb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0032005f005f00440061007400610050006c006f00740057006900640067006500740100000382000003c70000017800ffffff000007490000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720100000000ffffffff0000000000000000')",
+          "pretty-print": "                 Drqt_graph__RosGraph__1__RosGraphUi          Brqt_msg__Messages__1__messages.ui                                                              =   1                                                                                                                     L                                                     t                                                G                                                                      Brqt_plot__Plot__3__DataPlotWidget          Brqt_plot__Plot__1__DataPlotWidget           mo2ive_status_monitor__Mo2IVe Status Monitor__1__StatusMonitorUI          Brqt_plot__Plot__2__DataPlotWidget                            6MinimizedDockWidgetsToolbar        "
         }
       },
       "groups": {

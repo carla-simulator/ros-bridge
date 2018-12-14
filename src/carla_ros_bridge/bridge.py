@@ -192,11 +192,13 @@ class CarlaRosBridge(Parent):
 
         :return:
         """
-        try:
-            for publisher, msg in self.msgs_to_publish:
+        for publisher, msg in self.msgs_to_publish:
+            try:
                 publisher.publish(msg)
-        except:  # pylint: disable=bare-except
-            rospy.logwarn("Failed to publish messages")
+            except rospy.ROSSerializationException as error:
+                rospy.logwarn("Failed to serialize message on publishing: {}".format(error))
+            except:  # pylint: disable=bare-except
+                rospy.logwarn("Failed to publish message")
         self.msgs_to_publish = []
 
     def run(self):

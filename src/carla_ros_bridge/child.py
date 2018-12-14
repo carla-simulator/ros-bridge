@@ -103,7 +103,7 @@ class Child(Parent):
         :return: the parameter string
         :rtype: string
         """
-        return self.parent.get_param(key)
+        return self.parent.get_param(key, default)
 
     def topic_name(self):
         """

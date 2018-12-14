@@ -288,7 +288,7 @@ def get_slope_force(carla_vehicle):
     dummy_roll, pitch, dummy_yaw = trans.carla_rotation_to_RPY(
         carla_vehicle.get_transform().rotation)
     slope_force = get_acceleration_of_gravity(
-        carla_vehicle) * get_vehicle_mass(carla_vehicle) * math.sin(pitch)
+        carla_vehicle) * get_vehicle_mass(carla_vehicle) * math.sin(-pitch)
     return slope_force
 
 

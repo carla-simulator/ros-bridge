@@ -71,6 +71,50 @@ class EgoVehicle(Vehicle):
                                          parent=parent,
                                          topic_prefix="ego_vehicle",
                                          append_role_name_topic_postfix=False)
+        # control info
+        self.info = EgoVehicleControlInfo()
+
+        # maximum values
+        self.info.restrictions.max_steering_angle = phys.get_vehicle_max_steering_angle(
+            self.carla_actor)
+        self.info.restrictions.max_speed = phys.get_vehicle_max_speed(
+            self.carla_actor)
+        self.info.restrictions.max_accel = phys.get_vehicle_max_acceleration(
+            self.carla_actor)
+        self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
+            self.carla_actor)
+        self.info.restrictions.min_accel = 0.
+        self.info.restrictions.max_pedal = 1.0
+
+        # target values
+        self.info.target.steering_angle = 0.
+        self.info.target.speed = 0.
+        self.info.target.speed_abs = 0.
+        self.info.target.accel = 0.
+        self.info.target.jerk = 0.
+
+        # current values
+        self.info.current.time_sec = self.get_current_ros_time().to_sec()
+        self.info.current.speed = 0.
+        self.info.current.speed_abs = 0.
+        self.info.current.accel = 0.
+
+        # control values
+        self.info.state.status = 'n/a'
+        self.info.state.speed_control_activation_count = 0
+        self.info.state.speed_control_accel_delta = 0.
+        self.info.state.speed_control_accel_target = 0.
+        self.info.state.accel_control_pedal_delta = 0.
+        self.info.state.accel_control_pedal_target = 0.
+        self.info.state.brake_upper_border = 0.
+        self.info.state.throttle_lower_border = 0.
+
+        # control output
+        self.info.output.throttle = 0.
+        self.info.output.brake = 1.0
+        self.info.output.steer = 0.
+        self.info.output.reverse = False
+        self.info.output.hand_brake = True
 
     def get_marker_color(self):
         """
@@ -104,6 +148,77 @@ class EgoVehicle(Vehicle):
         odometry.twist.twist = self.get_current_ros_twist()
 
         self.publish_ros_message(self.topic_name() + "/odometry", odometry)
+
+    def apply_control(self):
+        """
+        Apply current control output to CARLA
+
+        :return:
+        """
+        vehicle_control = VehicleControl()
+        vehicle_control.hand_brake = self.info.output.hand_brake
+        vehicle_control.brake = self.info.output.brake
+        vehicle_control.steer = self.info.output.steer
+        vehicle_control.throttle = self.info.output.throttle
+        vehicle_control.reverse = self.info.output.reverse
+        # send control command out
+        self.carla_actor.apply_control(vehicle_control)
+
+    def update_current_values(self):
+        """
+        Function to update vehicle control current values.
+
+        we calculate the acceleration on ourselves, because we are interested only in
+        the acceleration in respect to the driving direction
+        In addition a small average filter is applied
+
+        :return:
+        """
+        current_time_sec = self.get_current_ros_time().to_sec()
+        delta_time = current_time_sec - self.info.current.time_sec
+        current_speed = phys.get_vehicle_speed(self.carla_actor)
+        if delta_time > 0:
+            delta_speed = current_speed - self.info.current.speed
+            current_accel = delta_speed / delta_time
+            # average filter
+            self.info.current.accel = (self.info.current.accel * 4 + current_accel) / 5
+        self.info.current.time_sec = current_time_sec
+        self.info.current.speed = current_speed
+        self.info.current.speed_abs = abs(current_speed)
+
+    def vehicle_control_cycle(self):
+        """
+        Function to perform a control cycle.
+
+        To be overridden by derived control classes
+
+        :return:
+        """
+        pass
+
+    def update(self):
+        """
+        Function (override) to update this object.
+
+        On update ego vehicle calculates and sends the new values for VehicleControl()
+
+        :return:
+        """
+        super(EgoVehicle, self).update()
+        self.update_current_values()
+        self.vehicle_control_cycle()
+        self.send_ego_vehicle_control_info_msg()
+
+    def send_ego_vehicle_control_info_msg(self):
+        """
+        Function to send carla_ros_bridge.msg.EgoVehicleControlInfo message.
+
+        :return:
+        """
+        self.info.header = self.get_msg_header()
+        self.info.output.header = self.info.header
+        self.publish_ros_message(
+            self.topic_name() + "/ego_vehicle_control_info", self.info)
 
 
 class PedalControlVehicle(EgoVehicle):
@@ -152,18 +267,12 @@ class PedalControlVehicle(EgoVehicle):
         This brigde is not responsible for any restrictions on velocity or steering.
         It's just forwarding the ROS input to CARLA
 
-        :param ros_vehicle_control:
-        :type ros_vehicle_control: carla_ros_bridge.msg.CarlaVehicleControl
+        :param ros_vehicle_control: current vehicle control input received via ROS
+        :type self.info.output: carla_ros_bridge.msg.CarlaVehicleControl
         :return:
         """
-        vehicle_control = VehicleControl()
-        vehicle_control.hand_brake = ros_vehicle_control.hand_brake
-        vehicle_control.brake = ros_vehicle_control.brake
-        vehicle_control.steer = ros_vehicle_control.steer
-        vehicle_control.throttle = ros_vehicle_control.throttle
-        vehicle_control.reverse = ros_vehicle_control.reverse
-        # send control command out
-        self.carla_actor.apply_control(vehicle_control)
+        self.info.output = ros_vehicle_control
+        self.apply_control()
 
 
 class AckermannControlVehicle(EgoVehicle):
@@ -184,43 +293,12 @@ class AckermannControlVehicle(EgoVehicle):
         super(AckermannControlVehicle, self).__init__(carla_actor=carla_actor,
                                                       parent=parent)
 
-        # control info
-        self.info = EgoVehicleControlInfo()
-
-        # maximum values
-        self.info.max_steering_angle = phys.get_vehicle_max_steering_angle(
-            self.carla_actor)
-        self.info.max_speed = phys.get_vehicle_max_speed(
-            self.carla_actor)
-        self.info.max_accel = phys.get_vehicle_max_acceleration(
-            self.carla_actor)
-        self.info.max_decel = phys.get_vehicle_max_deceleration(
-            self.carla_actor)
-
-        # target values
-        self.info.target_steering_angle = 0.
-        self.info.target_speed = 0.
-        self.info.target_speed_abs = 0.
-        self.info.target_accel_abs = 0.
-        self.info.target_decel_abs = 0.
-
-        # current values
-        self.info.current_time_sec = self.get_current_ros_time().to_sec()
-        self.info.current_speed = 0.
-        self.info.current_speed_abs = 0.
-        self.info.current_accel = 0.
-
-        # control values
-        self.info.status = ''
-        self.info.speed_control_accel_delta = 0.
-        self.info.speed_control_accel_target = 0.
-        self.info.accel_control_pedal_delta = 0.
-        self.info.accel_control_pedal_target = 0.
-        self.info.brake_upper_border = 0.
-        self.info.throttle_lower_border = 0.
-
-        # the carla vehicle control message
-        self.vehicle_control = VehicleControl()
+        # adapt initial values
+        self.info.restrictions.min_accel = parent.get_param('ego_vehicle').get('min_accel', 1.)
+        # clipping the pedal in both directions to the same range using the usual lower
+        # border: the max_accel to ensure the the pedal target is in symmetry to zero
+        self.info.restrictions.max_pedal = min(
+            self.info.restrictions.max_accel, self.info.restrictions.max_decel)
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
@@ -269,18 +347,6 @@ class AckermannControlVehicle(EgoVehicle):
         self.reconfigure_server = None
         super(AckermannControlVehicle, self).destroy()
 
-    def update(self):
-        """
-        Function (override) to update this object.
-
-        On update ego vehicle calculates and sends the new values for VehicleControl()
-
-        :return:
-        """
-        super(AckermannControlVehicle, self).update()
-        self.vehicle_control_cycle()
-        self.send_ego_vehicle_control_info_msg()
-
     def reconfigure_pid_parameters(self, ego_vehicle_control_parameter, dummy_level):
         """
         Callback for dynamic reconfigure call to set the PID parameters
@@ -305,16 +371,6 @@ class AckermannControlVehicle(EgoVehicle):
         )
         return ego_vehicle_control_parameter
 
-    def send_ego_vehicle_control_info_msg(self):
-        """
-        Function to send carla_ros_bridge.msg.EgoVehicleControlInfo message.
-
-        :return:
-        """
-        self.info.header = self.get_msg_header()
-        self.publish_ros_message(
-            self.topic_name() + "/ego_vehicle_control_info", self.info)
-
     def ackermann_command_updated(self, ros_ackermann_drive):
         """
         Convert a Ackerman drive msg into carla control msg
@@ -326,89 +382,79 @@ class AckermannControlVehicle(EgoVehicle):
         This brigde is not responsible for any restrictions on velocity or steering.
         It's just forwarding the ROS input to CARLA
 
-        :param ros_vehicle_control:
-        :type ros_vehicle_control: carla_ros_bridge.msg.CarlaVehicleControl
+        :param ros_ackermann_drive: the current ackermann control input
+        :type ros_ackermann_drive: ackermann_msgs.AckermannDrive
         :return:
         """
         # set target values
         self.set_target_steering_angle(ros_ackermann_drive.steering_angle)
         self.set_target_speed(ros_ackermann_drive.speed)
         self.set_target_accel(ros_ackermann_drive.acceleration)
+        self.set_target_jerk(ros_ackermann_drive.jerk)
 
     def set_target_steering_angle(self, target_steering_angle):
         """
         set target sterring angle
         """
-        if abs(target_steering_angle) > self.info.max_steering_angle:
+        self.info.target.steering_angle = -target_steering_angle
+        if abs(self.info.target.steering_angle) > self.info.restrictions.max_steering_angle:
             rospy.logerr("Max steering angle reached, clipping value")
-            self.info.target_steering_angle = numpy.clip(
-                target_steering_angle, -self.info.max_steering_angle, self.info.max_steering_angle)
-        else:
-            self.info.target_steering_angle = target_steering_angle
+            self.info.target.steering_angle = numpy.clip(
+                self.info.target.steering_angle,
+                -self.info.restrictions.max_steering_angle,
+                self.info.restrictions.max_steering_angle)
 
     def set_target_speed(self, target_speed):
         """
         set target speed
         """
-        if abs(target_speed) > self.info.max_speed:
+        if abs(target_speed) > self.info.restrictions.max_speed:
             rospy.logerr("Max speed reached, clipping value")
-            self.info.target_speed = numpy.clip(
-                target_speed, -self.info.max_speed, self.info.max_speed)
+            self.info.target.speed = numpy.clip(
+                target_speed, -self.info.restrictions.max_speed, self.info.restrictions.max_speed)
         else:
-            self.info.target_speed = target_speed
-        self.info.target_speed_abs = abs(self.info.target_speed)
+            self.info.target.speed = target_speed
+        self.info.target.speed_abs = abs(self.info.target.speed)
 
     def set_target_accel(self, target_accel):
         """
         set target accel
         """
         epsilon = 0.00001
-        # per definition of ackermann drive: if zero, then use max value
-        if abs(target_accel) < epsilon:
-            self.info.target_accel_abs = self.info.max_accel
-            self.info.target_decel_abs = self.info.max_decel
+        # if speed is set to zero, then use max decel value
+        if self.info.target.speed_abs < epsilon:
+            self.info.target.accel = -self.info.restrictions.max_decel
         else:
-            self.info.target_accel_abs = numpy.clip(
-                abs(target_accel), 0, self.info.max_accel)
-            self.info.target_decel_abs = numpy.clip(
-                abs(target_accel), 0, self.info.max_decel)
+            self.info.target.accel = numpy.clip(
+                target_accel, -self.info.restrictions.max_decel, self.info.restrictions.max_accel)
+
+    def set_target_jerk(self, target_jerk):
+        """
+        set target accel
+        """
+        self.info.target.jerk = target_jerk
 
     def vehicle_control_cycle(self):
         """
         Perform a vehicle control cycle and sends out carla.VehicleControl message
         """
-        # update current values
-        # we calculate the acceleration on ourselves, because we are interested only in
-        # the acceleration regarding our driving direction
-        # in addition we just filter
-        current_time_sec = self.get_current_ros_time().to_sec()
-        delta_time = current_time_sec - self.info.current_time_sec
-        current_speed = phys.get_vehicle_speed(self.carla_actor)
-        if delta_time > 0:
-            delta_speed = current_speed - self.info.current_speed
-            current_accel = delta_speed / delta_time
-            # average filter
-            self.info.current_accel = (self.info.current_accel * 4 + current_accel) / 5
-        self.info.current_time_sec = current_time_sec
-        self.info.current_speed = current_speed
-        self.info.current_speed_abs = abs(current_speed)
-
         # perform actual control
         self.control_steering()
         self.control_stop_and_reverse()
-        self.run_pid_control_loop()
-        if not self.vehicle_control.hand_brake:
+        self.run_speed_control_loop()
+        self.run_accel_control_loop()
+        if not self.info.output.hand_brake:
             self.update_drive_vehicle_control_command()
 
-        # send control command out
-        self.carla_actor.apply_control(self.vehicle_control)
+        # apply control command to CARLA
+        self.apply_control()
 
     def control_steering(self):
         """
         Basic steering control
         """
-        self.vehicle_control.steer = self.info.target_steering_angle / \
-            self.info.max_steering_angle
+        self.info.output.steer = self.info.target.steering_angle / \
+            self.info.restrictions.max_steering_angle
 
     def control_stop_and_reverse(self):
         """
@@ -420,61 +466,106 @@ class AckermannControlVehicle(EgoVehicle):
         full_stop_epsilon = 0.00001
 
         # auto-control of hand-brake and reverse gear
-        self.vehicle_control.hand_brake = False
-        if self.info.current_speed_abs < standing_still_epsilon:
+        self.info.output.hand_brake = False
+        if self.info.current.speed_abs < standing_still_epsilon:
             # standing still, change of driving direction allowed
-            self.info.status = "standing"
-            if self.info.target_speed < 0:
-                if not self.vehicle_control.reverse:
+            self.info.state.status = "standing"
+            if self.info.target.speed < 0:
+                if not self.info.output.reverse:
                     rospy.loginfo(
                         "VehicleControl: Change of driving direction to reverse")
-                    self.vehicle_control.reverse = True
-            elif self.info.target_speed > 0:
-                if self.vehicle_control.reverse:
+                    self.info.output.reverse = True
+            elif self.info.target.speed > 0:
+                if self.info.output.reverse:
                     rospy.loginfo(
                         "VehicleControl: Change of driving direction to forward")
-                    self.vehicle_control.reverse = False
-            if self.info.target_speed_abs < full_stop_epsilon:
-                self.info.status = "full stop"
-                self.vehicle_control.hand_brake = True
-                self.vehicle_control.brake = 1.0
-                self.vehicle_control.throttle = 0.0
+                    self.info.output.reverse = False
+            if self.info.target.speed_abs < full_stop_epsilon:
+                self.info.state.status = "full stop"
+                self.info.state.speed_control_accel_target = 0.
+                self.info.state.accel_control_pedal_target = 0.
                 self.set_target_speed(0.)
-                self.info.current_speed = 0.
-                self.info.current_speed_abs = 0.
-                self.info.current_accel = 0.
-                self.info.speed_control_accel_target = 0.
-                self.info.accel_control_pedal_target = 0.
+                self.info.current.speed = 0.
+                self.info.current.speed_abs = 0.
+                self.info.current.accel = 0.
+                self.info.output.hand_brake = True
+                self.info.output.brake = 1.0
+                self.info.output.throttle = 0.0
 
-        elif numpy.sign(self.info.current_speed) * numpy.sign(self.info.target_speed) == -1:
+        elif numpy.sign(self.info.current.speed) * numpy.sign(self.info.target.speed) == -1:
             # requrest for change of driving direction
             # first we have to come to full stop before changing driving
             # direction
             rospy.loginfo("VehicleControl: Request change of driving direction."
                           " v_current={} v_desired={}"
-                          " Set desired speed to 0".format(self.info.current_speed,
-                                                           self.info.target_speed))
+                          " Set desired speed to 0".format(self.info.current.speed,
+                                                           self.info.target.speed))
             self.set_target_speed(0.)
 
-    def run_pid_control_loop(self):
+    def run_speed_control_loop(self):
         """
         Run the PID control loop for the speed
-        """
-        self.speed_controller.setpoint = self.info.target_speed_abs
-        self.info.speed_control_accel_delta = self.speed_controller(
-            self.info.current_speed_abs)
-        self.info.speed_control_accel_target = numpy.clip(
-            self.info.speed_control_accel_target + self.info.speed_control_accel_delta,
-            -self.info.target_decel_abs,
-            self.info.target_accel_abs)
 
-        self.accel_controller.setpoint = self.info.speed_control_accel_target
-        self.info.accel_control_pedal_delta = self.accel_controller(
-            self.info.current_accel)
-        self.info.accel_control_pedal_target = numpy.clip(
-            self.info.accel_control_pedal_target + self.info.accel_control_pedal_delta,
-            -self.info.max_decel,
-            self.info.max_accel)
+        The speed control is only activated if desired acceleration is moderate
+        otherwhise we try to follow the desired acceleration values
+
+        Reasoning behind:
+
+        An autonomous vehicle calculates a trajectory including position and velocities.
+        The ackermann drive is derived directly from that trajectory.
+        The acceleration and jerk values provided by the ackermann drive command
+        reflect already the speed profile of the trajectory.
+        It makes no sense to try to mimick this a-priori knowledge by the speed PID
+        controller.
+        =>
+        The speed controller is mainly responsible to keep the speed.
+        On expected speed changes, the speed control loop is disabled
+        """
+        epsilon = 0.00001
+        target_accel_abs = abs(self.info.target.accel)
+        if target_accel_abs < self.info.restrictions.min_accel:
+            if self.info.state.speed_control_activation_count < 5:
+                self.info.state.speed_control_activation_count += 1
+        else:
+            if self.info.state.speed_control_activation_count > 0:
+                self.info.state.speed_control_activation_count -= 1
+        # set the auto_mode of the controller accordingly
+        self.speed_controller.auto_mode = self.info.state.speed_control_activation_count >= 5
+
+        if self.speed_controller.auto_mode:
+            self.speed_controller.setpoint = self.info.target.speed_abs
+            self.info.state.speed_control_accel_delta = self.speed_controller(
+                self.info.current.speed_abs)
+
+            # clipping borders
+            clipping_lower_border = -target_accel_abs
+            clipping_upper_border = target_accel_abs
+            # per definition of ackermann drive: if zero, then use max value
+            if target_accel_abs < epsilon:
+                clipping_lower_border = -self.info.restrictions.max_decel
+                clipping_upper_border = self.info.restrictions.max_accel
+            self.info.state.speed_control_accel_target = numpy.clip(
+                self.info.state.speed_control_accel_target +
+                self.info.state.speed_control_accel_delta,
+                clipping_lower_border, clipping_upper_border)
+        else:
+            self.info.state.speed_control_accel_delta = 0.
+            self.info.state.speed_control_accel_target = self.info.target.accel
+
+    def run_accel_control_loop(self):
+        """
+        Run the PID control loop for the acceleration
+        """
+        # setpoint of the acceleration controller is the output of the speed controller
+        self.accel_controller.setpoint = self.info.state.speed_control_accel_target
+        self.info.state.accel_control_pedal_delta = self.accel_controller(
+            self.info.current.accel)
+        # @todo: we might want to scale by making use of the the abs-jerk value
+        # If the jerk input is big, then the trajectory input expects already quick changes
+        # in the acceleration; to respect this we put an additional proportional factor on top
+        self.info.state.accel_control_pedal_target = numpy.clip(
+            self.info.state.accel_control_pedal_target + self.info.state.accel_control_pedal_delta,
+            -self.info.restrictions.max_pedal, self.info.restrictions.max_pedal)
 
     def update_drive_vehicle_control_command(self):
         """
@@ -484,40 +575,42 @@ class AckermannControlVehicle(EgoVehicle):
         # the driving impedance moves the 'zero' acceleration border
         # Interpretation: To reach a zero acceleration the throttle has to pushed
         # down for a certain amount
-        self.info.throttle_lower_border = phys.get_vehicle_driving_impedance_acceleration(
-            self.carla_actor, self.vehicle_control.reverse)
+        self.info.state.throttle_lower_border = phys.get_vehicle_driving_impedance_acceleration(
+            self.carla_actor, self.info.output.reverse)
         # the engine lay off acceleration defines the size of the coasting area
         # Interpretation: The engine already prforms braking on its own;
         #  therefore pushing the brake is not required for small decelerations
-        self.info.brake_upper_border = self.info.throttle_lower_border + \
+        self.info.state.brake_upper_border = self.info.state.throttle_lower_border + \
             phys.get_vehicle_lay_off_engine_acceleration(self.carla_actor)
 
-        if self.info.accel_control_pedal_target > self.info.throttle_lower_border:
-            self.info.status = "accelerating"
-            self.vehicle_control.brake = 0.0
-            # the value has to be normed to max_accel
+        if self.info.state.accel_control_pedal_target > self.info.state.throttle_lower_border:
+            self.info.state.status = "accelerating"
+            self.info.output.brake = 0.0
+            # the value has to be normed to max_pedal
             # be aware: is not required to take throttle_lower_border into the scaling factor,
             # because that border is in reality a shift of the coordinate system
             # the global maximum acceleration can practically not be reached anymore because of
             # driving impedance
-            self.vehicle_control.throttle = (
-                (self.info.accel_control_pedal_target - self.info.throttle_lower_border) /
-                abs(self.info.max_accel))
-        elif self.info.accel_control_pedal_target > self.info.brake_upper_border:
-            self.info.status = "coasting"
+            self.info.output.throttle = (
+                (self.info.state.accel_control_pedal_target -
+                 self.info.state.throttle_lower_border) /
+                abs(self.info.restrictions.max_pedal))
+        elif self.info.state.accel_control_pedal_target > self.info.state.brake_upper_border:
+            self.info.state.status = "coasting"
             # no control required
-            self.vehicle_control.brake = 0.0
-            self.vehicle_control.throttle = 0.0
+            self.info.output.brake = 0.0
+            self.info.output.throttle = 0.0
         else:
-            self.info.status = "braking"
+            self.info.state.status = "braking"
             # braking required
-            self.vehicle_control.brake = (
-                (self.info.brake_upper_border - self.info.accel_control_pedal_target) /
-                abs(self.info.max_decel))
-            self.vehicle_control.throttle = 0.0
+            self.info.output.brake = (
+                (self.info.state.brake_upper_border -
+                 self.info.state.accel_control_pedal_target) /
+                abs(self.info.restrictions.max_pedal))
+            self.info.output.throttle = 0.0
 
         # finally clip the final control output (should actually never happen)
-        self.vehicle_control.brake = numpy.clip(
-            self.vehicle_control.brake, 0., 1.)
-        self.vehicle_control.throttle = numpy.clip(
-            self.vehicle_control.throttle, 0., 1.)
+        self.info.output.brake = numpy.clip(
+            self.info.output.brake, 0., 1.)
+        self.info.output.throttle = numpy.clip(
+            self.info.output.throttle, 0., 1.)
