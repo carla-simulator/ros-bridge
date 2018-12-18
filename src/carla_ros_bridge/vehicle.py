@@ -37,9 +37,9 @@ class Vehicle(Actor):
         :return: the created vehicle actor
         :rtype: carla_ros_bridge.Vehicle or derived type
         """
-        if (carla_actor.attributes.has_key('role_name') and
-                carla_actor.attributes['role_name'] == parent.get_param('ego_vehicle_role_name')):
-            return EgoVehicle(carla_actor=carla_actor, parent=parent)
+        if (carla_actor.attributes.get('role_name') ==
+                parent.get_param('ego_vehicle').get('role_name')):
+            return EgoVehicle.create_actor(carla_actor=carla_actor, parent=parent)
         else:
             return Vehicle(carla_actor=carla_actor, parent=parent)
 

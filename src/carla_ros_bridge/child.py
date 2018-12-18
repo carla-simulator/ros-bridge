@@ -90,7 +90,7 @@ class Child(Parent):
         """
         self.parent.publish_ros_message(topic, msg)
 
-    def get_param(self, key):
+    def get_param(self, key, default=None):
         """
         Function (override) to query global parameters passed from the outside.
 
@@ -98,10 +98,12 @@ class Child(Parent):
 
         :param key: the key of the parameter
         :type key: string
+        :param default: the default value of the parameter to return if key is not found
+        :type default: string
         :return: the parameter string
         :rtype: string
         """
-        return self.parent.get_param(key)
+        return self.parent.get_param(key, default)
 
     def topic_name(self):
         """
