@@ -1,7 +1,11 @@
 
-# Ros bridge for Carla simulator
+# ROS bridge for CARLA simulator
 
-This ros package aims at providing a simple ros bridge for carla simulator.
+This ROS package aims at providing a simple ROS bridge for CARLA simulator.
+
+__Important Note:__
+This documentation is for CARLA versions *newer* than 0.9.1. The CARLA release 0.9.1
+does not work out of the box with the ROS bridge.
 
 ![rviz setup](./assets/rviz_carla_default.png "rviz")
 ![depthcloud](./assets/depth_cloud_and_lidar.png "depthcloud")
@@ -14,9 +18,9 @@ This ros package aims at providing a simple ros bridge for carla simulator.
 - [x] Cameras (depth, segmentation, rgb) support
 - [x] Transform publications
 - [x] Manual control using ackermann msg
-- [x] Handle ros dependencies
+- [x] Handle ROS dependencies
 - [x] Marker/bounding box messages for cars/pedestrian
-- [X] Lidar sensor support
+- [x] Lidar sensor support
 - [ ] Rosbag in the bridge (in order to avoid rosbag record -a small time errors)
 - [ ] Add traffic light support
 
@@ -24,21 +28,30 @@ This ros package aims at providing a simple ros bridge for carla simulator.
 
 ## Create a catkin workspace and install carla_ros_bridge package
 
+First, clone or download the carla_ros_bridge, for example into
+
+   ~/carla_ros_bridge
+
 ### Create the catkin workspace:
 
     mkdir -p ~/ros/catkin_ws_for_carla/src
-    cd ~/ros/catkin_ws_for_carla
+    cd ~/ros/catkin_ws_for_carla/src
+    cp ~/carla_ros_bridge/* .
     source /opt/ros/kinetic/setup.bash
     catkin_make
     source ~/ros/catkin_ws_for_carla/devel/setup.bash
 
-For more information about configuring a ros environment see
+For more information about configuring a ROS environment see
 http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 
-## Install carla python client API in your workspace
+## Install the CARLA Python API
 
-    cd carla/PythonAPI
-    pip2 install -e .  --user --upgrade
+    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
+
+Please note that you have to put in the complete path to the egg-file including
+the egg-file itself. Please use the one, that is supported by your Python version.
+Depending on the type of CARLA (pre-build, or build from source), the egg files
+are typically located either directly in the PythonAPI folder or in PythonAPI/dist.
 
 Check the installation is successfull by trying to import carla from python:
 
@@ -46,50 +59,13 @@ Check the installation is successfull by trying to import carla from python:
 
 You should see the Success message without any errors.
 
-### Install recent protobuf version [optional]
+## Install other requirements:
 
-    sudo apt-get remove python-protobuf
-    sudo pip2 install --upgrade protobuf
-
-
-### Add the carla_ros_bridge in the catkin workspace
-
-Run the following command after replacing [PATH_TO_ROS_BRIDGE] with the actual path to carla ros bridge directory on your machine:
-
-    ln -s [PATH_TO_ROS_BRIDGE]/carla_ros_bridge/ ~/ros/catkin_ws_for_carla/src/
-    source ~/ros/catkin_ws_for_carla/devel/setup.bash
-    rosdep update
-    rosdep install --from-paths ~/ros/catkin_ws_for_carla
-    cd ~/ros/catkin_ws_for_carla
-    catkin_make
-    source ~/ros/catkin_ws_for_carla/devel/setup.bash
+    sudo apt-get install python-protobuf
+    pip install --user simple-pid
 
 
-### Test your installation (section outdated)
-
-If you use the builded binary (0.9.1):
-
-     ./CarlaUE4.sh  -carla-server -windowed -ResX=320 -ResY=240
-
-
-Wait for the message:
-
-    Waiting for the client to connect...
-
-Then run the tests
-
-    rostest carla_ros_bridge ros_bridge_client.test
-
-you should see:
-
-    [carla_ros_bridge.rosunit-testTopics/test_publish][passed]
-
-    SUMMARY
-     * RESULT: SUCCESS
-
-
-
-# Start the ros bridge
+# Start the ROS bridge
 
 First run the simulator (see carla documentation: http://carla.readthedocs.io/en/latest/)
 
@@ -107,14 +83,17 @@ Then start the ros bridge:
 
 To start the ros bridge with rviz use:
 
+    source ~/ros/catkin_ws_for_carla/devel/setup.bash
     roslaunch carla_ros_bridge client_with_rviz.launch
 
-You can setup the vehicle wanted to used as ego vehicle in config/settings.yaml.
+You can setup the vehicle configuration config/settings.yaml.
 
-Then you can make use of the CARLA python API scripts manual_control.py. This spawns a vehicle with role_name='hero' which is interpreted
-as the ego vehicle as defined by the config/settings.yaml.
+Then you can make use of the CARLA Python API script manual_control.py.
+This spawns a vehicle with role_name='hero' which is interpreted as the ego
+vehicle as defined by the config/settings.yaml.
 
-You can then further spawn other vehicles using spawn_npc.py from CARLA python API. Then those vehicles will show up also on ROS side.
+You can then further spawn other vehicles using spawn_npc.py from CARLA Python API.
+Then those vehicles will show up also on ROS side.
 
 # Test control messages
 You can send command to the car using the /carla/ego_vehicle/ackermann_cmd topic.
@@ -131,12 +110,6 @@ Example of forward with steering
       jerk: 0.0}" -r 10
 
   Warning: the steering_angle is the driving angle (in radians) not the wheel angle, for now max wheel is set to 500 degrees.
-
-
-Example for backward :
-
-     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0, steering_angle_velocity: 0.0, speed: -10, acceleration: 0.0,
-      jerk: 0.0}" -r 10
 
 # Test sensor messages
 
@@ -169,5 +142,3 @@ The carla_ros_bridge could also be used to record all published topics into a ro
 This command will create a rosbag /tmp/save_session.bag
 
 You can of course also use rosbag record to do the same, but using the ros_bridge to do the recording you have the guarentee that all the message are saved without small desynchronization that could occurs when using *rosbag record* in an other process.
-
-
