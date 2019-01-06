@@ -164,9 +164,7 @@ class EgoVehicle(Vehicle):
 
         # send control command out, if there is a ROS control publisher
         ros_control_topic = rospy.get_published_topics(namespace=self.topic_name() + "/ackermann_cmd")
-        print(ros_control_topic)
         ros_control_topic.extend(rospy.get_published_topics(namespace=self.topic_name() + "/vehicle_control_cmd"))
-        print(ros_control_topic)
         if ros_control_topic:
             self.carla_actor.apply_control(vehicle_control)
 
