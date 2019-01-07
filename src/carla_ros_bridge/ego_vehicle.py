@@ -161,8 +161,13 @@ class EgoVehicle(Vehicle):
         vehicle_control.steer = self.info.output.steer
         vehicle_control.throttle = self.info.output.throttle
         vehicle_control.reverse = self.info.output.reverse
-        # send control command out
-        self.carla_actor.apply_control(vehicle_control)
+
+        # send control command out, if there is a ROS control publisher
+        ros_control_topic = rospy.get_published_topics(namespace=self.topic_name() + "/ackermann_cmd")
+        ros_control_topic.extend(rospy.get_published_topics(namespace=self.topic_name() + "/vehicle_control_cmd"))
+        if ros_control_topic:
+            self.carla_actor.apply_control(vehicle_control)
+
 
     def update_current_values(self):
         """
