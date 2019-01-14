@@ -163,9 +163,9 @@ class EgoVehicle(Vehicle):
         vehicle_control.reverse = self.info.output.reverse
 
         # send control command out, if there is a ROS control publisher
-        ros_control_topic = rospy.get_published_topics(namespace=self.topic_name() + "/ackermann_cmd")
-        ros_control_topic.extend(rospy.get_published_topics(namespace=self.topic_name() + "/vehicle_control_cmd"))
-        if ros_control_topic:
+        ros_control_topic = rospy.get_published_topics(namespace='/')
+        if (any('/carla/ego_vehicle/ackermann_cmd' == x[0] for x in ros_control_topic) or
+            any('/carla/ego_vehicle/vehicle_control_cmd' == x[0] for x in ros_control_topic)):
             self.carla_actor.apply_control(vehicle_control)
 
 
