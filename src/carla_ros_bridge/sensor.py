@@ -43,6 +43,8 @@ class Sensor(Actor):
             return Camera.create_actor(carla_actor=carla_actor, parent=parent)
         if carla_actor.type_id.startswith("sensor.lidar"):
             return Lidar(carla_actor=carla_actor, parent=parent)
+        if carla_actor.type_id.startswith("sensor.other.gnss"):
+            return Gnss(carla_actor=carla_actor, parent=parent)
         else:
             return Sensor(carla_actor=carla_actor, parent=parent)
 
@@ -166,3 +168,4 @@ class Sensor(Actor):
 # these imports have to be at the end to resolve cyclic dependency
 from carla_ros_bridge.camera import Camera  # pylint: disable=wrong-import-position
 from carla_ros_bridge.lidar import Lidar   # pylint: disable=wrong-import-position
+from carla_ros_bridge.gnss import Gnss   # pylint: disable=wrong-import-position
