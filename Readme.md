@@ -69,7 +69,7 @@ You should see the Success message without any errors.
 
 First run the simulator (see carla documentation: http://carla.readthedocs.io/en/latest/)
 
-     ./CarlaUE4  -carla-server -windowed -ResX=320 -ResY=240
+    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240 -benchmark -fps=10
 
 
 Wait for the message:
