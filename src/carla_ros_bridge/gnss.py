@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2018 Intel Labs.
+# Copyright (c) 2018-2019 Intel Labs.
 #
 # authors: Frederik Pasch (frederik.pasch@intel.com)
 #
@@ -9,14 +9,9 @@
 Classes to handle Carla gnsss
 """
 
-import numpy
-
-import tf
-
 from sensor_msgs.msg import NavSatFix
 
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
 
 class Gnss(Sensor):
@@ -45,28 +40,6 @@ class Gnss(Sensor):
                                    parent=parent,
                                    topic_prefix=topic_prefix,
                                    append_role_name_topic_postfix=append_role_name_topic_postfix)
-
-    def get_tf_msg(self):
-        """
-        Function (override) to modify the tf messages sent by this gnss.
-
-        The gnss transformation has to be altered:
-        for some reasons gnss sends already a rotated cloud,
-        so herein, we need to ignore pitch and roll
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Gnss, self).get_tf_msg()
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        dummy_roll, dummy_pitch, yaw = tf.transformations.euler_from_quaternion(
-            quat)
-        # set roll and pitch to zero
-        quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
-        return tf_msg
 
     def sensor_data_updated(self, carla_gnss_event):
         """
