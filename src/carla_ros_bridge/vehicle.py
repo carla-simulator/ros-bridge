@@ -170,5 +170,6 @@ class Vehicle(Actor):
 
         self.publish_ros_message('/carla/objects', vehicle_object)
 
+
 # this import has to be at the end to resolve cyclic dependency
-from carla_ros_bridge.ego_vehicle import EgoVehicle  # pylint: disable=wrong-import-position
+from carla_ros_bridge.ego_vehicle import EgoVehicle  # noqa, pylint: disable=wrong-import-position

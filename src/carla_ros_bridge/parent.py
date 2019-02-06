@@ -246,9 +246,10 @@ class Parent(object):
             "carla_ros_bridge.Child and carla_ros_bridge.CarlaRosBridge"
             "If this error becomes visible the class hierarchy is somehow broken")
 
+
 # these imports have to be at the end to resolve cyclic dependency
-from carla_ros_bridge.actor import Actor         # pylint: disable=wrong-import-position
-from carla_ros_bridge.spectator import Spectator  # pylint: disable=wrong-import-position
-from carla_ros_bridge.sensor import Sensor       # pylint: disable=wrong-import-position
-from carla_ros_bridge.traffic import Traffic     # pylint: disable=wrong-import-position
-from carla_ros_bridge.vehicle import Vehicle     # pylint: disable=wrong-import-position
+from carla_ros_bridge.actor import Actor         # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.spectator import Spectator  # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.sensor import Sensor       # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.traffic import Traffic     # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.vehicle import Vehicle     # noqa, pylint: disable=wrong-import-position
