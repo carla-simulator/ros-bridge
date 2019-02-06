@@ -1,5 +1,10 @@
 ## Latest changed
 
+* support simple-pid 0.1.5
+
+
+## CARLA-ROS-Bridge 0.9.3
+
 * Send vehicle commands to CARLA, only when a ROS command provider is available
 * Added interface for GNSS sensor
 

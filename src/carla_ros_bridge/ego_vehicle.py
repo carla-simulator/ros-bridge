@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2018 Intel Labs.
+# Copyright (c) 2018-2019 Intel Labs.
 #
 # authors: Bernd Gassmann (bernd.gassmann@intel.com)
 #
@@ -164,10 +164,9 @@ class EgoVehicle(Vehicle):
 
         # send control command out, if there is a ROS control publisher
         ros_control_topic = rospy.get_published_topics(namespace='/')
-        if (any('/carla/ego_vehicle/ackermann_cmd' == x[0] for x in ros_control_topic) or
-            any('/carla/ego_vehicle/vehicle_control_cmd' == x[0] for x in ros_control_topic)):
+        if (any(x[0] == '/carla/ego_vehicle/ackermann_cmd' for x in ros_control_topic) or
+                any(x[0] == '/carla/ego_vehicle/vehicle_control_cmd' for x in ros_control_topic)):
             self.carla_actor.apply_control(vehicle_control)
-
 
     def update_current_values(self):
         """
@@ -307,8 +306,13 @@ class AckermannControlVehicle(EgoVehicle):
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
+        #
+        # To prevent "float division by zero" within PID controller initialize it with
+        # a previous point in time (the error happens because the time doesn't
+        # change between initialization and first call, therefore dt is 0)
         sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: AckermannControlVehicle.get_current_ros_time(self).to_sec())
+            lambda: AckermannControlVehicle.get_current_ros_time(self).to_sec() - 0.1)
+
         # we might want to use a PID controller to reach the final target speed
         self.speed_controller = PID(Kp=0.0,
                                     Ki=0.0,
@@ -320,6 +324,10 @@ class AckermannControlVehicle(EgoVehicle):
                                     Kd=0.0,
                                     sample_time=0.05,
                                     output_limits=(-1, 1))
+
+	# use the correct time for further calculations
+        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
+            lambda: AckermannControlVehicle.get_current_ros_time(self).to_sec())
 
         self.reconfigure_server = Server(
             EgoVehicleControlParameterConfig,
