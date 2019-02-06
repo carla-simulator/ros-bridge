@@ -325,7 +325,7 @@ class AckermannControlVehicle(EgoVehicle):
                                     sample_time=0.05,
                                     output_limits=(-1, 1))
 
-	# use the correct time for further calculations
+        # use the correct time for further calculations
         sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
             lambda: AckermannControlVehicle.get_current_ros_time(self).to_sec())
 

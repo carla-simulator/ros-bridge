@@ -24,7 +24,7 @@ def get_vector_length_squared(carla_vector):
     :return: squared vector length
     :rtype: float64
     """
-    return carla_vector.x  * carla_vector.x + \
+    return carla_vector.x * carla_vector.x + \
         carla_vector.y * carla_vector.y + \
         carla_vector.z * carla_vector.z
 

@@ -166,6 +166,6 @@ class Sensor(Actor):
 
 
 # these imports have to be at the end to resolve cyclic dependency
-from carla_ros_bridge.camera import Camera  # pylint: disable=wrong-import-position
-from carla_ros_bridge.lidar import Lidar   # pylint: disable=wrong-import-position
-from carla_ros_bridge.gnss import Gnss   # pylint: disable=wrong-import-position
+from carla_ros_bridge.camera import Camera  # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.lidar import Lidar   # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.gnss import Gnss   # noqa, pylint: disable=wrong-import-position
