@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2018-2019 Intel Labs.
 #
-# authors: Frederik Pasch (frederik.pasch@intel.com)
+# authors: Frederik Pasch
 #
 """
 Classes to handle Carla gnsss

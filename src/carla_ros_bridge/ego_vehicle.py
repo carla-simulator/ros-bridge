@@ -9,6 +9,7 @@
 Classes to handle Carla vehicles
 """
 import sys
+import datetime
 import numpy
 
 from simple_pid import PID
@@ -162,11 +163,7 @@ class EgoVehicle(Vehicle):
         vehicle_control.throttle = self.info.output.throttle
         vehicle_control.reverse = self.info.output.reverse
 
-        # send control command out, if there is a ROS control publisher
-        ros_control_topic = rospy.get_published_topics(namespace='/')
-        if (any(x[0] == '/carla/ego_vehicle/ackermann_cmd' for x in ros_control_topic) or
-                any(x[0] == '/carla/ego_vehicle/vehicle_control_cmd' for x in ros_control_topic)):
-            self.carla_actor.apply_control(vehicle_control)
+        self.carla_actor.apply_control(vehicle_control)
 
     def update_current_values(self):
         """
@@ -335,7 +332,10 @@ class AckermannControlVehicle(EgoVehicle):
             callback=(lambda config, level: AckermannControlVehicle.reconfigure_pid_parameters(
                 self, config, level)))
 
-        # ROS subsriber
+        # ROS subscriber
+        # the lastMsgReceived is updated within the callback
+        # (it's used to stop updating the carla client control if no new messages were received)
+        self.lastMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/ackermann_cmd",
             AckermannDrive, self.ackermann_command_updated)
@@ -399,6 +399,9 @@ class AckermannControlVehicle(EgoVehicle):
         :type ros_ackermann_drive: ackermann_msgs.AckermannDrive
         :return:
         """
+        # update the last reception timestamp
+        self.lastMsgReceived = datetime.datetime.now()
+
         # set target values
         self.set_target_steering_angle(ros_ackermann_drive.steering_angle)
         self.set_target_speed(ros_ackermann_drive.speed)
@@ -460,7 +463,10 @@ class AckermannControlVehicle(EgoVehicle):
             self.update_drive_vehicle_control_command()
 
         # apply control command to CARLA
-        self.apply_control()
+        # (only if a control message was received in the last 3 seconds. This is a workaround
+        # for rospy.subscriber.get_num_connections() not working in Ubuntu 16.04)
+        if (self.lastMsgReceived + datetime.timedelta(0, 3)) > datetime.datetime.now():
+            self.apply_control()
 
     def control_steering(self):
         """
