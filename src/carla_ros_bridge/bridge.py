@@ -12,6 +12,7 @@ Rosbridge class:
 Class that handle communication between CARLA and ROS
 """
 import threading
+import time
 import rospy
 
 from rosgraph_msgs.msg import Clock
@@ -41,10 +42,17 @@ class CarlaRosBridge(Parent):
         super(CarlaRosBridge, self).__init__(
             carla_id=0, carla_world=carla_world, frame_id='/map')
 
+        self.timestamp_last_run = 0.0
         self.ros_timestamp = rospy.Time()
         self.tf_to_publish = []
         self.msgs_to_publish = []
+        self.actor_list = []
 
+        # register callback to create/delete actors
+        self.carla_world.on_tick(self._carla_update_child_actors)
+        self.update_child_actors_lock = threading.Lock()
+
+        # register callback to update actors
         self.carla_world.on_tick(self._carla_time_tick)
         self.update_lock = threading.Lock()
 
@@ -71,10 +79,12 @@ class CarlaRosBridge(Parent):
 
         :return:
         """
-        if self.update_lock.acquire():
-            rospy.loginfo("Exiting Bridge")
-            self.publishers.clear()
-            super(CarlaRosBridge, self).destroy()
+        self.update_child_actors_lock.acquire()
+        self.actor_list = []
+        self.update_lock.acquire()
+        rospy.loginfo("Exiting Bridge")
+        self.publishers.clear()
+        super(CarlaRosBridge, self).destroy()
 
     def get_current_ros_time(self):
         """
@@ -154,11 +164,35 @@ class CarlaRosBridge(Parent):
         """
         if not rospy.is_shutdown():
             if self.update_lock.acquire(False):
-                self._update_clock(carla_timestamp)
-                self.update()
-                self._prepare_msgs()
-                self.send_msgs()
+                if self.timestamp_last_run < carla_timestamp.elapsed_seconds:
+                    self.timestamp_last_run = carla_timestamp.elapsed_seconds
+                    self._update_clock(carla_timestamp)
+                    self.update()
+                    self._prepare_msgs()
+                    self.send_msgs()
                 self.update_lock.release()
+
+    def _carla_update_child_actors(self, _):
+        """
+        Private callback registered at carla.World.on_tick()
+        to trigger cyclic updates of the actors
+
+        After successful locking the mutex
+        (only perform trylock to respect bridge processing time)
+        the existing actors are updated.
+
+        :param carla_timestamp: the current carla time
+        :type carla_timestamp: carla.Timestamp
+        :return:
+        """
+        if not rospy.is_shutdown():
+            if self.update_child_actors_lock.acquire(False):
+                # cache actor_list once during this update-loop
+                self.actor_list = self.carla_world.get_actors()
+                self.update_child_actors()
+                # actors are only created/deleted around once per second
+                time.sleep(1)
+                self.update_child_actors_lock.release()
 
     def _update_clock(self, carla_timestamp):
         """
@@ -198,7 +232,7 @@ class CarlaRosBridge(Parent):
                 publisher.publish(msg)
             except rospy.ROSSerializationException as error:
                 rospy.logwarn("Failed to serialize message on publishing: {}".format(error))
-            except Exception as error:  # pylint: disable=bare-except
+            except Exception as error:  # pylint: disable=broad-except
                 rospy.logwarn("Failed to publish message: {}".format(error))
         self.msgs_to_publish = []
 
@@ -222,3 +256,12 @@ class CarlaRosBridge(Parent):
         """
         rospy.loginfo("Shutdown requested")
         self.destroy()
+
+    def get_actor_list(self):
+        """
+        Function (override) to provide actor list
+
+        :return: the list of actors
+        :rtype: list
+        """
+        return self.actor_list

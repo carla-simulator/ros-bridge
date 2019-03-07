@@ -115,7 +115,7 @@ class Sensor(Actor):
         :return: prefilled Header object
         """
         header = super(Sensor, self).get_msg_header(use_parent_frame)
-        #use timestamp of current sensor data
+        # use timestamp of current sensor data
         header.stamp = rospy.Time.from_sec(self.current_sensor_data.timestamp)
         return header
 
