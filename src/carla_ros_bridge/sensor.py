@@ -108,6 +108,17 @@ class Sensor(Actor):
         """
         return self.parent.get_frame_id() + "/" + super(Sensor, self).get_frame_id()
 
+    def get_msg_header(self, use_parent_frame=True):
+        """
+        Function (override) to get ROS message Header with sensor timestamp
+
+        :return: prefilled Header object
+        """
+        header = super(Sensor, self).get_msg_header(use_parent_frame)
+        #use timestamp of current sensor data
+        header.stamp = rospy.Time.from_sec(self.current_sensor_data.timestamp)
+        return header
+
     def _callback_sensor_data(self, carla_sensor_data):
         """
         Callback function called whenever new sensor data is received
