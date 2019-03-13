@@ -63,9 +63,10 @@ class CarlaRosBridge(Parent):
         self.publishers['tf'] = rospy.Publisher(
             'tf', TFMessage, queue_size=100)
 
-        self.publishers['/carla/objects'] = rospy.Publisher(
-            '/carla/objects', ObjectArray, queue_size=10)
-        self.object_array = ObjectArray()
+        if not self.get_param("challenge_mode"):
+            self.publishers['/carla/objects'] = rospy.Publisher(
+                '/carla/objects', ObjectArray, queue_size=10)
+            self.object_array = ObjectArray()
 
         self.map = Map(carla_world=self.carla_world, parent=self, topic='/map')
 
@@ -112,10 +113,10 @@ class CarlaRosBridge(Parent):
         :type msg: a valid ROS message type
         :return:
         """
-        if topic == 'tf':
+        if topic == 'tf' and not self.get_param("challenge_mode"):
             # transform are merged in same message
             self.tf_to_publish.append(msg)
-        elif topic == '/carla/objects':
+        elif topic == '/carla/objects' and not self.get_param("challenge_mode"):
             # objects are collected in same message
             self.object_array.objects.append(msg)
         else:
@@ -212,14 +213,15 @@ class CarlaRosBridge(Parent):
 
         :return:
         """
-        tf_msg = TFMessage(self.tf_to_publish)
-        self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
-        self.tf_to_publish = []
+        if not self.get_param("challenge_mode"):
+            tf_msg = TFMessage(self.tf_to_publish)
+            self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
+            self.tf_to_publish = []
 
-        self.object_array.header = self.get_msg_header()
-        self.msgs_to_publish.append(
-            (self.publishers['/carla/objects'], self.object_array))
-        self.object_array = ObjectArray()
+            self.object_array.header = self.get_msg_header()
+            self.msgs_to_publish.append(
+                (self.publishers['/carla/objects'], self.object_array))
+            self.object_array = ObjectArray()
 
     def send_msgs(self):
         """

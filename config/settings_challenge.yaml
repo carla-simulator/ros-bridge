@@ -4,7 +4,7 @@ carla:
   host: localhost
   port: 2000
   # in challenge mode only the ego vehicle sensor data is published and vehicle control is forwarded
-  challenge_mode: false
+  challenge_mode: true
   # configuration values for the ego vehicle
   ego_vehicle:
     # the role name of the vehicle that acts as ego vehicle for this ros bridge instance
@@ -15,7 +15,7 @@ carla:
     #   to CARLA (this is the default)
     # ackermann: AckermannDrive ROS messages from /carla/ego_vehicle/ackermann_cmd provide the target values, a 
     #   cascaded PID controller tries to achieve
-    control_mode: ackermann
+    control_mode: pedal
     # override the default values of the pid speed controller
     # (only relevant for ackermann control mode) 
     speed_Kp: 0.05

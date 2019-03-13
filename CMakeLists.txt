@@ -3,6 +3,7 @@ project(carla_ros_bridge)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   rospy
   sensor_msgs
   tf

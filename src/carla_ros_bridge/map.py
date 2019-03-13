@@ -34,8 +34,10 @@ class Map(Child):
         :param topic_prefix: the topic prefix to be used for this child
         :type topic_prefix: string
         """
+
         super(Map, self).__init__(
             carla_id=-1, carla_world=carla_world, parent=parent, topic_prefix=topic)
+
         self.carla_map = self.get_carla_world().get_map()
 
         self.open_drive_publisher = rospy.Publisher(

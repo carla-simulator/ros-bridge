@@ -38,11 +38,7 @@ class Vehicle(Actor):
         :return: the created vehicle actor
         :rtype: carla_ros_bridge.Vehicle or derived type
         """
-        if (carla_actor.attributes.get('role_name') ==
-                parent.get_param('ego_vehicle').get('role_name')):
-            return EgoVehicle.create_actor(carla_actor=carla_actor, parent=parent)
-        else:
-            return Vehicle(carla_actor=carla_actor, parent=parent)
+        return Vehicle(carla_actor=carla_actor, parent=parent)
 
     def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
         """
@@ -127,15 +123,16 @@ class Vehicle(Actor):
 
         :return:
         """
-        marker = self.get_marker(use_parent_frame=False)
-        marker.type = Marker.CUBE
+        if not self.parent.get_param("challenge_mode"):
+            marker = self.get_marker(use_parent_frame=False)
+            marker.type = Marker.CUBE
 
-        marker.pose = transforms.carla_location_to_pose(
-            self.carla_actor.bounding_box.location)
-        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_ros_message('/carla/vehicle_marker', marker)
+            marker.pose = transforms.carla_location_to_pose(
+                self.carla_actor.bounding_box.location)
+            marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
+            marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
+            marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
+            self.publish_ros_message('/carla/vehicle_marker', marker)
 
     def send_object_msg(self):
         """
@@ -170,7 +167,3 @@ class Vehicle(Actor):
             vehicle_object.classification_age = self.classification_age
 
         self.publish_ros_message('/carla/objects', vehicle_object)
-
-
-# this import has to be at the end to resolve cyclic dependency
-from carla_ros_bridge.ego_vehicle import EgoVehicle  # noqa, pylint: disable=wrong-import-position

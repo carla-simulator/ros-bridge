@@ -99,21 +99,37 @@ class Parent(object):
             if ((actor.parent and actor.parent.id == self.carla_id)
                     or (actor.parent is None and self.carla_id == 0)):
                 if actor.id not in self.child_actors:
-                    if actor.type_id.startswith('traffic'):
-                        self.new_child_actors[actor.id] = Traffic.create_actor(
-                            carla_actor=actor, parent=self)
-                    elif actor.type_id.startswith("vehicle"):
-                        self.new_child_actors[actor.id] = Vehicle.create_actor(
-                            carla_actor=actor, parent=self)
-                    elif actor.type_id.startswith("sensor"):
-                        self.new_child_actors[actor.id] = Sensor.create_actor(
-                            carla_actor=actor, parent=self)
-                    elif actor.type_id.startswith("spectator"):
-                        self.new_child_actors[actor.id] = Spectator(
-                            carla_actor=actor, parent=self)
+                    if self.get_param("challenge_mode"):
+                        # in challenge mode only the ego vehicle and its sensors are created
+                        if actor.type_id.startswith("vehicle") and \
+                                (actor.attributes.get('role_name') ==
+                                 self.get_param('ego_vehicle').get('role_name')):
+                            self.new_child_actors[actor.id] = EgoVehicle.create_actor(
+                                carla_actor=actor, parent=self)
+                        elif actor.type_id.startswith("sensor"):
+                            self.new_child_actors[actor.id] = Sensor.create_actor(
+                                carla_actor=actor, parent=self)
                     else:
-                        self.new_child_actors[actor.id] = Actor(
-                            carla_actor=actor, parent=self)
+                        if actor.type_id.startswith('traffic'):
+                            self.new_child_actors[actor.id] = Traffic.create_actor(
+                                carla_actor=actor, parent=self)
+                        elif actor.type_id.startswith("vehicle"):
+                            if (actor.attributes.get('role_name') ==
+                                    self.get_param('ego_vehicle').get('role_name')):
+                                self.new_child_actors[actor.id] = EgoVehicle.create_actor(
+                                    carla_actor=actor, parent=self)
+                            else:
+                                self.new_child_actors[actor.id] = Vehicle.create_actor(
+                                    carla_actor=actor, parent=self)
+                        elif actor.type_id.startswith("sensor"):
+                            self.new_child_actors[actor.id] = Sensor.create_actor(
+                                carla_actor=actor, parent=self)
+                        elif actor.type_id.startswith("spectator"):
+                            self.new_child_actors[actor.id] = Spectator(
+                                carla_actor=actor, parent=self)
+                        else:
+                            self.new_child_actors[actor.id] = Actor(
+                                carla_actor=actor, parent=self)
 
     def get_dead_child_actors(self):
         """
@@ -294,3 +310,4 @@ from carla_ros_bridge.spectator import Spectator  # noqa, pylint: disable=wrong-
 from carla_ros_bridge.sensor import Sensor       # noqa, pylint: disable=wrong-import-position
 from carla_ros_bridge.traffic import Traffic     # noqa, pylint: disable=wrong-import-position
 from carla_ros_bridge.vehicle import Vehicle     # noqa, pylint: disable=wrong-import-position
+from carla_ros_bridge.ego_vehicle import EgoVehicle  # noqa, pylint: disable=wrong-import-position
