@@ -178,3 +178,12 @@ class Child(Parent):
         """
         raise NotImplementedError(
             "This function has to be implemented by the derived classes")
+
+    def get_actor_list(self):
+        """
+        Get list of actors from parent
+
+        :return: the list of actors
+        :rtype: list
+        """
+        return self.parent.get_actor_list()
