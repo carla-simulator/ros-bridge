@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   sensor_msgs
+  geometry_msgs
   tf
   dynamic_reconfigure
 )
@@ -20,11 +21,15 @@ add_message_files(
   EgoVehicleControlMaxima.msg
   EgoVehicleControlState.msg
   EgoVehicleControlTarget.msg
+  EgoVehicleState.msg
+  EgoVehicleInfoWheel.msg
+  EgoVehicleInfo.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 generate_dynamic_reconfigure_options(
@@ -40,6 +45,7 @@ include_directories(
 
 install(PROGRAMS
    src/carla_ros_bridge/client.py
+   src/carla_ros_bridge/pid_controller.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

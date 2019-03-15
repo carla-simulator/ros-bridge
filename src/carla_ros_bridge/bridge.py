@@ -96,7 +96,7 @@ class CarlaRosBridge(Parent):
         """
         return self.ros_timestamp
 
-    def publish_ros_message(self, topic, msg):
+    def publish_ros_message(self, topic, msg, isLatched = False):
         """
         Function (override) to publish ROS messages.
 
@@ -122,7 +122,7 @@ class CarlaRosBridge(Parent):
         else:
             if topic not in self.publishers:
                 self.publishers[topic] = rospy.Publisher(
-                    topic, type(msg), queue_size=10)
+                    topic, type(msg), queue_size=10, latch=isLatched)
             self.msgs_to_publish.append((self.publishers[topic], msg))
 
     def get_param(self, key, default=None):

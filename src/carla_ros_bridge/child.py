@@ -77,7 +77,7 @@ class Child(Parent):
         """
         return self.parent.get_current_ros_time()
 
-    def publish_ros_message(self, topic, msg):
+    def publish_ros_message(self, topic, msg, is_latched = False):
         """
         Function (override) to publish ROS messages.
 
@@ -89,7 +89,7 @@ class Child(Parent):
         :type msg: a valid ROS message type
         :return:
         """
-        self.parent.publish_ros_message(topic, msg)
+        self.parent.publish_ros_message(topic, msg, is_latched)
 
     def get_param(self, key, default=None):
         """

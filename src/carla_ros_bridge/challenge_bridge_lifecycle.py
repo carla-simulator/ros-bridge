@@ -17,6 +17,7 @@ import datetime
 
 from carla_ros_bridge.msg import CarlaVehicleControl  # pylint: disable=no-name-in-module,import-error
 
+
 class RosBridgeLifecycle(object):
 
     def callback(self, data):
@@ -24,12 +25,13 @@ class RosBridgeLifecycle(object):
 
     def __init__(self):
         self.lastMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
-        self.lock = threading.Lock() #to prevent start/stop while previous action was not finished
+        self.lock = threading.Lock()  # to prevent start/stop while previous action was not finished
         self.is_active = False
         self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         self.process = None
         roslaunch.configure_logging(self.uuid)
-        rospy.Subscriber("/carla/ego_vehicle/vehicle_control_cmd", CarlaVehicleControl, self.callback)
+        rospy.Subscriber("/carla/ego_vehicle/vehicle_control_cmd",
+                         CarlaVehicleControl, self.callback)
 
     def stop_ros_bridge(self):
         with self.lock:
@@ -65,9 +67,10 @@ class RosBridgeLifecycle(object):
             if self.launch:
                 self.launch.stop()
 
+
 def main():
     rospy.init_node('ros_bridge_lifecycle')
-    timeout = rospy.get_param('/carla/ros_bridge/timeout', '5') # default: 5 seconds
+    timeout = rospy.get_param('/carla/ros_bridge/timeout', '5')  # default: 5 seconds
     lifecycle = RosBridgeLifecycle()
     try:
         lifecycle.run()
@@ -75,6 +78,6 @@ def main():
         del lifecycle
         rospy.loginfo("Done")
 
+
 if __name__ == "__main__":
     main()
-
