@@ -96,20 +96,18 @@ You can then further spawn other vehicles using spawn_npc.py from CARLA Python A
 Then those vehicles will show up also on ROS side.
 
 # Test control messages
-You can send command to the car using the /carla/ego_vehicle/ackermann_cmd topic.
 
-Example of forward movements, speed in in meters/sec.
+You can stear the ego vehicle from the commandline by publishing to the topic ```/carla/ego_vehicle/vehicle_control_cmd```.
 
-     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
-      jerk: 0.0}" -r 10
+Example of max forward throttle:
+
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 
-Example of forward with steering
+Example of max forward throttle with max steering to the right:
 
-     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 5.41, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
-      jerk: 0.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
-  Warning: the steering_angle is the driving angle (in radians) not the wheel angle, for now max wheel is set to 500 degrees.
 
 # Test sensor messages
 
