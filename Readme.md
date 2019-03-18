@@ -59,12 +59,6 @@ Check the installation is successfull by trying to import carla from python:
 
 You should see the Success message without any errors.
 
-## Install other requirements:
-
-    sudo apt-get install python-protobuf
-    pip install --user simple-pid
-
-
 # Start the ROS bridge
 
 First run the simulator (see carla documentation: http://carla.readthedocs.io/en/latest/)

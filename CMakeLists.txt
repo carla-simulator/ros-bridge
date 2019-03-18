@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   tf
-  dynamic_reconfigure
 )
 
 catkin_python_setup()
@@ -16,11 +15,6 @@ catkin_python_setup()
 add_message_files(
   FILES
   CarlaVehicleControl.msg
-  EgoVehicleControlCurrent.msg
-  EgoVehicleControlInfo.msg
-  EgoVehicleControlMaxima.msg
-  EgoVehicleControlState.msg
-  EgoVehicleControlTarget.msg
   EgoVehicleState.msg
   EgoVehicleInfoWheel.msg
   EgoVehicleInfo.msg
@@ -32,9 +26,6 @@ generate_messages(
   geometry_msgs
 )
 
-generate_dynamic_reconfigure_options(
-   config/EgoVehicleControlParameter.cfg
-)
 
 catkin_package()
 
@@ -45,7 +36,6 @@ include_directories(
 
 install(PROGRAMS
    src/carla_ros_bridge/client.py
-   src/carla_ros_bridge/pid_controller.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

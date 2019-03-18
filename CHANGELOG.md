@@ -1,5 +1,9 @@
 ## Latest changed
 
+* remove ackermode mode
+* Add challenge mode
+* Split actor-monitoring + data publishing
+* Use sensor data timestamp
 * support simple-pid 0.1.5
 
 

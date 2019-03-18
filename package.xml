@@ -12,7 +12,6 @@
   <exec_depend>tf</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>rviz</exec_depend>
-  <exec_depend>ackermann_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
