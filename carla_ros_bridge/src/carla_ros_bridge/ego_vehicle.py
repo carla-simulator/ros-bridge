@@ -23,7 +23,6 @@ from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-
 from carla_ros_bridge.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleState  # pylint: disable=no-name-in-module,import-error
-import carla_ros_bridge.physics as phys
 
 
 class EgoVehicle(Vehicle):
@@ -92,8 +91,8 @@ class EgoVehicle(Vehicle):
         :return:
         """
         vehicle_state = CarlaEgoVehicleState()
-        vehicle_state.velocity = phys.get_vehicle_speed_abs(self.carla_actor)
-        vehicle_state.acceleration = phys.get_vehicle_acceleration_abs(self.carla_actor)
+        vehicle_state.velocity = self.get_vehicle_speed_abs(self.carla_actor)
+        vehicle_state.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
         vehicle_state.orientation = self.get_current_ros_pose().orientation
         self.publish_ros_message(self.topic_name() + "/vehicle_state", vehicle_state)
 
@@ -183,3 +182,50 @@ class EgoVehicle(Vehicle):
         vehicle_control.throttle = ros_vehicle_control.throttle
         vehicle_control.reverse = ros_vehicle_control.reverse
         self.carla_actor.apply_control(vehicle_control)
+
+    @staticmethod
+    def get_vector_length_squared(carla_vector):
+        """
+        Calculate the squared length of a carla_vector
+        :param carla_vector: the carla vector
+        :type carla_vector: carla.Vector3D
+        :return: squared vector length
+        :rtype: float64
+        """
+        return carla_vector.x * carla_vector.x + \
+            carla_vector.y * carla_vector.y + \
+            carla_vector.z * carla_vector.z
+
+    @staticmethod
+    def get_vehicle_speed_squared(carla_vehicle):
+        """
+        Get the squared speed of a carla vehicle
+        :param carla_vehicle: the carla vehicle
+        :type carla_vehicle: carla.Vehicle
+        :return: squared speed of a carla vehicle [(m/s)^2]
+        :rtype: float64
+        """
+        return EgoVehicle.get_vector_length_squared(carla_vehicle.get_velocity())
+
+    @staticmethod
+    def get_vehicle_speed_abs(carla_vehicle):
+        """
+        Get the absolute speed of a carla vehicle
+        :param carla_vehicle: the carla vehicle
+        :type carla_vehicle: carla.Vehicle
+        :return: speed of a carla vehicle [m/s >= 0]
+        :rtype: float64
+        """
+        speed = math.sqrt(EgoVehicle.get_vehicle_speed_squared(carla_vehicle))
+        return speed
+
+    @staticmethod
+    def get_vehicle_acceleration_abs(carla_vehicle):
+        """
+        Get the absolute acceleration of a carla vehicle
+        :param carla_vehicle: the carla vehicle
+        :type carla_vehicle: carla.Vehicle
+        :return: vehicle acceleration value [m/s^2 >=0]
+        :rtype: float64
+        """
+        return math.sqrt(EgoVehicle.get_vector_length_squared(carla_vehicle.get_acceleration()))

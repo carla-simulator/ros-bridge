@@ -77,7 +77,7 @@ class Child(Parent):
         """
         return self.parent.get_current_ros_time()
 
-    def publish_ros_message(self, topic, msg, is_latched = False):
+    def publish_ros_message(self, topic, msg, is_latched=False):
         """
         Function (override) to publish ROS messages.
 

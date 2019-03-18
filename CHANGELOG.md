@@ -1,7 +1,7 @@
 ## Latest changed
 
 * Rename CarlaVehicleControl to CarlaEgoVehicleControl (and add some more message types)
-* remove ackermode mode
+* move PID controller into separte ROS node
 * Add challenge mode
 * Split actor-monitoring + data publishing
 * Use sensor data timestamp

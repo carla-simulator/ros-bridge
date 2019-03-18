@@ -232,7 +232,7 @@ class Parent(object):
             "If this error becomes visible the class hierarchy is somehow broken")
 
     @abstractmethod
-    def publish_ros_message(self, topic, msg):
+    def publish_ros_message(self, topic, msg, is_latched=False):
         """
         Pure virtual function to publish ROS messages via
         the carla_ros_bridge.CarlaRosBridge parent root.
