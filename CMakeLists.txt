@@ -14,10 +14,10 @@ catkin_python_setup()
 
 add_message_files(
   FILES
-  CarlaVehicleControl.msg
-  EgoVehicleState.msg
-  EgoVehicleInfoWheel.msg
-  EgoVehicleInfo.msg
+  CarlaEgoVehicleControl.msg
+  CarlaEgoVehicleState.msg
+  CarlaEgoVehicleInfoWheel.msg
+  CarlaEgoVehicleInfo.msg
 )
 
 generate_messages(

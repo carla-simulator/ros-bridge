@@ -5,7 +5,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
-EgoVehicleInfoWheel[] wheels
+CarlaEgoVehicleInfoWheel[] wheels
 float32 max_rpm
 float32 moi
 float32 damping_rate_full_throttle

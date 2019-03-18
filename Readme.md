@@ -101,12 +101,12 @@ You can stear the ego vehicle from the commandline by publishing to the topic ``
 
 Example of max forward throttle:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 
 Example of max forward throttle with max steering to the right:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 
 # Test sensor messages

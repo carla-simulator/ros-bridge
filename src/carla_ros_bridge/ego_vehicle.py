@@ -19,10 +19,10 @@ from std_msgs.msg import ColorRGBA
 from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.msg import EgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import EgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import CarlaVehicleControl  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import EgoVehicleState  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleState  # pylint: disable=no-name-in-module,import-error
 import carla_ros_bridge.physics as phys
 
 
@@ -64,7 +64,7 @@ class EgoVehicle(Vehicle):
 
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd",
-            CarlaVehicleControl, self.control_command_updated)
+            CarlaEgoVehicleControl, self.control_command_updated)
 
     def get_marker_color(self):
         """
@@ -91,7 +91,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        vehicle_state = EgoVehicleState()
+        vehicle_state = CarlaEgoVehicleState()
         vehicle_state.velocity = phys.get_vehicle_speed_abs(self.carla_actor)
         vehicle_state.acceleration = phys.get_vehicle_acceleration_abs(self.carla_actor)
         vehicle_state.orientation = self.get_current_ros_pose().orientation
@@ -99,11 +99,11 @@ class EgoVehicle(Vehicle):
 
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
-            vehicle_info = EgoVehicleInfo()
+            vehicle_info = CarlaEgoVehicleInfo()
             vehicle_physics = self.carla_actor.get_physics_control()
 
             for wheel in vehicle_physics.wheels:
-                wheel_info = EgoVehicleInfoWheel()
+                wheel_info = CarlaEgoVehicleInfoWheel()
                 wheel_info.tire_friction = wheel.tire_friction
                 wheel_info.damping_rate = wheel.damping_rate
                 wheel_info.steer_angle = math.radians(wheel.steer_angle)
@@ -152,7 +152,7 @@ class EgoVehicle(Vehicle):
         """
         Function (override) to destroy this object.
 
-        Terminate ROS subscription on CarlaVehicleControl commands.
+        Terminate ROS subscription on CarlaEgoVehicleControl commands.
         Finally forward call to super class.
 
         :return:
@@ -163,7 +163,7 @@ class EgoVehicle(Vehicle):
 
     def control_command_updated(self, ros_vehicle_control):
         """
-        Receive a CarlaVehicleControl msg and send to CARLA
+        Receive a CarlaEgoVehicleControl msg and send to CARLA
 
         This function gets called whenever a ROS message is received via
         '/carla/ego_vehicle/vehicle_control_cmd' topic.
@@ -173,7 +173,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type self.info.output: carla_ros_bridge.msg.CarlaVehicleControl
+        :type self.info.output: carla_ros_bridge.msg.CarlaEgoVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()

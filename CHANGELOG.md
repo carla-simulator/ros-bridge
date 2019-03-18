@@ -1,5 +1,6 @@
 ## Latest changed
 
+* Rename CarlaVehicleControl to CarlaEgoVehicleControl (and add some more message types)
 * remove ackermode mode
 * Add challenge mode
 * Split actor-monitoring + data publishing
