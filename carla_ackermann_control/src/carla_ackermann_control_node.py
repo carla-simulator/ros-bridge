@@ -10,20 +10,20 @@
 Control Carla ego vehicle by using AckermannDrive messages
 """
 import sys
-import numpy
 import datetime
+import numpy
 import rospy
 
 from simple_pid import PID
 
 from dynamic_reconfigure.server import Server
 from ackermann_msgs.msg import AckermannDrive
-from carla_ros_bridge.msg import CarlaEgoVehicleState
-from carla_ros_bridge.msg import CarlaEgoVehicleControl
-from carla_ros_bridge.msg import CarlaEgoVehicleInfo
+from carla_ros_bridge.msg import CarlaEgoVehicleState  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_control.msg import EgoVehicleControlInfo
 from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
-import carla_control_physics as phys
+import src.carla_control_physics as phys
 
 
 class CarlaAckermannControl(object):
@@ -37,6 +37,7 @@ class CarlaAckermannControl(object):
         Constructor
 
         """
+        self.control_loop_rate = rospy.Rate(10)  # 10Hz
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_state = CarlaEgoVehicleState()
         self.vehicle_info = CarlaEgoVehicleInfo()
@@ -155,7 +156,8 @@ class CarlaAckermannControl(object):
         Callback for dynamic reconfigure call to set the PID parameters
 
         :param ego_vehicle_control_parameter:
-        :type ego_vehicle_control_parameter: carla_ackermann_control.cfg.EgoVehicleControlParameterConfig
+        :type ego_vehicle_control_parameter: \
+            carla_ackermann_control.cfg.EgoVehicleControlParameterConfig
 
         """
         rospy.loginfo("Reconfigure Request:  "
@@ -284,7 +286,7 @@ class CarlaAckermannControl(object):
             # only send out the Carla Control Command if AckermannDrive messages are
             # received in the last second (e.g. to allows manually controlling the vehicle)
             if (self.lastAckermannMsgReceived + datetime.timedelta(0, 1)) > \
-                        datetime.datetime.now():
+                    datetime.datetime.now():
                 self.carla_control_publisher.publish(self.info.output)
 
     def control_steering(self):
@@ -493,13 +495,15 @@ class CarlaAckermannControl(object):
 
         :return:
         """
-        self.rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
             self.update_current_values()
             self.vehicle_control_cycle()
             self.send_ego_vehicle_control_info_msg()
-            self.rate.sleep()
+            try:
+                self.control_loop_rate.sleep()
+            except rospy.ROSInterruptException:
+                pass
 
 
 def main():

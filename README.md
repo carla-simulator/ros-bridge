@@ -4,8 +4,7 @@
 This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 __Important Note:__
-This documentation is for CARLA versions *newer* than 0.9.1. The CARLA release 0.9.1
-does not work out of the box with the ROS bridge.
+This documentation is for CARLA versions *newer* than 0.9.4.
 
 ![rviz setup](./docs/images/rviz_carla_default.png "rviz")
 ![depthcloud](./docs/images/depth_cloud_and_lidar.png "depthcloud")

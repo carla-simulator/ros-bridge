@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   carla_ros_bridge
 )
 
+catkin_python_setup()
+
 add_message_files(
   FILES
   EgoVehicleControlCurrent.msg
@@ -29,16 +31,16 @@ generate_messages(
 )
 
 generate_dynamic_reconfigure_options(
-   config/EgoVehicleControlParameter.cfg
+  config/EgoVehicleControlParameter.cfg
 )
 
 catkin_package()
 
 install(PROGRAMS
-  src/carla_ackermann_control
+  src/carla_ackermann_control.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
