@@ -44,7 +44,7 @@ class CarlaAckermannControl(object):
         # control info
         self.info = EgoVehicleControlInfo()
 
-        # maximum values
+        # set initial maximum values
         self.vehicle_info_updated(self.vehicle_info)
 
         # target values
@@ -76,11 +76,6 @@ class CarlaAckermannControl(object):
         self.info.output.steer = 0.
         self.info.output.reverse = False
         self.info.output.hand_brake = True
-
-        # clipping the pedal in both directions to the same range using the usual lower
-        # border: the max_accel to ensure the the pedal target is in symmetry to zero
-        self.info.restrictions.max_pedal = min(
-            self.info.restrictions.max_accel, self.info.restrictions.max_decel)
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
@@ -211,8 +206,11 @@ class CarlaAckermannControl(object):
             self.vehicle_info)
         self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
             self.vehicle_info)
-        self.info.restrictions.min_accel = 0.0
-        self.info.restrictions.max_pedal = 1.0
+        self.info.restrictions.min_accel = rospy.get_param('/carla/ackermann_control/min_accel', 1.)
+        # clipping the pedal in both directions to the same range using the usual lower
+        # border: the max_accel to ensure the the pedal target is in symmetry to zero
+        self.info.restrictions.max_pedal = min(
+            self.info.restrictions.max_accel, self.info.restrictions.max_decel)
 
     def ackermann_command_updated(self, ros_ackermann_drive):
         """
