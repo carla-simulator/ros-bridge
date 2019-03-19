@@ -499,7 +499,10 @@ class CarlaAckermannControl(object):
             self.update_current_values()
             self.vehicle_control_cycle()
             self.send_ego_vehicle_control_info_msg()
-            self.rate.sleep()
+            try:
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                pass
 
 
 def main():

@@ -113,12 +113,14 @@ class CarlaRosBridge(Parent):
         :type msg: a valid ROS message type
         :return:
         """
-        if topic == 'tf' and not self.get_param("challenge_mode"):
-            # transform are merged in same message
-            self.tf_to_publish.append(msg)
-        elif topic == '/carla/objects' and not self.get_param("challenge_mode"):
-            # objects are collected in same message
-            self.object_array.objects.append(msg)
+        if topic == 'tf':
+            if not self.get_param("challenge_mode"):
+                # transform are merged in same message
+                self.tf_to_publish.append(msg)
+        elif topic == '/carla/objects':
+            if not self.get_param("challenge_mode"):
+                # objects are collected in same message
+                self.object_array.objects.append(msg)
         else:
             if topic not in self.publishers:
                 self.publishers[topic] = rospy.Publisher(

@@ -22,7 +22,7 @@ def get_vehicle_lay_off_engine_acceleration(vehicle_info):
     - engine brake force
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: acceleration the vehicle [m/s^2 < 0]
     :rtype: float64
     """
@@ -39,7 +39,7 @@ def get_engine_brake_force(_):
     For the moment we just put a constant force.
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: engine braking force [N]
     :rtype: float64
     """
@@ -51,7 +51,7 @@ def get_vehicle_mass(vehicle_info):
     Get the mass of a carla vehicle (defaults to 1500kg)
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: mass of a carla vehicle [kg]
     :rtype: float64
     """
@@ -72,7 +72,7 @@ def get_vehicle_driving_impedance_acceleration(vehicle_info, vehicle_state, reve
     - slope force
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :param reverse: `True' if the vehicle is driving in reverse direction
     :type reverse: boolean
     :return: acceleration the vehicle [m/s^2 <= 0 on flat surface]
@@ -104,7 +104,7 @@ def get_rolling_resistance_force(vehicle_info):
     Calculate the rolling resistance force of a carla vehicle
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: rolling resistance force [N]
     :rtype: float64
     """
@@ -125,7 +125,7 @@ def get_weight_force(vehicle_info):
     Get the weight of a carla vehicle
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: weight of the vehicle [N]
     :rtype: float64
     """
@@ -141,7 +141,7 @@ def get_acceleration_of_gravity(_):
     (for the moment constant at 9.81 m/s^2)
 
     :param vehicle_info: the vehicle info
-    :type vehicle_info: ros.EgoVehicleInfo
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: acceleration of gravity [m/s^2]
     :rtype: float64
     """
@@ -155,7 +155,7 @@ def get_aerodynamic_drag_force(vehicle_state):
     Calculate the aerodynamic drag force of a carla vehicle
 
     :param vehicle_state: the ego vehicle state
-    :type vehicle_state: ros.EgoVehicleState
+    :type vehicle_state: carla_ros_bridge.CarlaEgoVehicleState
     :return: aerodynamic drag force [N]
     :rtype: float64
     """
@@ -175,8 +175,10 @@ def get_slope_force(vehicle_info, vehicle_state):
     """
     Calculate the force of a carla vehicle faces when driving on a slope.
 
-    :param carla_vehicle: the carla vehicle
-    :type carla_vehicle: carla.Vehicle
+    :param vehicle_info: the vehicle info
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
+    :param vehicle_state: the ego vehicle state
+    :type vehicle_state: carla_ros_bridge.CarlaEgoVehicleState
     :return: slope force [N, >0 uphill, <0 downhill]
     :rtype: float64
     """
@@ -192,8 +194,8 @@ def get_vehicle_max_steering_angle(vehicle_info):
     """
     Get the maximum steering angle of a carla vehicle
 
-    :param carla_vehicle: the carla vehicle
-    :type carla_vehicle: carla.Vehicle
+    :param vehicle_info: the vehicle info
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: maximum steering angle [radians]
     :rtype: float64
     """
@@ -211,8 +213,8 @@ def get_vehicle_max_speed(_):
     """
     Get the maximum speed of a carla vehicle
 
-    :param carla_vehicle: the carla vehicle
-    :type carla_vehicle: carla.Vehicle
+    :param vehicle_info: the vehicle info
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: maximum speed [m/s]
     :rtype: float64
     """
@@ -228,8 +230,8 @@ def get_vehicle_max_acceleration(_):
 
     default: 3.0 m/s^2: 0-100 km/h in 9.2 seconds
 
-    :param carla_vehicle: the carla vehicle
-    :type carla_vehicle: carla.Vehicle
+    :param vehicle_info: the vehicle info
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: maximum acceleration [m/s^2 > 0]
     :rtype: float64
     """
@@ -244,8 +246,8 @@ def get_vehicle_max_deceleration(_):
 
     default: 8 m/s^2
 
-    :param carla_vehicle: the carla vehicle
-    :type carla_vehicle: carla.Vehicle
+    :param vehicle_info: the vehicle info
+    :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
     :return: maximum deceleration [m/s^2 > 0]
     :rtype: float64
     """
