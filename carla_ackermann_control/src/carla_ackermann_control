@@ -11,6 +11,7 @@ Control Carla ego vehicle by using AckermannDrive messages
 """
 import sys
 import numpy
+import datetime
 import rospy
 
 from simple_pid import PID
@@ -36,6 +37,7 @@ class CarlaAckermannControl(object):
         Constructor
 
         """
+        self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_state = CarlaEgoVehicleState()
         self.vehicle_info = CarlaEgoVehicleInfo()
 
@@ -111,25 +113,30 @@ class CarlaAckermannControl(object):
             callback=(lambda config, level: CarlaAckermannControl.reconfigure_pid_parameters(
                 self, config, level)))
 
+        # ackermann drive commands
         self.control_subscriber = rospy.Subscriber(
             "/carla/ego_vehicle/ackermann_cmd",
             AckermannDrive, self.ackermann_command_updated)
 
+        # current state of the vehicle
         self.vehicle_state_subscriber = rospy.Subscriber(
             "/carla/ego_vehicle/vehicle_state",
             CarlaEgoVehicleState, self.vehicle_state_updated)
 
+        # vehicle info
         self.vehicle_info_subscriber = rospy.Subscriber(
             "/carla/ego_vehicle/vehicle_info",
             CarlaEgoVehicleInfo, self.vehicle_info_updated)
 
-        self.control_info_publisher = rospy.Publisher(
-            "/carla/ego_vehicle/control_info",
-            EgoVehicleControlInfo, queue_size=1)
-
+        # to send command to carla
         self.carla_control_publisher = rospy.Publisher(
             "/carla/ego_vehicle/vehicle_control_cmd",
             CarlaEgoVehicleControl, queue_size=1)
+
+        # report controller info
+        self.control_info_publisher = rospy.Publisher(
+            "/carla/ackermann_control/control_info",
+            EgoVehicleControlInfo, queue_size=1)
 
     def destroy(self):
         """
@@ -138,7 +145,6 @@ class CarlaAckermannControl(object):
         Terminate ROS subscription on AckermannDrive commands.
         Finish the PID controllers.
         Destroy the reconfiguration server
-        Finally forward call to super class.
 
         :return:
         """
@@ -216,7 +222,7 @@ class CarlaAckermannControl(object):
         :type ros_ackermann_drive: ackermann_msgs.AckermannDrive
         :return:
         """
-
+        self.lastAckermannMsgReceived = datetime.datetime.now()
         # set target values
         self.set_target_steering_angle(ros_ackermann_drive.steering_angle)
         self.set_target_speed(ros_ackermann_drive.speed)
@@ -276,7 +282,12 @@ class CarlaAckermannControl(object):
         self.run_accel_control_loop()
         if not self.info.output.hand_brake:
             self.update_drive_vehicle_control_command()
-            self.carla_control_publisher.publish(self.info.output)
+
+            # only send out the Carla Control Command if AckermannDrive messages are
+            # received in the last second (e.g. to allows manually controlling the vehicle)
+            if (self.lastAckermannMsgReceived + datetime.timedelta(0, 1)) > \
+                        datetime.datetime.now():
+                self.carla_control_publisher.publish(self.info.output)
 
     def control_steering(self):
         """
@@ -480,7 +491,7 @@ class CarlaAckermannControl(object):
     def run(self):
         """
 
-        Calculates and sends the new values for CarlaEgoVehicleControl()
+        Control loop
 
         :return:
         """
