@@ -17,7 +17,7 @@ import datetime
 import rospy
 import roslaunch
 
-from carla_ros_bridge.msg import CarlaVehicleControl  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 
 
 class RosBridgeLifecycle(object):
@@ -37,17 +37,17 @@ class RosBridgeLifecycle(object):
         """
         rospy.init_node('ros_bridge_lifecycle')
         self.node = roslaunch.core.Node("carla_ros_bridge", "client.py")
-        self.timeout_seconds = rospy.get_param(
-            '/carla/ros_bridge/timeout', '5')  # default: 5 seconds
+        self.timeout_seconds = int(rospy.get_param(
+            '/carla/ros_bridge/timeout', '5'))  # default: 5 seconds
         self.lastMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.lock = threading.Lock()  # to prevent start/stop while previous action was not finished
         self.is_active = False
         self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         self.process = None
-        self.launch = roslaunch.scriptapi.ROSLaunch()
+        self.launch = None
         roslaunch.configure_logging(self.uuid)
         rospy.Subscriber("/carla/ego_vehicle/vehicle_control_cmd",
-                         CarlaVehicleControl, self.callback)
+                         CarlaEgoVehicleControl, self.callback)
 
     def run(self):
         """
@@ -60,6 +60,7 @@ class RosBridgeLifecycle(object):
                         datetime.datetime.now():
                     self.is_active = True
                     rospy.loginfo("Starting ros bridge")
+                    self.launch = roslaunch.scriptapi.ROSLaunch()
                     self.launch.start()
                     self.process = self.launch.launch(self.node)
                 if self.is_active and \
@@ -70,6 +71,7 @@ class RosBridgeLifecycle(object):
                     self.process.stop()
                     self.launch.stop()
                     self.process = None
+                    self.launch = None
                 self.lock.release()
 
             rospy.rostime.wallsleep(0.5)
