@@ -23,7 +23,7 @@ from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-na
 from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_control.msg import EgoVehicleControlInfo
 from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
-import src.carla_control_physics as phys
+import carla_control_physics as phys  # pylint: disable=relative-import
 
 
 class CarlaAckermannControl(object):
