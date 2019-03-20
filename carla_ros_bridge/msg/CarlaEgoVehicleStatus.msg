@@ -5,6 +5,9 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
+Header header
+
 float32 velocity
 float32 acceleration
 geometry_msgs/Quaternion orientation
+CarlaEgoVehicleControl control

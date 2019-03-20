@@ -91,9 +91,15 @@ class EgoVehicle(Vehicle):
         :return:
         """
         vehicle_status = CarlaEgoVehicleStatus()
+        vehicle_status.header.stamp = self.get_current_ros_time()
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
         vehicle_status.orientation = self.get_current_ros_pose().orientation
+        vehicle_status.control.throttle = self.carla_actor.get_control().throttle
+        vehicle_status.control.steer = self.carla_actor.get_control().steer
+        vehicle_status.control.brake = self.carla_actor.get_control().brake
+        vehicle_status.control.hand_brake = self.carla_actor.get_control().hand_brake
+        vehicle_status.control.reverse = self.carla_actor.get_control().reverse
         self.publish_ros_message(self.topic_name() + "/vehicle_status", vehicle_status)
 
         if not self.vehicle_info_published:
