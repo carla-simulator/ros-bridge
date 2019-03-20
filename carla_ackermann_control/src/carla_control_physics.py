@@ -62,7 +62,7 @@ def get_vehicle_mass(vehicle_info):
     return mass
 
 
-def get_vehicle_driving_impedance_acceleration(vehicle_info, vehicle_state, reverse):
+def get_vehicle_driving_impedance_acceleration(vehicle_info, vehicle_status, reverse):
     """
     Calculate the acceleration a carla vehicle faces by the driving impedance
 
@@ -87,8 +87,8 @@ def get_vehicle_driving_impedance_acceleration(vehicle_info, vehicle_state, reve
     # future enhancements: incorporate also the expected motor braking force
     #
     rolling_resistance_force = get_rolling_resistance_force(vehicle_info)
-    aerodynamic_drag_force = get_aerodynamic_drag_force(vehicle_state)
-    slope_force = get_slope_force(vehicle_info, vehicle_state)
+    aerodynamic_drag_force = get_aerodynamic_drag_force(vehicle_status)
+    slope_force = get_slope_force(vehicle_info, vehicle_status)
     if reverse:
         slope_force = -slope_force
     deceleration = -(rolling_resistance_force +
@@ -150,12 +150,12 @@ def get_acceleration_of_gravity(_):
     return acceleration
 
 
-def get_aerodynamic_drag_force(vehicle_state):
+def get_aerodynamic_drag_force(vehicle_status):
     """
     Calculate the aerodynamic drag force of a carla vehicle
 
-    :param vehicle_state: the ego vehicle state
-    :type vehicle_state: carla_ros_bridge.CarlaEgoVehicleState
+    :param vehicle_status: the ego vehicle status
+    :type vehicle_status: carla_ros_bridge.CarlaEgoVehicleStatus
     :return: aerodynamic drag force [N]
     :rtype: float64
     """
@@ -165,26 +165,26 @@ def get_aerodynamic_drag_force(vehicle_state):
     # @todo currently not provided in vehicle_info
     drag_area = default_aerodynamic_drag_coefficient * default_drag_reference_area
     rho_air_25 = 1.184
-    speed_squared = vehicle_state.velocity * vehicle_state.velocity
+    speed_squared = vehicle_status.velocity * vehicle_status.velocity
 
     aerodynamic_drag_force = 0.5 * drag_area * rho_air_25 * speed_squared
     return aerodynamic_drag_force
 
 
-def get_slope_force(vehicle_info, vehicle_state):
+def get_slope_force(vehicle_info, vehicle_status):
     """
     Calculate the force of a carla vehicle faces when driving on a slope.
 
     :param vehicle_info: the vehicle info
     :type vehicle_info: carla_ros_bridge.CarlaEgoVehicleInfo
-    :param vehicle_state: the ego vehicle state
-    :type vehicle_state: carla_ros_bridge.CarlaEgoVehicleState
+    :param vehicle_status: the ego vehicle status
+    :type vehicle_status: carla_ros_bridge.CarlaEgoVehicleStatus
     :return: slope force [N, >0 uphill, <0 downhill]
     :rtype: float64
     """
     dummy_roll, pitch, dummy_yaw = euler_from_quaternion(
-        [vehicle_state.orientation.x, vehicle_state.orientation.y,
-         vehicle_state.orientation.z, vehicle_state.orientation.w])
+        [vehicle_status.orientation.x, vehicle_status.orientation.y,
+         vehicle_status.orientation.z, vehicle_status.orientation.w])
     slope_force = get_acceleration_of_gravity(
         vehicle_info) * get_vehicle_mass(vehicle_info) * math.sin(-pitch)
     return slope_force

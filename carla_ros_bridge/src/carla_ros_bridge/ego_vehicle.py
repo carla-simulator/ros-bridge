@@ -22,7 +22,7 @@ from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleState  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
 
 
 class EgoVehicle(Vehicle):
@@ -90,11 +90,11 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        vehicle_state = CarlaEgoVehicleState()
-        vehicle_state.velocity = self.get_vehicle_speed_abs(self.carla_actor)
-        vehicle_state.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
-        vehicle_state.orientation = self.get_current_ros_pose().orientation
-        self.publish_ros_message(self.topic_name() + "/vehicle_state", vehicle_state)
+        vehicle_status = CarlaEgoVehicleStatus()
+        vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
+        vehicle_status.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
+        vehicle_status.orientation = self.get_current_ros_pose().orientation
+        self.publish_ros_message(self.topic_name() + "/vehicle_status", vehicle_status)
 
         if not self.vehicle_info_published:
             self.vehicle_info_published = True

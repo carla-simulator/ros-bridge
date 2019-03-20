@@ -4,9 +4,9 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-# This represents the control state variables of the ego vehicle control
+# This represents the control status variables of the ego vehicle control
 
-# the current control state
+# the current control status
 string status
 
 # speed controller

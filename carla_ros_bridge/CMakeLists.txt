@@ -15,7 +15,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   CarlaEgoVehicleControl.msg
-  CarlaEgoVehicleState.msg
+  CarlaEgoVehicleStatus.msg
   CarlaEgoVehicleInfoWheel.msg
   CarlaEgoVehicleInfo.msg
 )

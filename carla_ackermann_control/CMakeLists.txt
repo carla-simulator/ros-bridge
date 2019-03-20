@@ -19,7 +19,7 @@ add_message_files(
   EgoVehicleControlCurrent.msg
   EgoVehicleControlInfo.msg
   EgoVehicleControlMaxima.msg
-  EgoVehicleControlState.msg
+  EgoVehicleControlStatus.msg
   EgoVehicleControlTarget.msg
 )
 
