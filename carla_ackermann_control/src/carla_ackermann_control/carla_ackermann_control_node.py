@@ -21,8 +21,8 @@ from ackermann_msgs.msg import AckermannDrive
 from carla_ros_bridge.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ackermann_control.msg import EgoVehicleControlInfo
-from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
+from carla_ackermann_control.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
+from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig  # pylint: disable=no-name-in-module,import-error
 import carla_control_physics as phys  # pylint: disable=relative-import
 
 
@@ -404,7 +404,8 @@ class CarlaAckermannControl(object):
         # If the jerk input is big, then the trajectory input expects already quick changes
         # in the acceleration; to respect this we put an additional proportional factor on top
         self.info.status.accel_control_pedal_target = numpy.clip(
-            self.info.status.accel_control_pedal_target + self.info.status.accel_control_pedal_delta,
+            self.info.status.accel_control_pedal_target +
+            self.info.status.accel_control_pedal_delta,
             -self.info.restrictions.max_pedal, self.info.restrictions.max_pedal)
 
     def update_drive_vehicle_control_command(self):

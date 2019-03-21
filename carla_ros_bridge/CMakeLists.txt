@@ -40,8 +40,9 @@ install(PROGRAMS
 )
 
 install(FILES
-   client.launch
-   client_with_rviz.launch
+   launch/carla_ros_bridge.launch
+   launch/carla_ros_bridge_with_rviz.launch
+   launch/challenge.launch
    test/ros_bridge_client.test
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
@@ -51,3 +52,6 @@ install(DIRECTORY
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)

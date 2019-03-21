@@ -14,7 +14,7 @@ include_directories(
 )
 
 install(PROGRAMS
-   src/carla_ros_bridge_lifecycle
+   src/carla_ros_bridge_lifecycle/carla_ros_bridge_lifecycle.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

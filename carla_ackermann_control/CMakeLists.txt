@@ -37,10 +37,15 @@ generate_dynamic_reconfigure_options(
 catkin_package()
 
 install(PROGRAMS
-  src/carla_ackermann_control.py
+  src/carla_ackermann_control/carla_ackermann_control_node.py
+  src/carla_ackermann_control/carla_control_physics.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(DIRECTORY config/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
 )
