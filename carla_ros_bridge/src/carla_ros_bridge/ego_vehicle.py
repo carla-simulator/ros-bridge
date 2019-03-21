@@ -56,7 +56,7 @@ class EgoVehicle(Vehicle):
         """
         super(EgoVehicle, self).__init__(carla_actor=carla_actor,
                                          parent=parent,
-                                         topic_prefix="ego_vehicle",
+                                         topic_prefix=carla_actor.attributes.get('role_name'),
                                          append_role_name_topic_postfix=False)
 
         self.vehicle_info_published = False

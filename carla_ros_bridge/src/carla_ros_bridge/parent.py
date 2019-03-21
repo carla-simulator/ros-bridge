@@ -114,8 +114,7 @@ class Parent(object):
                             self.new_child_actors[actor.id] = Traffic.create_actor(
                                 carla_actor=actor, parent=self)
                         elif actor.type_id.startswith("vehicle"):
-                            if (actor.attributes.get('role_name') ==
-                                    self.get_param('ego_vehicle').get('role_name')):
+                            if actor.attributes.get('role_name') in self.get_param('ego_vehicle').get('role_name'):
                                 self.new_child_actors[actor.id] = EgoVehicle.create_actor(
                                     carla_actor=actor, parent=self)
                             else:
