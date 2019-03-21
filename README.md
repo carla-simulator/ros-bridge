@@ -4,11 +4,10 @@
 This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 __Important Note:__
-This documentation is for CARLA versions *newer* than 0.9.1. The CARLA release 0.9.1
-does not work out of the box with the ROS bridge.
+This documentation is for CARLA versions *newer* than 0.9.4.
 
-![rviz setup](./assets/rviz_carla_default.png "rviz")
-![depthcloud](./assets/depth_cloud_and_lidar.png "depthcloud")
+![rviz setup](./docs/images/rviz_carla_default.png "rviz")
+![depthcloud](./docs/images/depth_cloud_and_lidar.png "depthcloud")
 
 ![short video](https://youtu.be/S_NoN2GBtdY)
 
@@ -36,7 +35,7 @@ First, clone or download the carla_ros_bridge, for example into
 
     mkdir -p ~/ros/catkin_ws_for_carla/src
     cd ~/ros/catkin_ws_for_carla/src
-    cp ~/carla_ros_bridge/* .
+    ln -s ~/carla_ros_bridge .
     source /opt/ros/kinetic/setup.bash
     catkin_make
     source ~/ros/catkin_ws_for_carla/devel/setup.bash
@@ -58,12 +57,6 @@ Check the installation is successfull by trying to import carla from python:
     python -c 'import carla;print("Success")'
 
 You should see the Success message without any errors.
-
-## Install other requirements:
-
-    sudo apt-get install python-protobuf
-    pip install --user simple-pid
-
 
 # Start the ROS bridge
 
@@ -102,20 +95,18 @@ You can then further spawn other vehicles using spawn_npc.py from CARLA Python A
 Then those vehicles will show up also on ROS side.
 
 # Test control messages
-You can send command to the car using the /carla/ego_vehicle/ackermann_cmd topic.
 
-Example of forward movements, speed in in meters/sec.
+You can stear the ego vehicle from the commandline by publishing to the topic ```/carla/ego_vehicle/vehicle_control_cmd```.
 
-     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
-      jerk: 0.0}" -r 10
+Example of max forward throttle:
+
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 
-Example of forward with steering
+Example of max forward throttle with max steering to the right:
 
-     rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 5.41, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0,
-      jerk: 0.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
-  Warning: the steering_angle is the driving angle (in radians) not the wheel angle, for now max wheel is set to 500 degrees.
 
 # Test sensor messages
 
@@ -148,3 +139,11 @@ The carla_ros_bridge could also be used to record all published topics into a ro
 This command will create a rosbag /tmp/save_session.bag
 
 You can of course also use rosbag record to do the same, but using the ros_bridge to do the recording you have the guarentee that all the message are saved without small desynchronization that could occurs when using *rosbag record* in an other process.
+
+# Carla Ackermann Control
+
+In certain cases, the [Carla Control Command](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
+Therefore a ROS-based node ```carla_ackermann_control``` is provided which reads [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages.
+You can find further documentation [here](carla_ackermann_control/README.md).
+
+

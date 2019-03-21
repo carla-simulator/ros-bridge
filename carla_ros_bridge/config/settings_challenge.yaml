@@ -1,0 +1,12 @@
+use_sim_time: true
+carla:
+  # the network connection for the python connection to CARLA
+  host: localhost
+  port: 2000
+  # in challenge mode only the ego vehicle sensor data is published and vehicle control is forwarded
+  challenge_mode: true
+  # configuration values for the ego vehicle
+  ego_vehicle:
+    # the role name of the vehicle that acts as ego vehicle for this ros bridge instance
+    # (the vehicle from CARLA is selected which has the attribute 'role_name' set to this value
+    role_name: hero

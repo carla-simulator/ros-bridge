@@ -17,8 +17,8 @@ EgoVehicleControlTarget target
 # the currently measured values
 EgoVehicleControlCurrent current
 
-# the current control state
-EgoVehicleControlState state
+# the current control status
+EgoVehicleControlStatus status
 
 # the current control output to CARLA
-CarlaVehicleControl output
+carla_ros_bridge/CarlaEgoVehicleControl output

@@ -1,4 +1,0 @@
-<launch>
-<include file="$(find carla_ros_bridge)/client.launch"  pass_all_args="True"/>
-<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find carla_ros_bridge)/config/EgoVehicleControlInfo.perspective"/>
-</launch>

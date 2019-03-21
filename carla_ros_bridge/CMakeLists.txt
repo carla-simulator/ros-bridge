@@ -3,32 +3,29 @@ project(carla_ros_bridge)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   rospy
   sensor_msgs
+  geometry_msgs
   tf
-  dynamic_reconfigure
 )
 
 catkin_python_setup()
 
 add_message_files(
   FILES
-  CarlaVehicleControl.msg
-  EgoVehicleControlCurrent.msg
-  EgoVehicleControlInfo.msg
-  EgoVehicleControlMaxima.msg
-  EgoVehicleControlState.msg
-  EgoVehicleControlTarget.msg
+  CarlaEgoVehicleControl.msg
+  CarlaEgoVehicleStatus.msg
+  CarlaEgoVehicleInfoWheel.msg
+  CarlaEgoVehicleInfo.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
-generate_dynamic_reconfigure_options(
-   config/EgoVehicleControlParameter.cfg
-)
 
 catkin_package()
 
@@ -43,8 +40,9 @@ install(PROGRAMS
 )
 
 install(FILES
-   client.launch
-   client_with_rviz.launch
+   launch/carla_ros_bridge.launch
+   launch/carla_ros_bridge_with_rviz.launch
+   launch/challenge.launch
    test/ros_bridge_client.test
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
@@ -54,3 +52,6 @@ install(DIRECTORY
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)

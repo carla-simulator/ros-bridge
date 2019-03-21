@@ -1,0 +1,5 @@
+<!-- -->
+<launch>
+  <rosparam file="$(find carla_ackermann_control)/config/settings.yaml" command="load" />
+  <node pkg="carla_ackermann_control" type="carla_ackermann_control_node.py" name="carla_ackermann_control" output="screen"/>
+</launch>
