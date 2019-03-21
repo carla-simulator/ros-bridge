@@ -200,7 +200,7 @@ def get_vehicle_max_steering_angle(vehicle_info):
     :rtype: float64
     """
     # 70 degrees is the default max steering angle of a car
-    max_steering_angle = math.radians(80)
+    max_steering_angle = math.radians(70)
     # get max steering angle (use smallest non-zero value of all wheels)
     for wheel in vehicle_info.wheels:
         if wheel.steer_angle:

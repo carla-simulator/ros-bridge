@@ -24,3 +24,9 @@ bool hand_brake
 
 # reverse 0 or 1
 bool reverse
+
+# gear
+int32 gear
+
+# manual gear shift
+bool manual_gear_shift
