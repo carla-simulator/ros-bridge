@@ -100,6 +100,8 @@ class EgoVehicle(Vehicle):
         vehicle_status.control.brake = self.carla_actor.get_control().brake
         vehicle_status.control.hand_brake = self.carla_actor.get_control().hand_brake
         vehicle_status.control.reverse = self.carla_actor.get_control().reverse
+        vehicle_status.control.gear = self.carla_actor.get_control().gear
+        vehicle_status.control.manual_gear_shift = self.carla_actor.get_control().manual_gear_shift
         self.publish_ros_message(self.topic_name() + "/vehicle_status", vehicle_status)
 
         if not self.vehicle_info_published:
