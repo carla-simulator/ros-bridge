@@ -41,7 +41,7 @@ class CarlaAckermannControl(object):
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
-
+        self.role_name = rospy.get_param('/carla/ackermann_control/role_name')
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -105,33 +105,33 @@ class CarlaAckermannControl(object):
 
         self.reconfigure_server = Server(
             EgoVehicleControlParameterConfig,
-            namespace="/carla/ackermann_control",
+            namespace="/carla/" + self.role_name + "/ackermann_control",
             callback=(lambda config, level: CarlaAckermannControl.reconfigure_pid_parameters(
                 self, config, level)))
 
         # ackermann drive commands
         self.control_subscriber = rospy.Subscriber(
-            "/carla/ego_vehicle/ackermann_cmd",
+            "/carla/" + self.role_name + "/ackermann_cmd",
             AckermannDrive, self.ackermann_command_updated)
 
         # current status of the vehicle
         self.vehicle_status_subscriber = rospy.Subscriber(
-            "/carla/ego_vehicle/vehicle_status",
+            "/carla/" + self.role_name + "/vehicle_status",
             CarlaEgoVehicleStatus, self.vehicle_status_updated)
 
         # vehicle info
         self.vehicle_info_subscriber = rospy.Subscriber(
-            "/carla/ego_vehicle/vehicle_info",
+            "/carla/" + self.role_name + "/vehicle_info",
             CarlaEgoVehicleInfo, self.vehicle_info_updated)
 
         # to send command to carla
         self.carla_control_publisher = rospy.Publisher(
-            "/carla/ego_vehicle/vehicle_control_cmd",
+            "/carla/" + self.role_name + "/vehicle_control_cmd",
             CarlaEgoVehicleControl, queue_size=1)
 
         # report controller info
         self.control_info_publisher = rospy.Publisher(
-            "/carla/ackermann_control/control_info",
+            "/carla/" + self.role_name + "/ackermann_control/control_info",
             EgoVehicleControlInfo, queue_size=1)
 
     def destroy(self):
