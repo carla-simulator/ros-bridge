@@ -21,6 +21,7 @@ from derived_object_msgs.msg import ObjectArray
 
 from carla_ros_bridge.parent import Parent
 from carla_ros_bridge.map import Map
+import carla_ros_bridge.object_sensor as ObjectSensor
 
 
 class CarlaRosBridge(Parent):
@@ -117,10 +118,6 @@ class CarlaRosBridge(Parent):
             if not self.get_param("challenge_mode"):
                 # transform are merged in same message
                 self.tf_to_publish.append(msg)
-        elif topic == '/carla/objects':
-            if not self.get_param("challenge_mode"):
-                # objects are collected in same message
-                self.object_array.objects.append(msg)
         else:
             if topic not in self.publishers:
                 self.publishers[topic] = rospy.Publisher(
@@ -219,11 +216,8 @@ class CarlaRosBridge(Parent):
             tf_msg = TFMessage(self.tf_to_publish)
             self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
             self.tf_to_publish = []
-
-            self.object_array.header = self.get_msg_header()
-            self.msgs_to_publish.append(
-                (self.publishers['/carla/objects'], self.object_array))
-            self.object_array = ObjectArray()
+            self.publish_ros_message(
+                '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
 
     def send_msgs(self):
         """
@@ -269,3 +263,12 @@ class CarlaRosBridge(Parent):
         :rtype: list
         """
         return self.actor_list
+
+    def get_filtered_objectarray(self, filtered_id):
+        """
+        get objectarray of available actors, except the one with the filtered id
+
+        :return: objectarray of actors
+        :rtype: derived_object_msgs.ObjectArray
+        """
+        return ObjectSensor.get_filtered_objectarray(self, filtered_id)

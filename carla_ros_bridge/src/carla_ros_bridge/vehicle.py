@@ -100,7 +100,6 @@ class Vehicle(Actor):
         :return:
         """
         self.send_tf_msg()
-        self.send_object_msg()
         self.send_marker_msg()
         super(Vehicle, self).update()
 
@@ -134,7 +133,7 @@ class Vehicle(Actor):
             marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
             self.publish_ros_message('/carla/vehicle_marker', marker)
 
-    def send_object_msg(self):
+    def get_ros_object_msg(self):
         """
         Function to send object messages of this vehicle.
 
@@ -166,4 +165,4 @@ class Vehicle(Actor):
             self.classification_age += 1
             vehicle_object.classification_age = self.classification_age
 
-        self.publish_ros_message('/carla/objects', vehicle_object)
+        return vehicle_object

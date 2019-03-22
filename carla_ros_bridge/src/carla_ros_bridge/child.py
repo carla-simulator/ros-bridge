@@ -187,3 +187,12 @@ class Child(Parent):
         :rtype: list
         """
         return self.parent.get_actor_list()
+
+    def get_filtered_objectarray(self, filtered_id):
+        """
+        get objectarray of available actors, except the one with the filtered id
+
+        :return: objectarray of actors
+        :rtype: derived_object_msgs.ObjectArray
+        """
+        return self.parent.get_filtered_objectarray(filtered_id)

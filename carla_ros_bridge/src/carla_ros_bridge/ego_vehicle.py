@@ -153,6 +153,8 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
+        objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
+        self.publish_ros_message(self.topic_name() + '/objects', objects)
         super(EgoVehicle, self).update()
 
     def destroy(self):
