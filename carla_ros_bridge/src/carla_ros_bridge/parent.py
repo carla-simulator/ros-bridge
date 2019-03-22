@@ -114,8 +114,8 @@ class Parent(object):
                             self.new_child_actors[actor.id] = Traffic.create_actor(
                                 carla_actor=actor, parent=self)
                         elif actor.type_id.startswith("vehicle"):
-                            if (actor.attributes.get('role_name') ==
-                                    self.get_param('ego_vehicle').get('role_name')):
+                            if actor.attributes.get('role_name') in \
+                                    self.get_param('ego_vehicle').get('role_name'):
                                 self.new_child_actors[actor.id] = EgoVehicle.create_actor(
                                     carla_actor=actor, parent=self)
                             else:
@@ -297,6 +297,20 @@ class Parent(object):
 
         :return: the list of actors
         :rtype: list
+        """
+        raise NotImplementedError(
+            "This function is re-implemented by"
+            "carla_ros_bridge.Child and carla_ros_bridge.CarlaRosBridge"
+            "If this error becomes visible the class hierarchy is somehow broken")
+
+    @abstractmethod
+    def get_filtered_objectarray(self, filtered_id):
+        """
+        Pure virtual function to get objectarray of available actors, except
+        the one with the filtered id
+
+        :return: objectarray of actors
+        :rtype: derived_object_msgs.ObjectArray
         """
         raise NotImplementedError(
             "This function is re-implemented by"
