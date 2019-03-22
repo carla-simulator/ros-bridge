@@ -80,7 +80,7 @@ class EgoVehicle(Vehicle):
         color.b = 0
         return color
 
-    def send_object_msg(self):
+    def send_vehicle_msgs(self):
         """
         Function (override) to send odometry message of the ego vehicle
         instead of an object message.
@@ -155,6 +155,7 @@ class EgoVehicle(Vehicle):
         """
         objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
         self.publish_ros_message(self.topic_name() + '/objects', objects)
+        self.send_vehicle_msgs()
         super(EgoVehicle, self).update()
 
     def destroy(self):
