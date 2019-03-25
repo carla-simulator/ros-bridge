@@ -141,7 +141,7 @@ class Parent(object):
             if not child_actor.carla_actor.is_alive:
                 rospy.loginfo(
                     "Detected non alive child Actor(id={})".format(child_actor_id))
-                self.dead_child_actors.append(child_actor_id)
+                self.dead_child_actors.append(child_actor)
             else:
                 found_actor = False
                 for actor in self.carla_world.get_actors():
@@ -151,7 +151,7 @@ class Parent(object):
                 if not found_actor:
                     rospy.loginfo(
                         "Detected not existing child Actor(id={})".format(child_actor_id))
-                    self.dead_child_actors.append(child_actor_id)
+                    self.dead_child_actors.append(child_actor)
 
     def update_child_actors(self):
         """
@@ -171,7 +171,8 @@ class Parent(object):
 
         if len(self.dead_child_actors) > 0 or len(self.new_child_actors) > 0:
             with self.update_child_actor_list_lock:
-                for actor_id in self.dead_child_actors:
+                for actor in self.dead_child_actors:
+                    actor_id = actor.carla_actor.id
                     self.child_actors[actor_id].destroy()
                     del self.child_actors[actor_id]
                 self.dead_child_actors = []
