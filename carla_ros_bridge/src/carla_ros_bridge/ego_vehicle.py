@@ -168,6 +168,7 @@ class EgoVehicle(Vehicle):
         :return:
         """
         rospy.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
+        self.control_subscriber.unregister()
         self.control_subscriber = None
         super(EgoVehicle, self).destroy()
 
