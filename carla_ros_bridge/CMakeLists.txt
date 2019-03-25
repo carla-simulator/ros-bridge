@@ -40,9 +40,6 @@ install(PROGRAMS
 )
 
 install(FILES
-   launch/carla_ros_bridge.launch
-   launch/carla_ros_bridge_with_rviz.launch
-   launch/challenge.launch
    test/ros_bridge_client.test
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
