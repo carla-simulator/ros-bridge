@@ -18,6 +18,7 @@ add_message_files(
   CarlaEgoVehicleStatus.msg
   CarlaEgoVehicleInfoWheel.msg
   CarlaEgoVehicleInfo.msg
+  CarlaCollisionEvent.msg
 )
 
 generate_messages(

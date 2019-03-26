@@ -1,5 +1,6 @@
 ## Latest changed
 
+* Add collision sensor
 * Rename CarlaVehicleControl to CarlaEgoVehicleControl (and add some more message types)
 * move PID controller into separate ROS node
 * Add challenge mode
