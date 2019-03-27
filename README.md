@@ -128,6 +128,11 @@ Currently the following sensors are supported:
 |--------------------------------------|------|
 | `/carla/<ROLE NAME>/gnss/front/gnss` | [sensor_msgs.NavSatFix](http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html) |
 
+#### Collision Sensor
+
+|Topic                          | Type |
+|-------------------------------|------|
+| `/carla/<ROLE NAME>/collision` | [carla_ros_bridge.CarlaCollisionEvent](carla_ros_bridge/msg/CarlaCollisionEvent.msg) |
 
 ### Control
 
