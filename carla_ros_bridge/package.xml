@@ -21,6 +21,7 @@
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>tf2_msgs</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
   <export>
   </export>
 </package>
