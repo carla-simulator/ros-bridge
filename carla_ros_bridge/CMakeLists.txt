@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   geometry_msgs
+  derived_object_msgs
   tf
 )
 
@@ -24,6 +25,7 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
+  derived_object_msgs
 )
 
 
