@@ -23,7 +23,7 @@ from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-
 from carla_ros_bridge.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 from carla_ros_bridge.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
-
+from std_msgs.msg import Bool
 
 class EgoVehicle(Vehicle):
 
@@ -64,6 +64,10 @@ class EgoVehicle(Vehicle):
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd",
             CarlaEgoVehicleControl, self.control_command_updated)
+
+        self.control_subscriber = rospy.Subscriber(
+            self.topic_name() + "/enable_autopilot",
+            Bool, self.enable_autopilot_updated)
 
     def get_marker_color(self):
         """
@@ -184,7 +188,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type self.info.output: carla_ros_bridge.msg.CarlaEgoVehicleControl
+        :type ros_vehicle_control: carla_ros_bridge.msg.CarlaEgoVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()
@@ -194,6 +198,17 @@ class EgoVehicle(Vehicle):
         vehicle_control.throttle = ros_vehicle_control.throttle
         vehicle_control.reverse = ros_vehicle_control.reverse
         self.carla_actor.apply_control(vehicle_control)
+
+    def enable_autopilot_updated(self, enable_auto_pilot):
+        """
+        Enable/disable auto pilot
+
+        :param enable_auto_pilot: should the autopilot be enabled?
+        :type enable_auto_pilot: std_msgs.Bool
+        :return:
+        """
+        rospy.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
+        self.carla_actor.set_autopilot(enable_auto_pilot.data)
 
     @staticmethod
     def get_vector_length_squared(carla_vector):
