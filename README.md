@@ -116,6 +116,12 @@ Currently the following sensors are supported:
 |-------------------------------|------|
 | `/carla/<ROLE NAME>/collision` | [carla_ros_bridge.CarlaCollisionEvent](carla_ros_bridge/msg/CarlaCollisionEvent.msg) |
 
+#### Lane Invasion Sensor
+
+|Topic                          | Type |
+|-------------------------------|------|
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge.CarlaLaneInvasionEvent](carla_ros_bridge/msg/CarlaLaneInvasionEvent.msg) |
+
 ### Control
 
 |Topic                                 | Type |
