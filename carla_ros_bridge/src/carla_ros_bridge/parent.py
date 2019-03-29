@@ -20,7 +20,7 @@ from std_msgs.msg import Header
 class Parent(object):
 
     """
-    Factory class to create actors and manage lifecylce of the children objects
+    Factory class to create actors and manage lifecycle of the children objects
     """
 
     def __init__(self, carla_id, carla_world, frame_id):
@@ -200,8 +200,12 @@ class Parent(object):
         :return:
         """
         with self.update_child_actor_list_lock:
-            for dummy_actor_id, actor in self.child_actors.iteritems():
-                actor.update()
+            for actor_id, actor in self.child_actors.iteritems():
+                try:
+                    actor.update()
+                except RuntimeError as e:
+                    rospy.logwarn("Update actor {}({}) failed: {}".format(actor.__class__.__name__, actor_id, e))
+                    continue
 
     def get_msg_header(self):
         """
