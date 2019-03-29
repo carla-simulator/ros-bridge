@@ -35,9 +35,9 @@ class LaneInvasionSensor(Sensor):
         :type append_role_name_topic_postfix: boolean
         """
         super(LaneInvasionSensor, self).__init__(carla_actor=carla_actor,
-                                              parent=parent,
-                                              topic_prefix="lane_invasion",
-                                              append_role_name_topic_postfix=False)
+                                                 parent=parent,
+                                                 topic_prefix="lane_invasion",
+                                                 append_role_name_topic_postfix=False)
 
     def sensor_data_updated(self, lane_invasion_event):
         """

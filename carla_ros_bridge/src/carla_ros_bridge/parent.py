@@ -204,7 +204,8 @@ class Parent(object):
                 try:
                     actor.update()
                 except RuntimeError as e:
-                    rospy.logwarn("Update actor {}({}) failed: {}".format(actor.__class__.__name__, actor_id, e))
+                    rospy.logwarn("Update actor {}({}) failed: {}".format(
+                        actor.__class__.__name__, actor_id, e))
                     continue
 
     def get_msg_header(self):
