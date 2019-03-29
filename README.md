@@ -27,6 +27,7 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 
 ## Create a catkin workspace and install carla_ros_bridge package
 
+    #setup folder structure
     mkdir -p ~/carla-ros-bridge/catkin_ws/src
     cd ~/carla-ros-bridge
     git clone https://github.com/carla-simulator/ros-bridge.git
@@ -34,6 +35,12 @@ This documentation is for CARLA versions *newer* than 0.9.4.
     ln -s ../../ros-bridge
     source /opt/ros/kinetic/setup.bash
     cd ..
+
+    #install required ros-dependencies
+    rosdep update
+    rosdep install --from-path .
+
+    #build
     catkin_make
 
 For more information about configuring a ROS environment see
