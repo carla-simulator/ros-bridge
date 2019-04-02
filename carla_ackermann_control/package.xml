@@ -10,6 +10,10 @@
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>ackermann_msgs</exec_depend>
+  <exec_depend>carla_ros_bridge</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
   <export>
   </export>
 </package>
