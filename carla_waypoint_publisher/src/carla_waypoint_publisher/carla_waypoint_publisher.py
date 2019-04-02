@@ -21,7 +21,10 @@ import rospy
 import carla
 
 
-from agents.navigation.local_planner import compute_connection, RoadOption
+from agents.navigation.local_planner import _compute_connection, RoadOption
+
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
@@ -45,7 +48,7 @@ class CarlaToRosWaypointConverter(object):
         self.map = carla_world.get_map()
         self.ego_vehicle = None
         self.waypoint_publisher = rospy.Publisher(
-            '/carla/ego_vehicle/waypoints', Path, queue_size=10, latch=True)
+            '/carla/ego_vehicle/waypoints', Path, queue_size=1, latch=True)
 
         # set initial goal
         self.goal = self.world.get_map().get_spawn_points()[0]
@@ -124,51 +127,23 @@ class CarlaToRosWaypointConverter(object):
 
     def calculate_route(self, goal):
         """
-        This function is based on basic_planner.set_destination()
+        Calculate a route from the current location to 'goal'
         """
         rospy.loginfo("Calculating route to x={}, y={}, z={}".format(
             goal.location.x,
             goal.location.y,
             goal.location.z))
-        start_waypoint = self.map.get_waypoint(self.ego_vehicle.get_location())
-        end_waypoint = self.map.get_waypoint(carla.Location(goal.location.x,
+
+        
+        dao = GlobalRoutePlannerDAO(self.world.get_map())
+        grp = GlobalRoutePlanner(dao)
+        grp.setup()
+        route = grp.trace_route(self.ego_vehicle.get_location(), 
+                                                carla.Location(goal.location.x,
                                                             goal.location.y,
                                                             goal.location.z))
-
-        current_waypoint = start_waypoint
-        active_list = [[(current_waypoint, RoadOption.LANEFOLLOW)]]
-
-        solution = []
-        while not solution:
-            for _ in range(len(active_list)):
-                trajectory = active_list.pop()
-                if len(trajectory) > 1000:
-                    continue
-
-                # expand this trajectory
-                current_waypoint, _ = trajectory[-1]
-                next_waypoints = current_waypoint.next(self.WAYPOINT_DISTANCE)
-                while len(next_waypoints) == 1:
-                    next_option = compute_connection(current_waypoint, next_waypoints[0])
-                    current_distance = next_waypoints[0].transform.location.distance(
-                        end_waypoint.transform.location)
-                    if current_distance < self.WAYPOINT_DISTANCE:
-                        solution = trajectory + [(end_waypoint, RoadOption.LANEFOLLOW)]
-                        break
-
-                    # keep adding nodes
-                    trajectory.append((next_waypoints[0], next_option))
-                    current_waypoint, _ = trajectory[-1]
-                    next_waypoints = current_waypoint.next(self.WAYPOINT_DISTANCE)
-
-                if not solution:
-                    # multiple choices
-                    for waypoint in next_waypoints:
-                        next_option = compute_connection(current_waypoint, waypoint)
-                        active_list.append(trajectory + [(waypoint, next_option)])
-
-        assert solution
-        return solution
+        
+        return route
 
     def publish_waypoints(self):
         """
