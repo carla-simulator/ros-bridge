@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>carla_waypoint_publisher</name>
+  <version>0.0.0</version>
+  <description>The carla_waypoint_publisher package</description>
+  <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <export>
+  </export>
+</package>

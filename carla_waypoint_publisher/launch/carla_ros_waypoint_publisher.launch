@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+
+  <param name="/carla/host" value="$(arg host)" />
+  <param name="/carla/port" value="$(arg port)" />
+
+  <node pkg="carla_waypoint_publisher" type="carla_waypoint_publisher.py" name="carla_waypoint_publisher" output="screen"/>
+
+</launch>
+

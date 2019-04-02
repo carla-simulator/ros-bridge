@@ -180,6 +180,16 @@ Object information of all vehicles, except the ego-vehicle(s) is published.
 The OPEN Drive map description is published.
 
 
+# Reference Ego Vehicle
+
+An example Carla Client to spawn and control an ego vehicle is available. You can find further documentation [here](carla_ego_vehicle/README.md).
+
+
+# Waypoint calcluation
+
+To make use of the Carla waypoint calculation a ROS Node is available to get waypoints. You can find further documentation [here](carla_waypoint_publisher/README.md).
+
+
 # ROSBAG recording (not yet tested)
 
 The carla_ros_bridge could also be used to record all published topics into a rosbag:
