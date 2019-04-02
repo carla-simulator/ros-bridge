@@ -15,6 +15,7 @@ import rospy
 
 from nav_msgs.msg import Odometry
 from std_msgs.msg import ColorRGBA
+from std_msgs.msg import Bool
 
 from carla import VehicleControl
 
@@ -65,6 +66,10 @@ class EgoVehicle(Vehicle):
             self.topic_name() + "/vehicle_control_cmd",
             CarlaEgoVehicleControl, self.control_command_updated)
 
+        self.control_subscriber = rospy.Subscriber(
+            self.topic_name() + "/enable_autopilot",
+            Bool, self.enable_autopilot_updated)
+
     def get_marker_color(self):
         """
         Function (override) to return the color for marker messages.
@@ -107,6 +112,8 @@ class EgoVehicle(Vehicle):
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             vehicle_info = CarlaEgoVehicleInfo()
+            vehicle_info.type = self.carla_actor.type_id
+            vehicle_info.rolename = self.carla_actor.attributes.get('role_name')
             vehicle_physics = self.carla_actor.get_physics_control()
 
             for wheel in vehicle_physics.wheels:
@@ -184,7 +191,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type self.info.output: carla_ros_bridge.msg.CarlaEgoVehicleControl
+        :type ros_vehicle_control: carla_ros_bridge.msg.CarlaEgoVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()
@@ -194,6 +201,17 @@ class EgoVehicle(Vehicle):
         vehicle_control.throttle = ros_vehicle_control.throttle
         vehicle_control.reverse = ros_vehicle_control.reverse
         self.carla_actor.apply_control(vehicle_control)
+
+    def enable_autopilot_updated(self, enable_auto_pilot):
+        """
+        Enable/disable auto pilot
+
+        :param enable_auto_pilot: should the autopilot be enabled?
+        :type enable_auto_pilot: std_msgs.Bool
+        :return:
+        """
+        rospy.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
+        self.carla_actor.set_autopilot(enable_auto_pilot.data)
 
     @staticmethod
     def get_vector_length_squared(carla_vector):
