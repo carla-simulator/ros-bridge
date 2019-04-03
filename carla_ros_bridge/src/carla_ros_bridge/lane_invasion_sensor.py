@@ -49,6 +49,6 @@ class LaneInvasionSensor(Sensor):
         lane_invasion_msg = CarlaLaneInvasionEvent()
         lane_invasion_msg.header = self.get_msg_header(use_parent_frame=False)
         for marking in lane_invasion_event.crossed_lane_markings:
-            lane_invasion_msg.crossed_lane_markings.append(marking)
+            lane_invasion_msg.crossed_lane_markings.append(marking.type)
         self.publish_ros_message(
             self.topic_name(), lane_invasion_msg)

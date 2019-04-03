@@ -66,7 +66,7 @@ class EgoVehicle(Vehicle):
             self.topic_name() + "/vehicle_control_cmd",
             CarlaEgoVehicleControl, self.control_command_updated)
 
-        self.control_subscriber = rospy.Subscriber(
+        self.enable_autopilot_subscriber = rospy.Subscriber(
             self.topic_name() + "/enable_autopilot",
             Bool, self.enable_autopilot_updated)
 
@@ -177,6 +177,8 @@ class EgoVehicle(Vehicle):
         rospy.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
         self.control_subscriber.unregister()
         self.control_subscriber = None
+        self.enable_autopilot_subscriber.unregister()
+        self.enable_autopilot_subscriber = None
         super(EgoVehicle, self).destroy()
 
     def control_command_updated(self, ros_vehicle_control):
