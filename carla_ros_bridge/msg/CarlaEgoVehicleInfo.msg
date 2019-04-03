@@ -5,6 +5,8 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
+string type
+string rolename
 CarlaEgoVehicleInfoWheel[] wheels
 float32 max_rpm
 float32 moi
