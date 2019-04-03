@@ -278,7 +278,7 @@ class HUD(object):
         self.latitude = 0
         self.longitude = 0
         self.gnss_subscriber = rospy.Subscriber(
-            "/carla/ego_vehicle/gnss/front/gnss", NavSatFix, self.gnss_updated)
+            "/carla/ego_vehicle/gnss/sensor/gnss", NavSatFix, self.gnss_updated)
         self.tf_listener = tf.TransformListener()
 
     def __del__(self):
