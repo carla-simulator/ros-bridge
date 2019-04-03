@@ -20,9 +20,6 @@ import threading
 import rospy
 import carla
 
-
-from agents.navigation.local_planner import _compute_connection, RoadOption
-
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 

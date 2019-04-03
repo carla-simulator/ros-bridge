@@ -129,12 +129,6 @@ class CarlaEgoVehicleBase(object):
         # Set up the sensors
         self.sensor_actors = self.setup_sensors(self.sensors())
 
-        #self.sensors = self.attach_sensors(self.player)
-
-    def get_sensor_spec_value(self, sensor_spec, key):
-
-        return sensor_spec[key]
-
     def setup_sensors(self, sensors):
         """
         Create the sensors defined by the user and attach them to the ego-vehicle
@@ -174,7 +168,7 @@ class CarlaEgoVehicleBase(object):
                     sensor_rotation = carla.Rotation()
             except KeyError as e:
                 rospy.logfatal(
-                    "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(sensor_spec))
+                    "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))
                 continue
 
             # create sensor
@@ -185,8 +179,11 @@ class CarlaEgoVehicleBase(object):
         return actors
 
     @abstractmethod
-    def sensors(self, player):
-        pass
+    def sensors(self):
+        """
+        return a list of sensors attached
+        """
+        return []
 
     def destroy(self):
         """

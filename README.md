@@ -57,16 +57,19 @@ Wait for the message:
 
     Waiting for the client to connect...
 
-Then start the ros bridge:
+Then start the ros bridge (choose one option):
 
     export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
     source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
 
-    #start the ros bridge
+    # Option 1: start the ros bridge
     roslaunch carla_ros_bridge carla_ros_bridge.launch
 
-    #alternatively, you might want to start rviz together with the ros-bridge
+    # Option 2: start the ros bridge together with RVIZ
     roslaunch carla_ros_bridge carla_ros_bridge_with_rviz.launch
+
+    # Option 3: start the ros bridge together with an example ego vehicle
+    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
 You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
 
@@ -180,12 +183,12 @@ Object information of all vehicles, except the ego-vehicle(s) is published.
 The OPEN Drive map description is published.
 
 
-# Reference Ego Vehicle
+# Example Ego Vehicle
 
 An example Carla Client to spawn and control an ego vehicle is available. You can find further documentation [here](carla_ego_vehicle/README.md).
 
 
-# Waypoint calcluation
+# Waypoint calculation
 
 To make use of the Carla waypoint calculation a ROS Node is available to get waypoints. You can find further documentation [here](carla_waypoint_publisher/README.md).
 

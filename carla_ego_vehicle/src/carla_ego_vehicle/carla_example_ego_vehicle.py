@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2017 Computer Vision Center (CVC) at the Universitat Autonoma de
-# Barcelona (UAB).
 # Copyright (c) 2019 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
@@ -11,10 +9,13 @@ Example Carla Ego Vehicle
 
 """
 
-from carla_ego_vehicle_base import CarlaEgoVehicleBase
+from carla_ego_vehicle.carla_ego_vehicle_base import CarlaEgoVehicleBase
 
 
 class CarlaExampleEgoVehicle(CarlaEgoVehicleBase):
+    """
+    Example Carla Ego Vehicle
+    """
 
     def sensors(self):
         """
