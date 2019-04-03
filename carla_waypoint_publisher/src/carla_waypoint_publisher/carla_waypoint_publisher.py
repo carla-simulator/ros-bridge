@@ -134,15 +134,14 @@ class CarlaToRosWaypointConverter(object):
             goal.location.y,
             goal.location.z))
 
-        
         dao = GlobalRoutePlannerDAO(self.world.get_map())
         grp = GlobalRoutePlanner(dao)
         grp.setup()
-        route = grp.trace_route(self.ego_vehicle.get_location(), 
-                                                carla.Location(goal.location.x,
-                                                            goal.location.y,
-                                                            goal.location.z))
-        
+        route = grp.trace_route(self.ego_vehicle.get_location(),
+                                carla.Location(goal.location.x,
+                                               goal.location.y,
+                                               goal.location.z))
+
         return route
 
     def publish_waypoints(self):
