@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+
+  <node pkg="carla_ego_vehicle" type="carla_ros_manual_control.py" name="carla_ros_manual_control" output="screen"/>
+
+</launch>
+

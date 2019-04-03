@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+<include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch"  pass_all_args="True"/>
+<include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch"  pass_all_args="True"/>
+<include file="$(find carla_ego_vehicle)/launch/carla_ros_manual_control.launch"  pass_all_args="True"/>
+</launch>
