@@ -38,7 +38,7 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 
     #install required ros-dependencies
     rosdep update
-    rosdep install --from-path .
+    rosdep install --from-paths src --ignore-src -r
 
     #build
     catkin_make
