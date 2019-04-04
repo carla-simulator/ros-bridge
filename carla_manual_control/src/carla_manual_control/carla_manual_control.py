@@ -506,7 +506,7 @@ def main():
     """
     main function
     """
-    rospy.init_node('carla_ros_manual_control')
+    rospy.init_node('carla_manual_control')
 
     # resolution should be similar to spawned camera with role-name 'view'
     resolution = {"width": 800, "height": 600}
