@@ -55,4 +55,4 @@ class Gnss(Sensor):
         navsatfix_msg.longitude = carla_gnss_event.longitude
         navsatfix_msg.altitude = carla_gnss_event.altitude
         self.publish_ros_message(
-            self.topic_name() + "/gnss", navsatfix_msg)
+            self.topic_name() + "/fix", navsatfix_msg)

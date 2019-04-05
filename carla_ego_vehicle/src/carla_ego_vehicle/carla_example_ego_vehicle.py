@@ -40,7 +40,7 @@ class CarlaExampleEgoVehicle(CarlaEgoVehicleBase):
             },
             {
                 'type': 'sensor.lidar.ray_cast',
-                'role_name': 'front',
+                'role_name': 'lidar1',
                 'x': 0.0, 'y': 0.0, 'z': 2.4, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
                 'range': 5000,
                 'channels': 32,
@@ -51,17 +51,17 @@ class CarlaExampleEgoVehicle(CarlaEgoVehicleBase):
             },
             {
                 'type': 'sensor.other.gnss',
-                'role_name': 'sensor',
+                'role_name': 'gnss1',
                 'x': 1.0, 'y': 0.0, 'z': 2.0
             },
             {
                 'type': 'sensor.other.collision',
-                'role_name': 'sensor',
+                'role_name': 'collision1',
                 'x': 0.0, 'y': 0.0, 'z': 0.0
             },
             {
                 'type': 'sensor.other.lane_invasion',
-                'role_name': 'sensor',
+                'role_name': 'laneinvasion1',
                 'x': 0.0, 'y': 0.0, 'z': 0.0
             }
         ]
