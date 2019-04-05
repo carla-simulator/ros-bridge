@@ -1,6 +1,5 @@
 ## Latest changed
 
-* send rgb-camera images in 'bgr8' format (instead of 'bgra8')
 * rename gnss topic from '../gnss' to '../fix'
 * Add lane invasion sensor
 * Add collision sensor
