@@ -38,7 +38,7 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 
     #install required ros-dependencies
     rosdep update
-    rosdep install --from-path .
+    rosdep install --from-paths src --ignore-src -r
 
     #build
     catkin_make
@@ -124,21 +124,21 @@ Currently the following sensors are supported:
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/collision` | [carla_ros_bridge.CarlaCollisionEvent](carla_ros_bridge/msg/CarlaCollisionEvent.msg) |
+| `/carla/<ROLE NAME>/collision` | [carla_ros_bridge_msgs.CarlaCollisionEvent](carla_ros_bridge_msgs/msg/CarlaCollisionEvent.msg) |
 
 #### Lane Invasion Sensor
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge.CarlaLaneInvasionEvent](carla_ros_bridge/msg/CarlaLaneInvasionEvent.msg) |
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge_msgs.CarlaLaneInvasionEvent](carla_ros_bridge_msgs/msg/CarlaLaneInvasionEvent.msg) |
 
 ### Control
 
 |Topic                                 | Type |
 |--------------------------------------|------|
-| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_ros_bridge.CarlaEgoVehicleControl](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) |
-| `/carla/<ROLE NAME>/vehicle_status` | [carla_ros_bridge.CarlaEgoVehicleStatus](carla_ros_bridge/msg/CarlaEgoVehicleStatus.msg) |
-| `/carla/<ROLE NAME>/vehicle_info` | [carla_ros_bridge.CarlaEgoVehicleInfo](carla_ros_bridge/msg/CarlaEgoVehicleInfo.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_ros_bridge_msgs.CarlaEgoVehicleControl](carla_ros_bridge_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_status` | [carla_ros_bridge_msgs.CarlaEgoVehicleStatus](carla_ros_bridge_msgs/msg/CarlaEgoVehicleStatus.msg) |
+| `/carla/<ROLE NAME>/vehicle_info` | [carla_ros_bridge_msgs.CarlaEgoVehicleInfo](carla_ros_bridge_msgs/msg/CarlaEgoVehicleInfo.msg) |
 
 You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 

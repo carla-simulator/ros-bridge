@@ -11,7 +11,7 @@ Classes to handle collision events
 """
 
 from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge.msg import CarlaCollisionEvent  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge_msgs.msg import CarlaCollisionEvent  # pylint: disable=no-name-in-module,import-error
 
 
 class CollisionSensor(Sensor):

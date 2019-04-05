@@ -151,12 +151,12 @@ class CarlaEgoVehicleBase(object):
                                                      roll=sensor_spec['roll'],
                                                      yaw=sensor_spec['yaw'])
                 elif sensor_spec['type'].startswith('sensor.lidar'):
-                    bp.set_attribute('range', '200')
-                    bp.set_attribute('rotation_frequency', '10')
-                    bp.set_attribute('channels', '32')
-                    bp.set_attribute('upper_fov', '15')
-                    bp.set_attribute('lower_fov', '-30')
-                    bp.set_attribute('points_per_second', '500000')
+                    bp.set_attribute('range', str(sensor_spec['range']))
+                    bp.set_attribute('rotation_frequency', str(sensor_spec['rotation_frequency']))
+                    bp.set_attribute('channels', str(sensor_spec['channels']))
+                    bp.set_attribute('upper_fov', str(sensor_spec['upper_fov']))
+                    bp.set_attribute('lower_fov', str(sensor_spec['lower_fov']))
+                    bp.set_attribute('points_per_second', str(sensor_spec['points_per_second']))
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],

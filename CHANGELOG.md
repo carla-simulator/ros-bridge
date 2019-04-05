@@ -1,5 +1,6 @@
 ## Latest changed
 
+* rename gnss topic from '../gnss' to '../fix'
 * Add lane invasion sensor
 * Add collision sensor
 * Rename CarlaVehicleControl to CarlaEgoVehicleControl (and add some more message types)
