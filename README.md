@@ -27,36 +27,24 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 
 ## Create a catkin workspace and install carla_ros_bridge package
 
-First, clone or download the carla_ros_bridge, for example into
-
-   ~/carla_ros_bridge
-
-### Create the catkin workspace:
-
-    mkdir -p ~/ros/catkin_ws_for_carla/src
-    cd ~/ros/catkin_ws_for_carla/src
-    ln -s ~/carla_ros_bridge .
+    #setup folder structure
+    mkdir -p ~/carla-ros-bridge/catkin_ws/src
+    cd ~/carla-ros-bridge
+    git clone https://github.com/carla-simulator/ros-bridge.git
+    cd catkin_ws/src
+    ln -s ../../ros-bridge
     source /opt/ros/kinetic/setup.bash
+    cd ..
+
+    #install required ros-dependencies
+    rosdep update
+    rosdep install --from-path .
+
+    #build
     catkin_make
-    source ~/ros/catkin_ws_for_carla/devel/setup.bash
 
 For more information about configuring a ROS environment see
 http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
-
-## Install the CARLA Python API
-
-    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
-
-Please note that you have to put in the complete path to the egg-file including
-the egg-file itself. Please use the one, that is supported by your Python version.
-Depending on the type of CARLA (pre-build, or build from source), the egg files
-are typically located either directly in the PythonAPI folder or in PythonAPI/dist.
-
-Check the installation is successfull by trying to import carla from python:
-
-    python -c 'import carla;print("Success")'
-
-You should see the Success message without any errors.
 
 # Start the ROS bridge
 
@@ -69,15 +57,19 @@ Wait for the message:
 
     Waiting for the client to connect...
 
-Then start the ros bridge:
+Then start the ros bridge (choose one option):
 
-    source ~/ros/catkin_ws_for_carla/devel/setup.bash
+    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
+    source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
+
+    # Option 1: start the ros bridge
     roslaunch carla_ros_bridge carla_ros_bridge.launch
 
-To start the ros bridge with rviz use:
-
-    source ~/ros/catkin_ws_for_carla/devel/setup.bash
+    # Option 2: start the ros bridge together with RVIZ
     roslaunch carla_ros_bridge carla_ros_bridge_with_rviz.launch
+
+    # Option 3: start the ros bridge together with an example ego vehicle
+    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
 You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
 
@@ -134,6 +126,12 @@ Currently the following sensors are supported:
 |-------------------------------|------|
 | `/carla/<ROLE NAME>/collision` | [carla_ros_bridge.CarlaCollisionEvent](carla_ros_bridge/msg/CarlaCollisionEvent.msg) |
 
+#### Lane Invasion Sensor
+
+|Topic                          | Type |
+|-------------------------------|------|
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge.CarlaLaneInvasionEvent](carla_ros_bridge/msg/CarlaLaneInvasionEvent.msg) |
+
 ### Control
 
 |Topic                                 | Type |
@@ -185,6 +183,16 @@ Object information of all vehicles, except the ego-vehicle(s) is published.
 The OPEN Drive map description is published.
 
 
+# Example Ego Vehicle
+
+An example Carla Client to spawn and control an ego vehicle is available. You can find further documentation [here](carla_ego_vehicle/README.md).
+
+
+# Waypoint calculation
+
+To make use of the Carla waypoint calculation a ROS Node is available to get waypoints. You can find further documentation [here](carla_waypoint_publisher/README.md).
+
+
 # ROSBAG recording (not yet tested)
 
 The carla_ros_bridge could also be used to record all published topics into a rosbag:
@@ -195,3 +203,22 @@ This command will create a rosbag /tmp/save_session.bag
 
 You can of course also use rosbag record to do the same, but using the ros_bridge to do the recording you have the guarentee that all the message are saved without small desynchronization that could occurs when using *rosbag record* in an other process.
 
+
+# Troubleshooting
+
+## ImportError: No module named carla
+
+You're missing Carla Python. Please execute:
+
+    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
+
+Please note that you have to put in the complete path to the egg-file including
+the egg-file itself. Please use the one, that is supported by your Python version.
+Depending on the type of CARLA (pre-build, or build from source), the egg files
+are typically located either directly in the PythonAPI folder or in PythonAPI/dist.
+
+Check the installation is successfull by trying to import carla from python:
+
+    python -c 'import carla;print("Success")'
+
+You should see the Success message without any errors.

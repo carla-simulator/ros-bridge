@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+  <arg name="vehicle_filter" default="vehicle.*" />
+
+  <param name="/carla/host" value="$(arg host)" />
+  <param name="/carla/port" value="$(arg port)" />
+  <param name="/carla/client/vehicle_filter" value="$(arg vehicle_filter)" />
+
+  <node pkg="carla_ego_vehicle" type="carla_example_ego_vehicle.py" name="carla_example_ego_vehicle" output="screen"/>
+</launch>
+
