@@ -1,5 +1,7 @@
 ## Latest changed
 
+## CARLA-ROS-Bridge 0.9.5
+
 * rename gnss topic from '../gnss' to '../fix'
 * Add lane invasion sensor
 * Add collision sensor
