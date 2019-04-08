@@ -64,10 +64,9 @@ class CarlaRosBridge(Parent):
         self.publishers['tf'] = rospy.Publisher(
             'tf', TFMessage, queue_size=100)
 
-        if not self.get_param("challenge_mode"):
-            self.publishers['/carla/objects'] = rospy.Publisher(
-                '/carla/objects', ObjectArray, queue_size=10)
-            self.object_array = ObjectArray()
+        self.publishers['/carla/objects'] = rospy.Publisher(
+            '/carla/objects', ObjectArray, queue_size=10)
+        self.object_array = ObjectArray()
 
         self.map = Map(carla_world=self.carla_world, parent=self, topic='/map')
 
@@ -115,9 +114,8 @@ class CarlaRosBridge(Parent):
         :return:
         """
         if topic == 'tf':
-            if not self.get_param("challenge_mode"):
-                # transform are merged in same message
-                self.tf_to_publish.append(msg)
+            # transform are merged in same message
+            self.tf_to_publish.append(msg)
         else:
             if topic not in self.publishers:
                 self.publishers[topic] = rospy.Publisher(
@@ -212,12 +210,11 @@ class CarlaRosBridge(Parent):
 
         :return:
         """
-        if not self.get_param("challenge_mode"):
-            tf_msg = TFMessage(self.tf_to_publish)
-            self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
-            self.tf_to_publish = []
-            self.publish_ros_message(
-                '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
+        tf_msg = TFMessage(self.tf_to_publish)
+        self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
+        self.tf_to_publish = []
+        self.publish_ros_message(
+            '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
 
     def send_msgs(self):
         """

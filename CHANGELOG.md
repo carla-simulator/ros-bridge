@@ -1,5 +1,7 @@
 ## Latest changed
 
+* remove 'challenge' mode
+
 ## CARLA-ROS-Bridge 0.9.5
 
 * rename gnss topic from '../gnss' to '../fix'

@@ -122,16 +122,15 @@ class Vehicle(Actor):
 
         :return:
         """
-        if not self.parent.get_param("challenge_mode"):
-            marker = self.get_marker(use_parent_frame=False)
-            marker.type = Marker.CUBE
+        marker = self.get_marker(use_parent_frame=False)
+        marker.type = Marker.CUBE
 
-            marker.pose = transforms.carla_location_to_pose(
-                self.carla_actor.bounding_box.location)
-            marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-            marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-            marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-            self.publish_ros_message('/carla/vehicle_marker', marker)
+        marker.pose = transforms.carla_location_to_pose(
+            self.carla_actor.bounding_box.location)
+        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
+        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
+        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
+        self.publish_ros_message('/carla/vehicle_marker', marker)
 
     def get_ros_object_msg(self):
         """
