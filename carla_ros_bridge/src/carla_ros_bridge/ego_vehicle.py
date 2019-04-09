@@ -144,13 +144,12 @@ class EgoVehicle(Vehicle):
             self.publish_ros_message(self.topic_name() + "/vehicle_info", vehicle_info, True)
 
         # @todo: do we still need this?
-        if not self.parent.get_param("challenge_mode"):
-            odometry = Odometry(header=self.get_msg_header())
-            odometry.child_frame_id = self.get_frame_id()
-            odometry.pose.pose = self.get_current_ros_pose()
-            odometry.twist.twist = self.get_current_ros_twist()
+        odometry = Odometry(header=self.get_msg_header())
+        odometry.child_frame_id = self.get_frame_id()
+        odometry.pose.pose = self.get_current_ros_pose()
+        odometry.twist.twist = self.get_current_ros_twist()
 
-            self.publish_ros_message(self.topic_name() + "/odometry", odometry)
+        self.publish_ros_message(self.topic_name() + "/odometry", odometry)
 
     def update(self):
         """
