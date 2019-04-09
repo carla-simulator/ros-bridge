@@ -1,6 +1,16 @@
 <!-- -->
 <launch>
-<include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch"  pass_all_args="True"/>
-<include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch"  pass_all_args="True"/>
-<include file="$(find carla_manual_control)/launch/carla_manual_control.launch"  pass_all_args="True"/>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+  <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
+      <arg name='host' default='$(arg host)'/>
+      <arg name='port' default='$(arg port)'/>
+  </include>
+
+  <include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch">
+      <arg name='host' default='$(arg host)'/>
+      <arg name='port' default='$(arg port)'/>
+  </include>
+
+  <include file="$(find carla_manual_control)/launch/carla_manual_control.launch"/>
 </launch>
