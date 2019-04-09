@@ -11,7 +11,7 @@ Classes to handle lane invasion events
 """
 
 from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge_msgs.msg import CarlaLaneInvasionEvent  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge_msgs.msg import CarlaLaneInvasionEvent
 
 
 class LaneInvasionSensor(Sensor):
