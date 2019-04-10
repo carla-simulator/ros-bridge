@@ -3,7 +3,6 @@ project(carla_ros_bridge)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
   rospy
   sensor_msgs
   geometry_msgs
@@ -12,23 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_python_setup()
-
-add_message_files(
-  FILES
-  CarlaEgoVehicleControl.msg
-  CarlaEgoVehicleStatus.msg
-  CarlaEgoVehicleInfoWheel.msg
-  CarlaEgoVehicleInfo.msg
-  CarlaCollisionEvent.msg
-  CarlaLaneInvasionEvent.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
-
 
 catkin_package()
 

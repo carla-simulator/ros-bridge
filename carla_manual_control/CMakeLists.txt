@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(carla_ego_vehicle)
+project(carla_manual_control)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
@@ -8,13 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 
 catkin_package(
-        CATKIN_DEPENDS
-        rospy
+  CATKIN_DEPENDS
+  rospy
 )
 
 catkin_install_python(PROGRAMS
-  src/carla_ego_vehicle/carla_example_ego_vehicle.py
-  src/carla_ego_vehicle/carla_ego_vehicle_base.py
+  src/carla_manual_control/carla_manual_control.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
