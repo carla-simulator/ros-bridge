@@ -13,7 +13,7 @@ Class to handle the carla map
 import rospy
 
 from geometry_msgs.msg import Transform
-from std_msgs.msg import String
+from carla_ros_bridge_msgs.msg import CarlaMapInfo
 from carla_ros_bridge.child import Child
 
 
@@ -41,9 +41,10 @@ class Map(Child):
         self.carla_map = self.get_carla_world().get_map()
 
         self.open_drive_publisher = rospy.Publisher(
-            '/carla/map', String, queue_size=1, latch=True)
-        open_drive_msg = String()
-        open_drive_msg.data = self.carla_map.to_opendrive()
+            '/carla/map', CarlaMapInfo, queue_size=1, latch=True)
+        open_drive_msg = CarlaMapInfo(header=self.get_msg_header())
+        open_drive_msg.map_name = self.carla_map.name
+        open_drive_msg.opendrive = self.carla_map.to_opendrive()
         self.open_drive_publisher.publish(open_drive_msg)
 
     def destroy(self):

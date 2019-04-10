@@ -20,10 +20,10 @@ from std_msgs.msg import Bool
 from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
+from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfo
+from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfoWheel
+from carla_ros_bridge_msgs.msg import CarlaEgoVehicleControl
+from carla_ros_bridge_msgs.msg import CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle):
