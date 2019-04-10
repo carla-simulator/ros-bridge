@@ -170,7 +170,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 |Topic         | Type |
 |--------------|------|
-| `/carla/objects` | [derived_object_msgs.String](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+| `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
 
 Object information of all vehicles, except the ego-vehicle(s) is published.
 
