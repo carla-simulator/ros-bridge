@@ -183,9 +183,9 @@ Object information of all vehicles, except the ego-vehicle(s) is published.
 The OPEN Drive map description is published.
 
 
-# Example Ego Vehicle
+# Carla Ego Vehicle
 
-An example Carla Client to spawn and control an ego vehicle is available. You can find further documentation [here](carla_ego_vehicle/README.md).
+`carla_ego_vehicle` provides a generic way to spawn an ego vehicle and attach sensors to it. You can find further documentation [here](carla_ego_vehicle/README.md).
 
 
 # Waypoint calculation
