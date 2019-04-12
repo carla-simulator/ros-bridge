@@ -124,21 +124,21 @@ Currently the following sensors are supported:
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/collision` | [carla_ros_bridge_msgs.CarlaCollisionEvent](carla_ros_bridge_msgs/msg/CarlaCollisionEvent.msg) |
+| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](carla_msgs/msg/CarlaCollisionEvent.msg) |
 
 #### Lane Invasion Sensor
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge_msgs.CarlaLaneInvasionEvent](carla_ros_bridge_msgs/msg/CarlaLaneInvasionEvent.msg) |
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) |
 
 ### Control
 
 |Topic                                 | Type |
 |--------------------------------------|------|
-| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_ros_bridge_msgs.CarlaEgoVehicleControl](carla_ros_bridge_msgs/msg/CarlaEgoVehicleControl.msg) |
-| `/carla/<ROLE NAME>/vehicle_status` | [carla_ros_bridge_msgs.CarlaEgoVehicleStatus](carla_ros_bridge_msgs/msg/CarlaEgoVehicleStatus.msg) |
-| `/carla/<ROLE NAME>/vehicle_info` | [carla_ros_bridge_msgs.CarlaEgoVehicleInfo](carla_ros_bridge_msgs/msg/CarlaEgoVehicleInfo.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg) |
+| `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg) |
 
 You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 

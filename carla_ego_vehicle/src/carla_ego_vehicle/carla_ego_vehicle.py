@@ -120,7 +120,8 @@ class CarlaEgoVehicle(object):
 
         # Read sensors from file
         if not os.path.exists(self.sensor_definition_file):
-            raise RuntimeError("Could not read sensor-definition from {}".format(self.sensor_definition_file))
+            raise RuntimeError(
+                "Could not read sensor-definition from {}".format(self.sensor_definition_file))
         json_sensors = None
         with open(self.sensor_definition_file) as handle:
             json_sensors = json.loads(handle.read())
@@ -230,4 +231,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

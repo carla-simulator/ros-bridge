@@ -13,7 +13,7 @@ Class to handle the carla map
 import rospy
 
 from geometry_msgs.msg import Transform
-from carla_ros_bridge_msgs.msg import CarlaMapInfo
+from carla_msgs.msg import CarlaMapInfo
 from carla_ros_bridge.child import Child
 
 

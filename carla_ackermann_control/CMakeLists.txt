@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   ackermann_msgs
   dynamic_reconfigure
-  carla_ros_bridge_msgs
+  carla_msgs
 )
 
 catkin_python_setup()
@@ -25,7 +25,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  carla_ros_bridge_msgs
+  carla_msgs
 )
 
 generate_dynamic_reconfigure_options(
