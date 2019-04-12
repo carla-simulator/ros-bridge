@@ -11,7 +11,7 @@ Classes to handle collision events
 """
 
 from carla_ros_bridge.sensor import Sensor
-from carla_ros_bridge_msgs.msg import CarlaCollisionEvent
+from carla_msgs.msg import CarlaCollisionEvent
 
 
 class CollisionSensor(Sensor):
