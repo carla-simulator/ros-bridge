@@ -20,10 +20,10 @@ from std_msgs.msg import Bool
 from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfo
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleInfoWheel
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleControl
-from carla_ros_bridge_msgs.msg import CarlaEgoVehicleStatus
+from carla_msgs.msg import CarlaEgoVehicleInfo
+from carla_msgs.msg import CarlaEgoVehicleInfoWheel
+from carla_msgs.msg import CarlaEgoVehicleControl
+from carla_msgs.msg import CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle):
@@ -193,7 +193,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type ros_vehicle_control: carla_ros_bridge_msgs.msg.CarlaEgoVehicleControl
+        :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()

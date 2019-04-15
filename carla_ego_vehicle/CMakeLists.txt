@@ -13,11 +13,14 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS
-  src/carla_ego_vehicle/carla_example_ego_vehicle.py
-  src/carla_ego_vehicle/carla_ego_vehicle_base.py
+  src/carla_ego_vehicle/carla_ego_vehicle.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(DIRECTORY config/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
 )

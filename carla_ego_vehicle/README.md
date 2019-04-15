@@ -1,12 +1,6 @@
 # ROS Ego Vehicle
 
-The reference Carla client `carla_example_ego_vehicle` can be used to spawn an ego vehicle (role-name: "ego_vehicle") with the following sensors attached to it.
-
-- GNSS
-- LIDAR
-- Cameras (one front-camera + one camera for visualization in carla_ros_manual_control)
-- Collision Sensor
-- Lane Invasion Sensor
+The reference Carla client `carla_ego_vehicle` can be used to spawn an ego vehicle (role-name: "ego_vehicle") with attached sensors.
 
 Info: To be able to use `carla_manual_control` a camera with role-name 'view' and resolution of 800x600 is required.
 
@@ -26,16 +20,22 @@ Selecting a Pose with '2D Pose Estimate' will delete the current ego_vehicle and
 
 ### Create your own sensor setup
 
-To setup your own ego vehicle with sensors, follow a similar approach as in `carla_example_ego_vehicle` by subclassing from `CarlaEgoVehicleBase`.
+Sensors, attached to the ego vehicle can be defined via a json file. `carla_ego_vehicle` reads it from the file location defined via the private ros parameter `sensor_definition_file`.
+
+The format is defined like that:
+
+    { "sensors" = [
+        {
+          "type": "<SENSOR-TYPE>",
+          "id": "<NAME>",
+          "x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0, # pose of the sensor, relative to the vehicle
+          <ADDITIONAL-SENSOR-ATTRIBUTES>
+        },
+        ...
+      ]
+    }
 
 Define sensors with their attributes as described in the Carla Documentation about [Cameras and Sensors](https://github.com/carla-simulator/carla/blob/master/Docs/cameras_and_sensors.md).
 
-The format is a list of dictionaries. One dictionary has the values as follows:
-
-    {
-        'type': '<SENSOR-TYPE>',
-        'role_name': '<NAME>',
-        'x': 0.0, 'y': 0.0, 'z': 0.0, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0, # pose of the sensor, relative to the vehicle
-        <ADDITIONAL-SENSOR-ATTRIBUTES>
-    }
+An example is provided by [carla_example_ego_vehicle.launch](launch/carla_example_ego_vehicle.launch). It uses the sensors from [sensors.json](config/sensors.json)
 

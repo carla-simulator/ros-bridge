@@ -1,5 +1,6 @@
 ## Latest changed
 
+* rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode
 
 ## CARLA-ROS-Bridge 0.9.5
