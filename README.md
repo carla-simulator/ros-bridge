@@ -20,7 +20,6 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 - [x] Handle ROS dependencies
 - [x] Marker/bounding box messages for cars/pedestrian
 - [x] Lidar sensor support
-- [ ] Rosbag in the bridge (in order to avoid rosbag record -a small time errors)
 - [ ] Add traffic light support
 
 # Setup
@@ -191,17 +190,6 @@ The OPEN Drive map description is published.
 # Waypoint calculation
 
 To make use of the Carla waypoint calculation a ROS Node is available to get waypoints. You can find further documentation [here](carla_waypoint_publisher/README.md).
-
-
-# ROSBAG recording (not yet tested)
-
-The carla_ros_bridge could also be used to record all published topics into a rosbag:
-
-    roslaunch carla_ros_bridge client_with_rviz.launch rosbag_fname:=/tmp/save_session.bag
-
-This command will create a rosbag /tmp/save_session.bag
-
-You can of course also use rosbag record to do the same, but using the ros_bridge to do the recording you have the guarentee that all the message are saved without small desynchronization that could occurs when using *rosbag record* in an other process.
 
 
 # Troubleshooting
