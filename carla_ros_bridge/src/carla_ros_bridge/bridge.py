@@ -52,10 +52,6 @@ class CarlaRosBridge(Parent):
         self.update_lock = threading.Lock()
         self.carla_world.on_tick(self._carla_time_tick)
 
-#         self.publishers['/carla/objects'] = rospy.Publisher(
-#             '/carla/objects', ObjectArray, queue_size=10)
-#         self.object_array = ObjectArray()
-
         self.map = Map(carla_world=self.carla_world, parent=self, topic='/map')
 
     def destroy(self):
@@ -118,7 +114,7 @@ class CarlaRosBridge(Parent):
                     self.timestamp_last_run = carla_timestamp.elapsed_seconds
                     self.binding.update_clock(carla_timestamp)
                     self.update()
-                    self._prepare_msgs()
+                    self.get_binding().publish_objects('/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
                     self.binding.send_msgs()
                 self.update_lock.release()
 
@@ -143,15 +139,6 @@ class CarlaRosBridge(Parent):
                 # actors are only created/deleted around once per second
                 time.sleep(1)
                 self.update_child_actors_lock.release()
-
-    def _prepare_msgs(self):
-        """
-        Private function to prepare tf and object message to be sent out
-
-        :return:
-        """
-        # self.get_binding().publish_message(
-        #    '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
 
     def run(self):
         """

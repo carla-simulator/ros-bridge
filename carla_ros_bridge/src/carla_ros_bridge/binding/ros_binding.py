@@ -4,6 +4,7 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
+from rostopic import publish_message
 """
 ROS binding
 """
@@ -15,6 +16,7 @@ import math
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
 from derived_object_msgs.msg import ObjectArray
+from carla_ros_bridge.binding.binding import VehicleClass
 
 from carla_ros_bridge.parent import Parent
 from carla_ros_bridge.map import Map
@@ -481,3 +483,27 @@ class RosBinding(object):
         marker.scale.y = bounding_box.extent.y * 2.0
         marker.scale.z = bounding_box.extent.z * 2.0
         self.publish_message('/carla/vehicle_marker', marker)
+
+    def publish_objects(self, topic, objects):
+        ros_objects = ObjectArray(header=self.get_msg_header("map"))
+        for object in objects:
+            vehicle_object = Object(header=self.get_msg_header("map"))
+            vehicle_object.id = object['id']
+            vehicle_object.pose = ros_trans.carla_transform_to_ros_pose(object['transform'])
+            #vehicle_object.twist = self.get_current_ros_twist()
+            vehicle_object.accel = ros_trans.carla_acceleration_to_ros_accel(object['accel'])
+            vehicle_object.shape.type = SolidPrimitive.BOX
+            vehicle_object.shape.dimensions.extend([
+                object['bounding_box'].extent.x * 2.0,
+                object['bounding_box'].extent.y * 2.0,
+                object['bounding_box'].extent.z * 2.0])
+
+            # Classification if available in attributes
+            if object['classification'] != VehicleClass.UNKNOWN:
+                vehicle_object.object_classified = True
+                vehicle_object.classification = self.classification
+                vehicle_object.classification_certainty = 1.0
+                vehicle_object.classification_age = object['classification_age']
+                vehicle_object.classification_age = self.classification_age
+            ros_objects.objects.append(vehicle_object)
+        self.publish_message(topic, ros_objects)

@@ -92,7 +92,7 @@ class Vehicle(Actor):
 
         :return:
         """
-        # self.send_tf_msg()
+        self.classification_age += 1
         self.get_binding().publish_transform(self.get_frame_id(), self.carla_actor.get_transform())
         self.get_binding().publish_marker(self.get_frame_id(),
                                           self.carla_actor.bounding_box,
@@ -108,38 +108,14 @@ class Vehicle(Actor):
         """
         return (255,0,0)
 
-
-#     def get_ros_object_msg(self):
-#         """
-#         Function to send object messages of this vehicle.
-#
-#         A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
-#
-#         :return:
-#         """
-#         vehicle_object = Object(header=self.get_msg_header())
-#         # ID
-#         vehicle_object.id = self.get_global_id()
-#         # Pose
-#         vehicle_object.pose = self.get_current_ros_pose()
-#         # Twist
-#         vehicle_object.twist = self.get_current_ros_twist()
-#         # Acceleration
-#         vehicle_object.accel = trans.carla_acceleration_to_ros_accel(
-#             self.carla_actor.get_acceleration())
-#         # Shape
-#         vehicle_object.shape.type = SolidPrimitive.BOX
-#         vehicle_object.shape.dimensions.extend([
-#             self.carla_actor.bounding_box.extent.x * 2.0,
-#             self.carla_actor.bounding_box.extent.y * 2.0,
-#             self.carla_actor.bounding_box.extent.z * 2.0])
-#
-#         # Classification if available in attributes
-#         if self.classification != Object.CLASSIFICATION_UNKNOWN:
-#             vehicle_object.object_classified = True
-#             vehicle_object.classification = self.classification
-#             vehicle_object.classification_certainty = 1.0
-#             self.classification_age += 1
-#             vehicle_object.classification_age = self.classification_age
-#
-#         return vehicle_object
+    def get_object_info(self):
+        """
+        """
+        vehicle_object = {}
+        vehicle_object['id'] = self.get_global_id()
+        vehicle_object['transform'] = self.carla_actor.get_transform()
+        vehicle_object['accel'] = self.carla_actor.get_acceleration()
+        vehicle_object['bounding_box'] = self.carla_actor.bounding_box
+        vehicle_object['classification'] = self.classification
+        vehicle_object['classification_age'] = self.classification_age
+        return vehicle_object
