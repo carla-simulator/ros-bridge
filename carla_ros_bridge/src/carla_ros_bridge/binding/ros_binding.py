@@ -232,11 +232,6 @@ class RosBinding(object):
             shape=(carla_image.height, carla_image.width, 4),
             dtype=numpy.uint8, buffer=carla_image.raw_data)
 
-        carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        carla_image_data_array = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
-
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(carla_image_data_array, encoding='bgra8')
         self.publish_camera(topic, attributes, carla_image, img_msg, "image_segmentation")
     

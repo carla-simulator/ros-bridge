@@ -211,4 +211,5 @@ class SemanticSegmentationCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
+        carla_image.convert(carla.ColorConverter.CityScapesPalette)
         self.get_binding().publish_semantic_segmentation_camera(self.topic_name(), carla_image, self.carla_actor.attributes)
