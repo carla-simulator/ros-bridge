@@ -198,7 +198,7 @@ class Parent(object):
     @abstractmethod
     def get_binding(self):
         """
-        
+
         :return:
         """
         raise NotImplementedError(

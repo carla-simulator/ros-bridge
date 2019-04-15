@@ -15,6 +15,7 @@ from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
 
+
 class EgoVehicle(Vehicle):
 
     """
@@ -51,9 +52,10 @@ class EgoVehicle(Vehicle):
 
         self.vehicle_info_published = False
 
-        self.get_binding().register_vehicle_control_subscriber(self.topic_name(), self.control_command_updated)
-        self.get_binding().register_vehicle_autopilot_subscriber(self.topic_name(), self.enable_autopilot_updated)
-
+        self.get_binding().register_vehicle_control_subscriber(
+            self.topic_name(), self.control_command_updated)
+        self.get_binding().register_vehicle_autopilot_subscriber(
+            self.topic_name(), self.enable_autopilot_updated)
 
     def get_marker_color(self):
         """
@@ -62,13 +64,8 @@ class EgoVehicle(Vehicle):
         The ego vehicle uses a different marker color than other vehicles.
 
         :return: the color used by a ego vehicle marker
-        :rtpye : std_msgs.msg.ColorRGBA
         """
-        color = ColorRGBA()
-        color.r = 0
-        color.g = 255
-        color.b = 0
-        return color
+        return (0, 255, 0)
 
     def update(self):
         """
@@ -80,7 +77,7 @@ class EgoVehicle(Vehicle):
         """
 #         objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
 #         self.publish_message(self.topic_name() + '/objects', objects)
-        
+
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             self.get_binding().publish_ego_vehicle_info(

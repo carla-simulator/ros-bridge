@@ -65,4 +65,3 @@ class Map(Child):
             self.get_binding().publish_map(self.carla_map)
         self.publish_transform(1, Transform())
         super(Map).update()
-

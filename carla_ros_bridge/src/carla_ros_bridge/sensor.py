@@ -16,8 +16,6 @@ import threading
 
 from carla_ros_bridge.actor import Actor
 
-import carla_ros_bridge.transforms as trans
-
 
 class Sensor(Actor):
 
@@ -75,9 +73,9 @@ class Sensor(Actor):
         self.update_lock = threading.Lock()
         if self.__class__.__name__ == "Sensor":
             self.get_binding().logwarn("Created Unsupported Sensor(id={}, parent_id={}"
-                          ", type={}, attributes={}".format(
-                              self.get_id(), self.get_parent_id(),
-                              self.carla_actor.type_id, self.carla_actor.attributes))
+                                       ", type={}, attributes={}".format(
+                                           self.get_id(), self.get_parent_id(),
+                                           self.carla_actor.type_id, self.carla_actor.attributes))
         else:
             self.carla_actor.listen(self._callback_sensor_data)
 
@@ -108,7 +106,6 @@ class Sensor(Actor):
         :rtype: string
         """
         return self.parent.get_frame_id() + "/" + super(Sensor, self).get_frame_id()
-
 
     def _callback_sensor_data(self, carla_sensor_data):
         """

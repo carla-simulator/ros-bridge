@@ -150,7 +150,7 @@ class CarlaRosBridge(Parent):
 
         :return:
         """
-        #self.get_binding().publish_message(
+        # self.get_binding().publish_message(
         #    '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
 
     def run(self):

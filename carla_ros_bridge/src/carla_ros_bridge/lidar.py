@@ -62,4 +62,5 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        self.get_binding().publish_lidar(self.topic_name() + "/point_cloud", self.get_frame_id(), carla_lidar_measurement)
+        self.get_binding().publish_lidar(self.topic_name() + "/point_cloud",
+                                         self.get_frame_id(), carla_lidar_measurement)

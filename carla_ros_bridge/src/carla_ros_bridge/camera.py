@@ -18,15 +18,14 @@ import carla
 from carla_ros_bridge.sensor import Sensor
 import carla_ros_bridge.transforms as trans
 
-from cv_bridge import CvBridge
 import tf
+
+
 class Camera(Sensor):
 
     """
     Sensor implementation details for cameras
     """
-    # global cv bridge to convert image between opencv and ros
-    cv_bridge = CvBridge()
 
     @staticmethod
     def create_actor(carla_actor, parent):
@@ -68,9 +67,9 @@ class Camera(Sensor):
 
         if self.__class__.__name__ == "Camera":
             self.get_binding().logwarn("Created Unsupported Camera Actor"
-                          "(id={}, parent_id={}, type={}, attributes={})".format(
-                              self.get_id(), self.get_parent_id(),
-                              self.carla_actor.type_id, self.carla_actor.attributes))
+                                       "(id={}, parent_id={}, type={}, attributes={})".format(
+                                           self.get_id(), self.get_parent_id(),
+                                           self.carla_actor.type_id, self.carla_actor.attributes))
 
     def sensor_data_updated(self, carla_image):
         """
@@ -99,11 +98,12 @@ class Camera(Sensor):
              [0, -1, 0, 0],
              [0, 0, 0, 1]])
         quat = tf.transformations.quaternion_multiply(quat, quat_swap)
-        roll,pitch,yaw = tf.transformations.euler_from_quaternion(quat)
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion(quat)
         transform.rotation.roll = -math.degrees(roll)
         transform.rotation.pitch = -math.degrees(pitch)
         transform.rotation.yaw = -math.degrees(yaw)
         self.get_binding().publish_transform(self.get_frame_id(), transform)
+
 
 class RgbCamera(Camera):
 
@@ -135,7 +135,9 @@ class RgbCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_rgb_camera(self.topic_name(), self.get_frame_id(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_rgb_camera(self.topic_name(), self.get_frame_id(),
+                                              carla_image, self.carla_actor.attributes)
+
 
 class DepthCamera(Camera):
 
@@ -167,7 +169,9 @@ class DepthCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_depth_camera(self.topic_name(), self.get_frame_id(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_depth_camera(self.topic_name(),
+                                                self.get_frame_id(), carla_image, self.carla_actor.attributes)
+
 
 class SemanticSegmentationCamera(Camera):
 
@@ -201,4 +205,5 @@ class SemanticSegmentationCamera(Camera):
         :type carla_image: carla.Image
         """
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        self.get_binding().publish_semantic_segmentation_camera(self.topic_name(), self.get_frame_id(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_semantic_segmentation_camera(self.topic_name(),
+                                                                self.get_frame_id(), carla_image, self.carla_actor.attributes)

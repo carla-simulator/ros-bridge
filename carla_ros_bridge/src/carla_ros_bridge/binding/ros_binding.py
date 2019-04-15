@@ -51,6 +51,7 @@ from visualization_msgs.msg import Marker
 
 from carla import VehicleControl
 
+
 class RosBinding(object):
 
     """
@@ -464,3 +465,19 @@ class RosBinding(object):
         
     def is_shutdown(self):
         return rospy.is_shutdown()
+    
+    def publish_marker(self, frame_id, bounding_box, color, id):
+        marker = Marker(header=self.get_msg_header(frame_id))
+        marker.color.r = color[0]
+        marker.color.g = color[1]
+        marker.color.b = color[2]
+        marker.color.a = 0.3
+        marker.id = id
+        marker.text = "id = {}".format(marker.id)
+        marker.type = Marker.CUBE
+
+        marker.pose = ros_trans.carla_location_to_pose(bounding_box.location)
+        marker.scale.x = bounding_box.extent.x * 2.0
+        marker.scale.y = bounding_box.extent.y * 2.0
+        marker.scale.z = bounding_box.extent.z * 2.0
+        self.publish_message('/carla/vehicle_marker', marker)

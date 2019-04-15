@@ -11,8 +11,7 @@ Classes to handle Carla vehicles
 """
 
 from carla_ros_bridge.actor import Actor
-import carla_ros_bridge.transforms as transforms
-
+from carla_ros_bridge.binding.binding import VehicleClass
 
 class Vehicle(Actor):
 
@@ -57,19 +56,19 @@ class Vehicle(Actor):
                                       topic_prefix=topic_prefix,
                                       append_role_name_topic_postfix=append_role_name_topic_postfix)
 
-#         self.classification = Object.CLASSIFICATION_UNKNOWN
-#         if carla_actor.attributes.has_key('object_type'):
-#             if carla_actor.attributes['object_type'] == 'car':
-#                 self.classification = Object.CLASSIFICATION_CAR
-#             elif carla_actor.attributes['object_type'] == 'bike':
-#                 self.classification = Object.CLASSIFICATION_BIKE
-#             elif carla_actor.attributes['object_type'] == 'motorcycle':
-#                 self.classification = Object.CLASSIFICATION_MOTORCYCLE
-#             elif carla_actor.attributes['object_type'] == 'truck':
-#                 self.classification = Object.CLASSIFICATION_TRUCK
-#             elif carla_actor.attributes['object_type'] == 'other':
-#                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
-#         self.classification_age = 0
+        self.classification = VehicleClass.UNKNOWN
+        if carla_actor.attributes.has_key('object_type'):
+            if carla_actor.attributes['object_type'] == 'car':
+                self.classification = VehicleClass.CAR
+            elif carla_actor.attributes['object_type'] == 'bike':
+                self.classification = VehicleClass.BIKE
+            elif carla_actor.attributes['object_type'] == 'motorcycle':
+                self.classification = VehicleClass.MOTORCYCLE
+            elif carla_actor.attributes['object_type'] == 'truck':
+                self.classification = VehicleClass.TRUCK
+            elif carla_actor.attributes['object_type'] == 'other':
+                self.classification = VehicleClass.VEHICLE
+        self.classification_age = 0
 
     def destroy(self):
         """
@@ -93,9 +92,12 @@ class Vehicle(Actor):
 
         :return:
         """
-        #self.send_tf_msg()
+        # self.send_tf_msg()
         self.get_binding().publish_transform(self.get_frame_id(), self.carla_actor.get_transform())
-        #self.send_marker_msg()
+        self.get_binding().publish_marker(self.get_frame_id(),
+                                          self.carla_actor.bounding_box,
+                                          self.get_marker_color(),
+                                          self.get_global_id())
         super(Vehicle, self).update()
 
     def get_marker_color(self):
@@ -103,36 +105,16 @@ class Vehicle(Actor):
         Function (override) to return the color for marker messages.
 
         :return: the color used by a vehicle marker
-        :rtpye : std_msgs.msg.ColorRGBA
         """
-        color = ColorRGBA()
-        color.r = 255
-        color.g = 0
-        color.b = 0
-        return color
+        return (255,0,0)
 
-#     def send_marker_msg(self):
-#         """
-#         Function to send marker messages of this vehicle.
-# 
-#         :return:
-#         """
-#         marker = self.get_marker(use_parent_frame=False)
-#         marker.type = Marker.CUBE
-# 
-#         marker.pose = transforms.carla_location_to_pose(
-#             self.carla_actor.bounding_box.location)
-#         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-#         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-#         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-#         self.publish_ros_message('/carla/vehicle_marker', marker)
 
 #     def get_ros_object_msg(self):
 #         """
 #         Function to send object messages of this vehicle.
-# 
+#
 #         A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
-# 
+#
 #         :return:
 #         """
 #         vehicle_object = Object(header=self.get_msg_header())
@@ -151,7 +133,7 @@ class Vehicle(Actor):
 #             self.carla_actor.bounding_box.extent.x * 2.0,
 #             self.carla_actor.bounding_box.extent.y * 2.0,
 #             self.carla_actor.bounding_box.extent.z * 2.0])
-# 
+#
 #         # Classification if available in attributes
 #         if self.classification != Object.CLASSIFICATION_UNKNOWN:
 #             vehicle_object.object_classified = True
@@ -159,5 +141,5 @@ class Vehicle(Actor):
 #             vehicle_object.classification_certainty = 1.0
 #             self.classification_age += 1
 #             vehicle_object.classification_age = self.classification_age
-# 
+#
 #         return vehicle_object

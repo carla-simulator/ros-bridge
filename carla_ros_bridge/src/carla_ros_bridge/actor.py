@@ -50,16 +50,16 @@ class Actor(Child):
             parent=parent, topic_prefix=topic_prefix)
         self.carla_actor = carla_actor
         self.get_binding().logdebug("Created Actor-{}(id={}, parent_id={},"
-                       " type={}, topic_name={}, attributes={}".format(
-                           self.__class__.__name__, self.get_id(),
-                           self.get_parent_id(), self.carla_actor.type_id,
-                           self.topic_name(), self.carla_actor.attributes))
+                                    " type={}, topic_name={}, attributes={}".format(
+                                        self.__class__.__name__, self.get_id(),
+                                        self.get_parent_id(), self.carla_actor.type_id,
+                                        self.topic_name(), self.carla_actor.attributes))
 
         if self.__class__.__name__ == "Actor":
             self.get_binding().logwarn("Created Unsupported Actor(id={}, parent_id={},"
-                          " type={}, attributes={}".format(
-                              self.get_id(), self.get_parent_id(),
-                              self.carla_actor.type_id, self.carla_actor.attributes))
+                                       " type={}, attributes={}".format(
+                                           self.get_id(), self.get_parent_id(),
+                                           self.carla_actor.type_id, self.carla_actor.attributes))
 
     def destroy(self):
         """
@@ -74,15 +74,15 @@ class Actor(Child):
             "Destroying {}-Actor(id={})".format(self.__class__.__name__, self.get_id()))
         self.carla_actor = None
         super(Actor, self).destroy()
-# 
+#
 #     def get_marker_color(self):  # pylint: disable=no-self-use
 #         """
 #         Virtual (non-abstract) function to get the ROS std_msgs.msg.ColorRGBA
 #         used for rviz objects of this actor
-# 
+#
 #         Reimplement this in the derived actor class if ROS visualization messages
 #         (e.g. visualization_msgs.msg.Marker) are sent out and you want a different color than blue.
-# 
+#
 #         :return: blue color object
 #         :rtype: std_msgs.msg.ColorRGBA
 #         """
@@ -95,7 +95,7 @@ class Actor(Child):
 #     def get_marker(self, use_parent_frame=True):
 #         """
 #         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
-# 
+#
 #         :param use_parent_frame: per default (True) the header.frame_id
 #             is set to the frame of the actor's parent.
 #             If this is set to False, the actor's own frame is used as basis.
@@ -110,8 +110,6 @@ class Actor(Child):
 #         marker.id = self.get_global_id()
 #         marker.text = "id = {}".format(marker.id)
 #         return marker
-
-
 
     def get_global_id(self):
         """
