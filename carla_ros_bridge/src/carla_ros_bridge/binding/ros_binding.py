@@ -67,6 +67,7 @@ class RosBinding(object):
         """
         Constructor
         """
+        rospy.init_node("carla_bridge", anonymous=True)
         self.ros_timestamp = rospy.Time()
         self.tf_to_publish = []
         self.msgs_to_publish = []
@@ -74,14 +75,17 @@ class RosBinding(object):
         self.subscribers = {}
         self.vehicle_control_callbacks = {}
         self.vehicle_autopilot_callbacks = {}
-        
         self.camera_info_map = {}
+        self.parameters = rospy.get_param('carla')
         
         self.publishers['clock'] = rospy.Publisher(
             'clock', Clock, queue_size=10)
         self.publishers['tf'] = rospy.Publisher(
             'tf', TFMessage, queue_size=100)
 
+    def get_parameters(self):
+        return self.parameters
+        
     def get_msg_header(self, frame_id, timestamp=None):
         """
         Helper function to create a ROS message Header

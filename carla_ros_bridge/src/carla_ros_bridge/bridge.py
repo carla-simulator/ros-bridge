@@ -18,7 +18,6 @@ import time
 from carla_ros_bridge.parent import Parent
 from carla_ros_bridge.map import Map
 import carla_ros_bridge.object_sensor as ObjectSensor
-from carla_ros_bridge.binding.ros_binding import RosBinding
 
 
 class CarlaRosBridge(Parent):
@@ -27,20 +26,19 @@ class CarlaRosBridge(Parent):
     Carla Ros bridge
     """
 
-    def __init__(self, carla_world, params):
+    def __init__(self, carla_world, binding):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
-        :param params: dict of parameters, see settings.yaml
-        :type params: dict
+        :param binding: binding
         """
-        self.params = params
+        self.params = binding.get_parameters()
         super(CarlaRosBridge, self).__init__(
             carla_id=0, carla_world=carla_world, frame_id='/map')
 
-        self.binding = RosBinding()
+        self.binding = binding
         self.timestamp_last_run = 0.0
         self.actor_list = []
 
