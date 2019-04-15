@@ -9,12 +9,6 @@
 """
 Classes to handle Carla vehicles
 """
-import rospy
-
-from std_msgs.msg import ColorRGBA
-from derived_object_msgs.msg import Object
-from shape_msgs.msg import SolidPrimitive
-from visualization_msgs.msg import Marker
 
 from carla_ros_bridge.actor import Actor
 import carla_ros_bridge.transforms as transforms
@@ -63,19 +57,19 @@ class Vehicle(Actor):
                                       topic_prefix=topic_prefix,
                                       append_role_name_topic_postfix=append_role_name_topic_postfix)
 
-        self.classification = Object.CLASSIFICATION_UNKNOWN
-        if carla_actor.attributes.has_key('object_type'):
-            if carla_actor.attributes['object_type'] == 'car':
-                self.classification = Object.CLASSIFICATION_CAR
-            elif carla_actor.attributes['object_type'] == 'bike':
-                self.classification = Object.CLASSIFICATION_BIKE
-            elif carla_actor.attributes['object_type'] == 'motorcycle':
-                self.classification = Object.CLASSIFICATION_MOTORCYCLE
-            elif carla_actor.attributes['object_type'] == 'truck':
-                self.classification = Object.CLASSIFICATION_TRUCK
-            elif carla_actor.attributes['object_type'] == 'other':
-                self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
-        self.classification_age = 0
+#         self.classification = Object.CLASSIFICATION_UNKNOWN
+#         if carla_actor.attributes.has_key('object_type'):
+#             if carla_actor.attributes['object_type'] == 'car':
+#                 self.classification = Object.CLASSIFICATION_CAR
+#             elif carla_actor.attributes['object_type'] == 'bike':
+#                 self.classification = Object.CLASSIFICATION_BIKE
+#             elif carla_actor.attributes['object_type'] == 'motorcycle':
+#                 self.classification = Object.CLASSIFICATION_MOTORCYCLE
+#             elif carla_actor.attributes['object_type'] == 'truck':
+#                 self.classification = Object.CLASSIFICATION_TRUCK
+#             elif carla_actor.attributes['object_type'] == 'other':
+#                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
+#         self.classification_age = 0
 
     def destroy(self):
         """
@@ -85,7 +79,7 @@ class Vehicle(Actor):
 
         :return:
         """
-        rospy.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
+        self.get_binding().logdebug("Destroy Vehicle(id={})".format(self.get_id()))
         super(Vehicle, self).destroy()
 
     def update(self):
@@ -99,8 +93,9 @@ class Vehicle(Actor):
 
         :return:
         """
-        self.send_tf_msg()
-        self.send_marker_msg()
+        #self.send_tf_msg()
+        self.get_binding().publish_transform(self.get_frame_id(), self.carla_actor.get_transform())
+        #self.send_marker_msg()
         super(Vehicle, self).update()
 
     def get_marker_color(self):
@@ -116,52 +111,53 @@ class Vehicle(Actor):
         color.b = 0
         return color
 
-    def send_marker_msg(self):
-        """
-        Function to send marker messages of this vehicle.
+#     def send_marker_msg(self):
+#         """
+#         Function to send marker messages of this vehicle.
+# 
+#         :return:
+#         """
+#         marker = self.get_marker(use_parent_frame=False)
+#         marker.type = Marker.CUBE
+# 
+#         marker.pose = transforms.carla_location_to_pose(
+#             self.carla_actor.bounding_box.location)
+#         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
+#         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
+#         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
+#         self.publish_ros_message('/carla/vehicle_marker', marker)
 
-        :return:
-        """
-        marker = self.get_marker(use_parent_frame=False)
-        marker.type = Marker.CUBE
-
-        marker.pose = transforms.carla_location_to_pose(
-            self.carla_actor.bounding_box.location)
-        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_ros_message('/carla/vehicle_marker', marker)
-
-    def get_ros_object_msg(self):
-        """
-        Function to send object messages of this vehicle.
-
-        A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
-
-        :return:
-        """
-        vehicle_object = Object(header=self.get_msg_header())
-        # ID
-        vehicle_object.id = self.get_global_id()
-        # Pose
-        vehicle_object.pose = self.get_current_ros_pose()
-        # Twist
-        vehicle_object.twist = self.get_current_ros_twist()
-        # Acceleration
-        vehicle_object.accel = self.get_current_ros_accel()
-        # Shape
-        vehicle_object.shape.type = SolidPrimitive.BOX
-        vehicle_object.shape.dimensions.extend([
-            self.carla_actor.bounding_box.extent.x * 2.0,
-            self.carla_actor.bounding_box.extent.y * 2.0,
-            self.carla_actor.bounding_box.extent.z * 2.0])
-
-        # Classification if available in attributes
-        if self.classification != Object.CLASSIFICATION_UNKNOWN:
-            vehicle_object.object_classified = True
-            vehicle_object.classification = self.classification
-            vehicle_object.classification_certainty = 1.0
-            self.classification_age += 1
-            vehicle_object.classification_age = self.classification_age
-
-        return vehicle_object
+#     def get_ros_object_msg(self):
+#         """
+#         Function to send object messages of this vehicle.
+# 
+#         A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
+# 
+#         :return:
+#         """
+#         vehicle_object = Object(header=self.get_msg_header())
+#         # ID
+#         vehicle_object.id = self.get_global_id()
+#         # Pose
+#         vehicle_object.pose = self.get_current_ros_pose()
+#         # Twist
+#         vehicle_object.twist = self.get_current_ros_twist()
+#         # Acceleration
+#         vehicle_object.accel = trans.carla_acceleration_to_ros_accel(
+#             self.carla_actor.get_acceleration())
+#         # Shape
+#         vehicle_object.shape.type = SolidPrimitive.BOX
+#         vehicle_object.shape.dimensions.extend([
+#             self.carla_actor.bounding_box.extent.x * 2.0,
+#             self.carla_actor.bounding_box.extent.y * 2.0,
+#             self.carla_actor.bounding_box.extent.z * 2.0])
+# 
+#         # Classification if available in attributes
+#         if self.classification != Object.CLASSIFICATION_UNKNOWN:
+#             vehicle_object.object_classified = True
+#             vehicle_object.classification = self.classification
+#             vehicle_object.classification_certainty = 1.0
+#             self.classification_age += 1
+#             vehicle_object.classification_age = self.classification_age
+# 
+#         return vehicle_object

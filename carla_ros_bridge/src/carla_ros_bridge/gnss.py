@@ -10,8 +10,6 @@
 Classes to handle Carla gnsss
 """
 
-from sensor_msgs.msg import NavSatFix
-
 from carla_ros_bridge.sensor import Sensor
 
 
@@ -49,10 +47,4 @@ class Gnss(Sensor):
         :param carla_gnss_event: carla gnss event object
         :type carla_gnss_event: carla.GnssEvent
         """
-        navsatfix_msg = NavSatFix()
-        navsatfix_msg.header = self.get_msg_header(use_parent_frame=False)
-        navsatfix_msg.latitude = carla_gnss_event.latitude
-        navsatfix_msg.longitude = carla_gnss_event.longitude
-        navsatfix_msg.altitude = carla_gnss_event.altitude
-        self.publish_ros_message(
-            self.topic_name() + "/fix", navsatfix_msg)
+        self.get_binding().publish_gnss(self.topic_name(), carla_gnss_event)

@@ -13,9 +13,6 @@ from abc import abstractmethod
 
 import threading
 
-import rospy
-
-from geometry_msgs.msg import TransformStamped
 
 from carla_ros_bridge.actor import Actor
 
@@ -77,7 +74,7 @@ class Sensor(Actor):
         self.current_sensor_data = None
         self.update_lock = threading.Lock()
         if self.__class__.__name__ == "Sensor":
-            rospy.logwarn("Created Unsupported Sensor(id={}, parent_id={}"
+            self.get_binding().logwarn("Created Unsupported Sensor(id={}, parent_id={}"
                           ", type={}, attributes={}".format(
                               self.get_id(), self.get_parent_id(),
                               self.carla_actor.type_id, self.carla_actor.attributes))
@@ -93,7 +90,7 @@ class Sensor(Actor):
 
         :return:
         """
-        rospy.logdebug("Destroy Sensor(id={})".format(self.get_id()))
+        self.get_binding().logdebug("Destroy Sensor(id={})".format(self.get_id()))
         if self.carla_actor.is_listening:
             self.carla_actor.stop()
         if self.update_lock.acquire():
@@ -112,16 +109,6 @@ class Sensor(Actor):
         """
         return self.parent.get_frame_id() + "/" + super(Sensor, self).get_frame_id()
 
-    def get_msg_header(self, use_parent_frame=True):
-        """
-        Function (override) to get ROS message Header with sensor timestamp
-
-        :return: prefilled Header object
-        """
-        header = super(Sensor, self).get_msg_header(use_parent_frame)
-        # use timestamp of current sensor data
-        header.stamp = rospy.Time.from_sec(self.current_sensor_data.timestamp)
-        return header
 
     def _callback_sensor_data(self, carla_sensor_data):
         """
@@ -130,49 +117,24 @@ class Sensor(Actor):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        if not rospy.is_shutdown():
+        if not self.get_binding().is_shutdown():
             if self.update_lock.acquire(False):
                 self.current_sensor_data = carla_sensor_data
-                self.send_tf_msg()
+                self.publish_transform()
                 self.sensor_data_updated(carla_sensor_data)
                 self.update_lock.release()
 
-    def get_tf_msg(self):
+    def publish_transform(self):
         """
-        Function (override) to create a ROS tf message of this sensor
 
-        The reported transform of the sensor is in respect to the global
-        frame.
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = TransformStamped()
-        tf_msg.header = self.get_msg_header()
-        tf_msg.header.frame_id = "/map"
-        tf_msg.child_frame_id = self.get_frame_id()
-        tf_msg.transform = self.get_current_ros_transfrom()
-        return tf_msg
-
-    def get_current_ros_transfrom(self):
-        """
-        Function (override) to provide the current ROS transform
-
-        In general sensors are also actors, therefore they contain a transform that is updated
-        within each tick.
-        But the TF being published should exactly match the transform received by SensorData.
-
-        :return: the ROS transform of this actor
-        :rtype: geometry_msgs.msg.Transform
-        """
-        return trans.carla_transform_to_ros_transform(
-            self.current_sensor_data.transform)
+        self.get_binding().publish_transform(self.get_frame_id(), self.current_sensor_data.transform)
 
     @abstractmethod
     def sensor_data_updated(self, carla_sensor_data):
         """
         Pure-virtual function to transform the received carla sensor data
-        into a corresponding ROS message
+        into a corresponding binding message
 
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData

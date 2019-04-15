@@ -12,10 +12,6 @@ Base Classes to handle child objects
 
 from abc import abstractmethod
 
-import rospy
-
-from geometry_msgs.msg import TransformStamped
-
 from carla_ros_bridge.parent import Parent
 
 
@@ -49,7 +45,7 @@ class Child(Parent):
         super(Child, self).__init__(
             carla_id=carla_id, carla_world=carla_world, frame_id=self.topic_prefix)
         self.parent = parent
-        rospy.logdebug("Created {}-Child(id={}, parent_id={}, topic_name={})".format(
+        self.get_binding().logdebug("Created {}-Child(id={}, parent_id={}, topic_name={})".format(
             self.__class__.__name__, self.get_id(), self.get_parent_id(), self.topic_name()))
 
     def destroy(self):
@@ -61,35 +57,10 @@ class Child(Parent):
 
         :return:
         """
-        rospy.logdebug(
+        self.get_binding().logdebug(
             "Destroying {}-Child(id={})".format(self.__class__.__name__, self.get_id()))
         self.parent = None
         super(Child, self).destroy()
-
-    def get_current_ros_time(self):
-        """
-        Function (override) to query the current ROS time.
-
-        Just forwards the request to the parent.
-
-        :return: The latest received ROS time of the bridge
-        :rtype: rospy.Time
-        """
-        return self.parent.get_current_ros_time()
-
-    def publish_ros_message(self, topic, msg, is_latched=False):
-        """
-        Function (override) to publish ROS messages.
-
-        Just forwards the request to the parent.
-
-        :param topic: ROS topic to publish the message on
-        :type topic: string
-        :param msg: the ROS message to be published
-        :type msg: a valid ROS message type
-        :return:
-        """
-        self.parent.publish_ros_message(topic, msg, is_latched)
 
     def get_param(self, key, default=None):
         """
@@ -129,56 +100,6 @@ class Child(Parent):
         """
         return self.parent.get_id()
 
-    def get_msg_header(self, use_parent_frame=True):  # pylint: disable=arguments-differ
-        """
-        Helper function to create a ROS message Header
-
-        :param use_parent_frame: per default the header.frame_id is set
-          to the frame of the Child's parent. If this is set to False,
-          the Child's own frame is used as basis.
-        :type use_parent_frame: boolean
-        :return: prefilled Header object
-        """
-        header = super(Child, self).get_msg_header()
-        if use_parent_frame:
-            header.frame_id = self.parent.get_frame_id()
-        return header
-
-    def send_tf_msg(self):
-        """
-        Helper function to send a ROS tf message of this child
-
-        Mainly calls get_tf_msg() and publish_ros_message().
-
-        :return:
-        """
-        tf_msg = self.get_tf_msg()
-        self.publish_ros_message('tf', tf_msg)
-
-    def get_tf_msg(self):
-        """
-        Helper function to create a ROS tf message of this child
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = TransformStamped()
-        tf_msg.header = self.get_msg_header()
-        tf_msg.child_frame_id = self.get_frame_id()
-        tf_msg.transform = self.get_current_ros_transfrom()
-        return tf_msg
-
-    @abstractmethod
-    def get_current_ros_transfrom(self):
-        """
-        Pure virtual function to query the current ROS transform
-
-        :return: the ROS transform of this entity
-        :rtype: geometry_msgs.msg.Transform
-        """
-        raise NotImplementedError(
-            "This function has to be implemented by the derived classes")
-
     def get_actor_list(self):
         """
         Get list of actors from parent
@@ -196,3 +117,6 @@ class Child(Parent):
         :rtype: derived_object_msgs.ObjectArray
         """
         return self.parent.get_filtered_objectarray(filtered_id)
+
+    def get_binding(self):
+        return self.parent.get_binding()

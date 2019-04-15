@@ -11,7 +11,6 @@ Classes to handle lane invasion events
 """
 
 from carla_ros_bridge.sensor import Sensor
-from carla_msgs.msg import CarlaLaneInvasionEvent
 
 
 class LaneInvasionSensor(Sensor):
@@ -46,9 +45,4 @@ class LaneInvasionSensor(Sensor):
         :param lane_invasion_event: carla lane invasion event object
         :type lane_invasion_event: carla.LaneInvasionEvent
         """
-        lane_invasion_msg = CarlaLaneInvasionEvent()
-        lane_invasion_msg.header = self.get_msg_header(use_parent_frame=False)
-        for marking in lane_invasion_event.crossed_lane_markings:
-            lane_invasion_msg.crossed_lane_markings.append(marking.type)
-        self.publish_ros_message(
-            self.topic_name(), lane_invasion_msg)
+        self.get_binding().publish_lane_invasion(self.topic_name(), lane_invasion_event)

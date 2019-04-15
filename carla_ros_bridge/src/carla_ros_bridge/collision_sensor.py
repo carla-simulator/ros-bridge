@@ -11,7 +11,6 @@ Classes to handle collision events
 """
 
 from carla_ros_bridge.sensor import Sensor
-from carla_msgs.msg import CarlaCollisionEvent
 
 
 class CollisionSensor(Sensor):
@@ -41,17 +40,9 @@ class CollisionSensor(Sensor):
 
     def sensor_data_updated(self, collision_event):
         """
-        Function to wrap the collision event into a ros messsage
+        Function to wrap the collision event into a message
 
         :param collision_event: carla collision event object
         :type collision_event: carla.CollisionEvent
         """
-        collision_msg = CarlaCollisionEvent()
-        collision_msg.header = self.get_msg_header(use_parent_frame=False)
-        collision_msg.other_actor_id = collision_event.other_actor.id
-        collision_msg.normal_impulse.x = collision_event.normal_impulse.x
-        collision_msg.normal_impulse.y = collision_event.normal_impulse.y
-        collision_msg.normal_impulse.z = collision_event.normal_impulse.z
-
-        self.publish_ros_message(
-            self.topic_name(), collision_msg)
+        self.get_binding().publish_collision(self.topic_name(), collision_event)

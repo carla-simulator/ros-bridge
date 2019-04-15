@@ -10,10 +10,6 @@
 Base Classes to handle Actor objects
 """
 
-import rospy
-
-from visualization_msgs.msg import Marker
-from std_msgs.msg import ColorRGBA
 
 from carla_ros_bridge.child import Child
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
@@ -53,14 +49,14 @@ class Actor(Child):
             carla_id=carla_actor.id, carla_world=carla_actor.get_world(),
             parent=parent, topic_prefix=topic_prefix)
         self.carla_actor = carla_actor
-        rospy.logdebug("Created Actor-{}(id={}, parent_id={},"
+        self.get_binding().logdebug("Created Actor-{}(id={}, parent_id={},"
                        " type={}, topic_name={}, attributes={}".format(
                            self.__class__.__name__, self.get_id(),
                            self.get_parent_id(), self.carla_actor.type_id,
                            self.topic_name(), self.carla_actor.attributes))
 
         if self.__class__.__name__ == "Actor":
-            rospy.logwarn("Created Unsupported Actor(id={}, parent_id={},"
+            self.get_binding().logwarn("Created Unsupported Actor(id={}, parent_id={},"
                           " type={}, attributes={}".format(
                               self.get_id(), self.get_parent_id(),
                               self.carla_actor.type_id, self.carla_actor.attributes))
@@ -74,86 +70,48 @@ class Actor(Child):
 
         :return:
         """
-        rospy.logdebug(
+        self.get_binding().logdebug(
             "Destroying {}-Actor(id={})".format(self.__class__.__name__, self.get_id()))
         self.carla_actor = None
         super(Actor, self).destroy()
+# 
+#     def get_marker_color(self):  # pylint: disable=no-self-use
+#         """
+#         Virtual (non-abstract) function to get the ROS std_msgs.msg.ColorRGBA
+#         used for rviz objects of this actor
+# 
+#         Reimplement this in the derived actor class if ROS visualization messages
+#         (e.g. visualization_msgs.msg.Marker) are sent out and you want a different color than blue.
+# 
+#         :return: blue color object
+#         :rtype: std_msgs.msg.ColorRGBA
+#         """
+#         color = ColorRGBA()
+#         color.r = 0
+#         color.g = 0
+#         color.b = 255
+#         return color
 
-    def get_marker_color(self):  # pylint: disable=no-self-use
-        """
-        Virtual (non-abstract) function to get the ROS std_msgs.msg.ColorRGBA
-        used for rviz objects of this actor
+#     def get_marker(self, use_parent_frame=True):
+#         """
+#         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
+# 
+#         :param use_parent_frame: per default (True) the header.frame_id
+#             is set to the frame of the actor's parent.
+#             If this is set to False, the actor's own frame is used as basis.
+#         :type use_parent_frame:  boolean
+#         :return:
+#         visualization_msgs.msg.Marker
+#         """
+#         marker = Marker(
+#             header=self.get_msg_header(use_parent_frame=use_parent_frame))
+#         marker.color = self.get_marker_color()
+#         marker.color.a = 0.3
+#         marker.id = self.get_global_id()
+#         marker.text = "id = {}".format(marker.id)
+#         return marker
 
-        Reimplement this in the derived actor class if ROS visualization messages
-        (e.g. visualization_msgs.msg.Marker) are sent out and you want a different color than blue.
 
-        :return: blue color object
-        :rtype: std_msgs.msg.ColorRGBA
-        """
-        color = ColorRGBA()
-        color.r = 0
-        color.g = 0
-        color.b = 255
-        return color
-
-    def get_marker(self, use_parent_frame=True):
-        """
-        Helper function to create a ROS visualization_msgs.msg.Marker for the actor
-
-        :param use_parent_frame: per default (True) the header.frame_id
-            is set to the frame of the actor's parent.
-            If this is set to False, the actor's own frame is used as basis.
-        :type use_parent_frame:  boolean
-        :return:
-        visualization_msgs.msg.Marker
-        """
-        marker = Marker(
-            header=self.get_msg_header(use_parent_frame=use_parent_frame))
-        marker.color = self.get_marker_color()
-        marker.color.a = 0.3
-        marker.id = self.get_global_id()
-        marker.text = "id = {}".format(marker.id)
-        return marker
-
-    def get_current_ros_transfrom(self):
-        """
-        Function (override) to provide the current ROS transform
-
-        :return: the ROS transform of this actor
-        :rtype: geometry_msgs.msg.Transform
-        """
-        return trans.carla_transform_to_ros_transform(
-            self.carla_actor.get_transform())
-
-    def get_current_ros_pose(self):
-        """
-        Function to provide the current ROS pose
-
-        :return: the ROS pose of this actor
-        :rtype: geometry_msgs.msg.Pose
-        """
-        return trans.carla_transform_to_ros_pose(
-            self.carla_actor.get_transform())
-
-    def get_current_ros_twist(self):
-        """
-        Function to provide the current ROS twist
-
-        :return: the ROS twist of this actor
-        :rtype: geometry_msgs.msg.Twist
-        """
-        return trans.carla_velocity_to_ros_twist(
-            self.carla_actor.get_velocity())
-
-    def get_current_ros_accel(self):
-        """
-        Function to provide the current ROS acceleration
-
-        :return: the ROS acceleration of this actor
-        :rtype: geometry_msgs.msg.Accel
-        """
-        return trans.carla_acceleration_to_ros_accel(
-            self.carla_actor.get_acceleration())
 
     def get_global_id(self):
         """

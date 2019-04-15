@@ -13,8 +13,6 @@ Parent factory class for carla.Actor lifecycle handling
 from abc import abstractmethod
 
 import threading
-import rospy
-from std_msgs.msg import Header
 
 
 class Parent(object):
@@ -128,7 +126,7 @@ class Parent(object):
         """
         for child_actor_id, child_actor in self.child_actors.iteritems():
             if not child_actor.carla_actor.is_alive:
-                rospy.loginfo(
+                self.get_binding().loginfo(
                     "Detected non alive child Actor(id={})".format(child_actor_id))
                 self.dead_child_actors.append(child_actor)
             else:
@@ -138,7 +136,7 @@ class Parent(object):
                         found_actor = True
                         break
                 if not found_actor:
-                    rospy.loginfo(
+                    self.get_binding().loginfo(
                         "Detected not existing child Actor(id={})".format(child_actor_id))
                     self.dead_child_actors.append(child_actor)
 
@@ -193,53 +191,14 @@ class Parent(object):
                 try:
                     actor.update()
                 except RuntimeError as e:
-                    rospy.logwarn("Update actor {}({}) failed: {}".format(
+                    self.get_binding().logwarn("Update actor {}({}) failed: {}".format(
                         actor.__class__.__name__, actor_id, e))
                     continue
 
-    def get_msg_header(self):
-        """
-        Helper function to create a ROS message Header
-
-        :return: prefilled Header object
-        """
-        header = Header()
-        header.stamp = self.get_current_ros_time()
-        header.frame_id = self.get_frame_id()
-        return header
-
     @abstractmethod
-    def get_current_ros_time(self):
+    def get_binding(self):
         """
-        Pure virtual function to query the current ROS time from
-        the carla_ros_bridge.CarlaRosBridge parent root.
-
-        Is intended to be implemented by the directly derived classes:
-        carla_ros_bridge.Child and carla_ros_bridge.CarlaRosBridge.
-        Be aware: Its not intended that classes further down in the class hierarchy override this!
-
-        :return: The latest received ROS time of the bridge
-        :rtype: rospy.Time
-        """
-        raise NotImplementedError(
-            "This function is re-implemented by"
-            "carla_ros_bridge.Child and carla_ros_bridge.CarlaRosBridge"
-            "If this error becomes visible the class hierarchy is somehow broken")
-
-    @abstractmethod
-    def publish_ros_message(self, topic, msg, is_latched=False):
-        """
-        Pure virtual function to publish ROS messages via
-        the carla_ros_bridge.CarlaRosBridge parent root.
-
-        Is intended to be implemented by the directly derived classes:
-        carla_ros_bridge.Child and carla_ros_bridge.CarlaRosBridge.
-        Be aware: Its not intended that classes further down in the class hierarchy override this!
-
-        :param topic: ROS topic to publish the message on
-        :type topic: string
-        :param msg: the ROS message to be published
-        :type msg: a valid ROS message type
+        
         :return:
         """
         raise NotImplementedError(

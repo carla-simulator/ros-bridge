@@ -14,22 +14,17 @@ from abc import abstractmethod
 import math
 import numpy
 
-import rospy
-import tf
-from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
-
 import carla
 from carla_ros_bridge.sensor import Sensor
 import carla_ros_bridge.transforms as trans
 
+from cv_bridge import CvBridge
 
 class Camera(Sensor):
 
     """
     Sensor implementation details for cameras
     """
-
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
@@ -72,99 +67,42 @@ class Camera(Sensor):
                                      topic_prefix=topic_prefix)
 
         if self.__class__.__name__ == "Camera":
-            rospy.logwarn("Created Unsupported Camera Actor"
+            self.get_binding().logwarn("Created Unsupported Camera Actor"
                           "(id={}, parent_id={}, type={}, attributes={})".format(
                               self.get_id(), self.get_parent_id(),
                               self.carla_actor.type_id, self.carla_actor.attributes))
-        else:
-            self._build_camera_info()
-
-    def _build_camera_info(self):
-        """
-        Private function to compute camera info
-
-        camera info doesn't change over time
-        """
-        camera_info = CameraInfo()
-        # store info without header
-        camera_info.header = None
-        camera_info.width = int(self.carla_actor.attributes['image_size_x'])
-        camera_info.height = int(self.carla_actor.attributes['image_size_y'])
-        camera_info.distortion_model = 'plumb_bob'
-        cx = camera_info.width / 2.0
-        cy = camera_info.height / 2.0
-        fx = camera_info.width / (
-            2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
-        fy = fx
-        camera_info.K = [fx, 0, cx, 0, fy, cy, 0, 0, 1]
-        camera_info.D = [0, 0, 0, 0, 0]
-        camera_info.R = [1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0]
-        camera_info.P = [fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1.0, 0]
-        self._camera_info = camera_info
 
     def sensor_data_updated(self, carla_image):
         """
-        Function (override) to transform the received carla image data
-        into a ROS image message
+        Function (override) to publish camera data
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        """
-        if ((carla_image.height != self._camera_info.height) or
-                (carla_image.width != self._camera_info.width)):
-            rospy.logerr(
-                "Camera{} received image not matching configuration".format(self.topic_name()))
-
-        image_data_array, encoding = self.get_carla_image_data_array(
-            carla_image=carla_image)
-        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
-        # the camera data is in respect to the camera's own frame
-        img_msg.header = self.get_msg_header(use_parent_frame=False)
-
-        cam_info = self._camera_info
-        cam_info.header = img_msg.header
-
-        self.publish_ros_message(self.topic_name() + '/camera_info', cam_info)
-        self.publish_ros_message(
-            self.topic_name() + '/' + self.get_image_topic_name(), img_msg)
-
-    def get_tf_msg(self):
-        """
-        Function (override) to modify the tf messages sent by this camera.
-
-        The camera transformation has to be altered to look at the same axis
-        as the opencv projection in order to get easy depth cloud for RGBD camera
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Camera, self).get_tf_msg()
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        quat_swap = tf.transformations.quaternion_from_matrix(
-            [[0, 0, 1, 0],
-             [-1, 0, 0, 0],
-             [0, -1, 0, 0],
-             [0, 0, 0, 1]])
-        quat = tf.transformations.quaternion_multiply(quat, quat_swap)
-
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
-        return tf_msg
-
-    @abstractmethod
-    def get_carla_image_data_array(self, carla_image):
-        """
-        Virtual function to convert the carla image to a numpy data array
-        as input for the cv_bridge.cv2_to_imgmsg() function
-
-        :param carla_image: carla image object
-        :type carla_image: carla.Image
-        :return tuple (numpy data array containing the image information, encoding)
-        :rtype tuple(numpy.ndarray, string)
         """
         raise NotImplementedError(
             "This function has to be re-implemented by derived classes")
+
+    def publish_transform(self):
+        """
+        The camera transformation has to be altered to look at the same axis
+        as the opencv projection in order to get easy depth cloud for RGBD camera
+
+        """
+        transform = self.current_sensor_data.transform
+        #TODO
+#         tf_msg = super(Camera, self).get_tf_msg()
+#         rotation = tf_msg.transform.rotation
+#         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
+#         quat_swap = tf.transformations.quaternion_from_matrix(
+#             [[0, 0, 1, 0],
+#              [-1, 0, 0, 0],
+#              [0, -1, 0, 0],
+#              [0, 0, 0, 1]])
+#         quat = tf.transformations.quaternion_multiply(quat, quat_swap)
+# 
+#         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
+#             quat)
+        self.get_binding().publish_transform(self.get_frame_id(), transform)
 
     @abstractmethod
     def get_image_topic_name(self):
@@ -201,34 +139,14 @@ class RgbCamera(Camera):
                                         parent=parent,
                                         topic_prefix=topic_prefix)
 
-    def get_carla_image_data_array(self, carla_image):
+    def sensor_data_updated(self, carla_image):
         """
-        Function (override) to convert the carla image to a numpy data array
-        as input for the cv_bridge.cv2_to_imgmsg() function
-
-        The RGB camera provides a 4-channel int8 color format (bgra).
+        Function (override) to publish camera data
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return tuple (numpy data array containing the image information, encoding)
-        :rtype tuple(numpy.ndarray, string)
         """
-
-        carla_image_data_array = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
-
-        return carla_image_data_array, 'bgra8'
-
-    def get_image_topic_name(self):
-        """
-        virtual function to provide the actual image topic name
-
-        :return image topic name
-        :rtype string
-        """
-        return "image_color"
-
+        self.get_binding().publish_rgb_camera(self.topic_name(), carla_image, self.carla_actor.attributes)
 
 class DepthCamera(Camera):
 
@@ -253,56 +171,14 @@ class DepthCamera(Camera):
                                           parent=parent,
                                           topic_prefix=topic_prefix)
 
-    def get_carla_image_data_array(self, carla_image):
+    def sensor_data_updated(self, carla_image):
         """
-        Function (override) to convert the carla image to a numpy data array
-        as input for the cv_bridge.cv2_to_imgmsg() function
-
-        The depth camera raw image is converted to a linear depth image
-        having 1-channel float32.
+        Function (override) to publish camera data
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return tuple (numpy data array containing the image information, encoding)
-        :rtype tuple(numpy.ndarray, string)
         """
-
-        # color conversion within C++ code is broken, when transforming a
-        #  4-channel uint8 color pixel into a 1-channel float32 grayscale pixel
-        # therefore, we do it on our own here
-        #
-        # @todo: After fixing https://github.com/carla-simulator/carla/issues/1041
-        # the final code in here should look like:
-        #
-        # carla_image.convert(carla.ColorConverter.Depth)
-        #
-        # carla_image_data_array = numpy.ndarray(
-        #    shape=(carla_image.height, carla_image.width, 1),
-        #    dtype=numpy.float32, buffer=carla_image.raw_data)
-        #
-        bgra_image = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
-
-        # Apply (R + G * 256 + B * 256 * 256) / (256**3 - 1) * 1000
-        # according to the documentation:
-        # https://carla.readthedocs.io/en/latest/cameras_and_sensors/#camera-depth-map
-        scales = numpy.array([65536.0, 256.0, 1.0, 0]) / (256**3 - 1) * 1000
-        depth_image = numpy.dot(bgra_image, scales).astype(numpy.float32)
-
-        # actually we want encoding '32FC1'
-        # which is automatically selected by cv bridge with passthrough
-        return depth_image, 'passthrough'
-
-    def get_image_topic_name(self):
-        """
-        Function (override) to provide the actual image topic name
-
-        :return image topic name
-        :rtype string
-        """
-        return "image_depth"
-
+        self.get_binding().publish_depth_camera(self.topic_name(), carla_image, self.carla_actor.attributes)
 
 class SemanticSegmentationCamera(Camera):
 
@@ -328,31 +204,11 @@ class SemanticSegmentationCamera(Camera):
                                                        parent=parent,
                                                        topic_prefix=topic_prefix)
 
-    def get_carla_image_data_array(self, carla_image):
+    def sensor_data_updated(self, carla_image):
         """
-        Function (override) to convert the carla image to a numpy data array
-        as input for the cv_bridge.cv2_to_imgmsg() function
-
-        The segmentation camera raw image is converted to the city scapes palette image
-        having 4-channel uint8.
+        Function (override) to publish camera data
 
         :param carla_image: carla image object
         :type carla_image: carla.Image
-        :return tuple (numpy data array containing the image information, encoding)
-        :rtype tuple(numpy.ndarray, string)
         """
-
-        carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        carla_image_data_array = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
-        return carla_image_data_array, 'bgra8'
-
-    def get_image_topic_name(self):
-        """
-        Function (override) to provide the actual image topic name
-
-        :return image topic name
-        :rtype string
-        """
-        return "image_segmentation"
+        self.get_binding().publish_semantic_segmentation_camera(self.topic_name(), carla_image, self.carla_actor.attributes)

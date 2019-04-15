@@ -10,8 +10,6 @@
 Classes to handle Carla traffic objects
 """
 
-import rospy
-
 from carla_ros_bridge.actor import Actor
 
 
@@ -56,7 +54,7 @@ class Traffic(Actor):
                                       topic_prefix=topic_prefix,
                                       append_role_name_topic_postfix=append_role_name_topic_postfix)
         if self.__class__.__name__ == "Traffic":
-            rospy.logwarn("Created Unsupported Traffic Actor"
+            self.get_binding().logwarn("Created Unsupported Traffic Actor"
                           "(id={}, parent_id={}, type={}, attributes={})".format(
                               self.get_id(), self.get_parent_id(),
                               self.carla_actor.type_id, self.carla_actor.attributes))
@@ -80,7 +78,7 @@ class TrafficLight(Traffic):
         topic_prefix = 'traffic.traffic_light'
         super(TrafficLight, self).__init__(carla_actor=carla_actor,
                                            parent=parent, topic_prefix=topic_prefix)
-        rospy.logwarn("Created Traffic-Light Actor(id={}, parent_id={}, type={}, attributes={}). "
+        self.get_binding().logwarn("Created Traffic-Light Actor(id={}, parent_id={}, type={}, attributes={}). "
                       "Not yet fully implemented!".format(
                           self.get_id(), self.get_parent_id(),
                           self.carla_actor.type_id, self.carla_actor.attributes))

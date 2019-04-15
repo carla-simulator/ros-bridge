@@ -13,15 +13,12 @@ Class that handle communication between CARLA and ROS
 """
 import threading
 import time
-import rospy
 
-from rosgraph_msgs.msg import Clock
-from tf2_msgs.msg import TFMessage
-from derived_object_msgs.msg import ObjectArray
 
 from carla_ros_bridge.parent import Parent
 from carla_ros_bridge.map import Map
 import carla_ros_bridge.object_sensor as ObjectSensor
+from carla_ros_bridge.binding.ros_binding import RosBinding
 
 
 class CarlaRosBridge(Parent):
@@ -43,10 +40,8 @@ class CarlaRosBridge(Parent):
         super(CarlaRosBridge, self).__init__(
             carla_id=0, carla_world=carla_world, frame_id='/map')
 
+        self.binding = RosBinding()
         self.timestamp_last_run = 0.0
-        self.ros_timestamp = rospy.Time()
-        self.tf_to_publish = []
-        self.msgs_to_publish = []
         self.actor_list = []
 
         # register callback to create/delete actors
@@ -57,16 +52,9 @@ class CarlaRosBridge(Parent):
         self.update_lock = threading.Lock()
         self.carla_world.on_tick(self._carla_time_tick)
 
-        self.publishers = {}
-        self.publishers['clock'] = rospy.Publisher(
-            'clock', Clock, queue_size=10)
-
-        self.publishers['tf'] = rospy.Publisher(
-            'tf', TFMessage, queue_size=100)
-
-        self.publishers['/carla/objects'] = rospy.Publisher(
-            '/carla/objects', ObjectArray, queue_size=10)
-        self.object_array = ObjectArray()
+#         self.publishers['/carla/objects'] = rospy.Publisher(
+#             '/carla/objects', ObjectArray, queue_size=10)
+#         self.object_array = ObjectArray()
 
         self.map = Map(carla_world=self.carla_world, parent=self, topic='/map')
 
@@ -83,44 +71,8 @@ class CarlaRosBridge(Parent):
         self.update_child_actors_lock.acquire()
         self.update_lock.acquire()
         self.actor_list = []
-        rospy.loginfo("Exiting Bridge")
-        self.publishers.clear()
+        self.get_binding().loginfo("Exiting Bridge")
         super(CarlaRosBridge, self).destroy()
-
-    def get_current_ros_time(self):
-        """
-        Function (override) to return the current ROS time.
-
-        :return: The latest received ROS time of the bridge
-        :rtype: rospy.Time
-        """
-        return self.ros_timestamp
-
-    def publish_ros_message(self, topic, msg, is_latched=False):
-        """
-        Function (override) to publish ROS messages.
-
-        Store the message in a list (waiting for their publication)
-        with their associated publisher.
-        If required corresponding publishers are created automatically.
-
-        Messages for /tf topics and /carla/objects are handle differently
-        in order to publish all transforms, objects in the same message
-
-        :param topic: ROS topic to publish the message on
-        :type topic: string
-        :param msg: the ROS message to be published
-        :type msg: a valid ROS message type
-        :return:
-        """
-        if topic == 'tf':
-            # transform are merged in same message
-            self.tf_to_publish.append(msg)
-        else:
-            if topic not in self.publishers:
-                self.publishers[topic] = rospy.Publisher(
-                    topic, type(msg), queue_size=10, latch=is_latched)
-            self.msgs_to_publish.append((self.publishers[topic], msg))
 
     def get_param(self, key, default=None):
         """
@@ -154,20 +106,20 @@ class CarlaRosBridge(Parent):
         After successful locking the update mutex
         (only perform trylock to respect bridge processing time)
         the clock and the children are updated.
-        Finally the ROS messages collected to be published are sent out.
+        Finally the messages collected to be published are sent out.
 
         :param carla_timestamp: the current carla time
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        if not rospy.is_shutdown():
+        if not self.get_binding().is_shutdown():
             if self.update_lock.acquire(False):
                 if self.timestamp_last_run < carla_timestamp.elapsed_seconds:
                     self.timestamp_last_run = carla_timestamp.elapsed_seconds
-                    self._update_clock(carla_timestamp)
+                    self.binding.update_clock(carla_timestamp)
                     self.update()
                     self._prepare_msgs()
-                    self.send_msgs()
+                    self.binding.send_msgs()
                 self.update_lock.release()
 
     def _carla_update_child_actors(self, _):
@@ -183,7 +135,7 @@ class CarlaRosBridge(Parent):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        if not rospy.is_shutdown():
+        if not self.get_binding().is_shutdown():
             if self.update_child_actors_lock.acquire(False):
                 # cache actor_list once during this update-loop
                 self.actor_list = self.carla_world.get_actors()
@@ -192,64 +144,34 @@ class CarlaRosBridge(Parent):
                 time.sleep(1)
                 self.update_child_actors_lock.release()
 
-    def _update_clock(self, carla_timestamp):
-        """
-        Private function to perform the update of the clock
-
-        :param carla_timestamp: the current carla time
-        :type carla_timestamp: carla.Timestamp
-        :return:
-        """
-        self.ros_timestamp = rospy.Time.from_sec(
-            carla_timestamp.elapsed_seconds)
-        self.publish_ros_message('clock', Clock(self.ros_timestamp))
-
     def _prepare_msgs(self):
         """
         Private function to prepare tf and object message to be sent out
 
         :return:
         """
-        tf_msg = TFMessage(self.tf_to_publish)
-        self.msgs_to_publish.append((self.publishers['tf'], tf_msg))
-        self.tf_to_publish = []
-        self.publish_ros_message(
-            '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
-
-    def send_msgs(self):
-        """
-        Function to actually send the collected ROS messages out via the publisher
-
-        :return:
-        """
-        for publisher, msg in self.msgs_to_publish:
-            try:
-                publisher.publish(msg)
-            except rospy.ROSSerializationException as error:
-                rospy.logwarn("Failed to serialize message on publishing: {}".format(error))
-            except Exception as error:  # pylint: disable=broad-except
-                rospy.logwarn("Failed to publish message: {}".format(error))
-        self.msgs_to_publish = []
+        #self.get_binding().publish_message(
+        #    '/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
 
     def run(self):
         """
         Run the bridge functionality.
 
-        Registers on shutdown callback at rospy and spins ROS.
+        Registers on shutdown callback and spins
 
         :return:
         """
-        rospy.on_shutdown(self.on_shutdown)
-        rospy.spin()
+        self.get_binding().on_shutdown(self.on_shutdown)
+        self.get_binding().spin()
 
     def on_shutdown(self):
         """
         Function to be called on shutdown.
 
-        This function is registered at rospy as shutdown handler.
+        This function is registered as shutdown handler.
 
         """
-        rospy.loginfo("Shutdown requested")
+        self.get_binding().loginfo("Shutdown requested")
         self.destroy()
 
     def get_actor_list(self):
@@ -269,3 +191,8 @@ class CarlaRosBridge(Parent):
         :rtype: derived_object_msgs.ObjectArray
         """
         return ObjectSensor.get_filtered_objectarray(self, filtered_id)
+
+    def get_binding(self):
+        """
+        """
+        return self.binding

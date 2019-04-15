@@ -15,7 +15,6 @@ import rospy
 import carla
 
 from carla_ros_bridge.bridge import CarlaRosBridge
-from carla_ros_bridge.bridge_with_rosbag import CarlaRosBridgeWithBag
 
 
 def main():
@@ -40,8 +39,7 @@ def main():
 
         rospy.loginfo("Connected")
 
-        bridge_cls = CarlaRosBridgeWithBag if rospy.get_param(
-            'rosbag_fname', '') else CarlaRosBridge
+        bridge_cls = CarlaRosBridge
         carla_ros_bridge = bridge_cls(
             carla_world=carla_client.get_world(), params=params)
         carla_ros_bridge.run()
