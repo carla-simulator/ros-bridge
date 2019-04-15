@@ -53,7 +53,7 @@ class Lidar(Sensor):
         transform = self.current_sensor_data.transform
         transform.roll = 0
         transform.pitch = 0
-        self.get_binding().publish_transform(self.get_frame_id(), transform)
+        self.get_binding().publish_transform(self.get_frame_id(), self.current_sensor_data.transform)
 
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -62,4 +62,4 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        self.get_binding().publish_lidar(self.topic_name() + "/point_cloud", carla_lidar_measurement)
+        self.get_binding().publish_lidar(self.topic_name() + "/point_cloud", self.get_frame_id(), carla_lidar_measurement)
