@@ -72,7 +72,6 @@ class EgoVehicle(Vehicle):
                 self.carla_actor.attributes.get('role_name'),
                 self.carla_actor.get_physics_control())
         self.get_binding().publish_ego_vehicle_status(self.get_topic_prefix(),
-                                                      self.get_topic_prefix(),
                                                       self.carla_actor.get_velocity(),
                                                       self.carla_actor.get_transform(),
                                                       self.carla_actor.get_control(),

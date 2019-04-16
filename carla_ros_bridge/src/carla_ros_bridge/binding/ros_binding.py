@@ -202,7 +202,7 @@ class RosBinding(object):
             self.camera_info_map[topic_base] = camera_info
         return self.camera_info_map[topic_base]
 
-    def publish_rgb_camera(self, topic, frame_id, carla_image, attributes):
+    def publish_rgb_camera(self, topic, carla_image, attributes):
         """
         Function (override) to transform the received carla image data
         into a ROS image message
@@ -216,10 +216,10 @@ class RosBinding(object):
             dtype=numpy.uint8, buffer=carla_image.raw_data)
 
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(carla_image_data_array, encoding='bgra8')
-        self.publish_camera(topic, frame_id, attributes, carla_image, img_msg, "image_color")
+        self.publish_camera(topic, attributes, carla_image, img_msg, "image_color")
 
 
-    def publish_semantic_segmentation_camera(self, topic, frame_id, carla_image, attributes):
+    def publish_semantic_segmentation_camera(self, topic, carla_image, attributes):
         """
         Function (override) to transform the received carla image data
         into a ROS image message
@@ -235,9 +235,9 @@ class RosBinding(object):
             dtype=numpy.uint8, buffer=carla_image.raw_data)
 
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(carla_image_data_array, encoding='bgra8')
-        self.publish_camera(topic, frame_id, attributes, carla_image, img_msg, "image_segmentation")
+        self.publish_camera(topic, attributes, carla_image, img_msg, "image_segmentation")
     
-    def publish_depth_camera(self, topic, frame_id, carla_image, attributes):
+    def publish_depth_camera(self, topic, carla_image, attributes):
         """
         Function (override) to transform the received carla image data
         into a ROS image message
@@ -275,16 +275,16 @@ class RosBinding(object):
         # which is automatically selected by cv bridge with passthrough
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(depth_image, encoding='passthrough')
         
-        self.publish_camera(topic, frame_id, attributes, carla_image, img_msg, "image_depth")
+        self.publish_camera(topic, attributes, carla_image, img_msg, "image_depth")
     
-    def publish_camera(self, topic, frame_id, attributes, carla_image, image_message, image_topic):
+    def publish_camera(self, topic, attributes, carla_image, image_message, image_topic):
         cam_info = self.get_camera_info(topic, attributes)
         if ((carla_image.height != cam_info.height) or (carla_image.width != cam_info.width)):
             rospy.logerr(
                 "Camera{} received image not matching configuration".format(self.topic_name()))
 
         # the camera data is in respect to the camera's own frame
-        image_message.header = self.get_msg_header(frame_id, timestamp=rospy.Time.from_sec(carla_image.timestamp))
+        image_message.header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(carla_image.timestamp))
         cam_info.header = image_message.header
 
         self.publish_message(topic + '/camera_info', cam_info)
@@ -336,14 +336,14 @@ class RosBinding(object):
             lane_invasion_msg.crossed_lane_markings.append(marking.type)
         self.publish_message(topic, lane_invasion_msg)
 
-    def publish_lidar(self, topic, frame_id, carla_lidar_measurement):
+    def publish_lidar(self, topic, carla_lidar_measurement):
         """
         Function to transform the a received lidar measurement into a ROS point cloud message
 
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header(frame_id, timestamp=rospy.Time.from_sec(carla_lidar_measurement.timestamp))
+        header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(carla_lidar_measurement.timestamp))
 
         lidar_data = numpy.frombuffer(
             carla_lidar_measurement.raw_data, dtype=numpy.float32)
@@ -400,7 +400,7 @@ class RosBinding(object):
 
         self.publish_message(topic, vehicle_info, True)
 
-    def publish_ego_vehicle_status(self, topic, frame_id, velocity, transform, current_control, acceleration):
+    def publish_ego_vehicle_status(self, topic, velocity, transform, current_control, acceleration):
         """
         Function (override) to send odometry message of the ego vehicle
         instead of an object message.
@@ -427,7 +427,7 @@ class RosBinding(object):
         self.publish_message(topic + "/vehicle_status", vehicle_status)
 
         # @todo: do we still need this?
-        odometry = Odometry(header=self.get_msg_header(frame_id))
+        odometry = Odometry(header=self.get_msg_header(topic))
         #TODOodometry.child_frame_id = self.get_frame_id()
         odometry.pose.pose = ros_pose
         odometry.twist.twist = ros_trans.carla_velocity_to_ros_twist(velocity)

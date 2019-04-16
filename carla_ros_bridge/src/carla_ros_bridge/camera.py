@@ -115,7 +115,7 @@ class RgbCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_rgb_camera(self.get_topic_prefix(), self.get_topic_prefix(),
+        self.get_binding().publish_rgb_camera(self.get_topic_prefix(), 
                                               carla_image, self.carla_actor.attributes)
 
 
@@ -149,8 +149,7 @@ class DepthCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_depth_camera(self.get_topic_prefix(),
-                                                self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_depth_camera(self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
 
 
 class SemanticSegmentationCamera(Camera):
@@ -174,7 +173,7 @@ class SemanticSegmentationCamera(Camera):
         super(
             SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
                                                        parent=parent,
-                                          binding=binding,
+                                                       binding=binding,
                                                        topic_prefix=topic_prefix)
 
     def sensor_data_updated(self, carla_image):
@@ -185,5 +184,4 @@ class SemanticSegmentationCamera(Camera):
         :type carla_image: carla.Image
         """
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        self.get_binding().publish_semantic_segmentation_camera(self.get_topic_prefix(),
-                                                                self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_semantic_segmentation_camera(self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
