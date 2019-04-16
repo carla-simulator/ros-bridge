@@ -11,16 +11,16 @@ Class to handle the carla map
 """
 
 
-from carla_ros_bridge.child import Child
+from carla_ros_bridge.actor import Actor
 
 
-class Map(Child):
+class Map(object):
 
     """
     Child implementation details for the map
     """
 
-    def __init__(self, carla_world, parent, topic):
+    def __init__(self, carla_world, topic):
         """
         Constructor
 
@@ -31,37 +31,37 @@ class Map(Child):
         :param topic_prefix: the topic prefix to be used for this child
         :type topic_prefix: string
         """
+        pass
 
-        super(Map, self).__init__(
-            carla_id=-1, carla_world=carla_world, parent=parent, topic_prefix=topic)
-
-        self.carla_map = self.get_carla_world().get_map()
-        self.map_published = False
-
-    def destroy(self):
-        """
-        Function (override) to destroy this object.
-
-        Remove reference to carla.Map object.
-        Finally forward call to super class.
-
-        :return:
-        """
-        self.get_binding().logdebug("Destroying Map()")
-        self.carla_map = None
-        self.open_drive_publisher = None
-        super(Map, self).destroy()
-
-    def update(self):
-        """
-        Function (override) to update this object.
-
-        On update map sends:
-        - tf global frame
-
-        :return:
-        """
-        if not self.map_published:
-            self.get_binding().publish_map(self.carla_map)
-        self.publish_transform(1, Transform())
-        super(Map).update()
+#         super(Map, self).__init__(
+#             carla_id=-1, carla_world=carla_world, parent=parent, topic_prefix=topic)
+# 
+#         self.carla_map = self.get_carla_world().get_map()
+#         self.map_published = False
+# 
+#     def destroy(self):
+#         """
+#         Function (override) to destroy this object.
+# 
+#         Remove reference to carla.Map object.
+#         Finally forward call to super class.
+# 
+#         :return:
+#         """
+#         self.get_binding().logdebug("Destroying Map()")
+#         self.carla_map = None
+#         self.open_drive_publisher = None
+#         super(Map, self).destroy()
+# 
+#     def update(self):
+#         """
+#         Function (override) to update this object.
+# 
+#         On update map sends:
+#         - tf global frame
+# 
+#         :return:
+#         """
+#         if not self.map_published:
+#             self.get_binding().publish_map(self.carla_map)
+#         self.publish_transform(1, Transform())

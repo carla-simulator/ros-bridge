@@ -22,7 +22,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -36,12 +36,10 @@ class Lidar(Sensor):
             the role_name of the actor is used as topic postfix
         :type append_role_name_topic_postfix: boolean
         """
-        if topic_prefix is None:
-            topic_prefix = 'lidar'
         super(Lidar, self).__init__(carla_actor=carla_actor,
                                     parent=parent,
-                                    topic_prefix=topic_prefix,
-                                    append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                    binding=binding,
+                                    topic_prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
     def publish_transform(self):
         """
@@ -53,7 +51,7 @@ class Lidar(Sensor):
         transform = self.current_sensor_data.transform
         transform.roll = 0
         transform.pitch = 0
-        self.get_binding().publish_transform(self.get_frame_id(), self.current_sensor_data.transform)
+        self.get_binding().publish_transform(self.get_topic_prefix(), self.current_sensor_data.transform)
 
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -62,5 +60,5 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        self.get_binding().publish_lidar(self.topic_name() + "/point_cloud",
-                                         self.get_frame_id(), carla_lidar_measurement)
+        self.get_binding().publish_lidar(self.get_topic_prefix() + "/point_cloud",
+                                         self.get_topic_prefix(), carla_lidar_measurement)

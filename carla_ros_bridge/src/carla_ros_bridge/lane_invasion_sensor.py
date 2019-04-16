@@ -19,7 +19,7 @@ class LaneInvasionSensor(Sensor):
     Actor implementation details for a lane invasion sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -29,14 +29,10 @@ class LaneInvasionSensor(Sensor):
         :type parent: carla_ros_bridge.Parent
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
         """
         super(LaneInvasionSensor, self).__init__(carla_actor=carla_actor,
                                                  parent=parent,
-                                                 topic_prefix="lane_invasion",
-                                                 append_role_name_topic_postfix=False)
+                                                 binding=binding)
 
     def sensor_data_updated(self, lane_invasion_event):
         """
@@ -45,4 +41,4 @@ class LaneInvasionSensor(Sensor):
         :param lane_invasion_event: carla lane invasion event object
         :type lane_invasion_event: carla.LaneInvasionEvent
         """
-        self.get_binding().publish_lane_invasion(self.topic_name(), lane_invasion_event)
+        self.get_binding().publish_lane_invasion(self.get_topic_prefix(), lane_invasion_event)

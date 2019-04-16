@@ -57,8 +57,6 @@ def main():
         carla_ros_bridge = CarlaRosBridge(carla_client.get_world(), binding)
         carla_ros_bridge.run()
     finally:
-        if carla_ros_bridge:
-            carla_ros_bridge.destroy()
         del carla_world
         del carla_client
 

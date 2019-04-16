@@ -19,24 +19,7 @@ class Traffic(Actor):
     Actor implementation details for traffic objects
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create traffic actors
-
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created traffic actor
-        :rtype: carla_ros_bridge.Traffic or derived type
-        """
-        if carla_actor.type_id == "traffic.traffic_light":
-            return TrafficLight(carla_actor=carla_actor, parent=parent)
-        else:
-            return Traffic(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding, topic_prefix=None):
         """
         Constructor
 
@@ -52,7 +35,7 @@ class Traffic(Actor):
         super(Traffic, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
                                       topic_prefix=topic_prefix,
-                                      append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                      binding=binding)
         if self.__class__.__name__ == "Traffic":
             self.get_binding().logwarn("Created Unsupported Traffic Actor"
                                        "(id={}, parent_id={}, type={}, attributes={})".format(
@@ -66,7 +49,7 @@ class TrafficLight(Traffic):
     Traffic implementation details for traffic lights
     """
 
-    def __init__(self, carla_actor, parent):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -77,7 +60,9 @@ class TrafficLight(Traffic):
         """
         topic_prefix = 'traffic.traffic_light'
         super(TrafficLight, self).__init__(carla_actor=carla_actor,
-                                           parent=parent, topic_prefix=topic_prefix)
+                                           parent=parent, 
+                                           binding=binding,
+                                           topic_prefix=topic_prefix)
         self.get_binding().logwarn("Created Traffic-Light Actor(id={}, parent_id={}, type={}, attributes={}). "
                                    "Not yet fully implemented!".format(
                                        self.get_id(), self.get_parent_id(),

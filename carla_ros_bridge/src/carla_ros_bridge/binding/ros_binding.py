@@ -472,6 +472,9 @@ class RosBinding(object):
     def is_shutdown(self):
         return rospy.is_shutdown()
     
+    def signal_shutdown(self, text):
+        return rospy.signal_shutdown(text)
+    
     def publish_marker(self, frame_id, bounding_box, color, id):
         marker = Marker(header=self.get_msg_header(frame_id))
         marker.color.r = color[0]

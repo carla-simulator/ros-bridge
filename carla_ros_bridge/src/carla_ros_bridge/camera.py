@@ -27,28 +27,7 @@ class Camera(Sensor):
     Sensor implementation details for cameras
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create camera actors
-
-        :param carla_actor: carla camera actor object
-        :type carla_actor: carla.Camera
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created camera actor
-        :rtype: carla_ros_bridge.Camera or derived type
-        """
-        if carla_actor.type_id.startswith("sensor.camera.rgb"):
-            return RgbCamera(carla_actor=carla_actor, parent=parent)
-        elif carla_actor.type_id.startswith("sensor.camera.depth"):
-            return DepthCamera(carla_actor=carla_actor, parent=parent)
-        elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-            return SemanticSegmentationCamera(carla_actor=carla_actor, parent=parent)
-        else:
-            return Camera(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, binding, topic_prefix=None):
         """
         Constructor
 
@@ -63,6 +42,7 @@ class Camera(Sensor):
             topic_prefix = 'camera'
         super(Camera, self).__init__(carla_actor=carla_actor,
                                      parent=parent,
+                                     binding=binding,
                                      topic_prefix=topic_prefix)
 
         if self.__class__.__name__ == "Camera":
@@ -102,7 +82,7 @@ class Camera(Sensor):
         transform.rotation.roll = -math.degrees(roll)
         transform.rotation.pitch = -math.degrees(pitch)
         transform.rotation.yaw = -math.degrees(yaw)
-        self.get_binding().publish_transform(self.get_frame_id(), transform)
+        self.get_binding().publish_transform(self.get_topic_prefix(), transform)
 
 
 class RgbCamera(Camera):
@@ -111,7 +91,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -122,10 +102,10 @@ class RgbCamera(Camera):
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/rgb'
+        topic_prefix = 'camera/rgb/' + carla_actor.attributes.get('role_name')
         super(RgbCamera, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
+                                        binding=binding,
                                         topic_prefix=topic_prefix)
 
     def sensor_data_updated(self, carla_image):
@@ -135,7 +115,7 @@ class RgbCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_rgb_camera(self.topic_name(), self.get_frame_id(),
+        self.get_binding().publish_rgb_camera(self.get_topic_prefix(), self.get_topic_prefix(),
                                               carla_image, self.carla_actor.attributes)
 
 
@@ -145,7 +125,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -156,10 +136,10 @@ class DepthCamera(Camera):
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/depth'
+        topic_prefix = 'camera/depth/' + carla_actor.attributes.get('role_name')
         super(DepthCamera, self).__init__(carla_actor=carla_actor,
                                           parent=parent,
+                                          binding=binding,
                                           topic_prefix=topic_prefix)
 
     def sensor_data_updated(self, carla_image):
@@ -169,8 +149,8 @@ class DepthCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_depth_camera(self.topic_name(),
-                                                self.get_frame_id(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_depth_camera(self.get_topic_prefix(),
+                                                self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
 
 
 class SemanticSegmentationCamera(Camera):
@@ -179,7 +159,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -190,11 +170,11 @@ class SemanticSegmentationCamera(Camera):
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/semantic_segmentation'
+        topic_prefix = 'camera/semantic_segmentation/' + carla_actor.attributes.get('role_name')
         super(
             SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
                                                        parent=parent,
+                                          binding=binding,
                                                        topic_prefix=topic_prefix)
 
     def sensor_data_updated(self, carla_image):
@@ -205,5 +185,5 @@ class SemanticSegmentationCamera(Camera):
         :type carla_image: carla.Image
         """
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        self.get_binding().publish_semantic_segmentation_camera(self.topic_name(),
-                                                                self.get_frame_id(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_semantic_segmentation_camera(self.get_topic_prefix(),
+                                                                self.get_topic_prefix(), carla_image, self.carla_actor.attributes)

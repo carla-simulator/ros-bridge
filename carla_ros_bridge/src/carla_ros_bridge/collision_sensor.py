@@ -19,7 +19,7 @@ class CollisionSensor(Sensor):
     Actor implementation details for a collision sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -29,14 +29,11 @@ class CollisionSensor(Sensor):
         :type parent: carla_ros_bridge.Parent
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
         """
         super(CollisionSensor, self).__init__(carla_actor=carla_actor,
                                               parent=parent,
-                                              topic_prefix="collision",
-                                              append_role_name_topic_postfix=False)
+                                              binding=binding,
+                                              topic_prefix="collision")
 
     def sensor_data_updated(self, collision_event):
         """
@@ -45,4 +42,4 @@ class CollisionSensor(Sensor):
         :param collision_event: carla collision event object
         :type collision_event: carla.CollisionEvent
         """
-        self.get_binding().publish_collision(self.topic_name(), collision_event)
+        self.get_binding().publish_collision(self.get_topic_prefix(), collision_event)

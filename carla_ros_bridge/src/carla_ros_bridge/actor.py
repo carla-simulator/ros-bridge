@@ -11,12 +11,11 @@ Base Classes to handle Actor objects
 """
 
 
-from carla_ros_bridge.child import Child
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
 import carla_ros_bridge.transforms as trans
 
 
-class Actor(Child):
+class Actor(object):
 
     """
     Generic base class for all carla actors
@@ -24,7 +23,7 @@ class Actor(Child):
 
     global_id_registry = ActorIdRegistry()
 
-    def __init__(self, carla_actor, parent, topic_prefix='', append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding, topic_prefix=''):
         """
         Constructor
 
@@ -34,32 +33,22 @@ class Actor(Child):
         :type parent: carla_ros_bridge.Parent
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
         """
-        # each actor defines its own frame
-        if append_role_name_topic_postfix:
-            if carla_actor.attributes.has_key('role_name'):
-                topic_prefix += '/' + carla_actor.attributes['role_name']
-            else:
-                topic_prefix += '/' + \
-                    str(Actor.global_id_registry.get_id(carla_actor.id))
-        super(Actor, self).__init__(
-            carla_id=carla_actor.id, carla_world=carla_actor.get_world(),
-            parent=parent, topic_prefix=topic_prefix)
+        self.parent = parent
         self.carla_actor = carla_actor
-        self.get_binding().logdebug("Created Actor-{}(id={}, parent_id={},"
-                                    " type={}, topic_name={}, attributes={}".format(
-                                        self.__class__.__name__, self.get_id(),
-                                        self.get_parent_id(), self.carla_actor.type_id,
-                                        self.topic_name(), self.carla_actor.attributes))
+        self.binding = binding
+#         self.frame_id = frame_id
+        
+        self.topic_prefix = ""
+        if parent:
+            self.topic_prefix = parent.get_topic_prefix()
+        else:
+            self.topic_prefix = "/carla"
+        if len(topic_prefix):
+            self.topic_prefix += "/" + topic_prefix
 
-        if self.__class__.__name__ == "Actor":
-            self.get_binding().logwarn("Created Unsupported Actor(id={}, parent_id={},"
-                                       " type={}, attributes={}".format(
-                                           self.get_id(), self.get_parent_id(),
-                                           self.carla_actor.type_id, self.carla_actor.attributes))
+    def get_binding(self):
+        return self.binding
 
     def destroy(self):
         """
@@ -75,42 +64,6 @@ class Actor(Child):
         self.carla_actor = None
         super(Actor, self).destroy()
 #
-#     def get_marker_color(self):  # pylint: disable=no-self-use
-#         """
-#         Virtual (non-abstract) function to get the ROS std_msgs.msg.ColorRGBA
-#         used for rviz objects of this actor
-#
-#         Reimplement this in the derived actor class if ROS visualization messages
-#         (e.g. visualization_msgs.msg.Marker) are sent out and you want a different color than blue.
-#
-#         :return: blue color object
-#         :rtype: std_msgs.msg.ColorRGBA
-#         """
-#         color = ColorRGBA()
-#         color.r = 0
-#         color.g = 0
-#         color.b = 255
-#         return color
-
-#     def get_marker(self, use_parent_frame=True):
-#         """
-#         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
-#
-#         :param use_parent_frame: per default (True) the header.frame_id
-#             is set to the frame of the actor's parent.
-#             If this is set to False, the actor's own frame is used as basis.
-#         :type use_parent_frame:  boolean
-#         :return:
-#         visualization_msgs.msg.Marker
-#         """
-#         marker = Marker(
-#             header=self.get_msg_header(use_parent_frame=use_parent_frame))
-#         marker.color = self.get_marker_color()
-#         marker.color.a = 0.3
-#         marker.id = self.get_global_id()
-#         marker.text = "id = {}".format(marker.id)
-#         return marker
-
     def get_global_id(self):
         """
         Return a unique global id for the actor used for markers, object ids, etc.
@@ -122,3 +75,39 @@ class Actor(Child):
         :rtype: uint32
         """
         return Actor.global_id_registry.get_id(self.carla_actor.id)
+
+    def get_id(self):
+        """
+        Getter for the carla_id of this.
+
+        :return: unique carla_id of this parent object
+        :rtype: int64
+        """
+        return self.carla_actor.id
+    
+    def get_parent_id(self):
+        """
+        Getter for the carla_id of the parent.
+
+        :return: unique carla_id of the parent of this child
+        :rtype: int64
+        """
+        if self.parent:
+            return self.parent.get_id()
+        else:
+            return None
+        
+        
+    def get_topic_prefix(self):
+        """
+        Function (override) to get the topic name of the current entity.
+
+        Concatenate the child's onw topic prefix to the the parent topic name if not empty.
+
+        :return: the final topic name of this
+        :rtype: string
+        """
+        return self.topic_prefix
+
+    def update(self):
+        pass

@@ -18,10 +18,10 @@ def get_filtered_objectarray(parent, filtered_id):
 
     """
     object_info_list = []
-    for actor_id, child in parent.child_actors.iteritems():
+#     for actor_id, child in parent.child_actors.iteritems():
         # currently only Vehicles are added to the object array
-        if filtered_id is not actor_id and isinstance(child, Vehicle):
-            object_info_list.append(child.get_object_info())
+#         if filtered_id is not actor_id and isinstance(child, Vehicle):
+#             object_info_list.append(child.get_object_info())
     return object_info_list
 
 

@@ -19,7 +19,7 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -29,16 +29,11 @@ class Gnss(Sensor):
         :type parent: carla_ros_bridge.Parent
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
         """
-        if topic_prefix is None:
-            topic_prefix = 'gnss'
         super(Gnss, self).__init__(carla_actor=carla_actor,
                                    parent=parent,
-                                   topic_prefix=topic_prefix,
-                                   append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                   binding=binding,
+                                   topic_prefix="gnss/" + carla_actor.attributes.get('role_name'))
 
     def sensor_data_updated(self, carla_gnss_event):
         """
@@ -47,4 +42,4 @@ class Gnss(Sensor):
         :param carla_gnss_event: carla gnss event object
         :type carla_gnss_event: carla.GnssEvent
         """
-        self.get_binding().publish_gnss(self.topic_name(), carla_gnss_event)
+        self.get_binding().publish_gnss(self.get_topic_prefix(), carla_gnss_event)

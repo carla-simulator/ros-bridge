@@ -19,7 +19,7 @@ class Spectator(Actor):
     Actor implementation details for spectators
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -29,13 +29,8 @@ class Spectator(Actor):
         :type parent: carla_ros_bridge.Parent
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
         """
-        if topic_prefix is None:
-            topic_prefix = 'spectator'
         super(Spectator, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        topic_prefix=topic_prefix,
-                                        append_role_name_topic_postfix=append_role_name_topic_postfix)  # pylint: disable=line-too-long
+                                        topic_prefix='spectator',
+                                        binding=binding)  # pylint: disable=line-too-long

@@ -23,32 +23,7 @@ class Sensor(Actor):
     Actor implementation details for sensors
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create vehicle actors
-
-        :param carla_actor: carla sensor actor object
-        :type carla_actor: carla.Sensor
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created sensor actor
-        :rtype: carla_ros_bridge.Sensor or derived type
-        """
-        if carla_actor.type_id.startswith("sensor.camera"):
-            return Camera.create_actor(carla_actor=carla_actor, parent=parent)
-        if carla_actor.type_id.startswith("sensor.lidar"):
-            return Lidar(carla_actor=carla_actor, parent=parent)
-        if carla_actor.type_id.startswith("sensor.other.gnss"):
-            return Gnss(carla_actor=carla_actor, parent=parent)
-        if carla_actor.type_id.startswith("sensor.other.collision"):
-            return CollisionSensor(carla_actor=carla_actor, parent=parent)
-        if carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-            return LaneInvasionSensor(carla_actor=carla_actor, parent=parent)
-        else:
-            return Sensor(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding, topic_prefix=None):
         """
         Constructor
 
@@ -66,8 +41,8 @@ class Sensor(Actor):
             topic_prefix = 'sensor'
         super(Sensor, self).__init__(carla_actor=carla_actor,
                                      parent=parent,
-                                     topic_prefix=topic_prefix,
-                                     append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                     binding=binding,
+                                     topic_prefix=topic_prefix)
 
         self.current_sensor_data = None
         self.update_lock = threading.Lock()
@@ -95,18 +70,6 @@ class Sensor(Actor):
             self.current_sensor_data = None
         super(Sensor, self).destroy()
 
-    def get_frame_id(self):
-        """
-        Function (override) to get the frame id of the sensor object.
-
-        Sensor frames respect their respective parent relationship
-        within the frame name to prevent from name clashes.
-
-        :return: frame id of the sensor object
-        :rtype: string
-        """
-        return self.parent.get_frame_id() + "/" + super(Sensor, self).get_frame_id()
-
     def _callback_sensor_data(self, carla_sensor_data):
         """
         Callback function called whenever new sensor data is received
@@ -125,7 +88,7 @@ class Sensor(Actor):
         """
 
         """
-        self.get_binding().publish_transform(self.get_frame_id(), self.current_sensor_data.transform)
+        self.get_binding().publish_transform(self.get_topic_prefix(), self.current_sensor_data.transform)
 
     @abstractmethod
     def sensor_data_updated(self, carla_sensor_data):
@@ -138,11 +101,3 @@ class Sensor(Actor):
         """
         raise NotImplementedError(
             "This function has to be implemented by the derived classes")
-
-
-# these imports have to be at the end to resolve cyclic dependency
-from carla_ros_bridge.camera import Camera  # noqa, pylint: disable=wrong-import-position
-from carla_ros_bridge.lidar import Lidar   # noqa, pylint: disable=wrong-import-position
-from carla_ros_bridge.gnss import Gnss   # noqa, pylint: disable=wrong-import-position
-from carla_ros_bridge.collision_sensor import CollisionSensor   # noqa, pylint: disable=wrong-import-position
-from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor   # noqa, pylint: disable=wrong-import-position

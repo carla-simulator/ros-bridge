@@ -1,5 +1,6 @@
 ## Latest changed
 
+* tf `child_frame_id` is no similar to topic-prefix (added `/carla`-prefix) 
 * rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode
 

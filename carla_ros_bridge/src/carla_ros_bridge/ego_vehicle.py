@@ -22,21 +22,7 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create ego vehicle actors
-
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created vehicle actor
-        :rtype: carla_ros_bridge.Vehicle or derived type
-        """
-        return EgoVehicle(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent):
+    def __init__(self, carla_actor, parent, binding):
         """
         Constructor
 
@@ -47,15 +33,15 @@ class EgoVehicle(Vehicle):
         """
         super(EgoVehicle, self).__init__(carla_actor=carla_actor,
                                          parent=parent,
-                                         topic_prefix=carla_actor.attributes.get('role_name'),
-                                         append_role_name_topic_postfix=False)
+                                         binding=binding,
+                                         topic_prefix=carla_actor.attributes.get('role_name'))
 
         self.vehicle_info_published = False
 
         self.get_binding().register_vehicle_control_subscriber(
-            self.topic_name(), self.control_command_updated)
+            self.get_topic_prefix(), self.control_command_updated)
         self.get_binding().register_vehicle_autopilot_subscriber(
-            self.topic_name(), self.enable_autopilot_updated)
+            self.get_topic_prefix(), self.enable_autopilot_updated)
 
     def get_marker_color(self):
         """
@@ -75,18 +61,18 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
-        self.get_binding().publish_objects(self.topic_name() + '/objects', objects)
+        #objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
+        #self.get_binding().publish_objects(self.topic_name() + '/objects', objects)
 
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             self.get_binding().publish_ego_vehicle_info(
-                self.topic_name(),
+                self.get_topic_prefix(),
                 self.carla_actor.type_id,
                 self.carla_actor.attributes.get('role_name'),
                 self.carla_actor.get_physics_control())
-        self.get_binding().publish_ego_vehicle_status(self.topic_name(),
-                                                      self.get_frame_id(),
+        self.get_binding().publish_ego_vehicle_status(self.get_topic_prefix(),
+                                                      self.get_topic_prefix(),
                                                       self.carla_actor.get_velocity(),
                                                       self.carla_actor.get_transform(),
                                                       self.carla_actor.get_control(),

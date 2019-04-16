@@ -19,21 +19,7 @@ class Vehicle(Actor):
     Actor implementation details for vehicles
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create vehicle actors
-
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created vehicle actor
-        :rtype: carla_ros_bridge.Vehicle or derived type
-        """
-        return Vehicle(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, binding, topic_prefix=None):
         """
         Constructor
 
@@ -53,8 +39,8 @@ class Vehicle(Actor):
 
         super(Vehicle, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
-                                      topic_prefix=topic_prefix,
-                                      append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                      binding=binding,
+                                      topic_prefix=topic_prefix)
 
         self.classification = VehicleClass.UNKNOWN
         if carla_actor.attributes.has_key('object_type'):
@@ -93,8 +79,8 @@ class Vehicle(Actor):
         :return:
         """
         self.classification_age += 1
-        self.get_binding().publish_transform(self.get_frame_id(), self.carla_actor.get_transform())
-        self.get_binding().publish_marker(self.get_frame_id(),
+        self.get_binding().publish_transform(self.get_topic_prefix(), self.carla_actor.get_transform())
+        self.get_binding().publish_marker(self.get_topic_prefix(),
                                           self.carla_actor.bounding_box,
                                           self.get_marker_color(),
                                           self.get_global_id())
