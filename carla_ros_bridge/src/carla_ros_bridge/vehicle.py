@@ -105,6 +105,7 @@ class Vehicle(Actor):
         vehicle_object['id'] = self.get_global_id()
         vehicle_object['transform'] = self.carla_actor.get_transform()
         vehicle_object['accel'] = self.carla_actor.get_acceleration()
+        vehicle_object['velocity'] = self.carla_actor.get_velocity()
         vehicle_object['bounding_box'] = self.carla_actor.bounding_box
         vehicle_object['classification'] = self.classification
         vehicle_object['classification_age'] = self.classification_age

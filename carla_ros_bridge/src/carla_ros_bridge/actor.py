@@ -11,9 +11,10 @@ Base Classes to handle Actor objects
 """
 
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
+from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
-class Actor(object):
+class Actor(PseudoActor):
 
     """
     Generic base class for all carla actors
@@ -32,24 +33,10 @@ class Actor(object):
         :param topic_prefix: the topic prefix to be used for this actor
         :type topic_prefix: string
         """
-        self.parent = parent
+        super(Actor, self).__init__(parent=parent,
+                                    binding=binding,
+                                    topic_prefix=topic_prefix)
         self.carla_actor = carla_actor
-        self.binding = binding
-#         self.frame_id = frame_id
-
-        self.topic_prefix = ""
-        if parent:
-            self.topic_prefix = parent.get_topic_prefix()
-        else:
-            self.topic_prefix = "/carla"
-        if len(topic_prefix):
-            self.topic_prefix += "/" + topic_prefix
-
-    def get_binding(self):
-        """
-        get the binding
-        """
-        return self.binding
 
     def destroy(self):
         """
@@ -61,7 +48,7 @@ class Actor(object):
         :return:
         """
         self.carla_actor = None
-#
+        super(Actor, self).destroy()
 
     def get_global_id(self):
         """
@@ -83,32 +70,3 @@ class Actor(object):
         :rtype: int64
         """
         return self.carla_actor.id
-
-    def get_parent_id(self):
-        """
-        Getter for the carla_id of the parent.
-
-        :return: unique carla_id of the parent of this child
-        :rtype: int64
-        """
-        if self.parent:
-            return self.parent.get_id()
-        else:
-            return None
-
-    def get_topic_prefix(self):
-        """
-        Function (override) to get the topic name of the current entity.
-
-        Concatenate the child's onw topic prefix to the the parent topic name if not empty.
-
-        :return: the final topic name of this
-        :rtype: string
-        """
-        return self.topic_prefix
-
-    def update(self):
-        """
-        Function to update this object. Derived classes can add code.
-        """
-        pass

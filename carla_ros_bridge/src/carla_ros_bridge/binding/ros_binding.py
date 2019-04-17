@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (c) 2018-2019 Intel Corporation
 #
@@ -132,7 +133,11 @@ class RosBinding(object):
         """
         #prepare tf message
         tf_msg = TFMessage(self.tf_to_publish)
-        self.publishers['tf'].publish(tf_msg)
+        try:
+            self.publishers['tf'].publish(tf_msg)
+        except rospy.ROSSerializationException as error:
+            print(tf_msg)
+            rospy.logwarn("Failed to serialize message on publishing: {}".format(error))
 
         for publisher, msg in self.msgs_to_publish:
             try:
@@ -558,7 +563,7 @@ class RosBinding(object):
             vehicle_object = Object(header=self.get_msg_header("map"))
             vehicle_object.id = obj['id']
             vehicle_object.pose = ros_trans.carla_transform_to_ros_pose(obj['transform'])
-            #vehicle_object.twist = self.get_current_ros_twist()
+            vehicle_object.twist = ros_trans.carla_velocity_to_ros_twist(obj['velocity'])
             vehicle_object.accel = ros_trans.carla_acceleration_to_ros_accel(obj['accel'])
             vehicle_object.shape.type = SolidPrimitive.BOX
             vehicle_object.shape.dimensions.extend([

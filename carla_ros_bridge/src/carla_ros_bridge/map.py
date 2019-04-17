@@ -12,14 +12,16 @@ Class to handle the carla map
 
 import carla
 
+from carla_ros_bridge.pseudo_actor import PseudoActor
 
-class Map(object):
+
+class Map(PseudoActor):
 
     """
     Child implementation details for the map
     """
 
-    def __init__(self, carla_world, topic, binding):
+    def __init__(self, carla_world, topic_prefix, binding):
         """
         Constructor
 
@@ -31,9 +33,10 @@ class Map(object):
         :type topic_prefix: string
         """
 
+        super(Map, self).__init__(parent=None,
+                                  binding=binding,
+                                  topic_prefix=topic_prefix)
         self.carla_map = carla_world.get_map()
-        self.topic = topic
-        self.binding = binding
         self.map_published = False
 
     def destroy(self):
@@ -45,8 +48,8 @@ class Map(object):
 
         :return:
         """
-        self.binding.logdebug("Destroying Map()")
         self.carla_map = None
+        super(Map, self).destroy()
 
     def update(self):
         """
@@ -59,4 +62,3 @@ class Map(object):
         """
         if not self.map_published:
             self.binding.publish_map(self.carla_map)
-        self.binding.publish_transform(1, carla.Transform())

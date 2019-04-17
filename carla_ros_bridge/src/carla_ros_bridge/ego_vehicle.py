@@ -58,9 +58,6 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        #objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
-        #self.get_binding().publish_objects(self.topic_name() + '/objects', objects)
-
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             self.get_binding().publish_ego_vehicle_info(

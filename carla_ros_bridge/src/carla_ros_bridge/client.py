@@ -18,6 +18,7 @@ import carla
 
 from carla_ros_bridge.bridge import CarlaRosBridge
 
+
 def main():
     """
     main function for carla simulator ROS bridge

@@ -15,7 +15,7 @@ import threading
 import time
 
 from carla_ros_bridge.map import Map
-import carla_ros_bridge.object_sensor as ObjectSensor
+from carla_ros_bridge.object_sensor import ObjectSensor
 
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.spectator import Spectator
@@ -49,7 +49,6 @@ class CarlaRosBridge(object):
 
         self.binding = binding
         self.timestamp_last_run = 0.0
-        self.actor_list = []
 
         # register callback to create/delete actors
         self.update_child_actors_lock = threading.Lock()
@@ -59,7 +58,19 @@ class CarlaRosBridge(object):
         self.update_lock = threading.Lock()
         self.carla_world.on_tick(self._carla_time_tick)
 
-        self.map = Map(carla_world=self.carla_world, topic='/map', binding=binding)
+        self.pseudo_actors = []
+
+        # add map
+        self.pseudo_actors.append(Map(carla_world=self.carla_world,
+                                      topic_prefix='/map',
+                                      binding=binding))
+
+        # add overall object sensor
+        self.pseudo_actors.append(ObjectSensor(parent=None,
+                                               topic_prefix='objects',
+                                               binding=binding,
+                                               actor_list=self.actors,
+                                               filtered_id=None))
 
     def destroy(self):
         """
@@ -74,7 +85,6 @@ class CarlaRosBridge(object):
         self.update_child_actors_lock.acquire()
         self.update_lock.acquire()
         self.get_binding().signal_shutdown("")
-        self.actor_list = []
         self.get_binding().loginfo("Exiting Bridge")
 
     def _carla_time_tick(self, carla_timestamp):
@@ -97,9 +107,6 @@ class CarlaRosBridge(object):
                     self.timestamp_last_run = carla_timestamp.elapsed_seconds
                     self.binding.update_clock(carla_timestamp)
                     self.update()
-                    self.get_binding().publish_objects(
-                        '/carla/objects',
-                        ObjectSensor.get_filtered_objectarray(self.actor_list, None))
                     self.binding.send_msgs()
                 self.update_lock.release()
 
@@ -169,6 +176,12 @@ class CarlaRosBridge(object):
             if carla_actor.attributes.get('role_name')\
                     in self.binding.get_parameters()['ego_vehicle']['role_name']:
                 actor = EgoVehicle(carla_actor, parent, self.binding)
+                with self.update_lock:
+                    self.pseudo_actors.append(ObjectSensor(parent=actor,
+                                                           topic_prefix='objects',
+                                                           binding=self.binding,
+                                                           actor_list=self.actors,
+                                                           filtered_id=carla_actor.id))
             else:
                 actor = Vehicle(carla_actor, parent, self.binding)
         elif carla_actor.type_id.startswith("sensor"):
@@ -226,24 +239,6 @@ class CarlaRosBridge(object):
         self.get_binding().loginfo("Shutdown requested")
         self.destroy()
 
-    def get_actor_list(self):
-        """
-        Function (override) to provide actor list
-
-        :return: the list of actors
-        :rtype: list
-        """
-        return self.actor_list
-
-    def get_filtered_objectarray(self, filtered_id):
-        """
-        get objectarray of available actors, except the one with the filtered id
-
-        :return: objectarray of actors
-        :rtype: derived_object_msgs.ObjectArray
-        """
-        return ObjectSensor.get_filtered_objectarray(self.actor_list, filtered_id)
-
     def get_binding(self):
         """
         get the binding
@@ -252,19 +247,15 @@ class CarlaRosBridge(object):
 
     def update(self):
         """
-        Virtual (non abstract) function to update this object.
-
-        Override this function if the derived class has to perform
-        some additional update tasks. But don't forget to forward the update
-        call to the super class, ensuring that this concrete function is called.
-
-        The update part of the parent class consists
-        of updating the children of this by:
-
-        update the exising children
+        update all actors
 
         :return:
         """
+        # update all pseudo actors
+        for actor in self.pseudo_actors:
+            actor.update()
+
+        # updaate all carla actors
         for actor_id in self.actors.keys():
             try:
                 self.actors[actor_id].update()

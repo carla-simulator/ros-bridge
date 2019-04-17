@@ -9,5 +9,5 @@
   <param name="carla/host" value="$(arg host)" unless="$(eval host == '')"/>
   <param name="carla/port" value="$(arg port)" unless="$(eval port == '')"/>
   <param name="carla/ego_vehicle/role_name" value="$(arg ego_vehicle_name)" unless="$(eval ego_vehicle_name == '')"/>
-  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="client.py" output="screen"/>
+  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="client.py" args="--binding $(find carla_ros_bridge)/src/carla_ros_bridge/binding/ros_binding.py" output="screen"/>
 </launch>

@@ -64,12 +64,12 @@ class Camera(Sensor):
 
         """
         transform = self.current_sensor_data.transform
-        #TODO: find ROS independent solution
+        # TODO: find ROS independent solution
         #roll = -math.radians(transform.rotation.roll)
         #pitch = -math.radians(transform.rotation.pitch)
         #yaw = -math.radians(transform.rotation.yaw)
         #quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
-        #quat_swap = tf.transformations.quaternion_from_matrix(
+        # quat_swap = tf.transformations.quaternion_from_matrix(
         #    [[0, 0, 1, 0],
         #     [-1, 0, 0, 0],
         #     [0, -1, 0, 0],

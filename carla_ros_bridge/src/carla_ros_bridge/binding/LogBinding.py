@@ -8,15 +8,13 @@
 Log binding (for testing)
 """
 
-import signal, os
-import math
-import numpy
+import time
+import signal
+import os
 from carla_ros_bridge.binding.binding import VehicleClass
 import carla_ros_bridge.binding.transforms as trans
 
 from carla import VehicleControl
-
-import time
 
 class LogBinding(object):
 
