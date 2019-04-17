@@ -9,22 +9,25 @@
 """
 Entry point for carla simulator ROS bridge
 """
-import carla
 
 import importlib
-import argparse
 import sys
+import os
+
+import carla
 
 from carla_ros_bridge.binding.ros_binding import RosBinding
 from carla_ros_bridge.bridge import CarlaRosBridge
+
 
 def main():
     """
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaRosBridge object
     """
-    
-    # get binding by using a plain parser (as e.g. ros adds additional parameters to working with default argparse module)
+
+    # get binding by using a plain parser (as e.g. ros adds additional
+    # parameters to working with default argparse module)
     binding = None
     args = sys.argv[1:]
     found = False
@@ -49,7 +52,9 @@ def main():
 
     carla_ros_bridge = None
     try:
-        carla_client = carla.Client(host=binding.get_parameters()['host'], port=binding.get_parameters()['port'])
+        carla_client = carla.Client(
+            host=binding.get_parameters()['host'],
+            port=binding.get_parameters()['port'])
         carla_client.set_timeout(2000)
 
         carla_world = carla_client.get_world()
@@ -59,6 +64,7 @@ def main():
     finally:
         del carla_world
         del carla_client
+
 
 if __name__ == "__main__":
     main()

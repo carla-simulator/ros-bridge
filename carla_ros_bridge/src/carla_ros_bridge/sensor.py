@@ -86,9 +86,11 @@ class Sensor(Actor):
 
     def publish_transform(self):
         """
-
+        overridable function to publish the current transform
         """
-        self.get_binding().publish_transform(self.get_topic_prefix(), self.current_sensor_data.transform)
+        self.get_binding().publish_transform(
+            self.get_topic_prefix(),
+            self.current_sensor_data.transform)
 
     @abstractmethod
     def sensor_data_updated(self, carla_sensor_data):

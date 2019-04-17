@@ -10,10 +10,7 @@
 Classes to handle Carla lidars
 """
 
-import numpy
-
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
 
 class Lidar(Sensor):
@@ -51,7 +48,9 @@ class Lidar(Sensor):
         transform = self.current_sensor_data.transform
         transform.roll = 0
         transform.pitch = 0
-        self.get_binding().publish_transform(self.get_topic_prefix(), self.current_sensor_data.transform)
+        self.get_binding().publish_transform(
+            self.get_topic_prefix(),
+            self.current_sensor_data.transform)
 
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -60,4 +59,6 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        self.get_binding().publish_lidar(self.get_topic_prefix() + "/point_cloud", carla_lidar_measurement)
+        self.get_binding().publish_lidar(
+            self.get_topic_prefix(),
+            carla_lidar_measurement)

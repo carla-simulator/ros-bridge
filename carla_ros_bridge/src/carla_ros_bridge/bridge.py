@@ -14,32 +14,22 @@ Class that handle communication between CARLA and ROS
 import threading
 import time
 
-
-from carla_ros_bridge.parent import Parent
 from carla_ros_bridge.map import Map
 import carla_ros_bridge.object_sensor as ObjectSensor
 
-
-# these imports have to be at the end to resolve cyclic dependency
-from carla_ros_bridge.actor import Actor   
-from carla_ros_bridge.spectator import Spectator  
-from carla_ros_bridge.sensor import Sensor       
-from carla_ros_bridge.traffic import Traffic, TrafficLight   
-from carla_ros_bridge.vehicle import Vehicle    
-from carla_ros_bridge.lidar import Lidar    
-from carla_ros_bridge.gnss import Gnss    
-from carla_ros_bridge.ego_vehicle import EgoVehicle  
-from carla_ros_bridge.collision_sensor import CollisionSensor  
-from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor  
-from carla_ros_bridge.camera import RgbCamera, DepthCamera, SemanticSegmentationCamera
+from carla_ros_bridge.actor import Actor
+from carla_ros_bridge.spectator import Spectator
+from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.traffic import Traffic, TrafficLight
+from carla_ros_bridge.vehicle import Vehicle
+from carla_ros_bridge.lidar import Lidar
+from carla_ros_bridge.gnss import Gnss
+from carla_ros_bridge.ego_vehicle import EgoVehicle
+from carla_ros_bridge.collision_sensor import CollisionSensor
+from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 
 
-class TestActor():
-    def __init__(self, id, name, parent):
-        self.id = name
-        self.name = name
-        self.parent = parent
-        
 class CarlaRosBridge(object):
 
     """
@@ -70,7 +60,7 @@ class CarlaRosBridge(object):
         self.update_lock = threading.Lock()
         self.carla_world.on_tick(self._carla_time_tick)
 
-        self.map = Map(carla_world=self.carla_world, topic='/map')
+        self.map = Map(carla_world=self.carla_world, topic='/map', binding=binding)
 
     def destroy(self):
         """
@@ -121,7 +111,9 @@ class CarlaRosBridge(object):
                     self.timestamp_last_run = carla_timestamp.elapsed_seconds
                     self.binding.update_clock(carla_timestamp)
                     self.update()
-                    self.get_binding().publish_objects('/carla/objects', ObjectSensor.get_filtered_objectarray(self, None))
+                    self.get_binding().publish_objects(
+                        '/carla/objects',
+                        ObjectSensor.get_filtered_objectarray(self.actor_list, None))
                     self.binding.send_msgs()
                 self.update_lock.release()
 
@@ -146,35 +138,41 @@ class CarlaRosBridge(object):
                 self.update_child_actors_lock.release()
 
     def update_actors(self):
+        """
+        update the available actors
+        """
         carla_actors = self.carla_world.get_actors()
-        #Add new actors
+        # Add new actors
         for actor in carla_actors:
             if actor.id not in self.actors.keys():
                 self.create_actor(actor)
 
-        #create list of carla actors ids
+        # create list of carla actors ids
         carla_actor_ids = []
         for actor in carla_actors:
             carla_actor_ids.append(actor.id)
 
-        #remove non-existing actors
+        # remove non-existing actors
         for actor_id in self.actors.keys():
             id_to_delete = None
             if actor_id not in carla_actor_ids:
                 id_to_delete = actor_id
 
             if id_to_delete:
-                self.get_binding().logwarn("Remove actor {}".format(id_to_delete))
+                self.get_binding().logwarn("Remove Actor {}".format(id_to_delete))
                 del self.actors[id_to_delete]
 
     def create_actor(self, carla_actor):
+        """
+        create an actor
+        """
         parent = None
         if carla_actor.parent:
             if carla_actor.parent.id in self.actors:
                 parent = self.actors[carla_actor.parent.id]
             else:
                 parent = self.create_actor(carla_actor.parent)
-        
+
         actor = None
         if carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
@@ -182,7 +180,8 @@ class CarlaRosBridge(object):
             else:
                 actor = Traffic(carla_actor, parent, self.binding)
         elif carla_actor.type_id.startswith("vehicle"):
-            if carla_actor.attributes.get('role_name') in self.get_param('ego_vehicle').get('role_name'):
+            if carla_actor.attributes.get('role_name')\
+                    in self.get_param('ego_vehicle').get('role_name'):
                 actor = EgoVehicle(carla_actor, parent, self.binding)
             else:
                 actor = Vehicle(carla_actor, parent, self.binding)
@@ -210,12 +209,12 @@ class CarlaRosBridge(object):
             actor = Spectator(carla_actor, parent, self.binding)
         else:
             actor = Actor(carla_actor, parent, self.binding)
-        
+
         self.get_binding().logwarn("Created Actor-{}(id={}, parent_id={},"
-                            " type={}, prefix={}, attributes={}".format(
-                                actor.__class__.__name__, actor.get_id(),
-                                actor.get_parent_id(), carla_actor.type_id,
-                                actor.get_topic_prefix(), carla_actor.attributes))
+                                   " type={}, prefix={}, attributes={}".format(
+                                       actor.__class__.__name__, actor.get_id(),
+                                       actor.get_parent_id(), carla_actor.type_id,
+                                       actor.get_topic_prefix(), carla_actor.attributes))
         with self.update_lock:
             self.actors[carla_actor.id] = actor
         return actor
@@ -257,10 +256,11 @@ class CarlaRosBridge(object):
         :return: objectarray of actors
         :rtype: derived_object_msgs.ObjectArray
         """
-        return ObjectSensor.get_filtered_objectarray(self, filtered_id)
+        return ObjectSensor.get_filtered_objectarray(self.actor_list, filtered_id)
 
     def get_binding(self):
         """
+        get the binding
         """
         return self.binding
 
@@ -284,5 +284,5 @@ class CarlaRosBridge(object):
                 self.actors[actor_id].update()
             except RuntimeError as e:
                 self.get_binding().logwarn("Update actor {}({}) failed: {}".format(
-                    actor.__class__.__name__, actor_id, e))
+                    self.actors[actor_id].__class__.__name__, actor_id, e))
                 continue

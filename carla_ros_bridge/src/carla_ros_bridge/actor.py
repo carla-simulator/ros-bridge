@@ -10,9 +10,7 @@
 Base Classes to handle Actor objects
 """
 
-
 from carla_ros_bridge.actor_id_registry import ActorIdRegistry
-import carla_ros_bridge.transforms as trans
 
 
 class Actor(object):
@@ -38,7 +36,7 @@ class Actor(object):
         self.carla_actor = carla_actor
         self.binding = binding
 #         self.frame_id = frame_id
-        
+
         self.topic_prefix = ""
         if parent:
             self.topic_prefix = parent.get_topic_prefix()
@@ -48,6 +46,9 @@ class Actor(object):
             self.topic_prefix += "/" + topic_prefix
 
     def get_binding(self):
+        """
+        get the binding
+        """
         return self.binding
 
     def destroy(self):
@@ -59,11 +60,9 @@ class Actor(object):
 
         :return:
         """
-        self.get_binding().logdebug(
-            "Destroying {}-Actor(id={})".format(self.__class__.__name__, self.get_id()))
         self.carla_actor = None
-        super(Actor, self).destroy()
 #
+
     def get_global_id(self):
         """
         Return a unique global id for the actor used for markers, object ids, etc.
@@ -84,7 +83,7 @@ class Actor(object):
         :rtype: int64
         """
         return self.carla_actor.id
-    
+
     def get_parent_id(self):
         """
         Getter for the carla_id of the parent.
@@ -96,8 +95,7 @@ class Actor(object):
             return self.parent.get_id()
         else:
             return None
-        
-        
+
     def get_topic_prefix(self):
         """
         Function (override) to get the topic name of the current entity.
@@ -110,4 +108,7 @@ class Actor(object):
         return self.topic_prefix
 
     def update(self):
+        """
+        Function to update this object. Derived classes can add code.
+        """
         pass

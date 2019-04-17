@@ -5,6 +5,9 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 class VehicleClass(object):
+    """
+    enum for vehicle classes
+    """
     UNKNOWN = 0
     BIKE = 5
     CAR = 6

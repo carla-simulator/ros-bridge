@@ -4,29 +4,21 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-from rostopic import publish_message
 """
 ROS binding
 """
-import threading
-import time
-import rospy
-import numpy
+
 import math
+import numpy
+import rospy
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
-from derived_object_msgs.msg import ObjectArray
 from carla_ros_bridge.binding.binding import VehicleClass
 
-from carla_ros_bridge.parent import Parent
-from carla_ros_bridge.map import Map
+import carla_ros_bridge.binding.ros_transforms as ros_trans
+import carla_ros_bridge.binding.transforms as trans
 
-import ros_transforms as ros_trans
-import transforms as trans
-
-import tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
 
 from nav_msgs.msg import Odometry
 
@@ -36,17 +28,17 @@ from carla_msgs.msg import CarlaEgoVehicleControl
 from carla_msgs.msg import CarlaEgoVehicleStatus
 from carla_msgs.msg import CarlaMapInfo
 from carla_msgs.msg import CarlaCollisionEvent
-
-from sensor_msgs.msg import NavSatFix
-
 from carla_msgs.msg import CarlaLaneInvasionEvent
+
+from sensor_msgs.msg import NavSatFix, CameraInfo
+
 
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 
-from geometry_msgs.msg import Transform, TransformStamped
+from geometry_msgs.msg import TransformStamped
 
-from std_msgs.msg import ColorRGBA, Header, Bool
-from derived_object_msgs.msg import Object
+from std_msgs.msg import Header, Bool
+from derived_object_msgs.msg import Object, ObjectArray
 from shape_msgs.msg import SolidPrimitive
 from visualization_msgs.msg import Marker
 
@@ -62,7 +54,7 @@ class RosBinding(object):
 
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
-    
+
     def __init__(self):
         """
         Constructor
@@ -77,15 +69,18 @@ class RosBinding(object):
         self.vehicle_autopilot_callbacks = {}
         self.camera_info_map = {}
         self.parameters = rospy.get_param('carla')
-        
+
         self.publishers['clock'] = rospy.Publisher(
             'clock', Clock, queue_size=10)
         self.publishers['tf'] = rospy.Publisher(
             'tf', TFMessage, queue_size=100)
 
     def get_parameters(self):
+        """
+        get parameters
+        """
         return self.parameters
-        
+
     def get_msg_header(self, frame_id, timestamp=None):
         """
         Helper function to create a ROS message Header
@@ -138,7 +133,7 @@ class RosBinding(object):
         #prepare tf message
         tf_msg = TFMessage(self.tf_to_publish)
         self.publishers['tf'].publish(tf_msg)
-        
+
         for publisher, msg in self.msgs_to_publish:
             try:
                 publisher.publish(msg)
@@ -170,7 +165,9 @@ class RosBinding(object):
         :type carla_gnss_event: carla.GnssEvent
         """
         navsatfix_msg = NavSatFix()
-        navsatfix_msg.header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(carla_gnss_event.timestamp))
+        navsatfix_msg.header = self.get_msg_header(
+            topic,
+            timestamp=rospy.Time.from_sec(carla_gnss_event.timestamp))
         navsatfix_msg.latitude = carla_gnss_event.latitude
         navsatfix_msg.longitude = carla_gnss_event.longitude
         navsatfix_msg.altitude = carla_gnss_event.altitude
@@ -210,7 +207,7 @@ class RosBinding(object):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        
+
         carla_image_data_array = numpy.ndarray(
             shape=(carla_image.height, carla_image.width, 4),
             dtype=numpy.uint8, buffer=carla_image.raw_data)
@@ -226,7 +223,7 @@ class RosBinding(object):
 
         The segmentation camera raw image is converted to the city scapes palette image
         having 4-channel uint8.
-        
+
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
@@ -236,12 +233,12 @@ class RosBinding(object):
 
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(carla_image_data_array, encoding='bgra8')
         self.publish_camera(topic, attributes, carla_image, img_msg, "image_segmentation")
-    
+
     def publish_depth_camera(self, topic, carla_image, attributes):
         """
         Function (override) to transform the received carla image data
         into a ROS image message
-        
+
         The depth camera raw image is converted to a linear depth image
         having 1-channel float32.
 
@@ -274,17 +271,22 @@ class RosBinding(object):
         # actually we want encoding '32FC1'
         # which is automatically selected by cv bridge with passthrough
         img_msg = RosBinding.cv_bridge.cv2_to_imgmsg(depth_image, encoding='passthrough')
-        
+
         self.publish_camera(topic, attributes, carla_image, img_msg, "image_depth")
-    
+
     def publish_camera(self, topic, attributes, carla_image, image_message, image_topic):
+        """
+        publish the previously created image, including the camera_info
+        """
         cam_info = self.get_camera_info(topic, attributes)
-        if ((carla_image.height != cam_info.height) or (carla_image.width != cam_info.width)):
+        if (carla_image.height != cam_info.height) or (carla_image.width != cam_info.width):
             rospy.logerr(
-                "Camera{} received image not matching configuration".format(self.topic_name()))
+                "Camera{} received image not matching configuration".format(topic))
 
         # the camera data is in respect to the camera's own frame
-        image_message.header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(carla_image.timestamp))
+        image_message.header = self.get_msg_header(
+            topic,
+            timestamp=rospy.Time.from_sec(carla_image.timestamp))
         cam_info.header = image_message.header
 
         self.publish_message(topic + '/camera_info', cam_info)
@@ -298,7 +300,9 @@ class RosBinding(object):
         :type collision_event: carla.CollisionEvent
         """
         collision_msg = CarlaCollisionEvent()
-        collision_msg.header = self.get_msg_header("map", timestamp=rospy.Time.from_sec(collision_event.timestamp))
+        collision_msg.header = self.get_msg_header(
+            "map",
+            timestamp=rospy.Time.from_sec(collision_event.timestamp))
         collision_msg.other_actor_id = collision_event.other_actor.id
         collision_msg.normal_impulse.x = collision_event.normal_impulse.x
         collision_msg.normal_impulse.y = collision_event.normal_impulse.y
@@ -307,12 +311,19 @@ class RosBinding(object):
         self.publish_message(topic, collision_msg)
 
     def register_vehicle_control_subscriber(self, topic, callback):
+        """
+        register a subscriber for vehicle control
+        """
         self.vehicle_control_callbacks[topic] = callback
         self.subscribers[topic] = rospy.Subscriber(
             topic + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, lambda data: self.vehicle_control_command_updated(topic, data))
+            CarlaEgoVehicleControl,
+            lambda data: self.vehicle_control_command_updated(topic, data))
 
     def vehicle_control_command_updated(self, topic, data):
+        """
+        callback when a vehicle control command was received
+        """
         vehicle_control = VehicleControl()
         vehicle_control.hand_brake = data.hand_brake
         vehicle_control.brake = data.brake
@@ -322,28 +333,43 @@ class RosBinding(object):
         self.vehicle_control_callbacks[topic](vehicle_control)
 
     def register_vehicle_autopilot_subscriber(self, topic, callback):
+        """
+        register a subscriber for vehicle autopilot setting
+        """
         self.vehicle_autopilot_callbacks[topic] = callback
         self.subscribers[topic] = rospy.Subscriber(
-            topic + "/enable_autopilot", Bool, lambda data: self.enable_autopilot_updated(topic, data))
+            topic + "/enable_autopilot",
+            Bool,
+            lambda data: self.enable_autopilot_updated(topic, data))
 
     def enable_autopilot_updated(self, topic, data):
-        vehicle_autopilot_callbacks[topic](data.data)
-        
+        """
+        callback when a autopilot setting was received
+        """
+        self.vehicle_autopilot_callbacks[topic](data.data)
+
     def publish_lane_invasion(self, topic, lane_invasion_event):
+        """
+        publish a lane invasion event
+        """
         lane_invasion_msg = CarlaLaneInvasionEvent()
-        lane_invasion_msg.header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(lane_invasion_event.timestamp))
+        lane_invasion_msg.header = self.get_msg_header(
+            topic,
+            timestamp=rospy.Time.from_sec(lane_invasion_event.timestamp))
         for marking in lane_invasion_event.crossed_lane_markings:
             lane_invasion_msg.crossed_lane_markings.append(marking.type)
         self.publish_message(topic, lane_invasion_msg)
 
-    def publish_lidar(self, topic, carla_lidar_measurement):
+    def publish_lidar(self, topic_prefix, carla_lidar_measurement):
         """
         Function to transform the a received lidar measurement into a ROS point cloud message
 
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header(topic, timestamp=rospy.Time.from_sec(carla_lidar_measurement.timestamp))
+        header = self.get_msg_header(
+            topic_prefix,
+            timestamp=rospy.Time.from_sec(carla_lidar_measurement.timestamp))
 
         lidar_data = numpy.frombuffer(
             carla_lidar_measurement.raw_data, dtype=numpy.float32)
@@ -357,7 +383,7 @@ class RosBinding(object):
         # we also need to permute x and y
         lidar_data = lidar_data[..., [1, 0, 2]]
         point_cloud_msg = create_cloud_xyz32(header, lidar_data)
-        self.publish_message(topic, point_cloud_msg)
+        self.publish_message(topic_prefix + "/point_cloud", point_cloud_msg)
 
     def publish_ego_vehicle_info(self, topic, type_id, rolename, vehicle_physics):
         """
@@ -411,7 +437,7 @@ class RosBinding(object):
         :return:
         """
         ros_pose = ros_trans.carla_transform_to_ros_pose(transform)
-        
+
         vehicle_status = CarlaEgoVehicleStatus()
         vehicle_status.header.stamp = self.ros_timestamp
         vehicle_status.velocity = trans.get_vector_abs(velocity)
@@ -434,17 +460,18 @@ class RosBinding(object):
 
         self.publish_message(topic + "/odometry", odometry)
 
-    def publish_map(self, map):
+    def publish_map(self, carla_map):
+        """
+        publish the map info
+        """
         open_drive_msg = CarlaMapInfo(header=self.get_msg_header("map"))
-        open_drive_msg.map_name = self.carla_map.name
-        open_drive_msg.opendrive = map.to_opendrive()
-        self.publish_message('/carla/map', CarlaMapInfo, latch=True)
-        
-        
+        open_drive_msg.map_name = carla_map.name
+        open_drive_msg.opendrive = carla_map.to_opendrive()
+        self.publish_message('/carla/map', CarlaMapInfo, is_latched=True)
+
     def publish_transform(self, frame_id, transform):
         """
         Helper function to send a ROS tf message of this child
-
 
         :return:
         """
@@ -454,34 +481,65 @@ class RosBinding(object):
         tf_msg.transform = ros_trans.carla_transform_to_ros_transform(transform)
         self.publish_message('tf', tf_msg)
 
-    def logdebug(self, log):
+    @classmethod
+    def logdebug(cls, log):
+        """
+        log in debug-level
+        """
         rospy.logdebug(log)
-        
-    def loginfo(self, log):
+
+    @classmethod
+    def loginfo(cls, log):
+        """
+        log in info-level
+        """
         rospy.loginfo(log)
-        
-    def logwarn(self, log):
+
+    @classmethod
+    def logwarn(cls, log):
+        """
+        log in warn-level
+        """
         rospy.logwarn(log)
-        
-    def on_shutdown(self, callback):
+
+    @classmethod
+    def on_shutdown(cls, callback):
+        """
+        register a callback the gets executed on shutdown
+        """
         rospy.on_shutdown(callback)
-    
-    def spin(self):
+
+    @classmethod
+    def spin(cls):
+        """
+        execute the main loop
+        """
         rospy.spin()
-        
-    def is_shutdown(self):
+
+    @classmethod
+    def is_shutdown(cls):
+        """
+        check for shutdown
+        """
         return rospy.is_shutdown()
-    
-    def signal_shutdown(self, text):
+
+    @classmethod
+    def signal_shutdown(cls, text):
+        """
+        signal shutdown
+        """
         return rospy.signal_shutdown(text)
-    
-    def publish_marker(self, frame_id, bounding_box, color, id):
+
+    def publish_marker(self, frame_id, bounding_box, color, marker_id):
+        """
+        publish a marker
+        """
         marker = Marker(header=self.get_msg_header(frame_id))
         marker.color.r = color[0]
         marker.color.g = color[1]
         marker.color.b = color[2]
         marker.color.a = 0.3
-        marker.id = id
+        marker.id = marker_id
         marker.text = "id = {}".format(marker.id)
         marker.type = Marker.CUBE
 
@@ -492,25 +550,27 @@ class RosBinding(object):
         self.publish_message('/carla/vehicle_marker', marker)
 
     def publish_objects(self, topic, objects):
+        """
+        publish objects
+        """
         ros_objects = ObjectArray(header=self.get_msg_header("map"))
-        for object in objects:
+        for obj in objects:
             vehicle_object = Object(header=self.get_msg_header("map"))
-            vehicle_object.id = object['id']
-            vehicle_object.pose = ros_trans.carla_transform_to_ros_pose(object['transform'])
+            vehicle_object.id = obj['id']
+            vehicle_object.pose = ros_trans.carla_transform_to_ros_pose(obj['transform'])
             #vehicle_object.twist = self.get_current_ros_twist()
-            vehicle_object.accel = ros_trans.carla_acceleration_to_ros_accel(object['accel'])
+            vehicle_object.accel = ros_trans.carla_acceleration_to_ros_accel(obj['accel'])
             vehicle_object.shape.type = SolidPrimitive.BOX
             vehicle_object.shape.dimensions.extend([
-                object['bounding_box'].extent.x * 2.0,
-                object['bounding_box'].extent.y * 2.0,
-                object['bounding_box'].extent.z * 2.0])
+                obj['bounding_box'].extent.x * 2.0,
+                obj['bounding_box'].extent.y * 2.0,
+                obj['bounding_box'].extent.z * 2.0])
 
             # Classification if available in attributes
-            if object['classification'] != VehicleClass.UNKNOWN:
+            if obj['classification'] != VehicleClass.UNKNOWN:
                 vehicle_object.object_classified = True
-                vehicle_object.classification = self.classification
+                vehicle_object.classification = obj['classification']
                 vehicle_object.classification_certainty = 1.0
-                vehicle_object.classification_age = object['classification_age']
-                vehicle_object.classification_age = self.classification_age
+                vehicle_object.classification_age = obj['classification_age']
             ros_objects.objects.append(vehicle_object)
         self.publish_message(topic, ros_objects)

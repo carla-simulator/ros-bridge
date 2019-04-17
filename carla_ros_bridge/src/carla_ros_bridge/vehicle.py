@@ -13,6 +13,7 @@ Classes to handle Carla vehicles
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.binding.binding import VehicleClass
 
+
 class Vehicle(Actor):
 
     """
@@ -79,23 +80,26 @@ class Vehicle(Actor):
         :return:
         """
         self.classification_age += 1
-        self.get_binding().publish_transform(self.get_topic_prefix(), self.carla_actor.get_transform())
+        self.get_binding().publish_transform(self.get_topic_prefix(),
+                                             self.carla_actor.get_transform())
         self.get_binding().publish_marker(self.get_topic_prefix(),
                                           self.carla_actor.bounding_box,
                                           self.get_marker_color(),
                                           self.get_global_id())
         super(Vehicle, self).update()
 
-    def get_marker_color(self):
+    @classmethod
+    def get_marker_color(cls):
         """
         Function (override) to return the color for marker messages.
 
         :return: the color used by a vehicle marker
         """
-        return (255,0,0)
+        return (255, 0, 0)
 
     def get_object_info(self):
         """
+        get info about the object, used for simulated object-sensors
         """
         vehicle_object = {}
         vehicle_object['id'] = self.get_global_id()

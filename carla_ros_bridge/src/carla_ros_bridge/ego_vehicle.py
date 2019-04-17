@@ -9,9 +9,6 @@
 """
 Classes to handle Carla vehicles
 """
-import math
-
-from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
 

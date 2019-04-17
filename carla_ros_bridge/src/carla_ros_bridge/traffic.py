@@ -36,11 +36,6 @@ class Traffic(Actor):
                                       parent=parent,
                                       topic_prefix=topic_prefix,
                                       binding=binding)
-        if self.__class__.__name__ == "Traffic":
-            self.get_binding().logwarn("Created Unsupported Traffic Actor"
-                                       "(id={}, parent_id={}, type={}, attributes={})".format(
-                                           self.get_id(), self.get_parent_id(),
-                                           self.carla_actor.type_id, self.carla_actor.attributes))
 
 
 class TrafficLight(Traffic):
@@ -60,10 +55,6 @@ class TrafficLight(Traffic):
         """
         topic_prefix = 'traffic.traffic_light'
         super(TrafficLight, self).__init__(carla_actor=carla_actor,
-                                           parent=parent, 
+                                           parent=parent,
                                            binding=binding,
                                            topic_prefix=topic_prefix)
-        self.get_binding().logwarn("Created Traffic-Light Actor(id={}, parent_id={}, type={}, attributes={}). "
-                                   "Not yet fully implemented!".format(
-                                       self.get_id(), self.get_parent_id(),
-                                       self.carla_actor.type_id, self.carla_actor.attributes))

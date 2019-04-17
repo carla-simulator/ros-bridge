@@ -9,15 +9,11 @@
 """
 Class to handle Carla camera sensors
 """
-from abc import abstractmethod
-
 import math
-import numpy
-
 import carla
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
+# todo: remove ros-dependency
 import tf
 
 
@@ -115,7 +111,7 @@ class RgbCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_rgb_camera(self.get_topic_prefix(), 
+        self.get_binding().publish_rgb_camera(self.get_topic_prefix(),
                                               carla_image, self.carla_actor.attributes)
 
 
@@ -149,7 +145,10 @@ class DepthCamera(Camera):
         :param carla_image: carla image object
         :type carla_image: carla.Image
         """
-        self.get_binding().publish_depth_camera(self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_depth_camera(
+            self.get_topic_prefix(),
+            carla_image,
+            self.carla_actor.attributes)
 
 
 class SemanticSegmentationCamera(Camera):
@@ -184,4 +183,5 @@ class SemanticSegmentationCamera(Camera):
         :type carla_image: carla.Image
         """
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        self.get_binding().publish_semantic_segmentation_camera(self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
+        self.get_binding().publish_semantic_segmentation_camera(
+            self.get_topic_prefix(), carla_image, self.carla_actor.attributes)
