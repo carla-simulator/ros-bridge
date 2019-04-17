@@ -2,13 +2,6 @@
 
 ## Prerequistes
 
-Install libpng16
-
-    git clone https://git.code.sf.net/p/libpng/code libpng-code
-    cd libpng-code
-    ./configure --prefix=/usr/
-    sudo make install
-
 Bring carla-python-api and carla-bridge into apollo directory
 
     cd <path-to-apollo-git>
@@ -17,7 +10,16 @@ Bring carla-python-api and carla-bridge into apollo directory
     cp -r ~/carla-python .
   
     git clone -b feature/apollo https://github.com/carla-simulator/ros-bridge.git
-    
+
+    #start and log into apollo docker
+    bash docker/scripts/dev_start.sh
+    bash docker/scripts/dev_into.sh
+
+    # Install libpng16
+    git clone https://git.code.sf.net/p/libpng/code libpng-code
+    cd libpng-code
+    ./configure --prefix=/usr/
+    sudo make install
 
 ## Execution
 
