@@ -467,7 +467,7 @@ class RosBinding(object):
         open_drive_msg = CarlaMapInfo(header=self.get_msg_header("map"))
         open_drive_msg.map_name = carla_map.name
         open_drive_msg.opendrive = carla_map.to_opendrive()
-        self.publish_message('/carla/map', CarlaMapInfo, is_latched=True)
+        self.publish_message('/carla/map', open_drive_msg, is_latched=True)
 
     def publish_transform(self, frame_id, transform):
         """

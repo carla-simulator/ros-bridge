@@ -51,6 +51,8 @@ def main():
         host=binding.get_parameters()['host'], port=binding.get_parameters()['port']))
 
     carla_ros_bridge = None
+    carla_world = None
+    carla_client = None
     try:
         carla_client = carla.Client(
             host=binding.get_parameters()['host'],
