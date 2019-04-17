@@ -16,9 +16,7 @@ import os
 
 import carla
 
-from carla_ros_bridge.binding.ros_binding import RosBinding
 from carla_ros_bridge.bridge import CarlaRosBridge
-
 
 def main():
     """
@@ -38,14 +36,10 @@ def main():
         elif found is True:
             binding_name = arg
 
-    if binding_name:
-        module_name = os.path.basename(binding_name).split('.')[0]
-        sys.path.insert(0, os.path.dirname(binding_name))
-        module_agent = importlib.import_module(module_name)
-        binding = getattr(module_agent, module_agent.__name__)()
-    else:
-        #default is ros
-        binding = RosBinding()
+    module_name = os.path.basename(binding_name).split('.')[0]
+    sys.path.insert(0, os.path.dirname(binding_name))
+    module_agent = importlib.import_module(module_name)
+    binding = getattr(module_agent, module_agent.__name__)()
 
     print("Trying to connect to {host}:{port}".format(
         host=binding.get_parameters()['host'], port=binding.get_parameters()['port']))

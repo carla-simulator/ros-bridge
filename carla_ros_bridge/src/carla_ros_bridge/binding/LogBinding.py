@@ -11,7 +11,6 @@ Log binding (for testing)
 import signal, os
 import math
 import numpy
-import rospy
 from carla_ros_bridge.binding.binding import VehicleClass
 import carla_ros_bridge.binding.transforms as trans
 

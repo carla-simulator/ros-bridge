@@ -14,7 +14,7 @@ import carla
 from carla_ros_bridge.sensor import Sensor
 
 # todo: remove ros-dependency
-import tf
+#import tf
 
 
 class Camera(Sensor):
@@ -64,20 +64,21 @@ class Camera(Sensor):
 
         """
         transform = self.current_sensor_data.transform
-        roll = -math.radians(transform.rotation.roll)
-        pitch = -math.radians(transform.rotation.pitch)
-        yaw = -math.radians(transform.rotation.yaw)
-        quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
-        quat_swap = tf.transformations.quaternion_from_matrix(
-            [[0, 0, 1, 0],
-             [-1, 0, 0, 0],
-             [0, -1, 0, 0],
-             [0, 0, 0, 1]])
-        quat = tf.transformations.quaternion_multiply(quat, quat_swap)
-        roll, pitch, yaw = tf.transformations.euler_from_quaternion(quat)
-        transform.rotation.roll = -math.degrees(roll)
-        transform.rotation.pitch = -math.degrees(pitch)
-        transform.rotation.yaw = -math.degrees(yaw)
+        #TODO: find ROS independent solution
+        #roll = -math.radians(transform.rotation.roll)
+        #pitch = -math.radians(transform.rotation.pitch)
+        #yaw = -math.radians(transform.rotation.yaw)
+        #quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        #quat_swap = tf.transformations.quaternion_from_matrix(
+        #    [[0, 0, 1, 0],
+        #     [-1, 0, 0, 0],
+        #     [0, -1, 0, 0],
+        #     [0, 0, 0, 1]])
+        #quat = tf.transformations.quaternion_multiply(quat, quat_swap)
+        #roll, pitch, yaw = tf.transformations.euler_from_quaternion(quat)
+        #transform.rotation.roll = -math.degrees(roll)
+        #transform.rotation.pitch = -math.degrees(pitch)
+        #transform.rotation.yaw = -math.degrees(yaw)
         self.get_binding().publish_transform(self.get_topic_prefix(), transform)
 
 
