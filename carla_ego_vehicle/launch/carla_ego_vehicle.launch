@@ -1,0 +1,19 @@
+<!-- -->
+<launch>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+  <arg name="vehicle_filter" default="vehicle.*" />
+  <arg name="sensor_definition_file"/>
+  <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
+  <arg name="spawn_point" value =""/>
+
+  <param name="/carla/host" value="$(arg host)" />
+  <param name="/carla/port" value="$(arg port)" />
+
+  <node pkg="carla_ego_vehicle" type="carla_ego_vehicle.py" name="carla_ego_vehicle" output="screen">
+    <param name="sensor_definition_file" value="$(arg sensor_definition_file)" />
+    <param name="vehicle_filter" value="$(arg vehicle_filter)" />
+    <param name="spawn_point" value="$(arg spawn_point)" />
+  </node>
+</launch>
+

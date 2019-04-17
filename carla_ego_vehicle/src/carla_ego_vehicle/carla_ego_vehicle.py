@@ -24,29 +24,19 @@ import glob
 import os
 import random
 import math
+import json
 import rospy
-from tf.transformations import euler_from_quaternion
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+
+import carla
 
 # ==============================================================================
-# -- find carla module ---------------------------------------------------------
-# ==============================================================================
-try:
-    sys.path.append(glob.glob('**/carla-*%d.%d-%s.egg' % (
-        sys.version_info.major,
-        sys.version_info.minor,
-        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
-except IndexError:
-    pass
-
-import carla  # pylint: disable=wrong-import-position
-
-# ==============================================================================
-# -- CarlaEgoVehicleBase ------------------------------------------------------------
+# -- CarlaEgoVehicle ------------------------------------------------------------
 # ==============================================================================
 
 
-class CarlaEgoVehicleBase(object):
+class CarlaEgoVehicle(object):
     """
     Handles the spawning of the ego vehicle and its sensors
 
@@ -57,11 +47,34 @@ class CarlaEgoVehicleBase(object):
         rospy.init_node('ego_vehicle')
         self.host = rospy.get_param('/carla/host', '127.0.0.1')
         self.port = rospy.get_param('/carla/port', '2000')
+        self.sensor_definition_file = rospy.get_param('~sensor_definition_file')
         self.world = None
         self.player = None
         self.sensor_actors = []
-        self.actor_filter = rospy.get_param('/carla/client/vehicle_filter', 'vehicle.*')
+        self.actor_filter = rospy.get_param('~vehicle_filter', 'vehicle.*')
         self.actor_spawnpoint = None
+        #check argument and set spawn_point
+        spawn_point_param = rospy.get_param('~spawn_point')
+        if len(spawn_point_param):
+            spawn_point = spawn_point_param.split(',')
+            if len(spawn_point) != 6:
+                raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
+            pose = Pose()
+            pose.position.x = float(spawn_point[0])
+            pose.position.y = -float(spawn_point[1])
+            pose.position.z = float(spawn_point[2])
+            quat = quaternion_from_euler(
+                math.radians(float(spawn_point[3])), 
+                math.radians(float(spawn_point[4])),
+                math.radians(float(spawn_point[5])))
+            pose.orientation.x = quat[0]
+            pose.orientation.y = quat[1]
+            pose.orientation.z = quat[2]
+            pose.orientation.w = quat[3]
+            rospy.logwarn(spawn_point_param)
+            rospy.logwarn(pose)
+            self.actor_spawnpoint = pose
+
         self.initialpose_subscriber = rospy.Subscriber(
             "/initialpose", PoseWithCovarianceStamped, self.on_initialpose)
         rospy.loginfo('listening to server %s:%s', self.host, self.port)
@@ -126,8 +139,17 @@ class CarlaEgoVehicleBase(object):
                 spawn_points = self.world.get_map().get_spawn_points()
                 spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
                 self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+
+        # Read sensors from file
+        if not os.path.exists(self.sensor_definition_file):
+            raise RuntimeError(
+                "Could not read sensor-definition from {}".format(self.sensor_definition_file))
+        json_sensors = None
+        with open(self.sensor_definition_file) as handle:
+            json_sensors = json.loads(handle.read())
+
         # Set up the sensors
-        self.sensor_actors = self.setup_sensors(self.sensors())
+        self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
 
     def setup_sensors(self, sensors):
         """
@@ -139,8 +161,8 @@ class CarlaEgoVehicleBase(object):
         bp_library = self.world.get_blueprint_library()
         for sensor_spec in sensors:
             try:
-                bp = bp_library.find(sensor_spec['type'])
-                bp.set_attribute('role_name', str(sensor_spec['role_name']))
+                bp = bp_library.find(str(sensor_spec['type']))
+                bp.set_attribute('role_name', str(sensor_spec['id']))
                 if sensor_spec['type'].startswith('sensor.camera'):
                     bp.set_attribute('image_size_x', str(sensor_spec['width']))
                     bp.set_attribute('image_size_y', str(sensor_spec['height']))
@@ -151,12 +173,12 @@ class CarlaEgoVehicleBase(object):
                                                      roll=sensor_spec['roll'],
                                                      yaw=sensor_spec['yaw'])
                 elif sensor_spec['type'].startswith('sensor.lidar'):
-                    bp.set_attribute('range', '200')
-                    bp.set_attribute('rotation_frequency', '10')
-                    bp.set_attribute('channels', '32')
-                    bp.set_attribute('upper_fov', '15')
-                    bp.set_attribute('lower_fov', '-30')
-                    bp.set_attribute('points_per_second', '500000')
+                    bp.set_attribute('range', str(sensor_spec['range']))
+                    bp.set_attribute('rotation_frequency', str(sensor_spec['rotation_frequency']))
+                    bp.set_attribute('channels', str(sensor_spec['channels']))
+                    bp.set_attribute('upper_fov', str(sensor_spec['upper_fov']))
+                    bp.set_attribute('lower_fov', str(sensor_spec['lower_fov']))
+                    bp.set_attribute('points_per_second', str(sensor_spec['points_per_second']))
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],
@@ -211,3 +233,23 @@ class CarlaEgoVehicleBase(object):
             rospy.spin()
         except rospy.ROSInterruptException:
             pass
+
+# ==============================================================================
+# -- main() --------------------------------------------------------------------
+# ==============================================================================
+
+
+def main():
+    """
+    main function
+    """
+    ego_vehicle = CarlaEgoVehicle()
+    try:
+        ego_vehicle.run()
+    finally:
+        if ego_vehicle is not None:
+            ego_vehicle.destroy()
+
+
+if __name__ == '__main__':
+    main()

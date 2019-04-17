@@ -38,7 +38,7 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 
     #install required ros-dependencies
     rosdep update
-    rosdep install --from-path .
+    rosdep install --from-paths src --ignore-src -r
 
     #build
     catkin_make
@@ -124,21 +124,21 @@ Currently the following sensors are supported:
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/collision` | [carla_ros_bridge.CarlaCollisionEvent](carla_ros_bridge/msg/CarlaCollisionEvent.msg) |
+| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](carla_msgs/msg/CarlaCollisionEvent.msg) |
 
 #### Lane Invasion Sensor
 
 |Topic                          | Type |
 |-------------------------------|------|
-| `/carla/<ROLE NAME>/lane_invasion` | [carla_ros_bridge.CarlaLaneInvasionEvent](carla_ros_bridge/msg/CarlaLaneInvasionEvent.msg) |
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) |
 
 ### Control
 
 |Topic                                 | Type |
 |--------------------------------------|------|
-| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_ros_bridge.CarlaEgoVehicleControl](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) |
-| `/carla/<ROLE NAME>/vehicle_status` | [carla_ros_bridge.CarlaEgoVehicleStatus](carla_ros_bridge/msg/CarlaEgoVehicleStatus.msg) |
-| `/carla/<ROLE NAME>/vehicle_info` | [carla_ros_bridge.CarlaEgoVehicleInfo](carla_ros_bridge/msg/CarlaEgoVehicleInfo.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg) |
+| `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg) |
 
 You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 
@@ -170,7 +170,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 |Topic         | Type |
 |--------------|------|
-| `/carla/objects` | [derived_object_msgs.String](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+| `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
 
 Object information of all vehicles, except the ego-vehicle(s) is published.
 
@@ -183,9 +183,9 @@ Object information of all vehicles, except the ego-vehicle(s) is published.
 The OPEN Drive map description is published.
 
 
-# Example Ego Vehicle
+# Carla Ego Vehicle
 
-An example Carla Client to spawn and control an ego vehicle is available. You can find further documentation [here](carla_ego_vehicle/README.md).
+`carla_ego_vehicle` provides a generic way to spawn an ego vehicle and attach sensors to it. You can find further documentation [here](carla_ego_vehicle/README.md).
 
 
 # Waypoint calculation

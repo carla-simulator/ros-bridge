@@ -37,11 +37,11 @@ import tf
 from std_msgs.msg import Bool
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Image
-from carla_ros_bridge.msg import CarlaCollisionEvent  # pylint: disable=no-name-in-module, import-error
-from carla_ros_bridge.msg import CarlaLaneInvasionEvent  # pylint: disable=no-name-in-module, import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module, import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module, import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaCollisionEvent  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaLaneInvasionEvent  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module, import-error
 
 try:
     import pygame
@@ -277,9 +277,12 @@ class HUD(object):
             "/carla/ego_vehicle/vehicle_info", CarlaEgoVehicleInfo, self.vehicle_info_updated)
         self.latitude = 0
         self.longitude = 0
+        self.manual_control = False
         self.gnss_subscriber = rospy.Subscriber(
-            "/carla/ego_vehicle/gnss/front/gnss", NavSatFix, self.gnss_updated)
+            "/carla/ego_vehicle/gnss/gnss1/fix", NavSatFix, self.gnss_updated)
         self.tf_listener = tf.TransformListener()
+        self.manual_control_subscriber = rospy.Subscriber(
+            "/vehicle_control_manual_override", Bool, self.manual_control_override_updated)
 
     def __del__(self):
         self.gnss_subscriber.unregister()
@@ -291,6 +294,13 @@ class HUD(object):
         tick method
         """
         self._notifications.tick(clock)
+
+    def manual_control_override_updated(self, data):
+        """
+        Callback on vehicle status updates
+        """
+        self.manual_control = data.data
+        self.update_info_text()
 
     def vehicle_status_updated(self, vehicle_status):
         """
@@ -356,7 +366,9 @@ class HUD(object):
             ('Hand brake:', self.vehicle_status.control.hand_brake),
             ('Manual:', self.vehicle_status.control.manual_gear_shift),
             'Gear:        %s' % {-1: 'R', 0: 'N'}.get(self.vehicle_status.control.gear,
-                                                      self.vehicle_status.control.gear)]
+                                                      self.vehicle_status.control.gear),
+            '']
+        self._info_text += [('Manual ctrl:', self.manual_control)]
 
     def toggle_info(self):
         """
@@ -506,7 +518,7 @@ def main():
     """
     main function
     """
-    rospy.init_node('carla_ros_manual_control')
+    rospy.init_node('carla_manual_control')
 
     # resolution should be similar to spawned camera with role-name 'view'
     resolution = {"width": 800, "height": 600}

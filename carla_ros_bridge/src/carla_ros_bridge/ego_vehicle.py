@@ -20,10 +20,10 @@ from std_msgs.msg import Bool
 from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleInfoWheel  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
-from carla_ros_bridge.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
+from carla_msgs.msg import CarlaEgoVehicleInfo
+from carla_msgs.msg import CarlaEgoVehicleInfoWheel
+from carla_msgs.msg import CarlaEgoVehicleControl
+from carla_msgs.msg import CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle):
@@ -144,13 +144,12 @@ class EgoVehicle(Vehicle):
             self.publish_ros_message(self.topic_name() + "/vehicle_info", vehicle_info, True)
 
         # @todo: do we still need this?
-        if not self.parent.get_param("challenge_mode"):
-            odometry = Odometry(header=self.get_msg_header())
-            odometry.child_frame_id = self.get_frame_id()
-            odometry.pose.pose = self.get_current_ros_pose()
-            odometry.twist.twist = self.get_current_ros_twist()
+        odometry = Odometry(header=self.get_msg_header())
+        odometry.child_frame_id = self.get_frame_id()
+        odometry.pose.pose = self.get_current_ros_pose()
+        odometry.twist.twist = self.get_current_ros_twist()
 
-            self.publish_ros_message(self.topic_name() + "/odometry", odometry)
+        self.publish_ros_message(self.topic_name() + "/odometry", odometry)
 
     def update(self):
         """
@@ -193,7 +192,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type ros_vehicle_control: carla_ros_bridge.msg.CarlaEgoVehicleControl
+        :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()

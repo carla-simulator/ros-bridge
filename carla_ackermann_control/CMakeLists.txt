@@ -6,10 +6,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   std_msgs
-  geometry_msgs
   ackermann_msgs
   dynamic_reconfigure
-  carla_ros_bridge
+  carla_msgs
 )
 
 catkin_python_setup()
@@ -26,8 +25,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  geometry_msgs
-  carla_ros_bridge
+  carla_msgs
 )
 
 generate_dynamic_reconfigure_options(
