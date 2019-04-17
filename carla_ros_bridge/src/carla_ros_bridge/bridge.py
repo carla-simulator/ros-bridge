@@ -46,7 +46,6 @@ class CarlaRosBridge(object):
         """
         self.actors = {}
         self.carla_world = carla_world
-        self.params = binding.get_parameters()
 
         self.binding = binding
         self.timestamp_last_run = 0.0
@@ -77,19 +76,6 @@ class CarlaRosBridge(object):
         self.get_binding().signal_shutdown("")
         self.actor_list = []
         self.get_binding().loginfo("Exiting Bridge")
-
-    def get_param(self, key, default=None):
-        """
-        Function (override) to query global parameters passed from the outside.
-
-        :param key: the key of the parameter
-        :type key: string
-        :param default: the default value of the parameter to return if key is not found
-        :type default: string
-        :return: the parameter string
-        :rtype: string
-        """
-        return self.params.get(key, default)
 
     def _carla_time_tick(self, carla_timestamp):
         """
@@ -181,7 +167,7 @@ class CarlaRosBridge(object):
                 actor = Traffic(carla_actor, parent, self.binding)
         elif carla_actor.type_id.startswith("vehicle"):
             if carla_actor.attributes.get('role_name')\
-                    in self.get_param('ego_vehicle').get('role_name'):
+                    in self.binding.get_parameters()['ego_vehicle']['role_name']:
                 actor = EgoVehicle(carla_actor, parent, self.binding)
             else:
                 actor = Vehicle(carla_actor, parent, self.binding)

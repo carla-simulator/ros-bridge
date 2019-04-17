@@ -238,11 +238,35 @@ class LogBinding(object):
         :return:
         """
         odometry = {}
-        odometry['velocity'] = velocity
-        odometry['transform'] = transform
-        odometry['current_control'] = current_control
-        odometry['acceleration'] = acceleration
-        self.publish_message(topic, odometry)
+        odometry['velocity'] = {}
+        odometry['velocity']['x'] = velocity.x
+        odometry['velocity']['y'] = velocity.y
+        odometry['velocity']['z'] = velocity.z
+
+        odometry['transform'] = {}
+        odometry['transform']['location'] = {}
+        odometry['transform']['location']['x'] = transform.location.x
+        odometry['transform']['location']['y'] = transform.location.y
+        odometry['transform']['location']['z'] = transform.location.z
+        odometry['transform']['rotation'] = {}
+        odometry['transform']['rotation']['roll'] = transform.rotation.roll
+        odometry['transform']['rotation']['pitch'] = transform.rotation.pitch
+        odometry['transform']['rotation']['yaw'] = transform.rotation.yaw
+
+        odometry['current_control'] = {}
+        odometry['current_control']['throttle'] = current_control.throttle
+        odometry['current_control']['steer'] = current_control.steer
+        odometry['current_control']['brake'] = current_control.brake
+        odometry['current_control']['hand_brake'] = current_control.hand_brake
+        odometry['current_control']['reverse'] = current_control.reverse
+        odometry['current_control']['gear'] = current_control.gear
+        odometry['current_control']['manual_gear_shift'] = current_control.manual_gear_shift
+
+        odometry['acceleration'] = {}
+        odometry['acceleration']['x'] = acceleration.x
+        odometry['acceleration']['y'] = acceleration.y
+        odometry['acceleration']['z'] = acceleration.z
+        self.publish_message(topic + "/vehicle_status", odometry)
 
     def publish_map(self, carla_map):
         """
