@@ -26,8 +26,8 @@ import random
 import math
 import json
 import rospy
-from tf.transformations import euler_from_quaternion
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 
 import carla
 
@@ -53,6 +53,28 @@ class CarlaEgoVehicle(object):
         self.sensor_actors = []
         self.actor_filter = rospy.get_param('~vehicle_filter', 'vehicle.*')
         self.actor_spawnpoint = None
+        #check argument and set spawn_point
+        spawn_point_param = rospy.get_param('~spawn_point')
+        if len(spawn_point_param):
+            spawn_point = spawn_point_param.split(',')
+            if len(spawn_point) != 6:
+                raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
+            pose = Pose()
+            pose.position.x = float(spawn_point[0])
+            pose.position.y = -float(spawn_point[1])
+            pose.position.z = float(spawn_point[2])
+            quat = quaternion_from_euler(
+                math.radians(float(spawn_point[3])), 
+                math.radians(float(spawn_point[4])),
+                math.radians(float(spawn_point[5])))
+            pose.orientation.x = quat[0]
+            pose.orientation.y = quat[1]
+            pose.orientation.z = quat[2]
+            pose.orientation.w = quat[3]
+            rospy.logwarn(spawn_point_param)
+            rospy.logwarn(pose)
+            self.actor_spawnpoint = pose
+
         self.initialpose_subscriber = rospy.Subscriber(
             "/initialpose", PoseWithCovarianceStamped, self.on_initialpose)
         rospy.loginfo('listening to server %s:%s', self.host, self.port)
