@@ -2,7 +2,7 @@
   <arg name='enable_rosbag' default='False'/>
   <rosparam file="$(find carla_ros_bridge)/config/settings.yaml" command="load" />
   <param name='enable_rosbag' type="boolean" value="False"/>
-  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="client.py" output="screen"/>
+  <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge_with_example_ego_vehicle.launch"/>
 
   <test test-name="testTopics" pkg="rostest" type="publishtest" time-limit="20.0">
     <rosparam>
