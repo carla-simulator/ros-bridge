@@ -115,7 +115,7 @@ class Child(Parent):
         :return: the final topic name of this
         :rtype: string
         """
-        if len(self.topic_prefix) > 0:
+        if self.topic_prefix:
             return self.parent.topic_name() + "/" + self.topic_prefix
         else:
             return self.parent.topic_name()

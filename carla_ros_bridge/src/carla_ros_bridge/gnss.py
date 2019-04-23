@@ -42,6 +42,7 @@ class Gnss(Sensor):
                                    topic_prefix=topic_prefix,
                                    append_role_name_topic_postfix=append_role_name_topic_postfix)
 
+    # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_event):
         """
         Function to transform a received gnss event into a ROS NavSatFix message

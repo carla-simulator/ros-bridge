@@ -102,6 +102,7 @@ class Camera(Sensor):
         camera_info.P = [fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1.0, 0]
         self._camera_info = camera_info
 
+    # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_image):
         """
         Function (override) to transform the received carla image data
