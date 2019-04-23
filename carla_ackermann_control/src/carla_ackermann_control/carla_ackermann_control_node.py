@@ -151,7 +151,7 @@ class CarlaAckermannControl(object):
         self.reconfigure_server.set_service.shutdown()
         self.reconfigure_server = None
 
-    def reconfigure_pid_parameters(self, ego_vehicle_control_parameter, dummy_level):
+    def reconfigure_pid_parameters(self, ego_vehicle_control_parameter, _level):
         """
         Callback for dynamic reconfigure call to set the PID parameters
 

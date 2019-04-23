@@ -39,6 +39,7 @@ class CollisionSensor(Sensor):
                                               topic_prefix="collision",
                                               append_role_name_topic_postfix=False)
 
+    # pylint: disable=arguments-differ
     def sensor_data_updated(self, collision_event):
         """
         Function to wrap the collision event into a ros messsage

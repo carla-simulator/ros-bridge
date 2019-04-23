@@ -1,3 +1,6 @@
 [TYPECHECK]
-ignored-modules=numpy,carla,pygame
-disable=logging-format-interpolation,locally-disabled,cyclic-import,too-many-instance-attributes,invalid-name
+ignored-modules=numpy,carla,pygame,agents
+disable=logging-format-interpolation,locally-disabled,cyclic-import,too-many-instance-attributes,invalid-name,no-else-return
+
+[SIMILARITIES]
+min-similarity-lines=9

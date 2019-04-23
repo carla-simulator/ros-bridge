@@ -17,20 +17,21 @@ The calculated route is published on '/carla/ego_vehicle/waypoints'
 """
 import math
 import threading
+
 import rospy
+import tf
+from tf.transformations import euler_from_quaternion
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+
 import carla
 
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
-from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
-
-import tf
-from tf.transformations import euler_from_quaternion
-
 
 class CarlaToRosWaypointConverter(object):
+
     """
     This class generates a plan of waypoints to follow.
 

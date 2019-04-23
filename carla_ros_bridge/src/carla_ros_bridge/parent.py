@@ -158,7 +158,7 @@ class Parent(object):
         self.get_new_child_actors()
         self.get_dead_child_actors()
 
-        if len(self.dead_child_actors) > 0 or len(self.new_child_actors) > 0:
+        if self.dead_child_actors or self.new_child_actors:
             with self.update_child_actor_list_lock:
                 for actor in self.dead_child_actors:
                     actor_id = actor.carla_actor.id
