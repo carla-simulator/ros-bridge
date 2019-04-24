@@ -1,0 +1,64 @@
+#
+# Copyright (c) 2019 Intel Corporation
+#
+# This work is licensed under the terms of the MIT license.
+# For a copy, see <https://opensource.org/licenses/MIT>.
+#
+
+os: linux
+dist: xenial
+sudo: false
+
+matrix:
+  include:
+
+    - env: TEST="Test installation with ROS Kinetic & pylint"
+      addons:
+        apt:
+          packages:
+            - python-pip
+      before_script:
+        - pip install --user simple-pid
+        - pip install --user pylint
+        - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+        - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+        - sudo apt-get update
+        - sudo apt-get install ros-kinetic-desktop-full
+      script:
+        - mkdir ros-bridge/
+        - shopt -s dotglob
+        - shopt -s extglob
+        - mv !(ros-bridge) ros-bridge/
+        - mkdir -p catkin_ws/src
+        - cd catkin_ws/src
+        - ln -s ../../ros-bridge
+        - source /opt/ros/kinetic/setup.bash
+        - cd ..
+        - sudo rosdep init
+        - rosdep update
+        - rosdep install --from-paths src --ignore-src -r
+        - catkin_make install
+        - source install/setup.bash
+        - cd src/ros-bridge
+        - pylint --rcfile=.pylintrc carla_ackermann_control/src/carla_ackermann_control/ carla_ros_bridge/src/carla_ros_bridge/ carla_ego_vehicle/src/carla_ego_vehicle/ carla_waypoint_publisher/src/carla_waypoint_publisher/
+      after_failure:
+        - tail --lines=2000 build.log
+
+    - env: TEST="Check code formatting"
+      addons:
+        apt:
+          packages:
+            - pep8
+            - python-autopep8
+            - python-pep8
+      script:
+        - autopep8 carla_ros_bridge/src/carla_ros_bridge/*.py --in-place --max-line-length=100
+        - autopep8 carla_ackermann_control/src/carla_ackermann_control/*.py --in-place --max-line-length=100
+        - autopep8 carla_ego_vehicle/src/carla_ego_vehicle/*.py --in-place --max-line-length=100
+        - autopep8 carla_waypoint_publisher/src/carla_waypoint_publisher/*.py --in-place --max-line-length=100
+        - git diff --quiet HEAD --; if [ ! $? -eq 0 ]; then echo "Code is not autopep8 compliant. Please run check.sh"; git diff HEAD --; exit 1; fi
+      after_failure:
+        - tail --lines=2000 build.log
+
+notifications:
+  email: false
