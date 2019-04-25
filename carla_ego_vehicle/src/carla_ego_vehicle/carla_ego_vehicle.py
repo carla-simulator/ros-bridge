@@ -55,6 +55,7 @@ class CarlaEgoVehicle(object):
         # check argument and set spawn_point
         spawn_point_param = rospy.get_param('~spawn_point')
         if spawn_point_param:
+            print("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
             spawn_point = spawn_point_param.split(',')
             if len(spawn_point) != 6:
                 raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
@@ -70,8 +71,6 @@ class CarlaEgoVehicle(object):
             pose.orientation.y = quat[1]
             pose.orientation.z = quat[2]
             pose.orientation.w = quat[3]
-            rospy.logwarn(spawn_point_param)
-            rospy.logwarn(pose)
             self.actor_spawnpoint = pose
 
         self.initialpose_subscriber = rospy.Subscriber(

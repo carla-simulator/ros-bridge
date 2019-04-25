@@ -5,7 +5,7 @@
   <arg name="vehicle_filter" default="vehicle.*" />
   <arg name="sensor_definition_file"/>
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
-  <arg name="spawn_point" value =""/>
+  <arg name="spawn_point" default=""/>
 
   <param name="/carla/host" value="$(arg host)" />
   <param name="/carla/port" value="$(arg port)" />
