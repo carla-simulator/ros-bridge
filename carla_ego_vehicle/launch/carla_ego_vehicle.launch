@@ -4,6 +4,7 @@
   <arg name='port' default='2000'/>
   <arg name="vehicle_filter" default="vehicle.*" />
   <arg name="sensor_definition_file"/>
+  <arg name="ego_vehicle_name" default="ego_vehicle" />
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
   <arg name="spawn_point" default=""/>
 
@@ -14,6 +15,7 @@
     <param name="sensor_definition_file" value="$(arg sensor_definition_file)" />
     <param name="vehicle_filter" value="$(arg vehicle_filter)" />
     <param name="spawn_point" value="$(arg spawn_point)" />
+    <param name="ego_vehicle_name" value="$(arg ego_vehicle_name)" />
   </node>
 </launch>
 
