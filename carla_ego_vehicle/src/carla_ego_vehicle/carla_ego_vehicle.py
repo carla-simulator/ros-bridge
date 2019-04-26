@@ -16,6 +16,7 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
+from __future__ import print_function
 
 from abc import abstractmethod
 
