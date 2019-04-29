@@ -10,10 +10,10 @@ Generates a plan of waypoints to follow
 It uses the current pose of the ego vehicle as starting point. If the
 vehicle is respawned, the route is newly calculated.
 
-The goal is either read from the ROS topic /move_base_simple/goal, if available
-(e.g. published by RVIZ via '2D Nav Goal") or a fixed spawnpoint is used.
+The goal is either read from the ROS topic `/carla/<ROLE NAME>/move_base_simple/goal`, if available
+(e.g. published by RVIZ via '2D Nav Goal') or a fixed spawnpoint is used.
 
-The calculated route is published on '/carla/ego_vehicle/waypoints'
+The calculated route is published on '/carla/<ROLE NAME>/waypoints'
 """
 import math
 import threading
@@ -45,14 +45,16 @@ class CarlaToRosWaypointConverter(object):
         self.world = carla_world
         self.map = carla_world.get_map()
         self.ego_vehicle = None
+        self.role_name = rospy.get_param("~role_name", 'ego_vehicle')
         self.waypoint_publisher = rospy.Publisher(
-            '/carla/ego_vehicle/waypoints', Path, queue_size=1, latch=True)
+            '/carla/{}/waypoints'.format(self.role_name), Path, queue_size=1, latch=True)
 
         # set initial goal
         self.goal = self.world.get_map().get_spawn_points()[0]
 
         self.current_route = None
-        self.goal_subscriber = rospy.Subscriber("/move_base_simple/goal", PoseStamped, self.on_goal)
+        self.goal_subscriber = rospy.Subscriber(
+            "/carla/{}/goal".format(self.role_name), PoseStamped, self.on_goal)
 
         self._update_lock = threading.Lock()
 
@@ -103,7 +105,7 @@ class CarlaToRosWaypointConverter(object):
         with self._update_lock:
             hero = None
             for actor in self.world.get_actors():
-                if actor.attributes.get('role_name') == "ego_vehicle":
+                if actor.attributes.get('role_name') == self.role_name:
                     hero = actor
                     break
 

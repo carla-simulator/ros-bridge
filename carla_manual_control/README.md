@@ -15,7 +15,7 @@ To be able to use `carla_manual_control`, some sensors need to be attached to th
 
 In order to steer manually, you might need to disable sending vehicle control commands within another ROS node.
 
-Therefore the manual control is able to publish to `/vehicle_control_manual_override` ([std_msgs/Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html)).
+Therefore the manual control is able to publish to `/carla/<ego vehicle role name>/vehicle_control_manual_override` ([std_msgs/Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html)).
 
 Press `B` to toggle the value.
 
