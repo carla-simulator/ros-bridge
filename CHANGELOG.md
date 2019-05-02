@@ -1,5 +1,6 @@
 ## Latest changed
 
+* add id to CarlaEgoVehicleInfo datatype
 * rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode
 
