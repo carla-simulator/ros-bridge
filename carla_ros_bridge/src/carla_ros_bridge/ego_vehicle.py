@@ -91,7 +91,7 @@ class EgoVehicle(Vehicle):
         instead of an object message.
 
         The ego vehicle doesn't send its information as part of the object list.
-        A nav_msgs.msg.Odometry is prepared to be published via '/carla/ego_vehicle'
+        A nav_msgs.msg.Odometry is prepared to be published
 
         :return:
         """

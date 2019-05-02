@@ -4,12 +4,14 @@
   <arg name='port' default='2000'/>
   <arg name="vehicle_filter" default="vehicle.*" />
   <arg name="sensor_definition_file" default="$(find carla_ego_vehicle)/config/sensors.json"/>
+  <arg name="role_name" default="ego_vehicle"/>
 
   <include file="$(find carla_ego_vehicle)/launch/carla_ego_vehicle.launch">
-      <arg name='host' default='$(arg host)'/>
-      <arg name='port' default='$(arg port)'/>
-      <arg name="vehicle_filter" default='$(arg vehicle_filter)'/>
-      <arg name="sensor_definition_file" default='$(arg sensor_definition_file)'/>
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
+    <arg name="sensor_definition_file" value='$(arg sensor_definition_file)'/>
+    <arg name="role_name" value="$(arg role_name)"/>
   </include>
 </launch>
 

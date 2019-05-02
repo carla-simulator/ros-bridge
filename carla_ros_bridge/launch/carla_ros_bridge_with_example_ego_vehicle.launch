@@ -2,15 +2,21 @@
 <launch>
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
+  <arg name='ego_vehicle_name' default='ego_vehicle'/>
+
   <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
-      <arg name='host' default='$(arg host)'/>
-      <arg name='port' default='$(arg port)'/>
+    <arg name='host' default='$(arg host)'/>
+    <arg name='port' default='$(arg port)'/>
   </include>
 
   <include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch">
-      <arg name='host' default='$(arg host)'/>
-      <arg name='port' default='$(arg port)'/>
+    <arg name='host' default='$(arg host)'/>
+    <arg name='port' default='$(arg port)'/>
+    <arg name='role_name' value='$(arg ego_vehicle_name)'/>
   </include>
 
-  <include file="$(find carla_manual_control)/launch/carla_manual_control.launch"/>
+  <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
+    <arg name='role_name' value='$(arg ego_vehicle_name)'/>
+  </include>
+
 </launch>
