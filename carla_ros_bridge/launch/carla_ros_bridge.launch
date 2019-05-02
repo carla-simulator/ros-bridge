@@ -1,12 +1,13 @@
+<!-- -->
 <launch>
   <arg name='host' default=''/>
   <arg name='port' default=''/>
-  <arg name='ego_vehicle_name' default=''/>
   <arg name='rosbag_fname' default=''/>
   <param name="rosbag_fname" value="$(arg rosbag_fname)"/>
   <rosparam file="$(find carla_ros_bridge)/config/settings.yaml" command="load" />
   <param name="carla/host" value="$(arg host)" unless="$(eval host == '')"/>
   <param name="carla/port" value="$(arg port)" unless="$(eval port == '')"/>
-  <param name="carla/ego_vehicle/role_name" value="$(arg ego_vehicle_name)" unless="$(eval ego_vehicle_name == '')"/>
+
   <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="client.py" output="screen"/>
+    
 </launch>
