@@ -132,6 +132,14 @@ Currently the following sensors are supported:
 |-------------------------------|------|
 | `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) |
 
+### Object Sensor
+
+|Topic         | Type |
+|--------------|------|
+| `/carla/<ROLE NAME>/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+
+Reports all vehicles, except the ego vehicle.
+
 ### Control
 
 |Topic                                 | Type |
@@ -166,13 +174,13 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ## Other Topics
 
-### Object information of other vehicles
+### Object information of all vehicles
 
 |Topic         | Type |
 |--------------|------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+| `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
 
-Object information of all vehicles, except the ego-vehicle(s) is published.
 
 ## Map
 
