@@ -11,7 +11,7 @@ vehicle is respawned, the route is newly calculated.
 As the waypoint publisher requires some Carla PythonAPI functionality that is not part of the python egg-file, you
 have to extend your PYTHONPATH.
 
-    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/
+    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/carla/
 
 To run it:
 
