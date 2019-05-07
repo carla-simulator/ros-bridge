@@ -11,10 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   DIRECTORY msg
   FILES
-  CarlaEgoVehicleControl.msg
-  CarlaEgoVehicleStatus.msg
-  CarlaEgoVehicleInfoWheel.msg
-  CarlaEgoVehicleInfo.msg
+  CarlaVehicleControl.msg
+  CarlaVehicleStatus.msg
+  CarlaVehicleInfoWheel.msg
+  CarlaVehicleInfo.msg
   CarlaCollisionEvent.msg
   CarlaLaneInvasionEvent.msg
   CarlaMapInfo.msg

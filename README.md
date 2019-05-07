@@ -144,9 +144,9 @@ Reports all vehicles, except the ego vehicle.
 
 |Topic                                 | Type |
 |--------------------------------------|------|
-| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
-| `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg) |
-| `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaVehicleControl](carla_msgs/msg/CarlaVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaVehicleStatus](carla_msgs/msg/CarlaVehicleStatus.msg) |
+| `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaVehicleInfo](carla_msgs/msg/CarlaVehicleInfo.msg) |
 
 You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 
@@ -154,12 +154,12 @@ Examples for a ego vehicle with role_name 'ego_vehicle':
 
 Max forward throttle:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 
 Max forward throttle with max steering to the right:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 
 The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`.
@@ -167,7 +167,7 @@ Static information about the vehicle can be received via `/carla/<ROLE NAME>/veh
 
 #### Carla Ackermann Control
 
-In certain cases, the [Carla Control Command](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
+In certain cases, the [Carla Control Command](carla_ros_bridge/msg/CarlaVehicleControl.msg) is not ideal to connect to an AD stack.
 Therefore a ROS-based node ```carla_ackermann_control``` is provided which reads [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages.
 You can find further documentation [here](carla_ackermann_control/README.md).
 

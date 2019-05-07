@@ -20,10 +20,10 @@ from std_msgs.msg import Bool
 from carla import VehicleControl
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_msgs.msg import CarlaEgoVehicleInfo
-from carla_msgs.msg import CarlaEgoVehicleInfoWheel
-from carla_msgs.msg import CarlaEgoVehicleControl
-from carla_msgs.msg import CarlaEgoVehicleStatus
+from carla_msgs.msg import CarlaVehicleInfo
+from carla_msgs.msg import CarlaVehicleInfoWheel
+from carla_msgs.msg import CarlaVehicleControl
+from carla_msgs.msg import CarlaVehicleStatus
 
 
 class EgoVehicle(Vehicle):
@@ -64,7 +64,7 @@ class EgoVehicle(Vehicle):
 
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, self.control_command_updated)
+            CarlaVehicleControl, self.control_command_updated)
 
         self.enable_autopilot_subscriber = rospy.Subscriber(
             self.topic_name() + "/enable_autopilot",
@@ -95,7 +95,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        vehicle_status = CarlaEgoVehicleStatus()
+        vehicle_status = CarlaVehicleStatus()
         vehicle_status.header.stamp = self.get_current_ros_time()
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
@@ -111,14 +111,14 @@ class EgoVehicle(Vehicle):
 
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
-            vehicle_info = CarlaEgoVehicleInfo()
+            vehicle_info = CarlaVehicleInfo()
             vehicle_info.id = self.carla_actor.id
             vehicle_info.type = self.carla_actor.type_id
             vehicle_info.rolename = self.carla_actor.attributes.get('role_name')
             vehicle_physics = self.carla_actor.get_physics_control()
 
             for wheel in vehicle_physics.wheels:
-                wheel_info = CarlaEgoVehicleInfoWheel()
+                wheel_info = CarlaVehicleInfoWheel()
                 wheel_info.tire_friction = wheel.tire_friction
                 wheel_info.damping_rate = wheel.damping_rate
                 wheel_info.steer_angle = math.radians(wheel.steer_angle)
@@ -169,7 +169,7 @@ class EgoVehicle(Vehicle):
         """
         Function (override) to destroy this object.
 
-        Terminate ROS subscription on CarlaEgoVehicleControl commands.
+        Terminate ROS subscription on CarlaVehicleControl commands.
         Finally forward call to super class.
 
         :return:
@@ -183,7 +183,7 @@ class EgoVehicle(Vehicle):
 
     def control_command_updated(self, ros_vehicle_control):
         """
-        Receive a CarlaEgoVehicleControl msg and send to CARLA
+        Receive a CarlaVehicleControl msg and send to CARLA
 
         This function gets called whenever a ROS message is received via
         '/carla/ego_vehicle/vehicle_control_cmd' topic.
@@ -193,7 +193,7 @@ class EgoVehicle(Vehicle):
         It's just forwarding the ROS input to CARLA
 
         :param ros_vehicle_control: current vehicle control input received via ROS
-        :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
+        :type ros_vehicle_control: carla_msgs.msg.CarlaVehicleControl
         :return:
         """
         vehicle_control = VehicleControl()

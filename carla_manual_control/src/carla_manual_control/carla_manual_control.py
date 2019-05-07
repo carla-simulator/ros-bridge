@@ -39,9 +39,9 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Image
 from carla_msgs.msg import CarlaCollisionEvent  # pylint: disable=no-name-in-module, import-error
 from carla_msgs.msg import CarlaLaneInvasionEvent  # pylint: disable=no-name-in-module, import-error
-from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module, import-error
-from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module, import-error
-from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaVehicleControl  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaVehicleStatus  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaVehicleInfo  # pylint: disable=no-name-in-module, import-error
 
 try:
     import pygame
@@ -162,9 +162,9 @@ class KeyboardControl(object):
         self.auto_pilot_enable_publisher = rospy.Publisher(
             "/carla/{}/enable_autopilot".format(self.role_name), Bool, queue_size=1)
         self.vehicle_control_publisher = rospy.Publisher(
-            "/carla/{}/vehicle_control_cmd".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
+            "/carla/{}/vehicle_control_cmd".format(self.role_name), CarlaVehicleControl, queue_size=1)
         self._autopilot_enabled = False
-        self._control = CarlaEgoVehicleControl()
+        self._control = CarlaVehicleControl()
         self.set_autopilot(self._autopilot_enabled)
         self._steer_cache = 0.0
         self.set_vehicle_control_manual_override(
@@ -272,12 +272,12 @@ class HUD(object):
         self.help = HelpText(pygame.font.Font(mono, 24), width, height)
         self._show_info = True
         self._info_text = []
-        self.vehicle_status = CarlaEgoVehicleStatus()
+        self.vehicle_status = CarlaVehicleStatus()
         self.vehicle_status_subscriber = rospy.Subscriber(
-            "/carla/{}/vehicle_status".format(self.role_name), CarlaEgoVehicleStatus, self.vehicle_status_updated)
-        self.vehicle_info = CarlaEgoVehicleInfo()
+            "/carla/{}/vehicle_status".format(self.role_name), CarlaVehicleStatus, self.vehicle_status_updated)
+        self.vehicle_info = CarlaVehicleInfo()
         self.vehicle_info_subscriber = rospy.Subscriber(
-            "/carla/{}/vehicle_info".format(self.role_name), CarlaEgoVehicleInfo, self.vehicle_info_updated)
+            "/carla/{}/vehicle_info".format(self.role_name), CarlaVehicleInfo, self.vehicle_info_updated)
         self.latitude = 0
         self.longitude = 0
         self.manual_control = False

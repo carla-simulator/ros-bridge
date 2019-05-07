@@ -1,6 +1,6 @@
 # Carla Ackermann Control
 
-ROS Node to convert [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages to [CarlaEgoVehicleControl](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg).
+ROS Node to convert [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages to [CarlaVehicleControl](carla_ros_bridge/msg/CarlaVehicleControl.msg).
 
 * A PID controller is used to control the acceleration/velocity.
 * Reads the Vehicle Info, required for controlling from Carla (via carla ros bridge)

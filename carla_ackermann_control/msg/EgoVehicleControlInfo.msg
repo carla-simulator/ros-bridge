@@ -21,4 +21,4 @@ EgoVehicleControlCurrent current
 EgoVehicleControlStatus status
 
 # the current control output to CARLA
-carla_msgs/CarlaEgoVehicleControl output
+carla_msgs/CarlaVehicleControl output
