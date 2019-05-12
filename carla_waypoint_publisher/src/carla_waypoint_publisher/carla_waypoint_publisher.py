@@ -149,7 +149,7 @@ class CarlaToRosWaypointConverter(object):
         Publish the ROS message containing the waypoints
         """
         msg = Path()
-        msg.header.frame_id = "/map"
+        msg.header.frame_id = "map"
         msg.header.stamp = rospy.Time.now()
         if self.current_route is not None:
             for wp in self.current_route:

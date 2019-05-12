@@ -149,7 +149,7 @@ class Sensor(Actor):
         """
         tf_msg = TransformStamped()
         tf_msg.header = self.get_msg_header()
-        tf_msg.header.frame_id = "/map"
+        tf_msg.header.frame_id = "map"
         tf_msg.child_frame_id = self.get_frame_id()
         tf_msg.transform = self.get_current_ros_transfrom()
         return tf_msg
