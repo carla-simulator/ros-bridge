@@ -41,7 +41,7 @@ class CarlaRosBridge(Parent):
         """
         self.params = params
         super(CarlaRosBridge, self).__init__(
-            carla_id=0, carla_world=carla_world, frame_id='/map')
+            carla_id=0, carla_world=carla_world, frame_id='map')
 
         self.timestamp_last_run = 0.0
         self.ros_timestamp = rospy.Time()
@@ -68,7 +68,7 @@ class CarlaRosBridge(Parent):
             '/carla/objects', ObjectArray, queue_size=10)
         self.object_array = ObjectArray()
 
-        self.map = Map(carla_world=self.carla_world, parent=self, topic='/map')
+        self.map = Map(carla_world=self.carla_world, parent=self, topic='map')
 
     def destroy(self):
         """
