@@ -25,6 +25,8 @@ from carla_msgs.msg import CarlaEgoVehicleInfoWheel
 from carla_msgs.msg import CarlaEgoVehicleControl
 from carla_msgs.msg import CarlaEgoVehicleStatus
 
+import carla_ros_bridge.transforms as transforms
+
 
 class EgoVehicle(Vehicle):
 
@@ -98,7 +100,9 @@ class EgoVehicle(Vehicle):
         vehicle_status = CarlaEgoVehicleStatus()
         vehicle_status.header.stamp = self.get_current_ros_time()
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
-        vehicle_status.acceleration = self.get_vehicle_acceleration_abs(self.carla_actor)
+        vehicle_status.acceleration.linear = transforms.carla_vector_to_ros_vector_rotated(
+            self.carla_actor.get_acceleration(),
+            self.carla_actor.get_transform().rotation)
         vehicle_status.orientation = self.get_current_ros_pose().orientation
         vehicle_status.control.throttle = self.carla_actor.get_control().throttle
         vehicle_status.control.steer = self.carla_actor.get_control().steer
@@ -251,13 +255,3 @@ class EgoVehicle(Vehicle):
         speed = math.sqrt(EgoVehicle.get_vehicle_speed_squared(carla_vehicle))
         return speed
 
-    @staticmethod
-    def get_vehicle_acceleration_abs(carla_vehicle):
-        """
-        Get the absolute acceleration of a carla vehicle
-        :param carla_vehicle: the carla vehicle
-        :type carla_vehicle: carla.Vehicle
-        :return: vehicle acceleration value [m/s^2 >=0]
-        :rtype: float64
-        """
-        return math.sqrt(EgoVehicle.get_vector_length_squared(carla_vehicle.get_acceleration()))

@@ -186,8 +186,16 @@ def carla_rotation_to_directional_numpy_vector(carla_rotation):
     rotated_directional_vector = rotation_matrix.dot(directional_vector)
     return rotated_directional_vector
 
+def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
+    rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
+    tmp_array = rotation_matrix.dot(numpy.array([carla_vector.x, carla_vector.y, carla_vector.z]))
+    ros_vector = Vector3()
+    ros_vector.x = tmp_array[0]
+    ros_vector.y = -tmp_array[1]
+    ros_vector.z = tmp_array[2]
+    return ros_vector
 
-def carla_velocity_to_ros_twist(carla_velocity, carla_angular_velocity, carla_rotation):
+def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation):
     """
     Convert a carla velocity to a ROS twist
 
@@ -204,12 +212,7 @@ def carla_velocity_to_ros_twist(carla_velocity, carla_angular_velocity, carla_ro
     :rtype: geometry_msgs.msg.Twist
     """
     ros_twist = Twist()
-    rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
-    linear_vector = numpy.array([carla_velocity.x, carla_velocity.y, carla_velocity.z])
-    rotated_linear_vector = rotation_matrix.dot(linear_vector)
-    ros_twist.linear.x = rotated_linear_vector[0]
-    ros_twist.linear.y = -rotated_linear_vector[1]
-    ros_twist.linear.z = rotated_linear_vector[2]
+    ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
     ros_twist.angular.x = -math.radians(carla_angular_velocity.x)
     ros_twist.angular.y = -math.radians(carla_angular_velocity.y)
     ros_twist.angular.z = -math.radians(carla_angular_velocity.z)
