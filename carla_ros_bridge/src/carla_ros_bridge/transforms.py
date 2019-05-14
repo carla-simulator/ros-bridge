@@ -187,24 +187,32 @@ def carla_rotation_to_directional_numpy_vector(carla_rotation):
     return rotated_directional_vector
 
 
-def carla_velocity_to_ros_twist(carla_velocity):
+def carla_velocity_to_ros_twist(carla_velocity, carla_angular_velocity, carla_rotation):
     """
     Convert a carla velocity to a ROS twist
 
     Considers the conversion from left-handed system (unreal) to right-handed
-    system (ROS)
-    The angular velocities remain zero.
+    system (ROS).
 
     :param carla_velocity: the carla velocity
     :type carla_velocity: carla.Vector3D
-    :return: a ROS twist
+    :param carla_angular_velocity: the carla angular velocity
+    :type carla_angular_velocity: carla.Vector3D
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a ROS twist (with rotation)
     :rtype: geometry_msgs.msg.Twist
     """
     ros_twist = Twist()
-    ros_twist.linear.x = carla_velocity.x
-    ros_twist.linear.y = -carla_velocity.y
-    ros_twist.linear.z = carla_velocity.z
-
+    rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
+    linear_vector = numpy.array([carla_velocity.x, carla_velocity.y, carla_velocity.z])
+    rotated_linear_vector = rotation_matrix.dot(linear_vector)
+    ros_twist.linear.x = rotated_linear_vector[0]
+    ros_twist.linear.y = -rotated_linear_vector[1]
+    ros_twist.linear.z = rotated_linear_vector[2]
+    ros_twist.angular.x = -math.radians(carla_angular_velocity.x)
+    ros_twist.angular.y = -math.radians(carla_angular_velocity.y)
+    ros_twist.angular.z = -math.radians(carla_angular_velocity.z)
     return ros_twist
 
 
