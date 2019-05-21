@@ -530,6 +530,7 @@ def main():
 
     pygame.init()
     pygame.font.init()
+    pygame.display.set_caption("CARLA ROS manual control")
     world = None
     try:
         display = pygame.display.set_mode(
