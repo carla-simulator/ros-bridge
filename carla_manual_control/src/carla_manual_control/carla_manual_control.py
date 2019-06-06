@@ -162,7 +162,7 @@ class KeyboardControl(object):
         self.auto_pilot_enable_publisher = rospy.Publisher(
             "/carla/{}/enable_autopilot".format(self.role_name), Bool, queue_size=1)
         self.vehicle_control_publisher = rospy.Publisher(
-            "/carla/{}/vehicle_control_cmd".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
+            "/carla/{}/vehicle_control_cmd_manual".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
         self._autopilot_enabled = False
         self._control = CarlaEgoVehicleControl()
         self.set_autopilot(self._autopilot_enabled)

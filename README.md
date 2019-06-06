@@ -145,10 +145,22 @@ Reports all vehicles, except the ego vehicle.
 |Topic                                 | Type |
 |--------------------------------------|------|
 | `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd_manual` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_manual_override` (subscriber) | [std_msgs.Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html) |
 | `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg) |
 | `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg) |
 
-You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
+There are two modes to control the vehicle.
+
+1. Normal Mode (reading commands from `/carla/<ROLE NAME>/vehicle_control_cmd`)
+1. Manual Mode (reading commands from `/carla/<ROLE NAME>/vehicle_control_cmd_manual`)
+
+This allows to manually override a Vehicle Control Commands published by a software stack. You can toggle between the two modes by publishing to `/carla/<ROLE NAME>/vehicle_control_manual_override`.
+
+[carla_manual_control](carla_manual_control/) makes use of this feature.
+
+
+For testing purposes, you can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 
 Examples for a ego vehicle with role_name 'ego_vehicle':
 
