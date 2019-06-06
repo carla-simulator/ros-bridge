@@ -65,11 +65,13 @@ class EgoVehicle(Vehicle):
 
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, lambda data: self.control_command_updated(data, manual_override=False))
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=False))
 
         self.manual_control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd_manual",
-            CarlaEgoVehicleControl, lambda data: self.control_command_updated(data, manual_override=True))
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=True))
 
         self.control_override_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_manual_override",
@@ -192,6 +194,7 @@ class EgoVehicle(Vehicle):
 
     def control_command_override(self, enable):
         """
+        Set the vehicle control mode according to ros topic
         """
         self.vehicle_control_override = enable.data
 
