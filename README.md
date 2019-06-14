@@ -177,6 +177,18 @@ Max forward throttle with max steering to the right:
 The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`.
 Static information about the vehicle can be received via `/carla/<ROLE NAME>/vehicle_info`
 
+#### Additional way of controlling
+
+|Topic                                 | Type |
+|--------------------------------------|------|
+| `/carla/<ROLE NAME>/twist_cmd` (subscriber) | [geometry_msgs.Twist](http://docs.ros.org/api/geometry_msgs/html/msg/Twist.html) |
+
+CAUTION: This control method does not respect the vehicle constraints. It allows movements impossible in the real world, like flying or rotating.
+
+You can also control the vehicle via publishing linear and angular velocity within a Twist datatype.
+
+Currently this method applies the complete linear vector, but only the yaw from angular vector.
+
 #### Carla Ackermann Control
 
 In certain cases, the [Carla Control Command](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.

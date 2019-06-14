@@ -1,5 +1,6 @@
 ## Latest changed
 
+* support twist_cmd to set velocity of ego vehicle (without respecting the vehicle constraints)
 * add id to CarlaEgoVehicleInfo datatype
 * rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode

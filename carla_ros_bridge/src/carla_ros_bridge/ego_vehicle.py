@@ -10,16 +10,21 @@
 Classes to handle Carla vehicles
 """
 import math
+import numpy
 
 import rospy
 
 from nav_msgs.msg import Odometry
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
+from geometry_msgs.msg import Twist
 
 from carla import VehicleControl
+from carla import Vector3D
 
 from carla_ros_bridge.vehicle import Vehicle
+import carla_ros_bridge.transforms as transforms
+
 from carla_msgs.msg import CarlaEgoVehicleInfo
 from carla_msgs.msg import CarlaEgoVehicleInfoWheel
 from carla_msgs.msg import CarlaEgoVehicleControl
@@ -80,6 +85,10 @@ class EgoVehicle(Vehicle):
         self.enable_autopilot_subscriber = rospy.Subscriber(
             self.topic_name() + "/enable_autopilot",
             Bool, self.enable_autopilot_updated)
+
+        self.control_subscriber = rospy.Subscriber(
+            self.topic_name() + "/twist_cmd",
+            Twist, self.twist_command_updated)
 
     def get_marker_color(self):
         """
@@ -191,6 +200,28 @@ class EgoVehicle(Vehicle):
         self.enable_autopilot_subscriber.unregister()
         self.enable_autopilot_subscriber = None
         super(EgoVehicle, self).destroy()
+
+    def twist_command_updated(self, twist):
+        """
+        Set angular/linear velocity (this does not respect vehicle dynamics)
+        """
+        if not self.vehicle_control_override:
+            angular_velocity = Vector3D()
+            angular_velocity.z = math.degrees(twist.angular.z)
+
+            rotation_matrix = transforms.carla_rotation_to_numpy_rotation_matrix(
+                self.carla_actor.get_transform().rotation)
+            linear_vector = numpy.array([twist.linear.x, twist.linear.y, twist.linear.z])
+            rotated_linear_vector = rotation_matrix.dot(linear_vector)
+            linear_velocity = Vector3D()
+            linear_velocity.x = rotated_linear_vector[0]
+            linear_velocity.y = -rotated_linear_vector[1]
+            linear_velocity.z = rotated_linear_vector[2]
+
+            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
+                linear_velocity, angular_velocity))
+            self.carla_actor.set_velocity(linear_velocity)
+            self.carla_actor.set_angular_velocity(angular_velocity)
 
     def control_command_override(self, enable):
         """
