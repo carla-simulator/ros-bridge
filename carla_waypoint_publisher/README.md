@@ -11,7 +11,7 @@ vehicle is respawned, the route is newly calculated.
 As the waypoint publisher requires some Carla PythonAPI functionality that is not part of the python egg-file, you
 have to extend your PYTHONPATH.
 
-    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/
+    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/carla/
 
 To run it:
 
@@ -20,7 +20,7 @@ To run it:
 
 ## Set a goal
 
-The goal is either read from the ROS topic /move_base_simple/goal, if available, or a fixed spawnpoint is used.
+The goal is either read from the ROS topic `/carla/<ROLE NAME>/goal`, if available, or a fixed spawnpoint is used.
 
 The prefered way of setting a goal is to click '2D Nav Goal' in RVIZ.
 
@@ -32,5 +32,5 @@ The calculated route is published:
 
 |Topic         | Type |
 |--------------|------|
-| `/carla/ego_vehicle/waypoints` | [nav_msgs.Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) |
+| `/carla/<ego vehicle name>/waypoints` | [nav_msgs.Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) |
 

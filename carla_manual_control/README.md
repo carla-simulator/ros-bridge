@@ -13,11 +13,5 @@ To be able to use `carla_manual_control`, some sensors need to be attached to th
 
 ## Manual steering
 
-In order to steer manually, you might need to disable sending vehicle control commands within another ROS node.
-
-Therefore the manual control is able to publish to `/vehicle_control_manual_override` ([std_msgs/Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html)).
-
-Press `B` to toggle the value.
-
-Note: As sending the vehicle control commands is highly dependent on your setup, you need to implement the subscriber to that topic yourself.
+In order to steer manually, press 'B'. This will toggle manual-driving mode within carla_ros_bridge.
 

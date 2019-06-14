@@ -61,10 +61,21 @@ class EgoVehicle(Vehicle):
                                          append_role_name_topic_postfix=False)
 
         self.vehicle_info_published = False
+        self.vehicle_control_override = False
 
         self.control_subscriber = rospy.Subscriber(
             self.topic_name() + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, self.control_command_updated)
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=False))
+
+        self.manual_control_subscriber = rospy.Subscriber(
+            self.topic_name() + "/vehicle_control_cmd_manual",
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=True))
+
+        self.control_override_subscriber = rospy.Subscriber(
+            self.topic_name() + "/vehicle_control_manual_override",
+            Bool, self.control_command_override)
 
         self.enable_autopilot_subscriber = rospy.Subscriber(
             self.topic_name() + "/enable_autopilot",
@@ -91,7 +102,7 @@ class EgoVehicle(Vehicle):
         instead of an object message.
 
         The ego vehicle doesn't send its information as part of the object list.
-        A nav_msgs.msg.Odometry is prepared to be published via '/carla/ego_vehicle'
+        A nav_msgs.msg.Odometry is prepared to be published
 
         :return:
         """
@@ -113,6 +124,7 @@ class EgoVehicle(Vehicle):
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             vehicle_info = CarlaEgoVehicleInfo()
+            vehicle_info.id = self.carla_actor.id
             vehicle_info.type = self.carla_actor.type_id
             vehicle_info.rolename = self.carla_actor.attributes.get('role_name')
             vehicle_physics = self.carla_actor.get_physics_control()
@@ -181,28 +193,35 @@ class EgoVehicle(Vehicle):
         self.enable_autopilot_subscriber = None
         super(EgoVehicle, self).destroy()
 
-    def control_command_updated(self, ros_vehicle_control):
+    def control_command_override(self, enable):
+        """
+        Set the vehicle control mode according to ros topic
+        """
+        self.vehicle_control_override = enable.data
+
+    def control_command_updated(self, ros_vehicle_control, manual_override):
         """
         Receive a CarlaEgoVehicleControl msg and send to CARLA
 
-        This function gets called whenever a ROS message is received via
-        '/carla/ego_vehicle/vehicle_control_cmd' topic.
-        The received ROS message is converted into carla.VehicleControl command and
-        sent to CARLA.
+        This function gets called whenever a ROS CarlaEgoVehicleControl is received.
+        If the mode is valid (either normal or manual), the received ROS message is
+        converted into carla.VehicleControl command and sent to CARLA.
         This bridge is not responsible for any restrictions on velocity or steering.
         It's just forwarding the ROS input to CARLA
 
+        :param manual_override: manually override the vehicle control command
         :param ros_vehicle_control: current vehicle control input received via ROS
         :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
         :return:
         """
-        vehicle_control = VehicleControl()
-        vehicle_control.hand_brake = ros_vehicle_control.hand_brake
-        vehicle_control.brake = ros_vehicle_control.brake
-        vehicle_control.steer = ros_vehicle_control.steer
-        vehicle_control.throttle = ros_vehicle_control.throttle
-        vehicle_control.reverse = ros_vehicle_control.reverse
-        self.carla_actor.apply_control(vehicle_control)
+        if manual_override == self.vehicle_control_override:
+            vehicle_control = VehicleControl()
+            vehicle_control.hand_brake = ros_vehicle_control.hand_brake
+            vehicle_control.brake = ros_vehicle_control.brake
+            vehicle_control.steer = ros_vehicle_control.steer
+            vehicle_control.throttle = ros_vehicle_control.throttle
+            vehicle_control.reverse = ros_vehicle_control.reverse
+            self.carla_actor.apply_control(vehicle_control)
 
     def enable_autopilot_updated(self, enable_auto_pilot):
         """

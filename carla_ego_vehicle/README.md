@@ -9,7 +9,7 @@ If no specific position is set, the ego vehicle is spawned at a random position.
 
 ### Spawning at specific position
 
-It is possible to (re)spawn the ego vehicle at the specific location by publishing to `/initialpose`.
+It is possible to (re)spawn the ego vehicle at the specific location by publishing to `/carla/<ROLE NAME>/initialpose`.
 
 The preferred way of doing that is using RVIZ:
 

@@ -16,18 +16,17 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
+from __future__ import print_function
 
 from abc import abstractmethod
 
-import sys
-import glob
 import os
 import random
 import math
 import json
 import rospy
-from tf.transformations import euler_from_quaternion
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 
 import carla
 
@@ -37,6 +36,7 @@ import carla
 
 
 class CarlaEgoVehicle(object):
+
     """
     Handles the spawning of the ego vehicle and its sensors
 
@@ -44,7 +44,7 @@ class CarlaEgoVehicle(object):
     """
 
     def __init__(self):
-        rospy.init_node('ego_vehicle')
+        rospy.init_node('ego_vehicle', anonymous=True)
         self.host = rospy.get_param('/carla/host', '127.0.0.1')
         self.port = rospy.get_param('/carla/port', '2000')
         self.sensor_definition_file = rospy.get_param('~sensor_definition_file')
@@ -53,8 +53,32 @@ class CarlaEgoVehicle(object):
         self.sensor_actors = []
         self.actor_filter = rospy.get_param('~vehicle_filter', 'vehicle.*')
         self.actor_spawnpoint = None
+        self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
+        # check argument and set spawn_point
+        spawn_point_param = rospy.get_param('~spawn_point')
+        if spawn_point_param:
+            print("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
+            spawn_point = spawn_point_param.split(',')
+            if len(spawn_point) != 6:
+                raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
+            pose = Pose()
+            pose.position.x = float(spawn_point[0])
+            pose.position.y = -float(spawn_point[1])
+            pose.position.z = float(spawn_point[2])
+            quat = quaternion_from_euler(
+                math.radians(float(spawn_point[3])),
+                math.radians(float(spawn_point[4])),
+                math.radians(float(spawn_point[5])))
+            pose.orientation.x = quat[0]
+            pose.orientation.y = quat[1]
+            pose.orientation.z = quat[2]
+            pose.orientation.w = quat[3]
+            self.actor_spawnpoint = pose
+
         self.initialpose_subscriber = rospy.Subscriber(
-            "/initialpose", PoseWithCovarianceStamped, self.on_initialpose)
+            "/carla/{}/initialpose".format(self.role_name),
+            PoseWithCovarianceStamped,
+            self.on_initialpose)
         rospy.loginfo('listening to server %s:%s', self.host, self.port)
         rospy.loginfo('using vehicle filter: %s', self.actor_filter)
 
@@ -79,7 +103,7 @@ class CarlaEgoVehicle(object):
         """
         # Get vehicle blueprint.
         blueprint = random.choice(self.world.get_blueprint_library().filter(self.actor_filter))
-        blueprint.set_attribute('role_name', 'ego_vehicle')
+        blueprint.set_attribute('role_name', "{}".format(self.role_name))
         if blueprint.has_attribute('color'):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
@@ -97,10 +121,11 @@ class CarlaEgoVehicle(object):
             )
             _, _, yaw = euler_from_quaternion(quaternion)
             spawn_point.rotation.yaw = -math.degrees(yaw)
-            rospy.loginfo("Spawn at x={} y={} z={} yaw={}".format(spawn_point.location.x,
-                                                                  spawn_point.location.y,
-                                                                  spawn_point.location.z,
-                                                                  spawn_point.rotation.yaw))
+            rospy.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,
+                                                                     spawn_point.location.x,
+                                                                     spawn_point.location.y,
+                                                                     spawn_point.location.z,
+                                                                     spawn_point.rotation.yaw))
             if self.player is not None:
                 self.destroy()
             while self.player is None:

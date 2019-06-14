@@ -132,26 +132,46 @@ Currently the following sensors are supported:
 |-------------------------------|------|
 | `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) |
 
+### Object Sensor
+
+|Topic         | Type |
+|--------------|------|
+| `/carla/<ROLE NAME>/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+
+Reports all vehicles, except the ego vehicle.
+
 ### Control
 
 |Topic                                 | Type |
 |--------------------------------------|------|
 | `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd_manual` (subscriber) | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_manual_override` (subscriber) | [std_msgs.Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html) |
 | `/carla/<ROLE NAME>/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg) |
 | `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg) |
 
-You can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
+There are two modes to control the vehicle.
+
+1. Normal Mode (reading commands from `/carla/<ROLE NAME>/vehicle_control_cmd`)
+1. Manual Mode (reading commands from `/carla/<ROLE NAME>/vehicle_control_cmd_manual`)
+
+This allows to manually override a Vehicle Control Commands published by a software stack. You can toggle between the two modes by publishing to `/carla/<ROLE NAME>/vehicle_control_manual_override`.
+
+[carla_manual_control](carla_manual_control/) makes use of this feature.
+
+
+For testing purposes, you can stear the ego vehicle from the commandline by publishing to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`.
 
 Examples for a ego vehicle with role_name 'ego_vehicle':
 
 Max forward throttle:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 
 Max forward throttle with max steering to the right:
 
-     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_ros_bridge/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
+     rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 
 The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`.
@@ -166,13 +186,13 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ## Other Topics
 
-### Object information of other vehicles
+### Object information of all vehicles
 
 |Topic         | Type |
 |--------------|------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
+| `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
 
-Object information of all vehicles, except the ego-vehicle(s) is published.
 
 ## Map
 

@@ -39,6 +39,7 @@ class LaneInvasionSensor(Sensor):
                                                  topic_prefix="lane_invasion",
                                                  append_role_name_topic_postfix=False)
 
+    # pylint: disable=arguments-differ
     def sensor_data_updated(self, lane_invasion_event):
         """
         Function to wrap the lane invasion event into a ros messsage

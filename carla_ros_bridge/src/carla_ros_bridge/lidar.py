@@ -69,6 +69,7 @@ class Lidar(Sensor):
             quat)
         return tf_msg
 
+    # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
         """
         Function to transform the a received lidar measurement into a ROS point cloud message

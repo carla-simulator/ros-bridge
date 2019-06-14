@@ -1,6 +1,5 @@
 carla:
   ackermann_control:
-    role_name: "ego_vehicle"
     # override the default values of the pid speed controller
     # (only relevant for ackermann control mode) 
     speed_Kp: 0.05
