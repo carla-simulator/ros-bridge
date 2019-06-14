@@ -6,5 +6,4 @@
 #
 float32 tire_friction
 float32 damping_rate
-float32 steer_angle
-bool disable_steering
+float32 max_steer_angle
