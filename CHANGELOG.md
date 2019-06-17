@@ -1,5 +1,7 @@
 ## Latest changed
 
+## CARLA-ROS-Bridge 0.9.5.1
+
 * add id to CarlaEgoVehicleInfo datatype
 * rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode
