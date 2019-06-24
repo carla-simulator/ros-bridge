@@ -141,8 +141,7 @@ class EgoVehicle(Vehicle):
                 wheel_info = CarlaEgoVehicleInfoWheel()
                 wheel_info.tire_friction = wheel.tire_friction
                 wheel_info.damping_rate = wheel.damping_rate
-                wheel_info.steer_angle = math.radians(wheel.steer_angle)
-                wheel_info.disable_steering = wheel.disable_steering
+                wheel_info.max_steer_angle = math.radians(wheel.max_steer_angle)
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
