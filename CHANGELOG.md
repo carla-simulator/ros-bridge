@@ -1,5 +1,7 @@
 ## Latest changed
 
+* support twist_cmd to set velocity of ego vehicle (without respecting the vehicle constraints)
+
 ## CARLA-ROS-Bridge 0.9.5.1
 
 * add id to CarlaEgoVehicleInfo datatype
