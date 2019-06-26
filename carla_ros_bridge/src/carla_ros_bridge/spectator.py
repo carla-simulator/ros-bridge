@@ -19,7 +19,7 @@ class Spectator(Actor):
     Actor implementation details for spectators
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, communication):
         """
         Constructor
 
@@ -27,15 +27,10 @@ class Spectator(Actor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
         """
-        if topic_prefix is None:
-            topic_prefix = 'spectator'
         super(Spectator, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        topic_prefix=topic_prefix,
-                                        append_role_name_topic_postfix=append_role_name_topic_postfix)  # pylint: disable=line-too-long
+                                        prefix='spectator',
+                                        communication=communication)
