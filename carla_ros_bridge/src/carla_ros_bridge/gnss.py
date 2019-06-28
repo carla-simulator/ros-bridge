@@ -21,7 +21,7 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, communication):
         """
         Constructor
 
@@ -29,18 +29,13 @@ class Gnss(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
         """
-        if topic_prefix is None:
-            topic_prefix = 'gnss'
         super(Gnss, self).__init__(carla_actor=carla_actor,
                                    parent=parent,
-                                   topic_prefix=topic_prefix,
-                                   append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                   communication=communication,
+                                   prefix="gnss/" + carla_actor.attributes.get('role_name'))
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_event):
@@ -51,9 +46,9 @@ class Gnss(Sensor):
         :type carla_gnss_event: carla.GnssEvent
         """
         navsatfix_msg = NavSatFix()
-        navsatfix_msg.header = self.get_msg_header(use_parent_frame=False)
+        navsatfix_msg.header = self.get_msg_header(timestamp=carla_gnss_event.timestamp)
         navsatfix_msg.latitude = carla_gnss_event.latitude
         navsatfix_msg.longitude = carla_gnss_event.longitude
         navsatfix_msg.altitude = carla_gnss_event.altitude
-        self.publish_ros_message(
-            self.topic_name() + "/fix", navsatfix_msg)
+        self.publish_message(
+            self.get_topic_prefix() + "/fix", navsatfix_msg)

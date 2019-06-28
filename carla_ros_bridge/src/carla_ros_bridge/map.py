@@ -12,40 +12,33 @@ Class to handle the carla map
 
 import rospy
 
-from geometry_msgs.msg import Transform
 from carla_msgs.msg import CarlaMapInfo
-from carla_ros_bridge.child import Child
+from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
-class Map(Child):
+class Map(PseudoActor):
 
     """
     Child implementation details for the map
     """
 
-    def __init__(self, carla_world, parent, topic):
+    def __init__(self, carla_world, communication):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
-        :param parent: the parent of this
-        :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this child
-        :type topic_prefix: string
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
         """
 
-        super(Map, self).__init__(
-            carla_id=-1, carla_world=carla_world, parent=parent, topic_prefix=topic)
+        super(Map, self).__init__(parent=None,
+                                  communication=communication,
+                                  prefix="map")
 
-        self.carla_map = self.get_carla_world().get_map()
+        self.carla_map = carla_world.get_map()
 
-        self.open_drive_publisher = rospy.Publisher(
-            '/carla/map', CarlaMapInfo, queue_size=1, latch=True)
-        open_drive_msg = CarlaMapInfo(header=self.get_msg_header())
-        open_drive_msg.map_name = self.carla_map.name
-        open_drive_msg.opendrive = self.carla_map.to_opendrive()
-        self.open_drive_publisher.publish(open_drive_msg)
+        self.map_published = False
 
     def destroy(self):
         """
@@ -58,7 +51,6 @@ class Map(Child):
         """
         rospy.logdebug("Destroying Map()")
         self.carla_map = None
-        self.open_drive_publisher = None
         super(Map, self).destroy()
 
     def update(self):
@@ -70,27 +62,9 @@ class Map(Child):
 
         :return:
         """
-        self.send_tf_msg()
-        super(Map).update()
-
-    def get_current_ros_transfrom(self):
-        """
-        Function (override) to return the ros transform of this.
-
-        The global map frame has an empty transform.
-
-        :return:
-        """
-        return Transform()
-
-    def send_tf_msg(self):
-        """
-        Function (override) to send tf messages of the map.
-
-        The camera defines the global fame and has to set frame_id=1
-
-        :return:
-        """
-        tf_msg = self.get_tf_msg()
-        tf_msg.header.frame_id = 1
-        self.parent.publish_ros_message('tf', tf_msg)
+        if not self.map_published:
+            open_drive_msg = CarlaMapInfo(header=self.get_msg_header("map"))
+            open_drive_msg.map_name = self.carla_map.name
+            open_drive_msg.opendrive = self.carla_map.to_opendrive()
+            self.publish_message(self.get_topic_prefix(), open_drive_msg, is_latched=True)
+            self.map_published = True

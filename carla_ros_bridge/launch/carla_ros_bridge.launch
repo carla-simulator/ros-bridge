@@ -8,6 +8,6 @@
   <param name="carla/host" value="$(arg host)" unless="$(eval host == '')"/>
   <param name="carla/port" value="$(arg port)" unless="$(eval port == '')"/>
 
-  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="client.py" output="screen"/>
+  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen"/>
     
 </launch>
