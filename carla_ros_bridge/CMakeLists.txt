@@ -20,7 +20,7 @@ include_directories(
 )
 
 install(PROGRAMS
-   src/carla_ros_bridge/client.py
+   src/carla_ros_bridge/bridge.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
