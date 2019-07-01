@@ -1,5 +1,6 @@
 ## Latest changed
 
+* carla_ego_vehicle: support sensor_tick within camera/lidar definition
 * support twist_cmd to set velocity of ego vehicle (without respecting the vehicle constraints)
 
 ## CARLA-ROS-Bridge 0.9.5.1
