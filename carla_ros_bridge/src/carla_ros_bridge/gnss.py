@@ -21,7 +21,7 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -31,10 +31,13 @@ class Gnss(Sensor):
         :type parent: carla_ros_bridge.Parent
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
         super(Gnss, self).__init__(carla_actor=carla_actor,
                                    parent=parent,
                                    communication=communication,
+                                   synchronous_mode=synchronous_mode,
                                    prefix="gnss/" + carla_actor.attributes.get('role_name'))
 
     # pylint: disable=arguments-differ

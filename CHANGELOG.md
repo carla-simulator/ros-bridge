@@ -1,7 +1,10 @@
 ## Latest changed
 
-* carla_ros_bridge: remove global_id mapping
-* carla_ros_bridge: publish /carla/actor_list
+* create rqt plugin to control synchronous mode
+* support synchronous mode
+* publish CarlaStatus
+* remove global_id mapping
+* publish /carla/actor_list
 * carla_ego_vehicle: support sensor_tick within camera/lidar definition
 * support twist_cmd to set velocity of ego vehicle (without respecting the vehicle constraints)
 
