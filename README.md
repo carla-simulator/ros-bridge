@@ -191,7 +191,7 @@ Currently this method applies the complete linear vector, but only the yaw from 
 
 #### Carla Ackermann Control
 
-In certain cases, the [Carla Control Command](carla_ros_bridge/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
+In certain cases, the [Carla Control Command](carla_msgs/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
 Therefore a ROS-based node ```carla_ackermann_control``` is provided which reads [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages.
 You can find further documentation [here](carla_ackermann_control/README.md).
 
@@ -204,6 +204,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 |--------------|------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
 | `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
+| `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) |
 
 
 ## Map

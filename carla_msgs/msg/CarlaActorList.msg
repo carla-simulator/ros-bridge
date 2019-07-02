@@ -4,9 +4,6 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-# A collision event
 
-Header header
+CarlaActorInfo[] actors
 
-uint32 other_actor_id
-geometry_msgs/Vector3 normal_impulse

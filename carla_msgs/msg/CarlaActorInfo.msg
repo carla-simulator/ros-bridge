@@ -4,9 +4,9 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-# A collision event
 
-Header header
+uint32 id
+uint32 parent_id # 0 if no parent available
+string type
+string rolename
 
-uint32 other_actor_id
-geometry_msgs/Vector3 normal_impulse

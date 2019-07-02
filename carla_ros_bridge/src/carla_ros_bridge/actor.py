@@ -10,9 +10,9 @@
 Base Classes to handle Actor objects
 """
 
+import numpy as np
 from geometry_msgs.msg import TransformStamped
 
-from carla_ros_bridge.actor_id_registry import ActorIdRegistry
 from carla_ros_bridge.pseudo_actor import PseudoActor
 import carla_ros_bridge.transforms as trans
 
@@ -22,8 +22,6 @@ class Actor(PseudoActor):
     """
     Generic base class for all carla actors
     """
-
-    global_id_registry = ActorIdRegistry()
 
     def __init__(self, carla_actor, parent, communication, prefix=None):
         """
@@ -41,6 +39,10 @@ class Actor(PseudoActor):
                                     prefix=prefix,
                                     communication=communication)
         self.carla_actor = carla_actor
+
+        if carla_actor.id > np.iinfo(np.uint32).max:
+            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(carla_actor.id))
+
         self.carla_actor_id = carla_actor.id
 
     def destroy(self):
@@ -81,16 +83,6 @@ class Actor(PseudoActor):
         """
         return trans.carla_acceleration_to_ros_accel(
             self.carla_actor.get_acceleration())
-
-    def get_global_id(self):
-        """
-        Return a unique global id for the actor used for markers, object ids, etc.
-        ros marker id should be int32, carla/unrealengine seems to use int64
-        A lookup table is used to remap actor_id to small number between 0 and max_int32
-        :return: mapped id of this actor (unique increasing counter value)
-        :rtype: uint32
-        """
-        return Actor.global_id_registry.get_id(self.carla_actor_id)
 
     def get_id(self):
         """

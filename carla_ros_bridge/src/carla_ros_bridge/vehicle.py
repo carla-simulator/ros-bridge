@@ -39,8 +39,7 @@ class Vehicle(Actor):
         :type prefix: string
         """
         if not prefix:
-            prefix = "vehicle/{:03}".format(
-                Actor.global_id_registry.get_id(carla_actor.id))
+            prefix = "vehicle/{:03}".format(Actor.get_id(carla_actor.id))
 
         super(Vehicle, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
@@ -105,7 +104,7 @@ class Vehicle(Actor):
             header=self.get_msg_header())
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
-        marker.id = self.get_global_id()
+        marker.id = self.get_id()
         marker.text = "id = {}".format(marker.id)
         return marker
 
@@ -135,7 +134,7 @@ class Vehicle(Actor):
         """
         vehicle_object = Object(header=self.get_msg_header())
         # ID
-        vehicle_object.id = self.get_global_id()
+        vehicle_object.id = self.get_id()
         # Pose
         vehicle_object.pose = self.get_current_ros_pose()
         # Twist
