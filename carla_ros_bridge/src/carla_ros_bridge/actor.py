@@ -92,7 +92,7 @@ class Actor(PseudoActor):
         """
         return self.carla_actor_id
 
-    def get_current_ros_transform(self):
+    def get_ros_transform(self, transform=None):
         """
         Function to provide the current ROS transform
 
@@ -102,14 +102,17 @@ class Actor(PseudoActor):
         tf_msg = TransformStamped()
         tf_msg.header = self.get_msg_header("map")
         tf_msg.child_frame_id = self.get_prefix()
-        tf_msg.transform = trans.carla_transform_to_ros_transform(
-            self.carla_actor.get_transform())
+        if transform:
+            tf_msg.transform = trans.carla_transform_to_ros_transform(transform)
+        else:
+            tf_msg.transform = trans.carla_transform_to_ros_transform(
+                self.carla_actor.get_transform())
         return tf_msg
 
-    def publish_transform(self):
+    def publish_transform(self, ros_transform_msg):
         """
         Helper function to send a ROS tf message of this child
 
         :return:
         """
-        self.publish_message('tf', self.get_current_ros_transform())
+        self.publish_message('tf', ros_transform_msg)

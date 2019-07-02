@@ -102,7 +102,7 @@ class PseudoActor(object):
         """
         return self.prefix
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function to update this object. Derived classes can add code.
         """

@@ -26,7 +26,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -40,9 +40,10 @@ class Lidar(Sensor):
         super(Lidar, self).__init__(carla_actor=carla_actor,
                                     parent=parent,
                                     communication=communication,
+                                    synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
-    def get_current_ros_transform(self):
+    def get_ros_sensor_transform(self, transform):
         """
         Function (override) to modify the tf messages sent by this lidar.
 
@@ -53,8 +54,7 @@ class Lidar(Sensor):
         :return: the filled tf message
         :rtype: geometry_msgs.msg.TransformStamped
         """
-
-        tf_msg = super(Lidar, self).get_current_ros_transform()
+        tf_msg = super(Lidar, self).get_ros_sensor_transform(transform)
 
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]

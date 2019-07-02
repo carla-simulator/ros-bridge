@@ -49,7 +49,7 @@ class ObjectSensor(PseudoActor):
         self.actor_list = None
         super(ObjectSensor, self).destroy()
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function (override) to update this object.
         On update map sends:
