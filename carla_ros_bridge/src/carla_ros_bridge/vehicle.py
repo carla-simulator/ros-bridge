@@ -39,7 +39,7 @@ class Vehicle(Actor):
         :type prefix: string
         """
         if not prefix:
-            prefix = "vehicle/{:03}".format(Actor.get_id(carla_actor.id))
+            prefix = "vehicle/{:03}".format(carla_actor.id)
 
         super(Vehicle, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
@@ -60,7 +60,7 @@ class Vehicle(Actor):
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
         self.classification_age = 0
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function (override) to update this object.
 
@@ -72,9 +72,9 @@ class Vehicle(Actor):
         :return:
         """
         self.classification_age += 1
-        self.publish_transform()
+        self.publish_transform(self.get_ros_transform())
         self.publish_marker()
-        super(Vehicle, self).update()
+        super(Vehicle, self).update(frame, timestamp)
 
     def get_marker_color(self):  # pylint: disable=no-self-use
         """

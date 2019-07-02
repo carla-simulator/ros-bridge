@@ -20,7 +20,7 @@ class CollisionSensor(Sensor):
     Actor implementation details for a collision sensor
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -30,10 +30,14 @@ class CollisionSensor(Sensor):
         :type parent: carla_ros_bridge.Parent
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
         super(CollisionSensor, self).__init__(carla_actor=carla_actor,
                                               parent=parent,
                                               communication=communication,
+                                              synchronous_mode=synchronous_mode,
+                                              is_event_sensor=True,
                                               prefix="collision")
 
     # pylint: disable=arguments-differ
