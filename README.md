@@ -204,6 +204,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 |--------------|------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
 | `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
+| `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_ros_bridge/msg/CarlaActorList.msg) |
 
 
 ## Map

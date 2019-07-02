@@ -5,6 +5,7 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
+from __builtin__ import False
 """
 Rosbridge class:
 
@@ -31,6 +32,7 @@ from carla_ros_bridge.collision_sensor import CollisionSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 from carla_ros_bridge.object_sensor import ObjectSensor
+from carla_msgs.msg import CarlaActorList, CarlaActorInfo
 
 
 class CarlaRosBridge(object):
@@ -135,10 +137,13 @@ class CarlaRosBridge(object):
         update the available actors
         """
         carla_actors = self.carla_world.get_actors()
+        actors_updated = False
+
         # Add new actors
         for actor in carla_actors:
             if actor.id not in self.actors:
-                self._create_actor(actor)
+                if self._create_actor(actor):
+                    actors_updated = True
 
         # create list of carla actors ids
         carla_actor_ids = []
@@ -150,6 +155,7 @@ class CarlaRosBridge(object):
         for actor_id in self.actors:
             if actor_id not in carla_actor_ids:
                 ids_to_delete.append(actor_id)
+                actors_updated = True
 
         if ids_to_delete:
             with self.update_lock:
@@ -176,6 +182,35 @@ class CarlaRosBridge(object):
                         else:
                             updated_pseudo_actors.append(pseudo_actor)
                     self.pseudo_actors = updated_pseudo_actors
+        if actors_updated:
+            self.publish_actor_list()
+
+    def publish_actor_list(self):
+        """
+        publish list of carla actors
+        :return:
+        """
+        ros_actor_list = CarlaActorList()
+        
+        with self.update_lock:
+            for actor_id in self.actors:
+                actor = self.actors[actor_id].carla_actor    
+                ros_actor = CarlaActorInfo()
+                ros_actor.id = actor.id
+                ros_actor.type = actor.type_id
+                try:
+                    ros_actor.rolename = str(actor.attributes.get('role_name'))
+                except ValueError:
+                    pass
+                
+                if actor.parent:
+                    ros_actor.parent_id = actor.parent.id
+                else:
+                    ros_actor.parent_id = -1
+
+                ros_actor_list.actors.append(ros_actor)
+                
+        self.comm.publish_message("/carla/actor_list", ros_actor_list, is_latched=True)
 
     def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
         """
@@ -288,6 +323,9 @@ class CarlaRosBridge(object):
                     self.actors[actor_id].__class__.__name__, actor_id, e))
                 continue
 
+    def _publish_actor_list(self):
+        pass
+        
 
 def main():
     """
