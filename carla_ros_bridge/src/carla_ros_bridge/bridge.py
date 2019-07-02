@@ -206,7 +206,7 @@ class CarlaRosBridge(object):
                 if actor.parent:
                     ros_actor.parent_id = actor.parent.id
                 else:
-                    ros_actor.parent_id = -1
+                    ros_actor.parent_id = 0
 
                 ros_actor_list.actors.append(ros_actor)
                 

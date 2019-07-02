@@ -8,5 +8,5 @@
 
 Header header
 
-int32 other_actor_id
+uint32 other_actor_id
 geometry_msgs/Vector3 normal_impulse

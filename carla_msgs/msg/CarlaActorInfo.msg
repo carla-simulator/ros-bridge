@@ -6,7 +6,7 @@
 #
 
 uint32 id
-int32 parent_id # -1 if no parent available
+uint32 parent_id # 0 if no parent available
 string type
 string rolename
 
