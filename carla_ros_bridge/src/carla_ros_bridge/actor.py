@@ -10,20 +10,18 @@
 Base Classes to handle Actor objects
 """
 
+import numpy as np
 from geometry_msgs.msg import TransformStamped
 
-from carla_ros_bridge.actor_id_registry import ActorIdRegistry
 from carla_ros_bridge.pseudo_actor import PseudoActor
 import carla_ros_bridge.transforms as trans
-import numpy as np
+
 
 class Actor(PseudoActor):
 
     """
     Generic base class for all carla actors
     """
-
-    global_id_registry = ActorIdRegistry()
 
     def __init__(self, carla_actor, parent, communication, prefix=None):
         """
@@ -41,10 +39,10 @@ class Actor(PseudoActor):
                                     prefix=prefix,
                                     communication=communication)
         self.carla_actor = carla_actor
-        
+
         if carla_actor.id > np.iinfo(np.uint32).max:
             raise ValueError("Actor ID exceeds maximum supported value '{}'".format(carla_actor.id))
-        
+
         self.carla_actor_id = carla_actor.id
 
     def destroy(self):

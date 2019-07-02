@@ -5,7 +5,6 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-from __builtin__ import False
 """
 Rosbridge class:
 
@@ -191,10 +190,10 @@ class CarlaRosBridge(object):
         :return:
         """
         ros_actor_list = CarlaActorList()
-        
+
         with self.update_lock:
             for actor_id in self.actors:
-                actor = self.actors[actor_id].carla_actor    
+                actor = self.actors[actor_id].carla_actor
                 ros_actor = CarlaActorInfo()
                 ros_actor.id = actor.id
                 ros_actor.type = actor.type_id
@@ -202,14 +201,14 @@ class CarlaRosBridge(object):
                     ros_actor.rolename = str(actor.attributes.get('role_name'))
                 except ValueError:
                     pass
-                
+
                 if actor.parent:
                     ros_actor.parent_id = actor.parent.id
                 else:
                     ros_actor.parent_id = 0
 
                 ros_actor_list.actors.append(ros_actor)
-                
+
         self.comm.publish_message("/carla/actor_list", ros_actor_list, is_latched=True)
 
     def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
@@ -325,7 +324,7 @@ class CarlaRosBridge(object):
 
     def _publish_actor_list(self):
         pass
-        
+
 
 def main():
     """

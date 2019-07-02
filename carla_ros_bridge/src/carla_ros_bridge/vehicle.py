@@ -39,8 +39,7 @@ class Vehicle(Actor):
         :type prefix: string
         """
         if not prefix:
-            prefix = "vehicle/{:03}".format(
-                Actor.global_id_registry.get_id(carla_actor.id))
+            prefix = "vehicle/{:03}".format(Actor.get_id(carla_actor.id))
 
         super(Vehicle, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
