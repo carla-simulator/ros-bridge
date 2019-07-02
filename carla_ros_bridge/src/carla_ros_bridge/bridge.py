@@ -10,8 +10,13 @@ Rosbridge class:
 
 Class that handle communication between CARLA and ROS
 """
-import threading
 import time
+try:
+    import queue
+except ImportError:
+    import Queue as queue
+
+from threading import Thread, Lock
 import rospy
 
 import carla
@@ -20,6 +25,7 @@ from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.communication import Communication
 from carla_ros_bridge.sensor import Sensor
 
+from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
 from carla_ros_bridge.map import Map
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
@@ -31,7 +37,7 @@ from carla_ros_bridge.collision_sensor import CollisionSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 from carla_ros_bridge.object_sensor import ObjectSensor
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo
+from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl
 
 
 class CarlaRosBridge(object):
@@ -53,17 +59,41 @@ class CarlaRosBridge(object):
         self.parameters = params
         self.actors = {}
         self.carla_world = carla_world
+        self.synchronous_mode_update_thread = None
 
-        self.timestamp_last_run = 0.0
+        # set carla world settings
+        self.carla_settings = carla_world.get_settings()
+        self.frame = None
+        if self.carla_settings.synchronous_mode != self.parameters["synchronous_mode"]:
+            rospy.loginfo("Setting CARLA synchronous mode to {}".format(
+                self.parameters["synchronous_mode"]))
+            self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
+            carla_world.apply_settings(self.carla_settings)
+
         self.comm = Communication()
+        self.update_lock = Lock()
 
-        # register callback to create/delete actors
-        self.update_child_actors_lock = threading.Lock()
-        self.carla_world.on_tick(self._carla_update_child_actors)
+        self.carla_control_queue = queue.Queue()
 
-        # register callback to update actors
-        self.update_lock = threading.Lock()
-        self.carla_world.on_tick(self._carla_time_tick)
+        self.status_publisher = CarlaStatusPublisher(self.carla_settings.synchronous_mode)
+
+        if self.carla_settings.synchronous_mode:
+            self.carla_run_state = CarlaControl.PLAY
+
+            self.carla_control_subscriber = \
+                rospy.Subscriber("/carla/control", CarlaControl,
+                                 lambda control: self.carla_control_queue.put(control.command))
+
+            self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
+            self.synchronous_mode_update_thread.start()
+        else:
+            self.timestamp_last_run = 0.0
+            # register callback to create/delete actors
+            self.update_child_actors_lock = Lock()
+            self.carla_world.on_tick(self._carla_update_child_actors)
+
+            # register callback to update actors
+            self.carla_world.on_tick(self._carla_time_tick)
 
         self.pseudo_actors = []
 
@@ -83,10 +113,57 @@ class CarlaRosBridge(object):
 
         :return:
         """
-        self.update_child_actors_lock.acquire()
-        self.update_lock.acquire()
         rospy.signal_shutdown("")
+        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
+        if not self.carla_settings.synchronous_mode:
+            self.update_child_actors_lock.acquire()
+            self.update_lock.acquire()
         rospy.loginfo("Exiting Bridge")
+
+    def process_run_state(self):
+        """
+        process state changes
+        """
+        command = None
+
+        # get last command
+        while not self.carla_control_queue.empty():
+            command = self.carla_control_queue.get()
+
+        while not command is None and not rospy.is_shutdown():
+            self.carla_run_state = command
+
+            if self.carla_run_state == CarlaControl.PAUSE:
+                # wait for next command
+                rospy.loginfo("State set to PAUSED")
+                self.status_publisher.set_synchronous_mode_running(False)
+                command = self.carla_control_queue.get()
+            elif self.carla_run_state == CarlaControl.PLAY:
+                rospy.loginfo("State set to PLAY")
+                self.status_publisher.set_synchronous_mode_running(True)
+                return
+            elif self.carla_run_state == CarlaControl.STEP_ONCE:
+                rospy.loginfo("Execute single step.")
+                self.status_publisher.set_synchronous_mode_running(True)
+                self.carla_control_queue.put(CarlaControl.PAUSE)
+                return
+
+    def _synchronous_mode_update(self):
+        """
+        execution loop for synchronous mode
+        """
+        while not rospy.is_shutdown():
+            self.process_run_state()
+            self._update_actors()
+            self.frame = self.carla_world.tick()
+            world_snapshot = self.carla_world.get_snapshot()
+
+            self.status_publisher.set_frame(self.frame)
+            self.comm.update_clock(world_snapshot.timestamp)
+            print("Tick returned. Frame {} snapshot: {} {}".format(
+                self.frame, world_snapshot.frame, world_snapshot.timestamp.elapsed_seconds))
+            self._update(self.frame, world_snapshot.timestamp.elapsed_seconds)
+            self.comm.send_msgs()
 
     def _carla_time_tick(self, carla_timestamp):
         """
@@ -107,7 +184,7 @@ class CarlaRosBridge(object):
                 if self.timestamp_last_run < carla_timestamp.elapsed_seconds:
                     self.timestamp_last_run = carla_timestamp.elapsed_seconds
                     self.comm.update_clock(carla_timestamp)
-                    self._update()
+                    self._update(carla_timestamp.frame, carla_timestamp.elapsed_seconds)
                     self.comm.send_msgs()
                 self.update_lock.release()
 
@@ -243,23 +320,29 @@ class CarlaRosBridge(object):
         elif carla_actor.type_id.startswith("sensor"):
             if carla_actor.type_id.startswith("sensor.camera"):
                 if carla_actor.type_id.startswith("sensor.camera.rgb"):
-                    actor = RgbCamera(carla_actor, parent, self.comm)
+                    actor = RgbCamera(
+                        carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.depth"):
-                    actor = DepthCamera(carla_actor, parent, self.comm)
+                    actor = DepthCamera(
+                        carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-                    actor = SemanticSegmentationCamera(carla_actor, parent, self.comm)
+                    actor = SemanticSegmentationCamera(
+                        carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
                 else:
-                    actor = Camera(carla_actor, parent, self.comm)
+                    actor = Camera(
+                        carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self.comm)
+                actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
-                actor = Gnss(carla_actor, parent, self.comm)
+                actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.collision"):
-                actor = CollisionSensor(carla_actor, parent, self.comm)
+                actor = CollisionSensor(
+                    carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-                actor = LaneInvasionSensor(carla_actor, parent, self.comm)
+                actor = LaneInvasionSensor(
+                    carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             else:
-                actor = Sensor(carla_actor, parent, self.comm)
+                actor = Sensor(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
         elif carla_actor.type_id.startswith("spectator"):
             actor = Spectator(carla_actor, parent, self.comm)
         else:
@@ -304,26 +387,23 @@ class CarlaRosBridge(object):
         rospy.loginfo("Shutdown requested")
         self.destroy()
 
-    def _update(self):
+    def _update(self, frame_id, timestamp):
         """
         update all actors
         :return:
         """
         # update all pseudo actors
         for actor in self.pseudo_actors:
-            actor.update()
+            actor.update(frame_id, timestamp)
 
         # update all carla actors
         for actor_id in self.actors:
             try:
-                self.actors[actor_id].update()
+                self.actors[actor_id].update(frame_id, timestamp)
             except RuntimeError as e:
                 rospy.logwarn("Update actor {}({}) failed: {}".format(
                     self.actors[actor_id].__class__.__name__, actor_id, e))
                 continue
-
-    def _publish_actor_list(self):
-        pass
 
 
 def main():

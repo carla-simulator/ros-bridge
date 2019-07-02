@@ -20,6 +20,7 @@ This documentation is for CARLA versions *newer* than 0.9.4.
 - [x] Handle ROS dependencies
 - [x] Marker/bounding box messages for cars/pedestrian
 - [x] Lidar sensor support
+- [x] Support CARLA synchronous mode
 - [ ] Add traffic light support
 
 # Setup
@@ -70,19 +71,33 @@ Then start the ros bridge (choose one option):
     # Option 3: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
+# Settings
+
 You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
 
-As we have not spawned any vehicle and have not added any sensors in our carla world there would not be any stream of data yet.
-
-You can make use of the CARLA Python API script manual_control.py.
-```
-cd <path/to/carla/>
-python manual_control.py --rolename=ego_vehicle
-```
-This spawns a carla client with role_name='ego_vehicle'. 
 If the rolename is within the list specified by ROS parameter `/carla/ego_vehicle/rolename`, the client is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
 
-To simulate traffic, you can spawn automatically moving vehicles by using spawn_npc.py from CARLA Python API.
+## Synchronous Mode
+
+In default mode (`/carla/synchronous_mode: false`) data is published:
+
+ - on every `world.on_tick()` callback
+ - on every `sensor.listen()` callback
+
+In synchronous mode, the bridge waits for all sensor data that is expected within the current frame. This might slow down the overall simulation but ensures reproducible results.
+
+Additionally it is possible to control the simulation execution:
+
+- Pause/Play
+- Execute single step
+
+The following topic allows to control the stepping.
+
+|Topic                          | Type |
+|-------------------------------|------|
+| `/carla/control` | [carla_msgs.CarlaControl](carla_msgs/msg/CarlaControl.msg) |
+
+A [CARLA Control rqt plugin](rqt_carla_control/README.md) is available to publish to the topic.
 
 # Available ROS Topics
 
@@ -204,6 +219,13 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
 | `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) |
+
+
+### Status of CARLA
+
+|Topic         | Type |
+|--------------|------|
+| `/carla/status` | [carla_msgs.CarlaStatus](carla_msgs/msg/CarlaStatus.msg) |
 
 
 ## Map

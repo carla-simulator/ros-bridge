@@ -156,7 +156,7 @@ class EgoVehicle(Vehicle):
 
         self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function (override) to update this object.
 
@@ -165,7 +165,7 @@ class EgoVehicle(Vehicle):
         :return:
         """
         self.send_vehicle_msgs()
-        super(EgoVehicle, self).update()
+        super(EgoVehicle, self).update(frame, timestamp)
 
     def destroy(self):
         """
