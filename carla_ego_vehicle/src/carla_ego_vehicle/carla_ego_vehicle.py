@@ -170,7 +170,10 @@ class CarlaEgoVehicle(object):
                     bp.set_attribute('image_size_x', str(sensor_spec['width']))
                     bp.set_attribute('image_size_y', str(sensor_spec['height']))
                     bp.set_attribute('fov', str(sensor_spec['fov']))
-                    bp.set_attribute('sensor_tick', str(sensor_spec['sensor_tick']))
+                    try:
+                        bp.set_attribute('sensor_tick', str(sensor_spec['sensor_tick']))
+                    except KeyError:
+                        pass
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],
