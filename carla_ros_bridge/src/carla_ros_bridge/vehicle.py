@@ -132,7 +132,7 @@ class Vehicle(Actor):
 
         :return:
         """
-        vehicle_object = Object(header=self.get_msg_header())
+        vehicle_object = Object(header=self.get_msg_header("map"))
         # ID
         vehicle_object.id = self.get_id()
         # Pose
