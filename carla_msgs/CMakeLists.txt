@@ -20,6 +20,8 @@ add_message_files(
   CarlaMapInfo.msg
   CarlaActorInfo.msg
   CarlaActorList.msg
+  CarlaControl.msg
+  CarlaStatus.msg
 )
 
 generate_messages(

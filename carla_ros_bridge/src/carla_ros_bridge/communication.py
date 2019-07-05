@@ -49,6 +49,8 @@ class Communication(object):
             self.publishers['tf'].publish(tf_msg)
         except rospy.ROSSerializationException as error:
             rospy.logwarn("Failed to serialize message on publishing: {}".format(error))
+        except Exception as error:  # pylint: disable=broad-except
+            rospy.logwarn("Failed to publish message: {}".format(error))
 
         for publisher, msg in self.msgs_to_publish:
             try:

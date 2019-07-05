@@ -53,7 +53,7 @@ class Map(PseudoActor):
         self.carla_map = None
         super(Map, self).destroy()
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function (override) to update this object.
 
