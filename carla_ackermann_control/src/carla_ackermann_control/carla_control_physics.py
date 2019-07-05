@@ -203,9 +203,9 @@ def get_vehicle_max_steering_angle(vehicle_info):
     max_steering_angle = math.radians(70)
     # get max steering angle (use smallest non-zero value of all wheels)
     for wheel in vehicle_info.wheels:
-        if wheel.steer_angle:
-            if wheel.steer_angle and wheel.steer_angle < max_steering_angle:
-                max_steering_angle = wheel.steer_angle
+        if wheel.max_steer_angle:
+            if wheel.max_steer_angle and wheel.max_steer_angle < max_steering_angle:
+                max_steering_angle = wheel.max_steer_angle
     return max_steering_angle
 
 
