@@ -3,7 +3,7 @@ carla:
   # the network connection for the python connection to CARLA
   host: localhost
   port: 2000
-  synchronous_mode: true
+  synchronous_mode: false
   # configuration values for the ego vehicle
   ego_vehicle:
     # the role name of the vehicles that acts as ego vehicle for this ros bridge instance
