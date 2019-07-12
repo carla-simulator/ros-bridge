@@ -1,5 +1,15 @@
 ## Latest changed
 
+* create rqt plugin to control synchronous mode
+* support synchronous mode
+* publish CarlaStatus
+* remove global_id mapping
+* publish /carla/actor_list
+* carla_ego_vehicle: support sensor_tick within camera/lidar definition
+* support twist_cmd to set velocity of ego vehicle (without respecting the vehicle constraints)
+
+## CARLA-ROS-Bridge 0.9.5.1
+
 * add id to CarlaEgoVehicleInfo datatype
 * rename carla_ros_bridge_msgs to carla_msgs
 * remove 'challenge' mode

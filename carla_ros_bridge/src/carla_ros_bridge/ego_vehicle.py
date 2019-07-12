@@ -10,22 +10,23 @@
 Classes to handle Carla vehicles
 """
 import math
+import numpy
 
 import rospy
 
 from nav_msgs.msg import Odometry
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
+from geometry_msgs.msg import Twist
 
 from carla import VehicleControl
+from carla import Vector3D
 
 from carla_ros_bridge.vehicle import Vehicle
-from carla_msgs.msg import CarlaEgoVehicleInfo
-from carla_msgs.msg import CarlaEgoVehicleInfoWheel
-from carla_msgs.msg import CarlaEgoVehicleControl
-from carla_msgs.msg import CarlaEgoVehicleStatus
-
 import carla_ros_bridge.transforms as transforms
+
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
+    CarlaEgoVehicleControl, CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle):
@@ -34,21 +35,7 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create ego vehicle actors
-
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created vehicle actor
-        :rtype: carla_ros_bridge.Vehicle or derived type
-        """
-        return EgoVehicle(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent):
+    def __init__(self, carla_actor, parent, communication):
         """
         Constructor
 
@@ -56,21 +43,38 @@ class EgoVehicle(Vehicle):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
         """
         super(EgoVehicle, self).__init__(carla_actor=carla_actor,
                                          parent=parent,
-                                         topic_prefix=carla_actor.attributes.get('role_name'),
-                                         append_role_name_topic_postfix=False)
+                                         communication=communication,
+                                         prefix=carla_actor.attributes.get('role_name'))
 
         self.vehicle_info_published = False
+        self.vehicle_control_override = False
 
         self.control_subscriber = rospy.Subscriber(
-            self.topic_name() + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, self.control_command_updated)
+            self.get_topic_prefix() + "/vehicle_control_cmd",
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=False))
+
+        self.manual_control_subscriber = rospy.Subscriber(
+            self.get_topic_prefix() + "/vehicle_control_cmd_manual",
+            CarlaEgoVehicleControl,
+            lambda data: self.control_command_updated(data, manual_override=True))
+
+        self.control_override_subscriber = rospy.Subscriber(
+            self.get_topic_prefix() + "/vehicle_control_manual_override",
+            Bool, self.control_command_override)
 
         self.enable_autopilot_subscriber = rospy.Subscriber(
-            self.topic_name() + "/enable_autopilot",
+            self.get_topic_prefix() + "/enable_autopilot",
             Bool, self.enable_autopilot_updated)
+
+        self.twist_control_subscriber = rospy.Subscriber(
+            self.get_topic_prefix() + "/twist_cmd",
+            Twist, self.twist_command_updated)
 
     def get_marker_color(self):
         """
@@ -89,16 +93,12 @@ class EgoVehicle(Vehicle):
 
     def send_vehicle_msgs(self):
         """
-        Function (override) to send odometry message of the ego vehicle
-        instead of an object message.
-
-        The ego vehicle doesn't send its information as part of the object list.
-        A nav_msgs.msg.Odometry is prepared to be published
+        send messages related to vehicle status
 
         :return:
         """
-        vehicle_status = CarlaEgoVehicleStatus()
-        vehicle_status.header.stamp = self.get_current_ros_time()
+        vehicle_status = CarlaEgoVehicleStatus(
+            header=self.get_msg_header("map"))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration.linear = transforms.carla_vector_to_ros_vector_rotated(
             self.carla_actor.get_acceleration(),
@@ -111,8 +111,9 @@ class EgoVehicle(Vehicle):
         vehicle_status.control.reverse = self.carla_actor.get_control().reverse
         vehicle_status.control.gear = self.carla_actor.get_control().gear
         vehicle_status.control.manual_gear_shift = self.carla_actor.get_control().manual_gear_shift
-        self.publish_ros_message(self.topic_name() + "/vehicle_status", vehicle_status)
+        self.publish_message(self.get_topic_prefix() + "/vehicle_status", vehicle_status)
 
+        # only send vehicle once (in latched-mode)
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             vehicle_info = CarlaEgoVehicleInfo()
@@ -125,8 +126,7 @@ class EgoVehicle(Vehicle):
                 wheel_info = CarlaEgoVehicleInfoWheel()
                 wheel_info.tire_friction = wheel.tire_friction
                 wheel_info.damping_rate = wheel.damping_rate
-                wheel_info.steer_angle = math.radians(wheel.steer_angle)
-                wheel_info.disable_steering = wheel.disable_steering
+                wheel_info.max_steer_angle = math.radians(wheel.max_steer_angle)
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
@@ -146,17 +146,17 @@ class EgoVehicle(Vehicle):
             vehicle_info.center_of_mass.y = vehicle_physics.center_of_mass.y
             vehicle_info.center_of_mass.z = vehicle_physics.center_of_mass.z
 
-            self.publish_ros_message(self.topic_name() + "/vehicle_info", vehicle_info, True)
+            self.publish_message(self.get_topic_prefix() + "/vehicle_info", vehicle_info, True)
 
         # @todo: do we still need this?
-        odometry = Odometry(header=self.get_msg_header())
-        odometry.child_frame_id = self.get_frame_id()
+        odometry = Odometry(header=self.get_msg_header("map"))
+        odometry.child_frame_id = self.get_prefix()
         odometry.pose.pose = self.get_current_ros_pose()
         odometry.twist.twist = self.get_current_ros_twist()
 
-        self.publish_ros_message(self.topic_name() + "/odometry", odometry)
+        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
 
-    def update(self):
+    def update(self, frame, timestamp):
         """
         Function (override) to update this object.
 
@@ -164,16 +164,14 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        objects = super(EgoVehicle, self).get_filtered_objectarray(self.carla_actor.id)
-        self.publish_ros_message(self.topic_name() + '/objects', objects)
         self.send_vehicle_msgs()
-        super(EgoVehicle, self).update()
+        super(EgoVehicle, self).update(frame, timestamp)
 
     def destroy(self):
         """
         Function (override) to destroy this object.
 
-        Terminate ROS subscription on CarlaEgoVehicleControl commands.
+        Terminate ROS subscriptions
         Finally forward call to super class.
 
         :return:
@@ -183,30 +181,65 @@ class EgoVehicle(Vehicle):
         self.control_subscriber = None
         self.enable_autopilot_subscriber.unregister()
         self.enable_autopilot_subscriber = None
+        self.twist_control_subscriber.unregister()
+        self.twist_control_subscriber = None
+        self.control_override_subscriber.unregister()
+        self.control_override_subscriber = None
+        self.manual_control_subscriber.unregister()
+        self.manual_control_subscriber = None
         super(EgoVehicle, self).destroy()
 
-    def control_command_updated(self, ros_vehicle_control):
+    def twist_command_updated(self, twist):
+        """
+        Set angular/linear velocity (this does not respect vehicle dynamics)
+        """
+        if not self.vehicle_control_override:
+            angular_velocity = Vector3D()
+            angular_velocity.z = math.degrees(twist.angular.z)
+
+            rotation_matrix = transforms.carla_rotation_to_numpy_rotation_matrix(
+                self.carla_actor.get_transform().rotation)
+            linear_vector = numpy.array([twist.linear.x, twist.linear.y, twist.linear.z])
+            rotated_linear_vector = rotation_matrix.dot(linear_vector)
+            linear_velocity = Vector3D()
+            linear_velocity.x = rotated_linear_vector[0]
+            linear_velocity.y = -rotated_linear_vector[1]
+            linear_velocity.z = rotated_linear_vector[2]
+
+            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
+                linear_velocity, angular_velocity))
+            self.carla_actor.set_velocity(linear_velocity)
+            self.carla_actor.set_angular_velocity(angular_velocity)
+
+    def control_command_override(self, enable):
+        """
+        Set the vehicle control mode according to ros topic
+        """
+        self.vehicle_control_override = enable.data
+
+    def control_command_updated(self, ros_vehicle_control, manual_override):
         """
         Receive a CarlaEgoVehicleControl msg and send to CARLA
 
-        This function gets called whenever a ROS message is received via
-        '/carla/ego_vehicle/vehicle_control_cmd' topic.
-        The received ROS message is converted into carla.VehicleControl command and
-        sent to CARLA.
+        This function gets called whenever a ROS CarlaEgoVehicleControl is received.
+        If the mode is valid (either normal or manual), the received ROS message is
+        converted into carla.VehicleControl command and sent to CARLA.
         This bridge is not responsible for any restrictions on velocity or steering.
         It's just forwarding the ROS input to CARLA
 
+        :param manual_override: manually override the vehicle control command
         :param ros_vehicle_control: current vehicle control input received via ROS
         :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
         :return:
         """
-        vehicle_control = VehicleControl()
-        vehicle_control.hand_brake = ros_vehicle_control.hand_brake
-        vehicle_control.brake = ros_vehicle_control.brake
-        vehicle_control.steer = ros_vehicle_control.steer
-        vehicle_control.throttle = ros_vehicle_control.throttle
-        vehicle_control.reverse = ros_vehicle_control.reverse
-        self.carla_actor.apply_control(vehicle_control)
+        if manual_override == self.vehicle_control_override:
+            vehicle_control = VehicleControl()
+            vehicle_control.hand_brake = ros_vehicle_control.hand_brake
+            vehicle_control.brake = ros_vehicle_control.brake
+            vehicle_control.steer = ros_vehicle_control.steer
+            vehicle_control.throttle = ros_vehicle_control.throttle
+            vehicle_control.reverse = ros_vehicle_control.reverse
+            self.carla_actor.apply_control(vehicle_control)
 
     def enable_autopilot_updated(self, enable_auto_pilot):
         """
@@ -254,4 +287,3 @@ class EgoVehicle(Vehicle):
         """
         speed = math.sqrt(EgoVehicle.get_vehicle_speed_squared(carla_vehicle))
         return speed
-

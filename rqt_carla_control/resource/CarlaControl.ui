@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mUiForm</class>
+ <widget class="QWidget" name="mUiForm">
+  <property name="windowTitle">
+   <string>CARLA Control</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QPushButton" name="pushButtonPlayPause">
+     <property name="toolTip">
+      <string>Play/Pause the simulation</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonStepOnce">
+     <property name="toolTip">
+      <string>Execute single step, pause afterwards</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

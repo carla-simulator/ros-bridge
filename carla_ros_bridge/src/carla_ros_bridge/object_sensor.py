@@ -11,17 +11,56 @@ handle a object sensor
 
 from derived_object_msgs.msg import ObjectArray
 from carla_ros_bridge.vehicle import Vehicle
+from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
-def get_filtered_objectarray(parent, filtered_id):
+class ObjectSensor(PseudoActor):
+
     """
-    Get a ObjectArray for all available actors, except the one with the filtered_id
-
+    Pseudo object sensor
     """
-    ros_objectlist = ObjectArray()
-    ros_objectlist.header = parent.get_msg_header()
-    for actor_id, child in parent.child_actors.iteritems():
-        # currently only Vehicles are added to the object array
-        if filtered_id is not actor_id and isinstance(child, Vehicle):
-            ros_objectlist.objects.append(child.get_ros_object_msg())
-    return ros_objectlist
+
+    def __init__(self, parent, communication, actor_list, filtered_id):
+        """
+        Constructor
+        :param carla_world: carla world object
+        :type carla_world: carla.World
+        :param parent: the parent of this
+        :type parent: carla_ros_bridge.Parent
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param actor_list: current list of actors
+        :type actor_list: map(carla-actor-id -> python-actor-object)
+        :param filtered_id: id to filter from actor_list
+        :type filtered_id: int
+        """
+
+        super(ObjectSensor, self).__init__(parent=parent,
+                                           communication=communication,
+                                           prefix='objects')
+        self.actor_list = actor_list
+        self.filtered_id = filtered_id
+
+    def destroy(self):
+        """
+        Function to destroy this object.
+        :return:
+        """
+        self.actor_list = None
+        super(ObjectSensor, self).destroy()
+
+    def update(self, frame, timestamp):
+        """
+        Function (override) to update this object.
+        On update map sends:
+        - tf global frame
+        :return:
+        """
+        ros_objects = ObjectArray(header=self.get_msg_header("map"))
+        for actor_id in self.actor_list.keys():
+            # currently only Vehicles are added to the object array
+            if self.filtered_id != actor_id:
+                actor = self.actor_list[actor_id]
+                if isinstance(actor, Vehicle):
+                    ros_objects.objects.append(actor.get_object_info())
+        self.publish_message(self.get_topic_prefix(), ros_objects)

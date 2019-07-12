@@ -20,7 +20,7 @@ class CollisionSensor(Sensor):
     Actor implementation details for a collision sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -28,16 +28,17 @@ class CollisionSensor(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
         super(CollisionSensor, self).__init__(carla_actor=carla_actor,
                                               parent=parent,
-                                              topic_prefix="collision",
-                                              append_role_name_topic_postfix=False)
+                                              communication=communication,
+                                              synchronous_mode=synchronous_mode,
+                                              is_event_sensor=True,
+                                              prefix="collision")
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, collision_event):
@@ -48,11 +49,11 @@ class CollisionSensor(Sensor):
         :type collision_event: carla.CollisionEvent
         """
         collision_msg = CarlaCollisionEvent()
-        collision_msg.header = self.get_msg_header(use_parent_frame=False)
+        collision_msg.header = self.get_msg_header()
         collision_msg.other_actor_id = collision_event.other_actor.id
         collision_msg.normal_impulse.x = collision_event.normal_impulse.x
         collision_msg.normal_impulse.y = collision_event.normal_impulse.y
         collision_msg.normal_impulse.z = collision_event.normal_impulse.z
 
-        self.publish_ros_message(
-            self.topic_name(), collision_msg)
+        self.publish_message(
+            self.get_topic_prefix(), collision_msg)

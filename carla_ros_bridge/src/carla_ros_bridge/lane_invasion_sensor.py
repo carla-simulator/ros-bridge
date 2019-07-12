@@ -20,7 +20,7 @@ class LaneInvasionSensor(Sensor):
     Actor implementation details for a lane invasion sensor
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -28,16 +28,17 @@ class LaneInvasionSensor(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
         super(LaneInvasionSensor, self).__init__(carla_actor=carla_actor,
                                                  parent=parent,
-                                                 topic_prefix="lane_invasion",
-                                                 append_role_name_topic_postfix=False)
+                                                 communication=communication,
+                                                 synchronous_mode=synchronous_mode,
+                                                 is_event_sensor=True,
+                                                 prefix="lane_invasion")
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, lane_invasion_event):
@@ -48,8 +49,8 @@ class LaneInvasionSensor(Sensor):
         :type lane_invasion_event: carla.LaneInvasionEvent
         """
         lane_invasion_msg = CarlaLaneInvasionEvent()
-        lane_invasion_msg.header = self.get_msg_header(use_parent_frame=False)
+        lane_invasion_msg.header = self.get_msg_header()
         for marking in lane_invasion_event.crossed_lane_markings:
             lane_invasion_msg.crossed_lane_markings.append(marking.type)
-        self.publish_ros_message(
-            self.topic_name(), lane_invasion_msg)
+        self.publish_message(
+            self.get_topic_prefix(), lane_invasion_msg)

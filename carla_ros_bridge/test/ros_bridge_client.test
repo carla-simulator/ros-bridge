@@ -2,39 +2,10 @@
   <arg name='enable_rosbag' default='False'/>
   <rosparam file="$(find carla_ros_bridge)/config/settings.yaml" command="load" />
   <param name='enable_rosbag' type="boolean" value="False"/>
-  <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge_with_example_ego_vehicle.launch"/>
+  <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge_with_example_ego_vehicle.launch">
+    <arg name='vehicle_filter' default='vehicle.tesla.model3'/>
+  </include>
 
-  <test test-name="testTopics" pkg="rostest" type="publishtest" time-limit="20.0">
-    <rosparam>
-      topics:
-        - name: /clock
-          timeout: 20
-          negative: False
-        - name: /tf
-          timeout: 20
-          negative: False
-        - name: /carla/map
-          timeout: 20
-          negative: False
-        - name: /carla/vehicle_marker
-          timeout: 20
-          negative: False
-        - name: /carla/objects
-          timeout: 20
-          negative: False
-        - name: /carla/ego_vehicle/odometry
-          timeout: 20
-          negative: False
-        - name: /carla/ego_vehicle/camera/rgb/front/image_color
-          timeout: 20
-          negative: False
-        - name: /carla/ego_vehicle/camera/rgb/front/camera_info
-          timeout: 20
-          negative: False
-
-    </rosparam>
-  </test>
-
-
+  <test test-name="testPublishedData" pkg="carla_ros_bridge" type="ros_bridge_client.py" time-limit="20.0"/>
 
 </launch>

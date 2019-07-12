@@ -18,6 +18,10 @@ add_message_files(
   CarlaCollisionEvent.msg
   CarlaLaneInvasionEvent.msg
   CarlaMapInfo.msg
+  CarlaActorInfo.msg
+  CarlaActorList.msg
+  CarlaControl.msg
+  CarlaStatus.msg
 )
 
 generate_messages(

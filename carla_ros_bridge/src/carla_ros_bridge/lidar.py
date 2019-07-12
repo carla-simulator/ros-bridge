@@ -26,7 +26,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None, append_role_name_topic_postfix=True):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -34,20 +34,16 @@ class Lidar(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
-        :param append_role_name_topic_postfix: if this flag is set True,
-            the role_name of the actor is used as topic postfix
-        :type append_role_name_topic_postfix: boolean
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
         """
-        if topic_prefix is None:
-            topic_prefix = 'lidar'
         super(Lidar, self).__init__(carla_actor=carla_actor,
                                     parent=parent,
-                                    topic_prefix=topic_prefix,
-                                    append_role_name_topic_postfix=append_role_name_topic_postfix)
+                                    communication=communication,
+                                    synchronous_mode=synchronous_mode,
+                                    prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
-    def get_tf_msg(self):
+    def get_ros_sensor_transform(self, transform):
         """
         Function (override) to modify the tf messages sent by this lidar.
 
@@ -58,7 +54,8 @@ class Lidar(Sensor):
         :return: the filled tf message
         :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = super(Lidar, self).get_tf_msg()
+        tf_msg = super(Lidar, self).get_ros_sensor_transform(transform)
+
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         dummy_roll, dummy_pitch, yaw = tf.transformations.euler_from_quaternion(
@@ -77,7 +74,7 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header(use_parent_frame=False)
+        header = self.get_msg_header()
 
         lidar_data = numpy.frombuffer(
             carla_lidar_measurement.raw_data, dtype=numpy.float32)
@@ -91,5 +88,5 @@ class Lidar(Sensor):
         # we also need to permute x and y
         lidar_data = lidar_data[..., [1, 0, 2]]
         point_cloud_msg = create_cloud_xyz32(header, lidar_data)
-        self.publish_ros_message(
-            self.topic_name() + "/point_cloud", point_cloud_msg)
+        self.publish_message(
+            self.get_topic_prefix() + "/point_cloud", point_cloud_msg)

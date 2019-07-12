@@ -33,28 +33,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    @staticmethod
-    def create_actor(carla_actor, parent):
-        """
-        Static factory method to create camera actors
-
-        :param carla_actor: carla camera actor object
-        :type carla_actor: carla.Camera
-        :param parent: the parent of the new traffic actor
-        :type parent: carla_ros_bridge.Parent
-        :return: the created camera actor
-        :rtype: carla_ros_bridge.Camera or derived type
-        """
-        if carla_actor.type_id.startswith("sensor.camera.rgb"):
-            return RgbCamera(carla_actor=carla_actor, parent=parent)
-        elif carla_actor.type_id.startswith("sensor.camera.depth"):
-            return DepthCamera(carla_actor=carla_actor, parent=parent)
-        elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-            return SemanticSegmentationCamera(carla_actor=carla_actor, parent=parent)
-        else:
-            return Camera(carla_actor=carla_actor, parent=parent)
-
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -62,14 +41,18 @@ class Camera(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param prefix: the topic prefix to be used for this actor
+        :type prefix: string
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera'
+        if not prefix:
+            prefix = 'camera'
         super(Camera, self).__init__(carla_actor=carla_actor,
                                      parent=parent,
-                                     topic_prefix=topic_prefix)
+                                     communication=communication,
+                                     synchronous_mode=synchronous_mode,
+                                     prefix=prefix)
 
         if self.__class__.__name__ == "Camera":
             rospy.logwarn("Created Unsupported Camera Actor"
@@ -114,22 +97,21 @@ class Camera(Sensor):
         if ((carla_image.height != self._camera_info.height) or
                 (carla_image.width != self._camera_info.width)):
             rospy.logerr(
-                "Camera{} received image not matching configuration".format(self.topic_name()))
-
+                "Camera{} received image not matching configuration".format(self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_image=carla_image)
         img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
         # the camera data is in respect to the camera's own frame
-        img_msg.header = self.get_msg_header(use_parent_frame=False)
+        img_msg.header = self.get_msg_header()
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_ros_message(self.topic_name() + '/camera_info', cam_info)
-        self.publish_ros_message(
-            self.topic_name() + '/' + self.get_image_topic_name(), img_msg)
+        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
+        self.publish_message(
+            self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
 
-    def get_tf_msg(self):
+    def get_ros_sensor_transform(self, transform):
         """
         Function (override) to modify the tf messages sent by this camera.
 
@@ -139,7 +121,7 @@ class Camera(Sensor):
         :return: the filled tf message
         :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = super(Camera, self).get_tf_msg()
+        tf_msg = super(Camera, self).get_ros_sensor_transform(transform)
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         quat_swap = tf.transformations.quaternion_from_matrix(
@@ -185,7 +167,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -193,14 +175,17 @@ class RgbCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/rgb'
         super(RgbCamera, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        topic_prefix=topic_prefix)
+                                        communication=communication,
+                                        synchronous_mode=synchronous_mode,
+                                        prefix='camera/rgb/' +
+                                        carla_actor.attributes.get('role_name'))
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -237,7 +222,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -245,14 +230,17 @@ class DepthCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/depth'
         super(DepthCamera, self).__init__(carla_actor=carla_actor,
                                           parent=parent,
-                                          topic_prefix=topic_prefix)
+                                          communication=communication,
+                                          synchronous_mode=synchronous_mode,
+                                          prefix='camera/depth/' +
+                                          carla_actor.attributes.get('role_name'))
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -311,7 +299,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, topic_prefix=None):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
 
@@ -319,15 +307,18 @@ class SemanticSegmentationCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param topic_prefix: the topic prefix to be used for this actor
-        :type topic_prefix: string
+        :param communication: communication-handle
+        :type communication: carla_ros_bridge.communication
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
-        if topic_prefix is None:
-            topic_prefix = 'camera/semantic_segmentation'
         super(
             SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
                                                        parent=parent,
-                                                       topic_prefix=topic_prefix)
+                                                       communication=communication,
+                                                       synchronous_mode=synchronous_mode,
+                                                       prefix='camera/semantic_segmentation/' +
+                                                       carla_actor.attributes.get('role_name'))
 
     def get_carla_image_data_array(self, carla_image):
         """

@@ -186,7 +186,18 @@ def carla_rotation_to_directional_numpy_vector(carla_rotation):
     rotated_directional_vector = rotation_matrix.dot(directional_vector)
     return rotated_directional_vector
 
+
 def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
+    """
+    Rotate carla vector, return it as ros vector
+
+    :param carla_vector: the carla vector
+    :type carla_vector: carla.Vector3D
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: rotated ros vector
+    :rtype: Vector3
+    """
     rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
     tmp_array = rotation_matrix.dot(numpy.array([carla_vector.x, carla_vector.y, carla_vector.z]))
     ros_vector = Vector3()
@@ -194,6 +205,7 @@ def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
     ros_vector.y = -tmp_array[1]
     ros_vector.z = tmp_array[2]
     return ros_vector
+
 
 def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation):
     """
