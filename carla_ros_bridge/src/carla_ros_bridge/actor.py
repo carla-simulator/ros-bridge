@@ -72,7 +72,9 @@ class Actor(PseudoActor):
         :rtype: geometry_msgs.msg.Twist
         """
         return trans.carla_velocity_to_ros_twist(
-            self.carla_actor.get_velocity())
+            self.carla_actor.get_velocity(),
+            self.carla_actor.get_angular_velocity(),
+            self.carla_actor.get_transform().rotation)
 
     def get_current_ros_accel(self):
         """
