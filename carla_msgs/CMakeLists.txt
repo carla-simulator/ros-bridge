@@ -22,6 +22,7 @@ add_message_files(
   CarlaActorList.msg
   CarlaControl.msg
   CarlaStatus.msg
+  CarlaWalkerControl.msg
 )
 
 generate_messages(

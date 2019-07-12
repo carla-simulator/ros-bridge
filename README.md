@@ -236,6 +236,12 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 The OPEN Drive map description is published.
 
+## Walker
+
+|Topic                                 | Type | Description |
+|--------------------------------------|------|-------------|
+| `/carla/<ROLE NAME>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](carla_msgs/msg/CarlaWalkerControl.msg) | Control a walker |
+
 
 # Carla Ego Vehicle
 
