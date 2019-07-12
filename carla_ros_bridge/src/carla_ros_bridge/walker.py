@@ -9,7 +9,7 @@
 """
 Classes to handle Carla pedestrians
 """
-
+import rospy
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
@@ -17,6 +17,8 @@ from visualization_msgs.msg import Marker
 
 from carla_ros_bridge.actor import Actor
 import carla_ros_bridge.transforms as transforms
+from carla_msgs.msg import CarlaWalkerControl
+from carla import WalkerControl
 
 
 class Walker(Actor):
@@ -48,6 +50,53 @@ class Walker(Actor):
 
         self.classification = Object.CLASSIFICATION_PEDESTRIAN
         self.classification_age = 0
+        
+        self.control_subscriber = rospy.Subscriber(
+            self.get_topic_prefix() + "/walker_control_cmd",
+            CarlaWalkerControl, self.control_command_updated)
+
+    def control_command_updated(self, ros_vehicle_control, manual_override):
+        """
+        Receive a CarlaEgoVehicleControl msg and send to CARLA
+
+        This function gets called whenever a ROS CarlaEgoVehicleControl is received.
+        If the mode is valid (either normal or manual), the received ROS message is
+        converted into carla.VehicleControl command and sent to CARLA.
+        This bridge is not responsible for any restrictions on velocity or steering.
+        It's just forwarding the ROS input to CARLA
+
+        :param manual_override: manually override the vehicle control command
+        :param ros_vehicle_control: current vehicle control input received via ROS
+        :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
+        :return:
+        """
+        if manual_override == self.vehicle_control_override:
+            vehicle_control = VehicleControl()
+            vehicle_control.hand_brake = ros_vehicle_control.hand_brake
+            vehicle_control.brake = ros_vehicle_control.brake
+            vehicle_control.steer = ros_vehicle_control.steer
+            vehicle_control.throttle = ros_vehicle_control.throttle
+            vehicle_control.reverse = ros_vehicle_control.reverse
+            self.carla_actor.apply_control(vehicle_control)
+
+    def control_command_updated(self, ros_walker_control):
+        """
+        Receive a CarlaWalkerControl msg and send to CARLA
+        This function gets called whenever a ROS message is received via
+        '/carla/<role name>/walker_control_cmd' topic.
+        The received ROS message is converted into carla.WalkerControl command and
+        sent to CARLA.
+        :param ros_walker_control: current walker control input received via ROS
+        :type self.info.output: carla_ros_bridge.msg.CarlaWalkerControl
+        :return:
+        """
+        walker_control = WalkerControl()
+        walker_control.direction.x = ros_walker_control.direction.x
+        walker_control.direction.y = -ros_walker_control.direction.y
+        walker_control.direction.z = ros_walker_control.direction.z
+        walker_control.speed = ros_walker_control.speed
+        walker_control.jump = ros_walker_control.jump
+        self.carla_actor.apply_control(walker_control)
 
     def update(self, frame, timestamp):
         """
