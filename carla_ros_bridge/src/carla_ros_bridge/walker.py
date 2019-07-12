@@ -42,9 +42,9 @@ class Walker(Actor):
             prefix = "walker/{:03}".format(carla_actor.id)
 
         super(Walker, self).__init__(carla_actor=carla_actor,
-                                      parent=parent,
-                                      communication=communication,
-                                      prefix=prefix)
+                                     parent=parent,
+                                     communication=communication,
+                                     prefix=prefix)
 
         self.classification = Object.CLASSIFICATION_PEDESTRIAN
         self.classification_age = 0
