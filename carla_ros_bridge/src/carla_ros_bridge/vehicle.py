@@ -122,7 +122,7 @@ class Vehicle(Actor):
         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_message('/carla/vehicle_marker', marker)
+        self.publish_message('/carla/marker', marker)
 
     def get_object_info(self):
         """

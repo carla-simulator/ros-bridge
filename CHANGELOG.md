@@ -1,5 +1,7 @@
 ## Latest changed
 
+* rename /carla/vehicle_marker to /carla/marker (and include walkers)
+* support walkers
 * create rqt plugin to control synchronous mode
 * support synchronous mode
 * publish CarlaStatus
