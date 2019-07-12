@@ -130,29 +130,27 @@ Currently the following sensors are supported:
 
 #### GNSS
 
-|Topic                                 | Type |
-|--------------------------------------|------|
-| `/carla/<ROLE NAME>/gnss/front/gnss` | [sensor_msgs.NavSatFix](http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html) |
+|Topic                                 | Type | Description |
+|--------------------------------------|------|-------------|
+| `/carla/<ROLE NAME>/gnss/front/gnss` | [sensor_msgs.NavSatFix](http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html) | publish gnss location |
 
 #### Collision Sensor
 
-|Topic                          | Type |
-|-------------------------------|------|
-| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](carla_msgs/msg/CarlaCollisionEvent.msg) |
+|Topic                          | Type | Description |
+|-------------------------------|------|-------------|
+| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](carla_msgs/msg/CarlaCollisionEvent.msg) | publish collision events |
 
 #### Lane Invasion Sensor
 
-|Topic                          | Type |
-|-------------------------------|------|
-| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) |
+|Topic                          | Type | Description |
+|-------------------------------|------|-------------|
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) | publish events on lane-invasion |
 
 ### Object Sensor
 
-|Topic         | Type |
-|--------------|------|
-| `/carla/<ROLE NAME>/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
-
-Reports all vehicles, except the ego vehicle.
+|Topic         | Type | Description |
+|--------------|------|-------------|
+| `/carla/<ROLE NAME>/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | all vehicles and walkers, except the ego vehicle |
 
 ### Control
 
@@ -214,11 +212,11 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ### Object information of other actors
 
-|Topic         | Type |
-|--------------|------|
-| `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
-| `/carla/marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
-| `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) |
+|Topic         | Type | Description |
+|--------------|------|-------------|
+| `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | all vehicles and walkers |
+| `/carla/marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) | visualization of vehicles and walkers |
+| `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) | list of all carla actors |
 
 
 ### Status of CARLA
@@ -230,11 +228,10 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ## Map
 
-|Topic         | Type |
-|--------------|------|
-| `/carla/map` | [std_msgs.String](http://docs.ros.org/api/std_msgs/html/msg/String.html) |
+|Topic         | Type | Description |
+|--------------|------|-------------|
+| `/carla/map` | [std_msgs.String](http://docs.ros.org/api/std_msgs/html/msg/String.html) | OPEN Drive map description |
 
-The OPEN Drive map description is published.
 
 ## Walker
 
