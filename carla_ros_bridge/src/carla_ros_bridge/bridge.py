@@ -64,12 +64,11 @@ class CarlaRosBridge(object):
 
         # set carla world settings
         self.carla_settings = carla_world.get_settings()
-        self.frame = None
-        if self.carla_settings.synchronous_mode != self.parameters["synchronous_mode"]:
-            rospy.loginfo("Setting CARLA synchronous mode to {}".format(
-                self.parameters["synchronous_mode"]))
-            self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-            carla_world.apply_settings(self.carla_settings)
+        rospy.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
+        self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
+        rospy.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
+        self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
+        carla_world.apply_settings(self.carla_settings)
 
         self.comm = Communication()
         self.update_lock = Lock()
@@ -156,14 +155,14 @@ class CarlaRosBridge(object):
         while not rospy.is_shutdown():
             self.process_run_state()
             self._update_actors()
-            self.frame = self.carla_world.tick()
+            frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
 
-            self.status_publisher.set_frame(self.frame)
+            self.status_publisher.set_frame(frame)
             self.comm.update_clock(world_snapshot.timestamp)
             rospy.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(
-                self.frame))
-            self._update(self.frame, world_snapshot.timestamp.elapsed_seconds)
+                frame))
+            self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             rospy.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
 
