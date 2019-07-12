@@ -212,12 +212,12 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ## Other Topics
 
-### Object information of all vehicles
+### Object information of other actors
 
 |Topic         | Type |
 |--------------|------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) |
-| `/carla/vehicle_marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
+| `/carla/marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) |
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) |
 
 
