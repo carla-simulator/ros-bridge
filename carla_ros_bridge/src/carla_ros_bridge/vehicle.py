@@ -13,10 +13,8 @@ Classes to handle Carla vehicles
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
-from visualization_msgs.msg import Marker
 
 from carla_ros_bridge.actor import Actor
-import carla_ros_bridge.transforms as transforms
 
 
 class Vehicle(Actor):
@@ -88,41 +86,6 @@ class Vehicle(Actor):
         color.g = 0
         color.b = 0
         return color
-
-    def get_marker(self):
-        """
-        Helper function to create a ROS visualization_msgs.msg.Marker for the actor
-
-        :param use_parent_frame: per default (True) the header.frame_id
-            is set to the frame of the actor's parent.
-            If this is set to False, the actor's own frame is used as basis.
-        :type use_parent_frame:  boolean
-        :return:
-        visualization_msgs.msg.Marker
-        """
-        marker = Marker(
-            header=self.get_msg_header())
-        marker.color = self.get_marker_color()
-        marker.color.a = 0.3
-        marker.id = self.get_id()
-        marker.text = "id = {}".format(marker.id)
-        return marker
-
-    def publish_marker(self):
-        """
-        Function to send marker messages of this vehicle.
-
-        :return:
-        """
-        marker = self.get_marker()
-        marker.type = Marker.CUBE
-
-        marker.pose = transforms.carla_location_to_pose(
-            self.carla_actor.bounding_box.location)
-        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_message('/carla/marker', marker)
 
     def get_object_info(self):
         """

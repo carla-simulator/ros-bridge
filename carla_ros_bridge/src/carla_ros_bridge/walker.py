@@ -10,13 +10,10 @@
 Classes to handle Carla pedestrians
 """
 import rospy
-from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
-from visualization_msgs.msg import Marker
 
 from carla_ros_bridge.actor import Actor
-import carla_ros_bridge.transforms as transforms
 from carla_msgs.msg import CarlaWalkerControl
 from carla import WalkerControl
 
@@ -89,54 +86,6 @@ class Walker(Actor):
         self.publish_transform(self.get_ros_transform())
         self.publish_marker()
         super(Walker, self).update(frame, timestamp)
-
-    def get_marker_color(self):  # pylint: disable=no-self-use
-        """
-        Function (override) to return the color for marker messages.
-
-        :return: the color used by a walkers marker
-        :rtpye : std_msgs.msg.ColorRGBA
-        """
-        color = ColorRGBA()
-        color.r = 0
-        color.g = 0
-        color.b = 255
-        return color
-
-    def get_marker(self):
-        """
-        Helper function to create a ROS visualization_msgs.msg.Marker for the actor
-
-        :param use_parent_frame: per default (True) the header.frame_id
-            is set to the frame of the actor's parent.
-            If this is set to False, the actor's own frame is used as basis.
-        :type use_parent_frame:  boolean
-        :return:
-        visualization_msgs.msg.Marker
-        """
-        marker = Marker(
-            header=self.get_msg_header())
-        marker.color = self.get_marker_color()
-        marker.color.a = 0.3
-        marker.id = self.get_id()
-        marker.text = "id = {}".format(marker.id)
-        return marker
-
-    def publish_marker(self):
-        """
-        Function to send marker messages of this walker.
-
-        :return:
-        """
-        marker = self.get_marker()
-        marker.type = Marker.CUBE
-
-        marker.pose = transforms.carla_location_to_pose(
-            self.carla_actor.bounding_box.location)
-        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
-        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
-        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_message('/carla/marker', marker)
 
     def get_object_info(self):
         """
