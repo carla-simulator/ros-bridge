@@ -187,24 +187,47 @@ def carla_rotation_to_directional_numpy_vector(carla_rotation):
     return rotated_directional_vector
 
 
-def carla_velocity_to_ros_twist(carla_velocity):
+def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
+    """
+    Rotate carla vector, return it as ros vector
+
+    :param carla_vector: the carla vector
+    :type carla_vector: carla.Vector3D
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: rotated ros vector
+    :rtype: Vector3
+    """
+    rotation_matrix = carla_rotation_to_numpy_rotation_matrix(carla_rotation)
+    tmp_array = rotation_matrix.dot(numpy.array([carla_vector.x, carla_vector.y, carla_vector.z]))
+    ros_vector = Vector3()
+    ros_vector.x = tmp_array[0]
+    ros_vector.y = -tmp_array[1]
+    ros_vector.z = tmp_array[2]
+    return ros_vector
+
+
+def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation):
     """
     Convert a carla velocity to a ROS twist
 
     Considers the conversion from left-handed system (unreal) to right-handed
-    system (ROS)
-    The angular velocities remain zero.
+    system (ROS).
 
     :param carla_velocity: the carla velocity
     :type carla_velocity: carla.Vector3D
-    :return: a ROS twist
+    :param carla_angular_velocity: the carla angular velocity
+    :type carla_angular_velocity: carla.Vector3D
+    :param carla_rotation: the carla rotation
+    :type carla_rotation: carla.Rotation
+    :return: a ROS twist (with rotation)
     :rtype: geometry_msgs.msg.Twist
     """
     ros_twist = Twist()
-    ros_twist.linear.x = carla_velocity.x
-    ros_twist.linear.y = -carla_velocity.y
-    ros_twist.linear.z = carla_velocity.z
-
+    ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
+    ros_twist.angular.x = -math.radians(carla_angular_velocity.x)
+    ros_twist.angular.y = -math.radians(carla_angular_velocity.y)
+    ros_twist.angular.z = -math.radians(carla_angular_velocity.z)
     return ros_twist
 
 

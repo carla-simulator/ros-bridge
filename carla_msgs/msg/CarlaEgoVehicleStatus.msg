@@ -8,7 +8,7 @@
 Header header
 
 float32 velocity
-float32 acceleration
+geometry_msgs/Accel acceleration
 geometry_msgs/Quaternion orientation
 
 # the current control values, as reported by Carla
