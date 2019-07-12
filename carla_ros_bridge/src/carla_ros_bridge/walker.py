@@ -50,34 +50,10 @@ class Walker(Actor):
 
         self.classification = Object.CLASSIFICATION_PEDESTRIAN
         self.classification_age = 0
-        
+
         self.control_subscriber = rospy.Subscriber(
             self.get_topic_prefix() + "/walker_control_cmd",
             CarlaWalkerControl, self.control_command_updated)
-
-    def control_command_updated(self, ros_vehicle_control, manual_override):
-        """
-        Receive a CarlaEgoVehicleControl msg and send to CARLA
-
-        This function gets called whenever a ROS CarlaEgoVehicleControl is received.
-        If the mode is valid (either normal or manual), the received ROS message is
-        converted into carla.VehicleControl command and sent to CARLA.
-        This bridge is not responsible for any restrictions on velocity or steering.
-        It's just forwarding the ROS input to CARLA
-
-        :param manual_override: manually override the vehicle control command
-        :param ros_vehicle_control: current vehicle control input received via ROS
-        :type ros_vehicle_control: carla_msgs.msg.CarlaEgoVehicleControl
-        :return:
-        """
-        if manual_override == self.vehicle_control_override:
-            vehicle_control = VehicleControl()
-            vehicle_control.hand_brake = ros_vehicle_control.hand_brake
-            vehicle_control.brake = ros_vehicle_control.brake
-            vehicle_control.steer = ros_vehicle_control.steer
-            vehicle_control.throttle = ros_vehicle_control.throttle
-            vehicle_control.reverse = ros_vehicle_control.reverse
-            self.carla_actor.apply_control(vehicle_control)
 
     def control_command_updated(self, ros_walker_control):
         """
