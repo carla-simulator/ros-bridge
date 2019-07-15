@@ -99,7 +99,7 @@ class TestClock(unittest.TestCase):
 
     def test_marker(self):
         rospy.init_node('test_node', anonymous=True)
-        msg = rospy.wait_for_message("/carla/vehicle_marker", Marker, timeout=15)
+        msg = rospy.wait_for_message("/carla/marker", Marker, timeout=15)
         self.assertEqual(msg.header.frame_id, "ego_vehicle")
         self.assertNotEqual(msg.id, 0)
         self.assertEqual(msg.type, 1)
