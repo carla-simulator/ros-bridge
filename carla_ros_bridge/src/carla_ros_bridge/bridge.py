@@ -65,6 +65,12 @@ class CarlaRosBridge(object):
 
         # set carla world settings
         self.carla_settings = carla_world.get_settings()
+        
+        # workaround: settings can only applied within non-sync mode
+        if self.carla_settings.synchronous_mode:
+            self.carla_settings.synchronous_mode = False
+            carla_world.apply_settings(self.carla_settings)
+
         rospy.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
         self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
         rospy.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
@@ -128,7 +134,7 @@ class CarlaRosBridge(object):
             if self.on_tick_id:
                 self.carla_world.remove_on_tick(self.on_tick_id)
             self.update_actor_thread.join()
-            self._update_actors(set())
+        self._update_actors(set())
 
         rospy.loginfo("Exiting Bridge")
 
@@ -176,7 +182,7 @@ class CarlaRosBridge(object):
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             rospy.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
-            self._update_actors(set([x.id for x in world_snapshot()]))
+            self._update_actors(set([x.id for x in world_snapshot]))
 
     def _carla_time_tick(self, carla_snapshot):
         """
