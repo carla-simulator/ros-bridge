@@ -166,7 +166,7 @@ class CarlaRosBridge(object):
             rospy.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
 
-    def _carla_time_tick(self, carla_timestamp):
+    def _carla_time_tick(self, carla_snapshot):
         """
         Private callback registered at carla.World.on_tick()
         to trigger cyclic updates.
@@ -182,10 +182,11 @@ class CarlaRosBridge(object):
         """
         if not rospy.is_shutdown():
             if self.update_lock.acquire(False):
-                if self.timestamp_last_run < carla_timestamp.elapsed_seconds:
-                    self.timestamp_last_run = carla_timestamp.elapsed_seconds
-                    self.comm.update_clock(carla_timestamp)
-                    self._update(carla_timestamp.frame, carla_timestamp.elapsed_seconds)
+                if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
+                    self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
+                    self.comm.update_clock(carla_snapshot.timestamp)
+                    self.status_publisher.set_frame(carla_snapshot.frame)
+                    self._update(carla_snapshot.frame, carla_snapshot.timestamp.elapsed_seconds)
                     self.comm.send_msgs()
                 self.update_lock.release()
 
