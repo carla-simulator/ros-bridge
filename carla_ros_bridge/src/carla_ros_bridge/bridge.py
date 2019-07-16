@@ -10,13 +10,12 @@ Rosbridge class:
 
 Class that handle communication between CARLA and ROS
 """
-import time
 try:
     import queue
 except ImportError:
     import Queue as queue
 
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 import rospy
 
 import carla
@@ -59,8 +58,10 @@ class CarlaRosBridge(object):
         rospy.init_node("carla_bridge", anonymous=True)
         self.parameters = params
         self.actors = {}
+        self.pseudo_actors = []
         self.carla_world = carla_world
         self.synchronous_mode_update_thread = None
+        self.shutdown = Event()
 
         # set carla world settings
         self.carla_settings = carla_world.get_settings()
@@ -88,14 +89,21 @@ class CarlaRosBridge(object):
             self.synchronous_mode_update_thread.start()
         else:
             self.timestamp_last_run = 0.0
-            # register callback to create/delete actors
-            self.update_child_actors_lock = Lock()
-            self.carla_world.on_tick(self._carla_update_child_actors)
+
+            self.update_actors_queue = queue.Queue(maxsize=1)
+
+            # start thread to update actors
+            self.update_actor_thread = Thread(target=self._update_actors_thread)
+            self.update_actor_thread.start()
+
+            # create initially existing actors
+            self.update_actors_queue.put(set([x.id for x in self.carla_world.get_snapshot()]))
+
+            # wait for first actors creation to be finished
+            self.update_actors_queue.join()
 
             # register callback to update actors
-            self.carla_world.on_tick(self._carla_time_tick)
-
-        self.pseudo_actors = []
+            self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
         # add map
         self.pseudo_actors.append(Map(carla_world=self.carla_world,
@@ -114,10 +122,14 @@ class CarlaRosBridge(object):
         :return:
         """
         rospy.signal_shutdown("")
+        self.shutdown.set()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
-            self.update_child_actors_lock.acquire()
-            self.update_lock.acquire()
+            if self.on_tick_id:
+                self.carla_world.remove_on_tick(self.on_tick_id)
+            self.update_actor_thread.join()
+            self._update_actors(set())
+
         rospy.loginfo("Exiting Bridge")
 
     def process_run_state(self):
@@ -152,9 +164,8 @@ class CarlaRosBridge(object):
         """
         execution loop for synchronous mode
         """
-        while not rospy.is_shutdown():
+        while not self.shutdown.is_set():
             self.process_run_state()
-            self._update_actors()
             frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
 
@@ -165,6 +176,7 @@ class CarlaRosBridge(object):
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             rospy.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
+            self._update_actors(set([x.id for x in world_snapshot()]))
 
     def _carla_time_tick(self, carla_snapshot):
         """
@@ -180,7 +192,7 @@ class CarlaRosBridge(object):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        if not rospy.is_shutdown():
+        if not self.shutdown.is_set():
             if self.update_lock.acquire(False):
                 if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
                     self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
@@ -190,56 +202,43 @@ class CarlaRosBridge(object):
                     self.comm.send_msgs()
                 self.update_lock.release()
 
-    def _carla_update_child_actors(self, _):
+            # if possible push current snapshot to update-actors-thread
+            try:
+                self.update_actors_queue.put_nowait(set([x.id for x in carla_snapshot]))
+            except queue.Full:
+                pass
+
+    def _update_actors_thread(self):
         """
-        Private callback registered at carla.World.on_tick()
-        to trigger cyclic updates of the actors
-
-        After successful locking the mutex
-        (only perform trylock to respect bridge processing time)
-        the existing actors are updated.
-
-        :param carla_timestamp: the current carla time
-        :type carla_timestamp: carla.Timestamp
-        :return:
+        execution loop for async mode actor list updates
         """
-        if not rospy.is_shutdown():
-            if self.update_child_actors_lock.acquire(False):
-                self._update_actors()
-                # actors are only created/deleted around once per second
-                time.sleep(1)
-                self.update_child_actors_lock.release()
+        while not self.shutdown.is_set():
+            try:
+                current_actors = self.update_actors_queue.get(timeout=1)
+                if current_actors:
+                    self._update_actors(current_actors)
+                    self.update_actors_queue.task_done()
+            except queue.Empty:
+                pass
 
-    def _update_actors(self):
+    def _update_actors(self, current_actors):
         """
         update the available actors
         """
-        carla_actors = self.carla_world.get_actors()
-        actors_updated = False
+        previous_actors = set(self.actors)
 
-        # Add new actors
-        for actor in carla_actors:
-            if actor.id not in self.actors:
-                if self._create_actor(actor):
-                    actors_updated = True
+        new_actors = current_actors - previous_actors
+        deleted_actors = previous_actors - current_actors
 
-        # create list of carla actors ids
-        carla_actor_ids = []
-        for actor in carla_actors:
-            carla_actor_ids.append(actor.id)
+        if new_actors:
+            for carla_actor in self.carla_world.get_actors(list(new_actors)):
+                self._create_actor(carla_actor)
 
-        # remove non-existing actors
-        ids_to_delete = []
-        for actor_id in self.actors:
-            if actor_id not in carla_actor_ids:
-                ids_to_delete.append(actor_id)
-                actors_updated = True
-
-        if ids_to_delete:
-            with self.update_lock:
-                for id_to_delete in ids_to_delete:
-                    # remove actor
-                    actor = self.actors[id_to_delete]
+        if deleted_actors:
+            for id_to_delete in deleted_actors:
+                # remove actor
+                actor = self.actors[id_to_delete]
+                with self.update_lock:
                     rospy.loginfo("Remove {}(id={}, parent_id={}, prefix={})".format(
                         actor.__class__.__name__, actor.get_id(),
                         actor.get_parent_id(),
@@ -247,20 +246,22 @@ class CarlaRosBridge(object):
                     actor.destroy()
                     del self.actors[id_to_delete]
 
-                    # remove pseudo-actors that have actor as parent
-                    updated_pseudo_actors = []
-                    for pseudo_actor in self.pseudo_actors:
-                        if pseudo_actor.get_parent_id() == id_to_delete:
-                            rospy.loginfo("Remove {}(parent_id={}, prefix={})".format(
-                                pseudo_actor.__class__.__name__,
-                                pseudo_actor.get_parent_id(),
-                                pseudo_actor.get_prefix()))
-                            pseudo_actor.destroy()
-                            del pseudo_actor
-                        else:
-                            updated_pseudo_actors.append(pseudo_actor)
-                    self.pseudo_actors = updated_pseudo_actors
-        if actors_updated:
+                # remove pseudo-actors that have actor as parent
+                updated_pseudo_actors = []
+                for pseudo_actor in self.pseudo_actors:
+                    if pseudo_actor.get_parent_id() == id_to_delete:
+                        rospy.loginfo("Remove {}(parent_id={}, prefix={})".format(
+                            pseudo_actor.__class__.__name__,
+                            pseudo_actor.get_parent_id(),
+                            pseudo_actor.get_prefix()))
+                        pseudo_actor.destroy()
+                        del pseudo_actor
+                    else:
+                        updated_pseudo_actors.append(pseudo_actor)
+                self.pseudo_actors = updated_pseudo_actors
+
+        # publish actor list on change
+        if new_actors or deleted_actors:
             self.publish_actor_list()
 
     def publish_actor_list(self):
@@ -270,23 +271,22 @@ class CarlaRosBridge(object):
         """
         ros_actor_list = CarlaActorList()
 
-        with self.update_lock:
-            for actor_id in self.actors:
-                actor = self.actors[actor_id].carla_actor
-                ros_actor = CarlaActorInfo()
-                ros_actor.id = actor.id
-                ros_actor.type = actor.type_id
-                try:
-                    ros_actor.rolename = str(actor.attributes.get('role_name'))
-                except ValueError:
-                    pass
+        for actor_id in self.actors:
+            actor = self.actors[actor_id].carla_actor
+            ros_actor = CarlaActorInfo()
+            ros_actor.id = actor.id
+            ros_actor.type = actor.type_id
+            try:
+                ros_actor.rolename = str(actor.attributes.get('role_name'))
+            except ValueError:
+                pass
 
-                if actor.parent:
-                    ros_actor.parent_id = actor.parent.id
-                else:
-                    ros_actor.parent_id = 0
+            if actor.parent:
+                ros_actor.parent_id = actor.parent.id
+            else:
+                ros_actor.parent_id = 0
 
-                ros_actor_list.actors.append(ros_actor)
+            ros_actor_list.actors.append(ros_actor)
 
         self.comm.publish_message("/carla/actor_list", ros_actor_list, is_latched=True)
 
