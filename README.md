@@ -89,9 +89,16 @@ In default mode (`synchronous_mode: false`) data is published:
 
 ### Synchronous Mode
 
+CAUTION: In synchronous mode, only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
+
 In synchronous mode (`synchronous_mode: true`), the bridge waits for all sensor data that is expected within the current frame. This might slow down the overall simulation but ensures reproducible results.
 
-Additionally it is possible to control the simulation execution:
+Additionally you might set `synchronous_mode_wait_for_vehicle_control_command` to `true` to wait for a vehicle control command before executing the next tick.
+
+
+#### Control Synchronous Mode
+
+It is possible to control the simulation execution:
 
 - Pause/Play
 - Execute single step
