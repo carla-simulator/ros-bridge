@@ -64,7 +64,7 @@ class CarlaRosBridge(object):
         self.shutdown = Event()
         # set carla world settings
         self.carla_settings = carla_world.get_settings()
-        
+
         # workaround: settings can only applied within non-sync mode
         if self.carla_settings.synchronous_mode:
             self.carla_settings.synchronous_mode = False
@@ -84,8 +84,6 @@ class CarlaRosBridge(object):
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
             self.carla_settings.fixed_delta_seconds)
-
-
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -130,7 +128,6 @@ class CarlaRosBridge(object):
                                                communication=self.comm,
                                                actor_list=self.actors,
                                                filtered_id=None))
-        
 
     def destroy(self):
         """
@@ -183,15 +180,15 @@ class CarlaRosBridge(object):
         """
         while not self.shutdown.is_set():
             self.process_run_state()
-            
+
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # fill list of available ego vehicles
                 self._expected_ego_vehicle_control_command_ids = []
                 with self._expected_ego_vehicle_control_command_ids_lock:
-                    for id, actor in self.actors.iteritems():
+                    for actor_id, actor in self.actors.iteritems():
                         if isinstance(actor, EgoVehicle):
-                            self._expected_ego_vehicle_control_command_ids.append(id)
-            
+                            self._expected_ego_vehicle_control_command_ids.append(actor_id)
+
             frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
 
@@ -203,14 +200,14 @@ class CarlaRosBridge(object):
             rospy.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
             self._update_actors(set([x.id for x in world_snapshot]))
-            
+
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # wait for all ego vehicles to send a vehicle control command
-                if len(self._expected_ego_vehicle_control_command_ids) > 0:
+                if self._expected_ego_vehicle_control_command_ids:
                     if not self._all_vehicle_control_commands_received.wait(1):
                         rospy.logwarn("Timeout (1s) while waiting for vehicle control commands. "
-                            "Missing command from actor ids {}".format(
-                                self._expected_ego_vehicle_control_command_ids))
+                                      "Missing command from actor ids {}".format(
+                                          self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
     def _carla_time_tick(self, carla_snapshot):
@@ -346,7 +343,8 @@ class CarlaRosBridge(object):
         elif carla_actor.type_id.startswith("vehicle"):
             if carla_actor.attributes.get('role_name')\
                     in self.parameters['ego_vehicle']['role_name']:
-                actor = EgoVehicle(carla_actor, parent, self.comm, self._ego_vehicle_control_applied_callback)
+                actor = EgoVehicle(
+                    carla_actor, parent, self.comm, self._ego_vehicle_control_applied_callback)
                 pseudo_actors.append(ObjectSensor(parent=actor,
                                                   communication=self.comm,
                                                   actor_list=self.actors,
@@ -444,15 +442,18 @@ class CarlaRosBridge(object):
                 continue
 
     def _ego_vehicle_control_applied_callback(self, ego_vehicle_id):
-        if not self.carla_settings.synchronous_mode or not self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
+        if not self.carla_settings.synchronous_mode or \
+                not self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
             return
         with self._expected_ego_vehicle_control_command_ids_lock:
             if ego_vehicle_id in self._expected_ego_vehicle_control_command_ids:
                 self._expected_ego_vehicle_control_command_ids.remove(ego_vehicle_id)
             else:
-                rospy.logwarn("Unexpected vehicle control command received from {}".format(ego_vehicle_id))
-            if len(self._expected_ego_vehicle_control_command_ids) == 0:
+                rospy.logwarn(
+                    "Unexpected vehicle control command received from {}".format(ego_vehicle_id))
+            if not self._expected_ego_vehicle_control_command_ids:
                 self._all_vehicle_control_commands_received.set()
+
 
 def main():
     """
