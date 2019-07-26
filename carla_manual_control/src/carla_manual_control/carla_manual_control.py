@@ -164,6 +164,8 @@ class KeyboardControl(object):
             "/carla/{}/enable_autopilot".format(self.role_name), Bool, queue_size=1)
         self.vehicle_control_publisher = rospy.Publisher(
             "/carla/{}/vehicle_control_cmd_manual".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
+        self.carla_status_subscriber = rospy.Subscriber(
+            "/carla/status", CarlaStatus, self._on_new_carla_frame)
         self._autopilot_enabled = False
         self._control = CarlaEgoVehicleControl()
         self.set_autopilot(self._autopilot_enabled)
@@ -226,6 +228,15 @@ class KeyboardControl(object):
         if not self._autopilot_enabled and self.vehicle_control_manual_override:
             self._parse_vehicle_keys(pygame.key.get_pressed(), clock.get_time())
             self._control.reverse = self._control.gear < 0
+
+    def _on_new_carla_frame(self, data):
+        """
+        callback on new frame
+        
+        As CARLA only processes one vehicle control command per tick,
+        send the current from within here (once per frame)
+        """
+        if not self._autopilot_enabled and self.vehicle_control_manual_override:
             self.vehicle_control_publisher.publish(self._control)
 
     def _parse_vehicle_keys(self, keys, milliseconds):
