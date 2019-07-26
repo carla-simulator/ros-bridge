@@ -35,7 +35,7 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, communication, vehicle_control_applied_callback):
         """
         Constructor
 
@@ -53,6 +53,7 @@ class EgoVehicle(Vehicle):
 
         self.vehicle_info_published = False
         self.vehicle_control_override = False
+        self._vehicle_control_applied_callback = vehicle_control_applied_callback
 
         self.control_subscriber = rospy.Subscriber(
             self.get_topic_prefix() + "/vehicle_control_cmd",
@@ -240,6 +241,7 @@ class EgoVehicle(Vehicle):
             vehicle_control.throttle = ros_vehicle_control.throttle
             vehicle_control.reverse = ros_vehicle_control.reverse
             self.carla_actor.apply_control(vehicle_control)
+            self._vehicle_control_applied_callback(self.get_id())
 
     def enable_autopilot_updated(self, enable_auto_pilot):
         """

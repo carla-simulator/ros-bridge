@@ -77,14 +77,19 @@ You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yam
 
 If the rolename is within the list specified by ROS parameter `/carla/ego_vehicle/rolename`, the client is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
 
-## Synchronous Mode
+## Mode
 
-In default mode (`/carla/synchronous_mode: false`) data is published:
+### Default Mode
+
+In default mode (`synchronous_mode: false`) data is published:
 
  - on every `world.on_tick()` callback
  - on every `sensor.listen()` callback
 
-In synchronous mode, the bridge waits for all sensor data that is expected within the current frame. This might slow down the overall simulation but ensures reproducible results.
+
+### Synchronous Mode
+
+In synchronous mode (`synchronous_mode: true`), the bridge waits for all sensor data that is expected within the current frame. This might slow down the overall simulation but ensures reproducible results.
 
 Additionally it is possible to control the simulation execution:
 

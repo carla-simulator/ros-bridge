@@ -157,6 +157,10 @@ class KeyboardControl(object):
         self.role_name = role_name
         self.hud = hud
 
+        self._autopilot_enabled = False
+        self._control = CarlaEgoVehicleControl()
+        self._steer_cache = 0.0
+        
         self.vehicle_control_manual_override_publisher = rospy.Publisher(
             "/carla/{}/vehicle_control_manual_override".format(self.role_name), Bool, queue_size=1, latch=True)
         self.vehicle_control_manual_override = False
@@ -166,13 +170,11 @@ class KeyboardControl(object):
             "/carla/{}/vehicle_control_cmd_manual".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
         self.carla_status_subscriber = rospy.Subscriber(
             "/carla/status", CarlaStatus, self._on_new_carla_frame)
-        self._autopilot_enabled = False
-        self._control = CarlaEgoVehicleControl()
+        
         self.set_autopilot(self._autopilot_enabled)
-        self._steer_cache = 0.0
+        
         self.set_vehicle_control_manual_override(
             self.vehicle_control_manual_override)  # disable manual override
-        self.hud.notification("Press 'H' or '?' for help.", seconds=4.0)
 
     def __del__(self):
         self.auto_pilot_enable_publisher.unregister()
@@ -237,7 +239,10 @@ class KeyboardControl(object):
         send the current from within here (once per frame)
         """
         if not self._autopilot_enabled and self.vehicle_control_manual_override:
-            self.vehicle_control_publisher.publish(self._control)
+            try:
+                self.vehicle_control_publisher.publish(self._control)
+            except ROSException as error:
+                rospy.logwarn("Could not send vehicle control: {}".format(error))
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         """
@@ -373,12 +378,16 @@ class HUD(object):
         heading += 'S' if abs(yaw) > 90.5 else ''
         heading += 'E' if 179.5 > yaw > 0.5 else ''
         heading += 'W' if -0.5 > yaw > -179.5 else ''
+        fps = 0
+        if self.carla_status.fixed_delta_seconds:
+            fps = 1/self.carla_status.fixed_delta_seconds
         self._info_text = [
-            'Vehicle: % 20s' % ' '.join(self.vehicle_info.type.title().split('.')[1:]),
             'Frame: % 22s' % self.carla_status.frame,
             'Simulation time: % 12s' % datetime.timedelta(
                 seconds=int(rospy.get_rostime().to_sec())),
+            'FPS: % 24.1f' % fps,
             '',
+            'Vehicle: % 20s' % ' '.join(self.vehicle_info.type.title().split('.')[1:]),
             'Speed:   % 15.0f km/h' % (3.6 * self.vehicle_status.velocity),
             u'Heading:% 16.0f\N{DEGREE SIGN} % 2s' % (yaw, heading),
             'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (x, y)),
@@ -398,6 +407,7 @@ class HUD(object):
         self._info_text += [('Manual ctrl:', self.manual_control)]
         if self.carla_status.synchronous_mode:
             self._info_text += [('Sync mode running:', self.carla_status.synchronous_mode_running)]
+        self._info_text += ['', '', 'Press <H> for help']
 
     def toggle_info(self):
         """
