@@ -106,7 +106,7 @@ def carla_rotation_to_RPY(carla_rotation):
     :return: a tuple with 3 elements (roll, pitch, yaw)
     :rtype: tuple
     """
-    roll = -math.radians(carla_rotation.roll)
+    roll = math.radians(carla_rotation.roll)
     pitch = -math.radians(carla_rotation.pitch)
     yaw = -math.radians(carla_rotation.yaw)
 
@@ -225,7 +225,7 @@ def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, c
     """
     ros_twist = Twist()
     ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
-    ros_twist.angular.x = -math.radians(carla_angular_velocity.x)
+    ros_twist.angular.x = math.radians(carla_angular_velocity.x)
     ros_twist.angular.y = -math.radians(carla_angular_velocity.y)
     ros_twist.angular.z = -math.radians(carla_angular_velocity.z)
     return ros_twist
