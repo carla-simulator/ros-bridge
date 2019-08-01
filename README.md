@@ -50,7 +50,7 @@ http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 
 First run the simulator (see carla documentation: http://carla.readthedocs.io/en/latest/)
 
-    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240 -benchmark -fps=10
+    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240
 
 
 Wait for the message:
