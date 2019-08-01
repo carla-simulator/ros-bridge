@@ -50,7 +50,7 @@ http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
 
 First run the simulator (see carla documentation: http://carla.readthedocs.io/en/latest/)
 
-    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240 -benchmark -fps=10
+    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240
 
 
 Wait for the message:
@@ -255,6 +255,11 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 # Carla Ego Vehicle
 
 `carla_ego_vehicle` provides a generic way to spawn an ego vehicle and attach sensors to it. You can find further documentation [here](carla_ego_vehicle/README.md).
+
+
+# Carla Infrastructure Sensors
+
+`carla_infrastructure` provides a generic way to spawn a set of infrastructure sensors defined in a config file. You can find further documentation [here](carla_infrastructure/README.md).
 
 
 # Waypoint calculation
