@@ -475,6 +475,11 @@ def main():
 
         carla_world = carla_client.get_world()
 
+        carla_town = rospy.get_param('carla_town')
+        if carla_world.get_map().name !=  carla_town or carla_town == '':
+            carla_world = carla_client.load_world(carla_town)
+            carla_world.tick()
+
         carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
         carla_bridge.run()
     finally:
