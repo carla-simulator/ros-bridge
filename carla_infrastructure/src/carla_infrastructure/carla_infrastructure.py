@@ -24,7 +24,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 import carla
 
 # ==============================================================================
-# -- CarlaEgoVehicle ------------------------------------------------------------
+# -- CarlaInfrastructure ------------------------------------------------------------
 # ==============================================================================
 
 
@@ -32,8 +32,6 @@ class CarlaInfrastructure(object):
 
     """
     Handles the spawning of the infrastructure sensors
-
-    Derive from this class and implement method sensors()
     """
 
     def __init__(self):
@@ -46,7 +44,7 @@ class CarlaInfrastructure(object):
 
     def restart(self):
         """
-        (Re)spawns the infrastructure sensors
+        Spawns the infrastructure sensors
 
         :return:
         """
@@ -108,13 +106,6 @@ class CarlaInfrastructure(object):
             sensor = self.world.spawn_actor(bp, sensor_transform)
             actors.append(sensor)
         return actors
-
-    @abstractmethod
-    def sensors(self):
-        """
-        return a list of sensors attached
-        """
-        return []
 
     def destroy(self):
         """
