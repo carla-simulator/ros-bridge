@@ -1,0 +1,14 @@
+<!-- -->
+<launch>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+  <arg name="infrastructure_sensor_definition_file"/>
+
+  <param name="/carla/host" value="$(arg host)" />
+  <param name="/carla/port" value="$(arg port)" />
+
+  <node pkg="carla_infrastructure" type="carla_infrastructure.py" name="carla_infrastructure" output="screen">
+    <param name="infrastructure_sensor_definition_file" value="$(arg infrastructure_sensor_definition_file)" />
+  </node>
+</launch>
+

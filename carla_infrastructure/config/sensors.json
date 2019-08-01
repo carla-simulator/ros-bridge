@@ -1,0 +1,23 @@
+{
+    "sensors": [
+        {
+            "type": "sensor.camera.rgb",
+            "id": "camera01",
+            "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
+            "width": 800,
+            "height": 600,
+            "fov": 100
+        },
+        {
+            "type": "sensor.lidar.ray_cast",
+            "id": "lidar01",
+            "x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
+            "range": 5000,
+            "channels": 32,
+            "points_per_second": 320000,
+            "upper_fov": 2.0,
+            "lower_fov": -26.8,
+            "rotation_frequency": 20
+        }
+    ]
+}
