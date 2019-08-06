@@ -20,6 +20,7 @@ import json
 import rospy
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from carla_msgs.msg import CarlaWorldInfo
 
 import carla
 
@@ -121,6 +122,14 @@ class CarlaInfrastructure(object):
         """
         main loop
         """
+        # wait for ros-bridge to set up CARLA world
+        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        try:
+            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
+        except rospy.ROSException as e:
+            rospy.logerr("Timeout while waiting for world info!")
+            raise e
+        rospy.loginfo("CARLA world available. Spawn infrastructure...")
         client = carla.Client(self.host, self.port)
         client.set_timeout(2.0)
         self.world = client.get_world()
