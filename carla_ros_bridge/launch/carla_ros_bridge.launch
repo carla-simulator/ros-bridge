@@ -6,7 +6,7 @@
   <arg name='synchronous_mode' default=''/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default=''/>
   <arg name='fixed_delta_seconds' default=''/>
-  <arg name='carla_town' default='' />
+  <arg name='town' default=''/>
   <param name="rosbag_fname" value="$(arg rosbag_fname)"/>
   <rosparam file="$(find carla_ros_bridge)/config/settings.yaml" command="load" />
   <param name="carla/host" value="$(arg host)" unless="$(eval host == '')"/>
@@ -23,7 +23,10 @@
     name="carla/fixed_delta_seconds"
     value="$(arg fixed_delta_seconds)"
     unless="$(eval fixed_delta_seconds == '')"/>
-  <param name="carla_town" value="$(arg carla_town)" />
+  <param
+    name="carla/town"
+    value="$(arg town)"
+    unless="$(eval town == '')"/>
 
   <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen"/>
     

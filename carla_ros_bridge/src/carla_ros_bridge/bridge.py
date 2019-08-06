@@ -66,7 +66,6 @@ class CarlaRosBridge(object):
                 "CARLA version {} or newer required. CARLA version found: {}".format(
                     self.CARLA_VERSION, dist))
 
-        rospy.init_node("carla_bridge", anonymous=True)
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -471,6 +470,7 @@ def main():
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaBridge object
     """
+    rospy.init_node("carla_bridge", anonymous=True)
     parameters = rospy.get_param('carla')
     rospy.loginfo("Trying to connect to {host}:{port}".format(
         host=parameters['host'], port=parameters['port']))
@@ -486,9 +486,9 @@ def main():
 
         carla_world = carla_client.get_world()
 
-        carla_town = rospy.get_param('carla_town')
-        if carla_world.get_map().name != carla_town or carla_town == '':
-            carla_world = carla_client.load_world(carla_town)
+        if "town" in parameters and carla_world.get_map().name != parameters["town"]:
+            rospy.loginfo("Loading new town: {} (previous: {})".format(parameters["town"], carla_world.get_map().name))
+            carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 
         carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
