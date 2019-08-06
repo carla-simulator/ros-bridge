@@ -13,7 +13,7 @@ import unittest
 from std_msgs.msg import Header
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2
-from carla_msgs.msg import CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaMapInfo, CarlaActorList
+from carla_msgs.msg import CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo, CarlaActorList
 from geometry_msgs.msg import Quaternion, Vector3, Pose
 from nav_msgs.msg import Odometry
 from derived_object_msgs.msg import ObjectArray
@@ -109,10 +109,9 @@ class TestClock(unittest.TestCase):
         self.assertEqual(msg.color.g, 255.0)
         self.assertEqual(msg.color.b, 0.0)
 
-    def test_map(self):
+    def test_world_info(self):
         rospy.init_node('test_node', anonymous=True)
-        msg = rospy.wait_for_message("/carla/map", CarlaMapInfo, timeout=15)
-        self.assertEqual(msg.header.frame_id, "map")
+        msg = rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=15)
         self.assertNotEqual(len(msg.map_name), 0)
         self.assertNotEqual(len(msg.opendrive), 0)
 

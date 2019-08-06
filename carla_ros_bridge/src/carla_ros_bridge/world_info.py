@@ -12,14 +12,14 @@ Class to handle the carla map
 
 import rospy
 
-from carla_msgs.msg import CarlaMapInfo
+from carla_msgs.msg import CarlaWorldInfo
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
-class Map(PseudoActor):
+class WorldInfo(PseudoActor):
 
     """
-    Child implementation details for the map
+    Publish the map
     """
 
     def __init__(self, carla_world, communication):
@@ -32,9 +32,9 @@ class Map(PseudoActor):
         :type communication: carla_ros_bridge.communication
         """
 
-        super(Map, self).__init__(parent=None,
-                                  communication=communication,
-                                  prefix="map")
+        super(WorldInfo, self).__init__(parent=None,
+                                        communication=communication,
+                                        prefix="world_info")
 
         self.carla_map = carla_world.get_map()
 
@@ -49,21 +49,18 @@ class Map(PseudoActor):
 
         :return:
         """
-        rospy.logdebug("Destroying Map()")
+        rospy.logdebug("Destroying WorldInfo()")
         self.carla_map = None
-        super(Map, self).destroy()
+        super(WorldInfo, self).destroy()
 
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
 
-        On update map sends:
-        - tf global frame
-
         :return:
         """
         if not self.map_published:
-            open_drive_msg = CarlaMapInfo(header=self.get_msg_header("map"))
+            open_drive_msg = CarlaWorldInfo()
             open_drive_msg.map_name = self.carla_map.name
             open_drive_msg.opendrive = self.carla_map.to_opendrive()
             self.publish_message(self.get_topic_prefix(), open_drive_msg, is_latched=True)

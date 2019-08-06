@@ -27,7 +27,7 @@ from carla_ros_bridge.communication import Communication
 from carla_ros_bridge.sensor import Sensor
 
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from carla_ros_bridge.map import Map
+from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
@@ -130,9 +130,9 @@ class CarlaRosBridge(object):
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
-        # add map
-        self.pseudo_actors.append(Map(carla_world=self.carla_world,
-                                      communication=self.comm))
+        # add world info
+        self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
+                                            communication=self.comm))
 
         # add global object sensor
         self.pseudo_actors.append(ObjectSensor(parent=None,

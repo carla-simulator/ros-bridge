@@ -233,16 +233,10 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ### Status of CARLA
 
-|Topic         | Type |
-|--------------|------|
-| `/carla/status` | [carla_msgs.CarlaStatus](carla_msgs/msg/CarlaStatus.msg) |
-
-
-## Map
-
 |Topic         | Type | Description |
 |--------------|------|-------------|
-| `/carla/map` | [std_msgs.String](http://docs.ros.org/api/std_msgs/html/msg/String.html) | OPEN Drive map description |
+| `/carla/status` | [carla_msgs.CarlaStatus](carla_msgs/msg/CarlaStatus.msg) | |
+| `/carla/world_info` | [carla_msgs.CarlaWorldInfo](carla_msgs/msg/CarlaWorldInfo.msg) | Info about the CARLA world/level (e.g. OPEN Drive map) |
 
 
 ## Walker
