@@ -15,7 +15,9 @@ try:
 except ImportError:
     import Queue as queue
 
+from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
+import pkg_resources
 import rospy
 
 import carla
@@ -46,6 +48,8 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
+    CARLA_VERSION = "0.9.6"
+
     def __init__(self, carla_world, params):
         """
         Constructor
@@ -55,6 +59,13 @@ class CarlaRosBridge(object):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
+        # check CARLA version
+        dist = pkg_resources.get_distribution("carla")
+        if LooseVersion(dist.version) < LooseVersion(self.CARLA_VERSION):
+            raise ImportError(
+                "CARLA version {} or newer required. CARLA version found: {}".format(
+                    self.CARLA_VERSION, dist))
+
         rospy.init_node("carla_bridge", anonymous=True)
         self.parameters = params
         self.actors = {}
