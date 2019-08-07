@@ -23,6 +23,7 @@ import tf
 from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
+from carla_msgs.msg import CarlaWorldInfo
 
 import carla
 
@@ -176,10 +177,18 @@ def main():
     """
     rospy.init_node("carla_waypoint_publisher", anonymous=True)
 
+    # wait for ros-bridge to set up CARLA world
+    rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+    try:
+        rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
+    except rospy.ROSException as e:
+        rospy.logerr("Timeout while waiting for world info!")
+        raise e
+
     host = rospy.get_param("/carla/host", "127.0.0.1")
     port = rospy.get_param("/carla/port", 2000)
 
-    rospy.loginfo("Trying to connect to {host}:{port}".format(
+    rospy.loginfo("CARLA world available. Trying to connect to {host}:{port}".format(
         host=host, port=port))
 
     try:

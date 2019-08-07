@@ -1,5 +1,8 @@
 ## Latest changed
 
+* replace /carla/map (msg: CarlaMapInfo) by /carla/world_info (msg: CarlaWorldInfo)
+* added option to reload the CARLA world
+* added node to spawn infrastructure sensors
 * rename /carla/vehicle_marker to /carla/marker (and include walkers)
 * support walkers
 * create rqt plugin to control synchronous mode

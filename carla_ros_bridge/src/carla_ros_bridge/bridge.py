@@ -15,7 +15,9 @@ try:
 except ImportError:
     import Queue as queue
 
+from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
+import pkg_resources
 import rospy
 
 import carla
@@ -25,7 +27,7 @@ from carla_ros_bridge.communication import Communication
 from carla_ros_bridge.sensor import Sensor
 
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from carla_ros_bridge.map import Map
+from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
@@ -46,6 +48,8 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
+    CARLA_VERSION = "0.9.6"
+
     def __init__(self, carla_world, params):
         """
         Constructor
@@ -55,7 +59,13 @@ class CarlaRosBridge(object):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
-        rospy.init_node("carla_bridge", anonymous=True)
+        # check CARLA version
+        dist = pkg_resources.get_distribution("carla")
+        if LooseVersion(dist.version) < LooseVersion(self.CARLA_VERSION):
+            raise ImportError(
+                "CARLA version {} or newer required. CARLA version found: {}".format(
+                    self.CARLA_VERSION, dist))
+
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -119,9 +129,9 @@ class CarlaRosBridge(object):
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
-        # add map
-        self.pseudo_actors.append(Map(carla_world=self.carla_world,
-                                      communication=self.comm))
+        # add world info
+        self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
+                                            communication=self.comm))
 
         # add global object sensor
         self.pseudo_actors.append(ObjectSensor(parent=None,
@@ -460,6 +470,7 @@ def main():
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaBridge object
     """
+    rospy.init_node("carla_bridge", anonymous=True)
     parameters = rospy.get_param('carla')
     rospy.loginfo("Trying to connect to {host}:{port}".format(
         host=parameters['host'], port=parameters['port']))
@@ -474,6 +485,12 @@ def main():
         carla_client.set_timeout(2000)
 
         carla_world = carla_client.get_world()
+
+        if "town" in parameters and carla_world.get_map().name != parameters["town"]:
+            rospy.loginfo("Loading new town: {} (previous: {})".format(
+                parameters["town"], carla_world.get_map().name))
+            carla_world = carla_client.load_world(parameters["town"])
+            carla_world.tick()
 
         carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
         carla_bridge.run()

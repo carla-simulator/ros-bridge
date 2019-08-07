@@ -16,7 +16,6 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
-from __future__ import print_function
 
 from abc import abstractmethod
 
@@ -27,6 +26,7 @@ import json
 import rospy
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from carla_msgs.msg import CarlaWorldInfo
 
 import carla
 
@@ -57,7 +57,7 @@ class CarlaEgoVehicle(object):
         # check argument and set spawn_point
         spawn_point_param = rospy.get_param('~spawn_point')
         if spawn_point_param:
-            print("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
+            rospy.loginfo("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
             spawn_point = spawn_point_param.split(',')
             if len(spawn_point) != 6:
                 raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
@@ -236,6 +236,15 @@ class CarlaEgoVehicle(object):
         """
         main loop
         """
+        # wait for ros-bridge to set up CARLA world
+        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        try:
+            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
+        except rospy.ROSException as e:
+            rospy.logerr("Timeout while waiting for world info!")
+            raise e
+        rospy.loginfo("CARLA world available. Spawn ego vehicle...")
+
         client = carla.Client(self.host, self.port)
         client.set_timeout(2.0)
         self.world = client.get_world()
