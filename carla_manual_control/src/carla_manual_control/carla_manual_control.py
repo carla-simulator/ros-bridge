@@ -290,6 +290,7 @@ class HUD(object):
         self._show_info = True
         self._info_text = []
         self.vehicle_status = CarlaEgoVehicleStatus()
+        self.tf_listener = tf.TransformListener()
         self.vehicle_status_subscriber = rospy.Subscriber(
             "/carla/{}/vehicle_status".format(self.role_name), CarlaEgoVehicleStatus, self.vehicle_status_updated)
         self.vehicle_info = CarlaEgoVehicleInfo()
@@ -300,7 +301,6 @@ class HUD(object):
         self.manual_control = False
         self.gnss_subscriber = rospy.Subscriber(
             "/carla/{}/gnss/gnss1/fix".format(self.role_name), NavSatFix, self.gnss_updated)
-        self.tf_listener = tf.TransformListener()
         self.manual_control_subscriber = rospy.Subscriber(
             "/carla/{}/vehicle_control_manual_override".format(self.role_name), Bool, self.manual_control_override_updated)
 

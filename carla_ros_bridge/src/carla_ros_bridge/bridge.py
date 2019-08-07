@@ -487,7 +487,8 @@ def main():
         carla_world = carla_client.get_world()
 
         if "town" in parameters and carla_world.get_map().name != parameters["town"]:
-            rospy.loginfo("Loading new town: {} (previous: {})".format(parameters["town"], carla_world.get_map().name))
+            rospy.loginfo("Loading new town: {} (previous: {})".format(
+                parameters["town"], carla_world.get_map().name))
             carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 
