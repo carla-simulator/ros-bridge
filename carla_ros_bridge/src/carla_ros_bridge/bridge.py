@@ -39,6 +39,7 @@ from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.walker import Walker
+from carla_ros_bridge.debug_helper import DebugHelper
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl
 
 
@@ -138,6 +139,7 @@ class CarlaRosBridge(object):
                                                communication=self.comm,
                                                actor_list=self.actors,
                                                filtered_id=None))
+        self.debug_helper = DebugHelper(carla_world.debug)
 
     def destroy(self):
         """
@@ -146,6 +148,7 @@ class CarlaRosBridge(object):
         :return:
         """
         rospy.signal_shutdown("")
+        self.debug_helper.destroy()
         self.shutdown.set()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
