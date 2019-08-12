@@ -12,6 +12,8 @@ Classes to handle Carla pedestrians
 import rospy
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
 
 from carla_ros_bridge.actor import Actor
 from carla_msgs.msg import CarlaWalkerControl
@@ -71,6 +73,18 @@ class Walker(Actor):
         walker_control.jump = ros_walker_control.jump
         self.carla_actor.apply_control(walker_control)
 
+    def send_walker_msgs(self):
+        """
+        Sends messages related to walker status
+        :return:
+        """
+        odometry = Odometry(header=self.get_msg_header("map"))
+        odometry.child_frame_id = self.get_prefix()
+        odometry.pose.pose = self.get_current_ros_pose()
+        odometry.twist.twist = self.get_current_ros_twist()
+        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
+        
+        
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
@@ -85,6 +99,7 @@ class Walker(Actor):
         self.classification_age += 1
         self.publish_transform(self.get_ros_transform())
         self.publish_marker()
+        self.send_walker_msgs()
         super(Walker, self).update(frame, timestamp)
 
     def get_object_info(self):
