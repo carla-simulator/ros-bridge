@@ -227,7 +227,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 |Topic         | Type | Description |
 |--------------|------|-------------|
 | `/carla/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | all vehicles and walkers |
-| `/carla/marker` | [visualization_msgs.Maker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) | visualization of vehicles and walkers |
+| `/carla/marker` | [visualization_msgs.Marker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) | visualization of vehicles and walkers |
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg) | list of all carla actors |
 
 
@@ -244,6 +244,23 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 |Topic                                 | Type | Description |
 |--------------------------------------|------|-------------|
 | `/carla/<ROLE NAME>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](carla_msgs/msg/CarlaWalkerControl.msg) | Control a walker |
+
+## Debug Marker
+
+It is possible to draw markers in CARLA.
+
+Caution: Markers might affect the data published by sensors.
+
+The following markers are supported in 'map'-frame:
+
+ - Arrow (specified by two points)
+ - Points
+ - Cube
+ - Line Strip
+
+|Topic                                 | Type | Description |
+|--------------------------------------|------|-------------|
+| `/carla/debug_marker` (subscriber) | [visualization_msgs.MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) | draw markers in CARLA world |
 
 
 # Carla Ego Vehicle

@@ -1,5 +1,6 @@
 ## Latest changed
 
+* support drawing markers in CARLA
 * replace /carla/map (msg: CarlaMapInfo) by /carla/world_info (msg: CarlaWorldInfo)
 * added option to reload the CARLA world
 * added node to spawn infrastructure sensors
