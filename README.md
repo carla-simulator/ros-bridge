@@ -115,12 +115,6 @@ A [CARLA Control rqt plugin](rqt_carla_control/README.md) is available to publis
 
 ## Ego Vehicle
 
-### Odometry
-
-|Topic                          | Type |
-|-------------------------------|------|
-| `/carla/<ROLE NAME>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) |
-
 ### Sensors
 
 The ego vehicle sensors are provided via topics with prefix /carla/ego_vehicle/<sensor_topic>
@@ -243,7 +237,14 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 |Topic                                 | Type | Description |
 |--------------------------------------|------|-------------|
-| `/carla/<ROLE NAME>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](carla_msgs/msg/CarlaWalkerControl.msg) | Control a walker |
+| `/carla/walker/<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](carla_msgs/msg/CarlaWalkerControl.msg) | Control a walker |
+| `/carla/walker/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of walker |
+
+## Other Vehicles
+
+|Topic                                 | Type | Description |
+|--------------------------------------|------|-------------|
+| `/carla/vehicle/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
 
 ## Debug Marker
 
