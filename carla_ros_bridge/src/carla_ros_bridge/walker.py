@@ -13,7 +13,6 @@ import rospy
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
 
 from carla_ros_bridge.actor import Actor
 from carla_msgs.msg import CarlaWalkerControl
@@ -82,8 +81,7 @@ class Walker(Actor):
         odometry.child_frame_id = self.get_prefix()
         odometry.pose.pose = self.get_current_ros_pose()
         odometry.twist.twist = self.get_current_ros_twist()
-        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
-        
+        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)       
         
     def update(self, frame, timestamp):
         """
