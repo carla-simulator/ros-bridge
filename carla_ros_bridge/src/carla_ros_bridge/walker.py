@@ -81,8 +81,8 @@ class Walker(Actor):
         odometry.child_frame_id = self.get_prefix()
         odometry.pose.pose = self.get_current_ros_pose()
         odometry.twist.twist = self.get_current_ros_twist()
-        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)       
-        
+        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
