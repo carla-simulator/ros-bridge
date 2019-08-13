@@ -12,12 +12,11 @@ Classes to handle Carla vehicles
 
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
-from shape_msgs.msg import SolidPrimitive
 
-from carla_ros_bridge.actor import Actor
+from carla_ros_bridge.traffic_participant import TrafficParticipant
 
 
-class Vehicle(Actor):
+class Vehicle(TrafficParticipant):
 
     """
     Actor implementation details for vehicles
@@ -39,12 +38,7 @@ class Vehicle(Actor):
         if not prefix:
             prefix = "vehicle/{:03}".format(carla_actor.id)
 
-        super(Vehicle, self).__init__(carla_actor=carla_actor,
-                                      parent=parent,
-                                      communication=communication,
-                                      prefix=prefix)
-
-        self.classification = Object.CLASSIFICATION_UNKNOWN
+        self.classification = Object.CLASSIFICATION_CAR
         if carla_actor.attributes.has_key('object_type'):
             if carla_actor.attributes['object_type'] == 'car':
                 self.classification = Object.CLASSIFICATION_CAR
@@ -56,7 +50,11 @@ class Vehicle(Actor):
                 self.classification = Object.CLASSIFICATION_TRUCK
             elif carla_actor.attributes['object_type'] == 'other':
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
-        self.classification_age = 0
+
+        super(Vehicle, self).__init__(carla_actor=carla_actor,
+                                      parent=parent,
+                                      communication=communication,
+                                      prefix=prefix)
 
     def update(self, frame, timestamp):
         """
@@ -69,7 +67,6 @@ class Vehicle(Actor):
 
         :return:
         """
-        self.classification_age += 1
         self.publish_transform(self.get_ros_transform())
         self.publish_marker()
         super(Vehicle, self).update(frame, timestamp)
@@ -87,36 +84,9 @@ class Vehicle(Actor):
         color.b = 0
         return color
 
-    def get_object_info(self):
+    def get_classification(self):
         """
-        Function to send object messages of this vehicle.
-
-        A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
-
+        Function (override) to get classification
         :return:
         """
-        vehicle_object = Object(header=self.get_msg_header("map"))
-        # ID
-        vehicle_object.id = self.get_id()
-        # Pose
-        vehicle_object.pose = self.get_current_ros_pose()
-        # Twist
-        vehicle_object.twist = self.get_current_ros_twist()
-        # Acceleration
-        vehicle_object.accel = self.get_current_ros_accel()
-        # Shape
-        vehicle_object.shape.type = SolidPrimitive.BOX
-        vehicle_object.shape.dimensions.extend([
-            self.carla_actor.bounding_box.extent.x * 2.0,
-            self.carla_actor.bounding_box.extent.y * 2.0,
-            self.carla_actor.bounding_box.extent.z * 2.0])
-
-        # Classification if available in attributes
-        if self.classification != Object.CLASSIFICATION_UNKNOWN:
-            vehicle_object.object_classified = True
-            vehicle_object.classification = self.classification
-            vehicle_object.classification_certainty = 1.0
-            self.classification_age += 1
-            vehicle_object.classification_age = self.classification_age
-
-        return vehicle_object
+        return self.classification

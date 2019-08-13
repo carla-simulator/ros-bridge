@@ -1,5 +1,6 @@
 ## Latest changed
 
+* publish odometry for all traffic participants
 * support drawing markers in CARLA
 * replace /carla/map (msg: CarlaMapInfo) by /carla/world_info (msg: CarlaWorldInfo)
 * added option to reload the CARLA world

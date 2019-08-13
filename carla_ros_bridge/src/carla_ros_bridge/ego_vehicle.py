@@ -14,7 +14,6 @@ import numpy
 
 import rospy
 
-from nav_msgs.msg import Odometry
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
@@ -148,14 +147,6 @@ class EgoVehicle(Vehicle):
             vehicle_info.center_of_mass.z = vehicle_physics.center_of_mass.z
 
             self.publish_message(self.get_topic_prefix() + "/vehicle_info", vehicle_info, True)
-
-        # @todo: do we still need this?
-        odometry = Odometry(header=self.get_msg_header("map"))
-        odometry.child_frame_id = self.get_prefix()
-        odometry.pose.pose = self.get_current_ros_pose()
-        odometry.twist.twist = self.get_current_ros_twist()
-
-        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
 
     def update(self, frame, timestamp):
         """
