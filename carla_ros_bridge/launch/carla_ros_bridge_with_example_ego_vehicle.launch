@@ -2,7 +2,7 @@
 <launch>
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
-  <arg name='ego_vehicle_name' default='ego_vehicle'/>
+  <arg name='role_name' default='ego_vehicle'/>
   <arg name="vehicle_filter" default='vehicle.*'/>
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
   <arg name="spawn_point" default=""/>
@@ -18,12 +18,12 @@
     <arg name='host' value='$(arg host)'/>
     <arg name='port' value='$(arg port)'/>
     <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
-    <arg name='role_name' value='$(arg ego_vehicle_name)'/>
+    <arg name='role_name' value='$(arg role_name)'/>
     <arg name="spawn_point" value="$(arg spawn_point)"/>
   </include>
 
   <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
-    <arg name='role_name' value='$(arg ego_vehicle_name)'/>
+    <arg name='role_name' value='$(arg role_name)'/>
   </include>
 
 </launch>
