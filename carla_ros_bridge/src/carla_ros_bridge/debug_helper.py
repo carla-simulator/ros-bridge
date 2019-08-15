@@ -13,6 +13,8 @@ import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 import carla
 
+from tf.transformations import euler_from_quaternion
+
 
 class DebugHelper(object):
 
@@ -86,9 +88,9 @@ class DebugHelper(object):
             thickness = marker.scale.x
             arrow_size = marker.scale.y
             start = carla.Location(
-                x=marker.points[0].x, y=marker.points[0].y, z=marker.points[0].z)
+                x=marker.points[0].x, y=-marker.points[0].y, z=marker.points[0].z)
             end = carla.Location(
-                x=marker.points[1].x, y=marker.points[1].y, z=marker.points[1].z)
+                x=marker.points[1].x, y=-marker.points[1].y, z=marker.points[1].z)
             rospy.loginfo("Draw Arrow from {} to {} (color: {}, lifetime: {}, "
                           "thickness: {}, arrow_size: {})".format(
                               start, end, color, lifetime, thickness, arrow_size))
@@ -110,7 +112,7 @@ class DebugHelper(object):
         draw points from ros marker
         """
         for point in marker.points:
-            location = carla.Location(x=point.x, y=point.y, z=point.z)
+            location = carla.Location(x=point.x, y=-point.y, z=point.z)
             size = marker.scale.x
             rospy.loginfo("Draw Point {} (color: {}, lifetime: {}, size: {})".format(
                 location, color, lifetime, size))
@@ -129,8 +131,8 @@ class DebugHelper(object):
         thickness = marker.scale.x
         for point in marker.points:
             if last_point:
-                start = carla.Location(x=last_point.x, y=last_point.y, z=last_point.z)
-                end = carla.Location(x=point.x, y=point.y, z=point.z)
+                start = carla.Location(x=last_point.x, y=-last_point.y, z=last_point.z)
+                end = carla.Location(x=point.x, y=-point.y, z=point.z)
                 rospy.loginfo(
                     "Draw Line from {} to {} (color: {}, lifetime: {}, "
                     "thickness: {})".format(
@@ -148,16 +150,22 @@ class DebugHelper(object):
         """
         box = carla.BoundingBox()
         box.location.x = marker.pose.position.x
-        box.location.y = marker.pose.position.y
+        box.location.y = -marker.pose.position.y
         box.location.z = marker.pose.position.z
         box.extent.x = marker.scale.x / 2
         box.extent.y = marker.scale.y / 2
         box.extent.z = marker.scale.z / 2
 
+        roll, pitch, yaw = euler_from_quaternion([
+            marker.pose.orientation.x,
+            marker.pose.orientation.y,
+            marker.pose.orientation.z,
+            marker.pose.orientation.w
+        ])
         rotation = carla.Rotation()
-        rotation.roll = math.radians(marker.pose.orientation.x)
-        rotation.pitch = math.radians(marker.pose.orientation.y)
-        rotation.yaw = math.radians(marker.pose.orientation.z)
+        rotation.roll = math.degrees(roll)
+        rotation.pitch = math.degrees(pitch)
+        rotation.yaw = -math.degrees(yaw)
         rospy.loginfo("Draw Box {} (rotation: {}, color: {}, lifetime: {})".format(
             box, rotation, color, lifetime))
         self.debug.draw_box(box, rotation, thickness=0.1, color=color, life_time=lifetime)
