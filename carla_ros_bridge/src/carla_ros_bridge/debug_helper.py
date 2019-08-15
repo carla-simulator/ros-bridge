@@ -11,9 +11,8 @@ Class to draw marker
 import math
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
-import carla
-
 from tf.transformations import euler_from_quaternion
+import carla
 
 
 class DebugHelper(object):
