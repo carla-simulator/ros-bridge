@@ -19,6 +19,8 @@
   <exec_depend>pcl_ros</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>rostopic</exec_depend>
+  <exec_depend>carla_ros_bridge</exec_depend>
   <export>
   </export>
 </package>
