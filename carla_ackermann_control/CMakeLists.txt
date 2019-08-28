@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   ackermann_msgs
   dynamic_reconfigure
   carla_msgs
+  roslaunch
 )
 
 catkin_python_setup()
@@ -31,6 +32,8 @@ generate_messages(
 generate_dynamic_reconfigure_options(
   config/EgoVehicleControlParameter.cfg
 )
+
+roslaunch_add_file_check(launch)
 
 catkin_package()
 

@@ -8,6 +8,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
   <build_depend>rqt_gui_py</build_depend>
+  <build_depend>roslaunch</build_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <export>
