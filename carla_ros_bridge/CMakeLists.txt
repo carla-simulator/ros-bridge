@@ -8,12 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   derived_object_msgs
   tf
+  roslaunch
 )
 
 catkin_python_setup()
 
 catkin_package()
 
+roslaunch_add_file_check(launch)
 
 include_directories(
    ${catkin_INCLUDE_DIRS}

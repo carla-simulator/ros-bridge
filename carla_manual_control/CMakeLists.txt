@@ -3,9 +3,12 @@ project(carla_manual_control)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roslaunch
 )
 
 catkin_python_setup()
+
+roslaunch_add_file_check(launch)
 
 catkin_package(
   CATKIN_DEPENDS

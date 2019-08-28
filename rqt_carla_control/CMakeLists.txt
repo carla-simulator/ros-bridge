@@ -4,9 +4,12 @@ project(rqt_carla_control)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   rqt_gui_py
+  roslaunch
 )
 
 catkin_python_setup()
+
+roslaunch_add_file_check(launch)
 
 catkin_package(
         CATKIN_DEPENDS
