@@ -24,6 +24,8 @@
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>carla_msgs</exec_depend>
+  <exec_depend>carla_ego_vehicle</exec_depend>
+  <exec_depend>carla_manual_control</exec_depend>
   <export>
   </export>
 </package>
