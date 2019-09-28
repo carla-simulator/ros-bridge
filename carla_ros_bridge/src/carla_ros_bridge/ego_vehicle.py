@@ -159,18 +159,20 @@ class EgoVehicle(Vehicle):
         vehicle_ang_vel_wrt_world_carla = self.carla_actor.get_angular_velocity()
         vehicle_orientation_wrt_world_carla = self.carla_actor.get_transform().rotation
 
-        vehicle_orientation_wrt_world_ros = transforms.carla_rotation_to_ros_quaternion(vehicle_orientation_wrt_world_carla)
-        tmp_twist = transforms.carla_velocity_to_ros_twist(vehicle_acc_wrt_world_carla, vehicle_ang_vel_wrt_world_carla, vehicle_orientation_wrt_world_carla)
-        vehicle_acc_wrt_body_ros , vehicle_ang_vel_wrt_body_ros = tmp_twist.linear, tmp_twist.angular
+        vehicle_orientation_wrt_world_ros = transforms.carla_rotation_to_ros_quaternion(
+            vehicle_orientation_wrt_world_carla)
+        tmp_twist = transforms.carla_velocity_to_ros_twist(
+            vehicle_acc_wrt_world_carla, vehicle_ang_vel_wrt_world_carla, vehicle_orientation_wrt_world_carla)
+        vehicle_acc_wrt_body_ros, vehicle_ang_vel_wrt_body_ros = tmp_twist.linear, tmp_twist.angular
 
         imu_info = Imu(header=self.get_msg_header())
-        imu_info.header.frame_id = self.get_frame_id()
+        imu_info.header.frame_id = self.get_prefix()
         imu_info.orientation = vehicle_orientation_wrt_world_ros
         imu_info.angular_velocity = vehicle_ang_vel_wrt_body_ros
         imu_info.linear_acceleration = vehicle_acc_wrt_body_ros
         imu_info.linear_acceleration.z += 9.8
 
-        self.publish_ros_message(self.topic_name() + "/imu", imu_info)
+        self.publish_message(self.get_topic_prefix() + "/imu", imu_info)
 
     def update(self, frame, timestamp):
         """
