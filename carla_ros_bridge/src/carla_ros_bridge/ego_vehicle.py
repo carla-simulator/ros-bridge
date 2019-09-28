@@ -17,6 +17,7 @@ import rospy
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import Imu
 
 from carla import VehicleControl
 from carla import Vector3D
@@ -148,6 +149,29 @@ class EgoVehicle(Vehicle):
 
             self.publish_message(self.get_topic_prefix() + "/vehicle_info", vehicle_info, True)
 
+    def send_imu_msgs(self):
+        """
+        send imu messages with respect to ego_vehicle frame
+
+        :return:
+        """
+        vehicle_acc_wrt_world_carla = self.carla_actor.get_acceleration()
+        vehicle_ang_vel_wrt_world_carla = self.carla_actor.get_angular_velocity()
+        vehicle_orientation_wrt_world_carla = self.carla_actor.get_transform().rotation
+
+        vehicle_orientation_wrt_world_ros = transforms.carla_rotation_to_ros_quaternion(vehicle_orientation_wrt_world_carla)
+        tmp_twist = transforms.carla_velocity_to_ros_twist(vehicle_acc_wrt_world_carla, vehicle_ang_vel_wrt_world_carla, vehicle_orientation_wrt_world_carla)
+        vehicle_acc_wrt_body_ros , vehicle_ang_vel_wrt_body_ros = tmp_twist.linear, tmp_twist.angular
+
+        imu_info = Imu(header=self.get_msg_header())
+        imu_info.header.frame_id = self.get_frame_id()
+        imu_info.orientation = vehicle_orientation_wrt_world_ros
+        imu_info.angular_velocity = vehicle_ang_vel_wrt_body_ros
+        imu_info.linear_acceleration = vehicle_acc_wrt_body_ros
+        imu_info.linear_acceleration.z += 9.8
+
+        self.publish_ros_message(self.topic_name() + "/imu", imu_info)
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
@@ -157,6 +181,7 @@ class EgoVehicle(Vehicle):
         :return:
         """
         self.send_vehicle_msgs()
+        self.send_imu_msgs()
         super(EgoVehicle, self).update(frame, timestamp)
 
     def destroy(self):
