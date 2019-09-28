@@ -162,7 +162,8 @@ class EgoVehicle(Vehicle):
         vehicle_orientation_wrt_world_ros = transforms.carla_rotation_to_ros_quaternion(
             vehicle_orientation_wrt_world_carla)
         tmp_twist = transforms.carla_velocity_to_ros_twist(
-            vehicle_acc_wrt_world_carla, vehicle_ang_vel_wrt_world_carla, vehicle_orientation_wrt_world_carla)
+            vehicle_acc_wrt_world_carla, vehicle_ang_vel_wrt_world_carla,
+            vehicle_orientation_wrt_world_carla)
         vehicle_acc_wrt_body_ros, vehicle_ang_vel_wrt_body_ros = tmp_twist.linear, tmp_twist.angular
 
         imu_info = Imu(header=self.get_msg_header())
