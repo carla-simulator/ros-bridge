@@ -1,4 +1,4 @@
-ARG CARLA_VERSION='0.9.4'
+ARG CARLA_VERSION='0.9.6'
 ARG CARLA_BUILD=''
 
 FROM carlasim/carla:$CARLA_VERSION$CARLA_BUILD as carla
@@ -20,7 +20,7 @@ RUN apt-get update \
 ARG CARLA_VERSION
 
 COPY --from=carla --chown=root /home/carla/PythonAPI /opt/carla/PythonAPI
-ENV PYTHONPATH=/opt/carla/PythonAPI/carla-$CARLA_VERSION-py2.7-linux-x86_64.egg:/opt/carla/PythonAPI/carla
+RUN python -m easy_install /opt/carla/PythonAPI/carla/dist/carla-$CARLA_VERSION-py2.7-linux-x86_64.egg
 
 COPY carla_ackermann_control /opt/carla-ros-bridge/src/carla_ackermann_control
 COPY carla_ego_vehicle /opt/carla-ros-bridge/src/carla_ego_vehicle
