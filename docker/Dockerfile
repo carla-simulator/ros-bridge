@@ -14,6 +14,7 @@ RUN apt-get update \
     ros-kinetic-cv-bridge \
     ros-kinetic-pcl-conversions \
     ros-kinetic-pcl-ros \
+    python-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 
 ARG CARLA_VERSION
@@ -30,7 +31,7 @@ COPY carla_ros_bridge /opt/carla-ros-bridge/src/carla_ros_bridge
 COPY carla_waypoint_publisher /opt/carla-ros-bridge/src/carla_waypoint_publisher
 COPY pcl_recorder /opt/carla-ros-bridge/src/pcl_recorder
 
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /opt/carla-ros-bridge; catkin_make -DCMAKE_BUILD_TYPE=Release install'
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /opt/carla-ros-bridge; catkin config --install; catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release'
 
 # replace entrypoint
 COPY ./docker/content/ros_entrypoint.sh /
