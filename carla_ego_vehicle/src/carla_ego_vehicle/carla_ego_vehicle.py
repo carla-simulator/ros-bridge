@@ -56,7 +56,7 @@ class CarlaEgoVehicle(object):
         self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
         # check argument and set spawn_point
         spawn_point_param = rospy.get_param('~spawn_point')
-        if spawn_point_param:
+        if spawn_point_param and rospy.get_param('~spawn_ego_vehicle'):
             rospy.loginfo("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
             spawn_point = spawn_point_param.split(',')
             if len(spawn_point) != 6:
@@ -108,40 +108,48 @@ class CarlaEgoVehicle(object):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
         # Spawn the vehicle.
-        if self.actor_spawnpoint:
-            spawn_point = carla.Transform()
-            spawn_point.location.x = self.actor_spawnpoint.position.x
-            spawn_point.location.y = -self.actor_spawnpoint.position.y
-            spawn_point.location.z = self.actor_spawnpoint.position.z + 2  # spawn 2m above ground
-            quaternion = (
-                self.actor_spawnpoint.orientation.x,
-                self.actor_spawnpoint.orientation.y,
-                self.actor_spawnpoint.orientation.z,
-                self.actor_spawnpoint.orientation.w
-            )
-            _, _, yaw = euler_from_quaternion(quaternion)
-            spawn_point.rotation.yaw = -math.degrees(yaw)
-            rospy.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,
-                                                                     spawn_point.location.x,
-                                                                     spawn_point.location.y,
-                                                                     spawn_point.location.z,
-                                                                     spawn_point.rotation.yaw))
-            if self.player is not None:
-                self.destroy()
-            while self.player is None:
-                self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+        if not rospy.get_param('~spawn_ego_vehicle'):
+            actors = self.world.get_actors().filter(self.actor_filter)
+            for actor in actors:
+                if actor.attributes['role_name'] == self.role_name:
+                    self.player = actor
+                    break
         else:
-            if self.player is not None:
-                spawn_point = self.player.get_transform()
-                spawn_point.location.z += 2.0
-                spawn_point.rotation.roll = 0.0
-                spawn_point.rotation.pitch = 0.0
-                self.destroy()
-                self.player = self.world.try_spawn_actor(blueprint, spawn_point)
-            while self.player is None:
-                spawn_points = self.world.get_map().get_spawn_points()
-                spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
-                self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            if self.actor_spawnpoint:
+                spawn_point = carla.Transform()
+                spawn_point.location.x = self.actor_spawnpoint.position.x
+                spawn_point.location.y = -self.actor_spawnpoint.position.y
+                spawn_point.location.z = self.actor_spawnpoint.position.z + \
+                    2  # spawn 2m above ground
+                quaternion = (
+                    self.actor_spawnpoint.orientation.x,
+                    self.actor_spawnpoint.orientation.y,
+                    self.actor_spawnpoint.orientation.z,
+                    self.actor_spawnpoint.orientation.w
+                )
+                _, _, yaw = euler_from_quaternion(quaternion)
+                spawn_point.rotation.yaw = -math.degrees(yaw)
+                rospy.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,
+                                                                         spawn_point.location.x,
+                                                                         spawn_point.location.y,
+                                                                         spawn_point.location.z,
+                                                                         spawn_point.rotation.yaw))
+                if self.player is not None:
+                    self.destroy()
+                while self.player is None:
+                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+            else:
+                if self.player is not None:
+                    spawn_point = self.player.get_transform()
+                    spawn_point.location.z += 2.0
+                    spawn_point.rotation.roll = 0.0
+                    spawn_point.rotation.pitch = 0.0
+                    self.destroy()
+                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+                while self.player is None:
+                    spawn_points = self.world.get_map().get_spawn_points()
+                    spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
 
         # Read sensors from file
         if not os.path.exists(self.sensor_definition_file):
