@@ -9,8 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-roslaunch_add_file_check(launch)
-
 catkin_package(
         CATKIN_DEPENDS
         rospy
