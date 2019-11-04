@@ -17,6 +17,12 @@ The preferred way of doing that is using RVIZ:
 
 Selecting a Pose with '2D Pose Estimate' will delete the current ego_vehicle and respawn it at the specified position.
 
+### Re-use existing vehicle as ego-vehicle
+
+It is possible to re-use an existing vehicle as ego-vehicle, instead of spawning a new vehicle. In this case, the role_name is used to identify the vehicle
+among all CARLA actors through the rolename attribute. Upon success, the requested sensors are attached to this actor, and the actor becomes the new ego vehicle.
+
+To make use of this option, set the ROS parameter spawn_ego_vehicle to false.
 
 ### Create your own sensor setup
 
@@ -38,4 +44,3 @@ The format is defined like that:
 Define sensors with their attributes as described in the Carla Documentation about [Cameras and Sensors](https://github.com/carla-simulator/carla/blob/master/Docs/cameras_and_sensors.md).
 
 An example is provided by [carla_example_ego_vehicle.launch](launch/carla_example_ego_vehicle.launch). It uses the sensors from [sensors.json](config/sensors.json)
-

@@ -8,6 +8,7 @@
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
   <arg name="spawn_point" default=""/>
   <arg name="remap_rviz_initialpose_goal" default="True"/>
+  <arg name="spawn_ego_vehicle" default="True" />
 
   <param name="/carla/host" value="$(arg host)" />
   <param name="/carla/port" value="$(arg port)" />
@@ -27,6 +28,7 @@
     <param name="vehicle_filter" value="$(arg vehicle_filter)" />
     <param name="spawn_point" value="$(arg spawn_point)" />
     <param name="role_name" value="$(arg role_name)" />
+    <param name="spawn_ego_vehicle" value="$(arg spawn_ego_vehicle)" />
   </node>
 </launch>
 
