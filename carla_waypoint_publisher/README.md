@@ -15,7 +15,7 @@ have to extend your PYTHONPATH.
 
 To run it:
 
-    roslaunch carla_waypoint_publisher carla_ros_waypoint_publisher.launch
+    roslaunch carla_waypoint_publisher carla_waypoint_publisher.launch
 
 
 ## Set a goal
