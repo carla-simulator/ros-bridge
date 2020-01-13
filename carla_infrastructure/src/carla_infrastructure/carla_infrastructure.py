@@ -97,6 +97,10 @@ class CarlaInfrastructure(object):
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation()
+                elif sensor_spec['type'].startswith('sensor.other.imu'):
+                    sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
+                                                     z=sensor_spec['z'])
+                    sensor_rotation = carla.Rotation()
             except KeyError as e:
                 rospy.logfatal(
                     "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))
