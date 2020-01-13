@@ -68,8 +68,8 @@ class TestClock(unittest.TestCase):
     def test_imu(self):
         rospy.init_node('test_node', anonymous=True)
         print("testing  for ros bridge")
-        msg = rospy.wait_for_message("/carla/ego_vehicle/imu/imu1/imu_info", Imu, timeout=15)
-        self.assertEqual(msg.header.frame_id, "ego_vehicle/imu/imu1")
+        msg = rospy.wait_for_message("/carla/ego_vehicle/imu", Imu, timeout=15)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/imu")
         self.assertNotEqual(msg.linear_acceleration, 0.0)
         self.assertNotEqual(msg.angular_velocity, 0.0)
         self.assertNotEqual(msg.orientation, 0.0)
