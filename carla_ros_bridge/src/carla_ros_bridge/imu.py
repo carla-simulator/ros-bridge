@@ -37,15 +37,15 @@ class ImuSensor(Sensor):
                                         parent=parent,
                                         communication=communication,
                                         synchronous_mode=synchronous_mode,
-                                        prefix="imu/")
+                                        prefix="imu")
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
         """
-        Function to transform a recieved imu measurement into a ROS Imu message
+        Function to transform a received imu measurement into a ROS Imu message
 
         :param carla_imu_measurement: carla imu measurement object
-        :type carla_imu_measurement: carla.ImuMeasurement
+        :type carla_imu_measurement: carla.IMUMeasurement
         """
         imu_msg = Imu()
         imu_msg.header = self.get_msg_header(timestamp=carla_imu_measurement.timestamp)
