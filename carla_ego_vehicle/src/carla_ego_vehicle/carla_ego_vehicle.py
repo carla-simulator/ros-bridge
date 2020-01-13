@@ -208,9 +208,18 @@ class CarlaEgoVehicle(object):
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation()
                 elif sensor_spec['type'].startswith('sensor.other.imu'):
-                    sensor_location = carla.Location(x=sensor_spec['y'], y=sensor_spec['y'],
+                    sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
-                    sensor_rotation = carla.Rotation()
+                    sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],
+                                                     roll=sensor_spec['roll'],
+                                                     yaw=sensor_spec['yaw'])
+                    bp.set_attribute('noise_accel_stddev_x',  str(sensor_spec['noise_accel_stddev_x']))
+                    bp.set_attribute('noise_accel_stddev_y',  str(sensor_spec['noise_accel_stddev_y']))
+                    bp.set_attribute('noise_accel_stddev_z',  str(sensor_spec['noise_accel_stddev_z']))
+
+                    bp.set_attribute('noise_gyro_stddev_x', str(sensor_spec['noise_gyro_stddev_x']))
+                    bp.set_attribute('noise_gyro_stddev_y', str(sensor_spec['noise_gyro_stddev_y']))
+                    bp.set_attribute('noise_gyro_stddev_z', str(sensor_spec['noise_gyro_stddev_z']))
             except KeyError as e:
                 rospy.logfatal(
                     "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))

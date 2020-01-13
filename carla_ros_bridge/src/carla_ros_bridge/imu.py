@@ -6,7 +6,10 @@
 """
 Classes to handle Carla imu sensor
 """
+import math
+
 import tf
+
 from sensor_msgs.msg import Imu
 
 from carla_ros_bridge.sensor import Sensor
@@ -34,7 +37,7 @@ class ImuSensor(Sensor):
                                         parent=parent,
                                         communication=communication,
                                         synchronous_mode=synchronous_mode,
-                                        prefix="imu/" + carla_actor.attributes.get('role_name'))
+                                        prefix="imu/")
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
@@ -55,8 +58,11 @@ class ImuSensor(Sensor):
         imu_msg.linear_acceleration.y = carla_imu_measurement.accelerometer.y
         imu_msg.linear_acceleration.z = carla_imu_measurement.accelerometer.z
 
-        quat = tf.transformations.quaternion_from_euler(0, 0, carla_imu_measurement.compass)
+        imu_rotation = carla_imu_measurement.transform.rotation
 
+        quat = tf.transformations.quaternion_from_euler(math.radians(imu_rotation.roll),
+                                                        math.radians(imu_rotation.pitch),
+                                                        math.radians(imu_rotation.yaw))
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
         self.publish_message(
-            self.get_topic_prefix() + "/imu_info", imu_msg)
+            self.get_topic_prefix(), imu_msg)
