@@ -47,9 +47,9 @@ class ImuSensor(Sensor):
         imu_msg = Imu()
         imu_msg.header = self.get_msg_header(timestamp=carla_imu_measurement.timestamp)
 
-        imu_msg.angular_velocity.x =  carla_imu_measurement.gyroscope.x
-        imu_msg.angular_velocity.y =  carla_imu_measurement.gyroscope.y
-        imu_msg.angular_velocity.z =  carla_imu_measurement.gyroscope.z
+        imu_msg.angular_velocity.x = carla_imu_measurement.gyroscope.x
+        imu_msg.angular_velocity.y = carla_imu_measurement.gyroscope.y
+        imu_msg.angular_velocity.z = carla_imu_measurement.gyroscope.z
 
         imu_msg.linear_acceleration.x = carla_imu_measurement.accelerometer.x
         imu_msg.linear_acceleration.y = carla_imu_measurement.accelerometer.y

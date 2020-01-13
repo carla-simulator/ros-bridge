@@ -71,7 +71,7 @@ class TestClock(unittest.TestCase):
         msg = rospy.wait_for_message("/carla/ego_vehicle/imu/imu1/imu_info", Imu, timeout=15)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/imu/imu1")
         self.assertNotEqual(msg.linear_acceleration, 0.0)
-        self.assertNotEqual(msg.angular_velocity,  0.0)
+        self.assertNotEqual(msg.angular_velocity, 0.0)
         self.assertNotEqual(msg.orientation, 0.0)
 
     def test_camera_info(self):

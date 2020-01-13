@@ -384,7 +384,8 @@ class CarlaRosBridge(object):
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
                 actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
-                actor = ImuSensor(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = ImuSensor(
+                    carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.collision"):
                 actor = CollisionSensor(
                     carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
