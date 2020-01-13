@@ -12,7 +12,7 @@ import rostest
 import unittest
 from std_msgs.msg import Header
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2
+from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2, Imu
 from carla_msgs.msg import CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo, CarlaActorList
 from geometry_msgs.msg import Quaternion, Vector3, Pose
 from nav_msgs.msg import Odometry
@@ -64,6 +64,15 @@ class TestClock(unittest.TestCase):
         self.assertNotEqual(msg.latitude, 0.0)
         self.assertNotEqual(msg.longitude, 0.0)
         self.assertNotEqual(msg.altitude, 0.0)
+
+    def test_imu(self):
+        rospy.init_node('test_node', anonymous=True)
+        print("testing  for ros bridge")
+        msg = rospy.wait_for_message("/carla/ego_vehicle/imu/imu1/imu_info", Imu, timeout=15)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/imu/imu1")
+        self.assertNotEqual(msg.linear_acceleration, 0.0)
+        self.assertNotEqual(msg.angular_velocity,  0.0)
+        self.assertNotEqual(msg.orientation, 0.0)
 
     def test_camera_info(self):
         rospy.init_node('test_node', anonymous=True)

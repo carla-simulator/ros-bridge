@@ -36,6 +36,11 @@
             "x": 1.0, "y": 0.0, "z": 2.0
         },
         {
+            "type": "sensor.other.imu",
+            "id": "imu1",
+            "x": 0.0, "y": 0.0, "z": 0.0
+        },
+        {
             "type": "sensor.other.collision",
             "id": "collision1",
             "x": 0.0, "y": 0.0, "z": 0.0
