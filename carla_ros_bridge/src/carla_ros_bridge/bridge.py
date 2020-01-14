@@ -32,6 +32,7 @@ from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.lidar import Lidar
+from carla_ros_bridge.radar import Radar
 from carla_ros_bridge.gnss import Gnss
 from carla_ros_bridge.imu import ImuSensor
 from carla_ros_bridge.ego_vehicle import EgoVehicle
@@ -381,6 +382,8 @@ class CarlaRosBridge(object):
                         carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+            elif carla_actor.type_id.startswith("sensor.other.radar"):
+                actor = Radar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
                 actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
