@@ -18,6 +18,7 @@ from geometry_msgs.msg import Quaternion, Vector3, Pose
 from nav_msgs.msg import Odometry
 from derived_object_msgs.msg import ObjectArray
 from visualization_msgs.msg import Marker
+from ainstein_radar_msgs.msg import RadarTargetArray
 
 class TestClock(unittest.TestCase):
     def test_clock(self):
@@ -93,6 +94,11 @@ class TestClock(unittest.TestCase):
         rospy.init_node('test_node', anonymous=True)
         msg = rospy.wait_for_message("/carla/ego_vehicle/lidar/lidar1/point_cloud", PointCloud2, timeout=15)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/lidar/lidar1")
+
+    def test_radar(self):
+        rospy.init_node('test_node', anonymous=True)
+        msg = rospy.wait_for_message("/carla/ego_vehicle/radar/front/radar", RadarTargetArray, timeout=15)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/radar/front")
 
     def test_ego_vehicle_objects(self):
         rospy.init_node('test_node', anonymous=True)

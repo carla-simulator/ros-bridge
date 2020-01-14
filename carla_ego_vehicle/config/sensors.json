@@ -31,6 +31,15 @@
             "sensor_tick": 0.05
         },
         {
+            "type": "sensor.other.radar",
+            "id": "front",
+            "x": 2.0, "y": 0.0, "z": 1.5, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
+            "horizontal_fov": 30.0,
+            "vertical_fov": 10.0,
+            "points_per_second": 1500,
+            "range": 100.0
+        },
+        {
             "type": "sensor.other.gnss",
             "id": "gnss1",
             "x": 1.0, "y": 0.0, "z": 2.0
