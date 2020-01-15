@@ -134,11 +134,25 @@ Currently the following sensors are supported:
 |--------------------------------------|------|
 | `/carla/<ROLE NAME>/lidar/<SENSOR ROLE NAME>/point_cloud` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
+#### Radar
+
+|Topic                                 | Type |
+|--------------------------------------|------|
+|  `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` |  [ainstein_radar_msgs.RadarTargetArray](https://github.com/AinsteinAI/ainstein_radar/blob/master/ainstein_radar_msgs/msg/RadarTargetArray.msg) |
+
+Radar data can be visualized on rviz using [ainstein_radar_rviz_plugins](https://wiki.ros.org/ainstein_radar_rviz_plugins).
+
+#### IMU
+
+|Topic                                 | Type |
+|--------------------------------------|------|
+| `/carla/<ROLE NAME>/imu` | [sensor_msgs.Imu](https://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html) |
+
 #### GNSS
 
 |Topic                                 | Type | Description |
 |--------------------------------------|------|-------------|
-| `/carla/<ROLE NAME>/gnss/front/gnss` | [sensor_msgs.NavSatFix](http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html) | publish gnss location |
+| `/carla/<ROLE NAME>/gnss/<SENSOR ROLE NAME>/fix` | [sensor_msgs.NavSatFix](http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html) | publish gnss location |
 
 #### Collision Sensor
 
