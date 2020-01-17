@@ -1,5 +1,16 @@
 ## Latest changed
 
+* change Lidar range in meters
+* add new attributes for Gnss and Camera sensor
+* add IMU and Radar sensor
+
+## CARLA-ROS-Bridge 0.9.6
+
+* remove launchfile check from rqt_carla_control
+* Add roslaunch check to all nodes
+* support kinetic and melodic
+* added possibility to connect to an existing ego vehicle
+* support different ego vehicle rolenames in pclrecorder
 * publish odometry for all traffic participants
 * support drawing markers in CARLA
 * replace /carla/map (msg: CarlaMapInfo) by /carla/world_info (msg: CarlaWorldInfo)

@@ -15,11 +15,13 @@ from ainstein_radar_msgs.msg import RadarTarget, RadarTargetArray
 
 from carla_ros_bridge.sensor import Sensor
 
+
 class Radar(Sensor):
 
     """
     Actor implementation details of Carla RADAR
     """
+
     def __init__(self, carla_actor, parent, communication, synchronous_mode):
         """
         Constructor
