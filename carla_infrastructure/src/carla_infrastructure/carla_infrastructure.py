@@ -74,8 +74,70 @@ class CarlaInfrastructure(object):
                 bp.set_attribute('role_name', str(sensor_spec['id']))
                 if sensor_spec['type'].startswith('sensor.camera'):
                     bp.set_attribute('image_size_x', str(sensor_spec['width']))
-                    bp.set_attribute('image_size_y', str(sensor_spec['height']))
+                    bp.set_attribute(
+                        'image_size_y', str(sensor_spec['height']))
                     bp.set_attribute('fov', str(sensor_spec['fov']))
+                    bp.set_attribute('gamma', str(sensor_spec['gamma']))
+                    bp.set_attribute('shutter_speed', str(
+                        sensor_spec['shutter_speed']))
+                    bp.set_attribute('iso', str(sensor_spec['iso']))
+                    bp.set_attribute('fstop', str(sensor_spec['fstop']))
+                    bp.set_attribute('min_fstop', str(
+                        sensor_spec['min_fstop']))
+                    bp.set_attribute('blade_count', str(
+                        sensor_spec['blade_count']))
+                    bp.set_attribute('exposure_mode', str(
+                        sensor_spec['exposure_mode']))
+                    bp.set_attribute('exposure_compensation', str(
+                        sensor_spec['exposure_compensation']))
+                    bp.set_attribute('exposure_min_bright', str(
+                        sensor_spec['exposure_min_bright']))
+                    bp.set_attribute('exposure_max_bright', str(
+                        sensor_spec['exposure_max_bright']))
+                    bp.set_attribute('exposure_speed_up', str(
+                        sensor_spec['exposure_speed_up']))
+                    bp.set_attribute('exposure_speed_down', str(
+                        sensor_spec['exposure_speed_down']))
+                    bp.set_attribute('calibration_constant', str(
+                        sensor_spec['calibration_constant']))
+                    bp.set_attribute('focal_distance', str(
+                        sensor_spec['focal_distance']))
+                    bp.set_attribute('blur_amount', str(
+                        sensor_spec['blur_amount']))
+                    bp.set_attribute('blur_radius', str(
+                        sensor_spec['blur_radius']))
+                    bp.set_attribute('motion_blur_intensity', str(
+                        sensor_spec['motion_blur_intensity']))
+                    bp.set_attribute('motion_blur_max_distortion', str(
+                        sensor_spec['motion_blur_max_distortion']))
+                    bp.set_attribute('motion_blur_min_object_screen_size', str(
+                        sensor_spec['motion_blur_min_object_screen_size']))
+                    bp.set_attribute('slope', str(sensor_spec['slope']))
+                    bp.set_attribute('toe', str(sensor_spec['toe']))
+                    bp.set_attribute('shoulder', str(sensor_spec['shoulder']))
+                    bp.set_attribute('black_clip', str(
+                        sensor_spec['black_clip']))
+                    bp.set_attribute('white_clip', str(
+                        sensor_spec['white_clip']))
+                    bp.set_attribute('temp', str(sensor_spec['temp']))
+                    bp.set_attribute('tint', str(sensor_spec['tint']))
+                    bp.set_attribute('chromatic_aberration_intensity', str(
+                        sensor_spec['chromatic_aberration_intensity']))
+                    bp.set_attribute('chromatic_aberration_offset', str(
+                        sensor_spec['chromatic_aberration_offset']))
+                    bp.set_attribute('enable_postprocess_effects', str(
+                        sensor_spec['enable_postprocess_effects']))
+                    bp.set_attribute('lens_circle_falloff', str(
+                        sensor_spec['lens_circle_falloff']))
+                    bp.set_attribute('lens_circle_multiplier', str(
+                        sensor_spec['lens_circle_multiplier']))
+                    bp.set_attribute('lens_k', str(sensor_spec['lens_k']))
+                    bp.set_attribute('lens_kcube', str(
+                        sensor_spec['lens_kcube']))
+                    bp.set_attribute('lens_x_size', str(
+                        sensor_spec['lens_x_size']))
+                    bp.set_attribute('lens_y_size', str(
+                        sensor_spec['lens_y_size']))
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],

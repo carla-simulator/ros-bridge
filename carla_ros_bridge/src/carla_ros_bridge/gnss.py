@@ -41,17 +41,17 @@ class Gnss(Sensor):
                                    prefix="gnss/" + carla_actor.attributes.get('role_name'))
 
     # pylint: disable=arguments-differ
-    def sensor_data_updated(self, carla_gnss_event):
+    def sensor_data_updated(self, carla_gnss_measurement):
         """
         Function to transform a received gnss event into a ROS NavSatFix message
 
-        :param carla_gnss_event: carla gnss event object
-        :type carla_gnss_event: carla.GnssEvent
+        :param carla_gnss_measurement: carla gnss measurement object
+        :type carla_gnss_measurement: carla.GnssMeasurement
         """
         navsatfix_msg = NavSatFix()
-        navsatfix_msg.header = self.get_msg_header(timestamp=carla_gnss_event.timestamp)
-        navsatfix_msg.latitude = carla_gnss_event.latitude
-        navsatfix_msg.longitude = carla_gnss_event.longitude
-        navsatfix_msg.altitude = carla_gnss_event.altitude
+        navsatfix_msg.header = self.get_msg_header(timestamp=carla_gnss_measurement.timestamp)
+        navsatfix_msg.latitude = carla_gnss_measurement.latitude
+        navsatfix_msg.longitude = carla_gnss_measurement.longitude
+        navsatfix_msg.altitude = carla_gnss_measurement.altitude
         self.publish_message(
             self.get_topic_prefix() + "/fix", navsatfix_msg)
