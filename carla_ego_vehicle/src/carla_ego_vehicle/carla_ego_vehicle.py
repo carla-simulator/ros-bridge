@@ -197,10 +197,13 @@ class CarlaEgoVehicle(object):
                         bp.set_attribute('exposure_mode', str(sensor_spec['exposure_mode']))
                         bp.set_attribute('exposure_compensation', str(
                             sensor_spec['exposure_compensation']))
-                        bp.set_attribute('exposure_min_bright', str(sensor_spec['exposure_min_bright']))
-                        bp.set_attribute('exposure_max_bright', str(sensor_spec['exposure_max_bright']))
+                        bp.set_attribute('exposure_min_bright', str(
+                            sensor_spec['exposure_min_bright']))
+                        bp.set_attribute('exposure_max_bright', str(
+                            sensor_spec['exposure_max_bright']))
                         bp.set_attribute('exposure_speed_up', str(sensor_spec['exposure_speed_up']))
-                        bp.set_attribute('exposure_speed_down', str(sensor_spec['exposure_speed_down']))
+                        bp.set_attribute('exposure_speed_down', str(
+                            sensor_spec['exposure_speed_down']))
                         bp.set_attribute('calibration_constant', str(
                             sensor_spec['calibration_constant']))
                         bp.set_attribute('focal_distance', str(sensor_spec['focal_distance']))
@@ -225,7 +228,8 @@ class CarlaEgoVehicle(object):
                             sensor_spec['chromatic_aberration_offset']))
                         bp.set_attribute('enable_postprocess_effects', str(
                             sensor_spec['enable_postprocess_effects']))
-                        bp.set_attribute('lens_circle_falloff', str(sensor_spec['lens_circle_falloff']))
+                        bp.set_attribute('lens_circle_falloff', str(
+                            sensor_spec['lens_circle_falloff']))
                         bp.set_attribute('lens_circle_multiplier', str(
                             sensor_spec['lens_circle_multiplier']))
                         bp.set_attribute('lens_k', str(sensor_spec['lens_k']))
