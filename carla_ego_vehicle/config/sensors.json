@@ -89,6 +89,24 @@
             "lens_y_size": 0.08
         },
         {
+            "type": "sensor.camera.depth",
+            "id": "front",
+            "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
+            "width": 800,
+            "height": 600,
+            "fov": 100,
+            "sensor_tick": 0.05
+        },
+        {
+            "type": "sensor.camera.semantic_segmentation",
+            "id": "front",
+            "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
+            "width": 800,
+            "height": 600,
+            "fov": 100,
+            "sensor_tick": 0.05
+        },
+        {
             "type": "sensor.lidar.ray_cast",
             "id": "lidar1",
             "x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
