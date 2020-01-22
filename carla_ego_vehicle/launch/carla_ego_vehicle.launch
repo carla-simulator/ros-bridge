@@ -3,7 +3,7 @@
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
   <arg name="vehicle_filter" default="vehicle.*" />
-  <arg name="sensor_definition_file"/>
+  <arg name="sensor_definition_file" default="$(find carla_ego_vehicle)/config/sensors.json"/>
   <arg name="role_name" default="ego_vehicle"/>
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
   <arg name="spawn_point" default=""/>
@@ -13,7 +13,7 @@
   <param name="/carla/host" value="$(arg host)" />
   <param name="/carla/port" value="$(arg port)" />
 
-  <!-- 
+  <!--
     If enabled, remap topics to support setting initialpose and goal with RVIZ
 
     This does not work for multiple ego-vehicles.
@@ -31,4 +31,3 @@
     <param name="spawn_ego_vehicle" value="$(arg spawn_ego_vehicle)" />
   </node>
 </launch>
-
