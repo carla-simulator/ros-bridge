@@ -7,4 +7,3 @@ If `carla_ros_bridge` is configured in synchronous-mode, this plugin can be used
 You can start it e.g.:
 
     rqt --standalone rqt_carla_control
-

@@ -6,8 +6,7 @@ Info: To be able to use `carla_manual_control` a camera with role-name 'view' an
 
 If no specific position is set, the ego vehicle is spawned at a random position.
 
-
-### Spawning at specific position
+## Spawning at specific position
 
 It is possible to (re)spawn the ego vehicle at the specific location by publishing to `/carla/<ROLE NAME>/initialpose`.
 
@@ -17,14 +16,14 @@ The preferred way of doing that is using RVIZ:
 
 Selecting a Pose with '2D Pose Estimate' will delete the current ego_vehicle and respawn it at the specified position.
 
-### Re-use existing vehicle as ego-vehicle
+## Re-use existing vehicle as ego-vehicle
 
 It is possible to re-use an existing vehicle as ego-vehicle, instead of spawning a new vehicle. In this case, the role_name is used to identify the vehicle
 among all CARLA actors through the rolename attribute. Upon success, the requested sensors are attached to this actor, and the actor becomes the new ego vehicle.
 
 To make use of this option, set the ROS parameter spawn_ego_vehicle to false.
 
-### Create your own sensor setup
+## Create your own sensor setup
 
 Sensors, attached to the ego vehicle can be defined via a json file. `carla_ego_vehicle` reads it from the file location defined via the private ros parameter `sensor_definition_file`.
 
