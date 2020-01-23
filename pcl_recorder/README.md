@@ -25,7 +25,6 @@ Execute the Carla Simulator and the Pcl-Recorder.
     source <path-to-catkin-workspace>/devel/setup.bash
     roslaunch pcl_recorder pcl_recorder.launch
 
-
 When the capture drive is done, you can reduce the overall size of the point cloud.
 
     #create one point cloud file
@@ -36,5 +35,3 @@ When the capture drive is done, you can reduce the overall size of the point clo
 
     #verify the result
     pcl_viewer map.pcd
-
-
