@@ -6,59 +6,82 @@
 #
 
 os: linux
-dist: xenial
-sudo: false
 
-matrix:
+stages:
+    - check
+    - test
+    - docker
+
+cache:
+    - apt
+
+addons:
+    apt:
+        packages:
+        - python-pip
+
+jobs:
   include:
-
-    - env: TEST="Test installation with ROS Kinetic & pylint"
-      addons:
-        apt:
-          packages:
-            - python-pip
-      before_script:
-        - pip install --user simple-pid
-        - pip install --user pylint
-        - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-        - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-        - sudo apt-get update
-        - sudo apt-get install ros-kinetic-desktop-full
-      script:
-        - mkdir ros-bridge/
-        - shopt -s dotglob
-        - shopt -s extglob
-        - mv !(ros-bridge) ros-bridge/
-        - mkdir -p catkin_ws/src
-        - cd catkin_ws/src
-        - ln -s ../../ros-bridge
-        - source /opt/ros/kinetic/setup.bash
-        - cd ..
-        - sudo rosdep init
-        - rosdep update
-        - rosdep install --from-paths src --ignore-src -r
-        - catkin_make install
-        - source install/setup.bash
-        - cd src/ros-bridge
-        - pylint --rcfile=.pylintrc carla_ackermann_control/src/carla_ackermann_control/ carla_ros_bridge/src/carla_ros_bridge/ carla_ego_vehicle/src/carla_ego_vehicle/ carla_waypoint_publisher/src/carla_waypoint_publisher/
-      after_failure:
-        - tail --lines=2000 build.log
-
-    - env: TEST="Check code formatting"
-      addons:
-        apt:
-          packages:
-            - pep8
-            - python-autopep8
-            - python-pep8
+    - name: "Check code formatting"
+      stage: check
+      before_install: skip
+      install: pip install --user pep8 autopep8
       script:
         - autopep8 carla_ros_bridge/src/carla_ros_bridge/*.py --in-place --max-line-length=100
         - autopep8 carla_ackermann_control/src/carla_ackermann_control/*.py --in-place --max-line-length=100
         - autopep8 carla_ego_vehicle/src/carla_ego_vehicle/*.py --in-place --max-line-length=100
         - autopep8 carla_waypoint_publisher/src/carla_waypoint_publisher/*.py --in-place --max-line-length=100
         - git diff --quiet HEAD --; if [ ! $? -eq 0 ]; then echo "Code is not autopep8 compliant. Please run check.sh"; git diff HEAD --; exit 1; fi
-      after_failure:
-        - tail --lines=2000 build.log
+    - name: "Xenial Kinetic"
+      stage: test
+      dist: xenial
+      env: ROS_DISTRO=kinetic
+    - name: "Bionic Melodic"
+      dist: bionic
+      env: ROS_DISTRO=melodic
+    - name: "Docker Kinetic"
+      stage: docker
+      services: docker
+      before_install: skip
+      install: skip
+      script: cd docker && ./build.sh --build-arg ROS_VERSION=kinetic
+    - name: "Docker Melodic"
+      services: docker
+      before_install: skip
+      install: skip
+      script: cd docker && ./build.sh --build-arg ROS_VERSION=melodic
+
+before_install:
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+  - sudo apt update
+  - sudo apt install -y ros-$ROS_DISTRO-desktop-full python-catkin-tools python-catkin-pkg python-catkin-pkg-modules python-rosdep python-wstool
+
+install:
+  - pip install --user pylint simple-pid
+  - mkdir ros-bridge/
+  - shopt -s dotglob
+  - shopt -s extglob
+  - mv !(ros-bridge) ros-bridge/
+  - mkdir -p catkin_ws/src
+  - cd catkin_ws/src
+  - ln -s ../../ros-bridge
+  - cd ..
+  - source /opt/ros/$ROS_DISTRO/setup.bash
+  - sudo rosdep init
+  - rosdep update
+  - rosdep install --from-paths src --ignore-src -r
+
+script:
+  - catkin build
+  #- catkin test
+  - catkin config --install
+  - source devel/setup.bash
+  - cd src/ros-bridge
+  - pylint --rcfile=.pylintrc carla_ackermann_control/src/carla_ackermann_control/ carla_ros_bridge/src/carla_ros_bridge/ carla_ego_vehicle/src/carla_ego_vehicle/ carla_waypoint_publisher/src/carla_waypoint_publisher/
+
+after_failure:
+  - tail --lines=2000 build.log
 
 notifications:
   email: false
