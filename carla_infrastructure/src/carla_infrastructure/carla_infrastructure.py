@@ -11,15 +11,9 @@ base class for spawning infrastructure sensors in ROS
 
 from __future__ import print_function
 
-from abc import abstractmethod
-
 import os
-import random
-import math
 import json
 import rospy
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 from carla_msgs.msg import CarlaWorldInfo
 
 import carla
@@ -163,7 +157,7 @@ class CarlaInfrastructure(object):
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation()
-                 elif sensor_spec['type'].startswith('sensor.other.radar'):
+                elif sensor_spec['type'].startswith('sensor.other.radar'):
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
                     sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],

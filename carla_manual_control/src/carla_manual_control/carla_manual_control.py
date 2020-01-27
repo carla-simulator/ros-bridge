@@ -86,11 +86,13 @@ class World(object):
         self.hud = hud
         self.role_name = role_name
         self.image_subscriber = rospy.Subscriber(
-            "/carla/{}/camera/rgb/view/image_color".format(self.role_name), Image, self.on_view_image)
+            "/carla/{}/camera/rgb/view/image_color".format(self.role_name),
+            Image, self.on_view_image)
         self.collision_subscriber = rospy.Subscriber(
             "/carla/{}/collision".format(self.role_name), CarlaCollisionEvent, self.on_collision)
         self.lane_invasion_subscriber = rospy.Subscriber(
-            "/carla/{}/lane_invasion".format(self.role_name), CarlaLaneInvasionEvent, self.on_lane_invasion)
+            "/carla/{}/lane_invasion".format(self.role_name),
+            CarlaLaneInvasionEvent, self.on_lane_invasion)
 
     def on_collision(self, data):
         """
@@ -160,19 +162,21 @@ class KeyboardControl(object):
         self._autopilot_enabled = False
         self._control = CarlaEgoVehicleControl()
         self._steer_cache = 0.0
-        
+
         self.vehicle_control_manual_override_publisher = rospy.Publisher(
-            "/carla/{}/vehicle_control_manual_override".format(self.role_name), Bool, queue_size=1, latch=True)
+            "/carla/{}/vehicle_control_manual_override".format(self.role_name),
+            Bool, queue_size=1, latch=True)
         self.vehicle_control_manual_override = False
         self.auto_pilot_enable_publisher = rospy.Publisher(
             "/carla/{}/enable_autopilot".format(self.role_name), Bool, queue_size=1)
         self.vehicle_control_publisher = rospy.Publisher(
-            "/carla/{}/vehicle_control_cmd_manual".format(self.role_name), CarlaEgoVehicleControl, queue_size=1)
+            "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
+            CarlaEgoVehicleControl, queue_size=1)
         self.carla_status_subscriber = rospy.Subscriber(
             "/carla/status", CarlaStatus, self._on_new_carla_frame)
-        
+
         self.set_autopilot(self._autopilot_enabled)
-        
+
         self.set_vehicle_control_manual_override(
             self.vehicle_control_manual_override)  # disable manual override
 
@@ -194,6 +198,7 @@ class KeyboardControl(object):
         """
         self.auto_pilot_enable_publisher.publish(Bool(data=enable))
 
+    # pylint: disable=too-many-branches
     def parse_events(self, clock):
         """
         parse an input event
@@ -234,7 +239,7 @@ class KeyboardControl(object):
     def _on_new_carla_frame(self, data):
         """
         callback on new frame
-        
+
         As CARLA only processes one vehicle control command per tick,
         send the current from within here (once per frame)
         """
@@ -292,17 +297,20 @@ class HUD(object):
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.tf_listener = tf.TransformListener()
         self.vehicle_status_subscriber = rospy.Subscriber(
-            "/carla/{}/vehicle_status".format(self.role_name), CarlaEgoVehicleStatus, self.vehicle_status_updated)
+            "/carla/{}/vehicle_status".format(self.role_name),
+            CarlaEgoVehicleStatus, self.vehicle_status_updated)
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.vehicle_info_subscriber = rospy.Subscriber(
-            "/carla/{}/vehicle_info".format(self.role_name), CarlaEgoVehicleInfo, self.vehicle_info_updated)
+            "/carla/{}/vehicle_info".format(self.role_name),
+            CarlaEgoVehicleInfo, self.vehicle_info_updated)
         self.latitude = 0
         self.longitude = 0
         self.manual_control = False
         self.gnss_subscriber = rospy.Subscriber(
             "/carla/{}/gnss/gnss1/fix".format(self.role_name), NavSatFix, self.gnss_updated)
         self.manual_control_subscriber = rospy.Subscriber(
-            "/carla/{}/vehicle_control_manual_override".format(self.role_name), Bool, self.manual_control_override_updated)
+            "/carla/{}/vehicle_control_manual_override".format(self.role_name),
+            Bool, self.manual_control_override_updated)
 
         self.carla_status = CarlaStatus()
         self.status_subscriber = rospy.Subscriber(
@@ -380,7 +388,7 @@ class HUD(object):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
         if self.carla_status.fixed_delta_seconds:
-            fps = 1/self.carla_status.fixed_delta_seconds
+            fps = 1 / self.carla_status.fixed_delta_seconds
         self._info_text = [
             'Frame: % 22s' % self.carla_status.frame,
             'Simulation time: % 12s' % datetime.timedelta(

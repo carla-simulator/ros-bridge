@@ -30,6 +30,8 @@ from carla_msgs.msg import CarlaWorldInfo
 
 import carla
 
+secure_random = random.SystemRandom()
+
 # ==============================================================================
 # -- CarlaEgoVehicle ------------------------------------------------------------
 # ==============================================================================
@@ -102,10 +104,11 @@ class CarlaEgoVehicle(object):
         :return:
         """
         # Get vehicle blueprint.
-        blueprint = random.choice(self.world.get_blueprint_library().filter(self.actor_filter))
+        blueprint = secure_random.choice(
+            self.world.get_blueprint_library().filter(self.actor_filter))
         blueprint.set_attribute('role_name', "{}".format(self.role_name))
         if blueprint.has_attribute('color'):
-            color = random.choice(blueprint.get_attribute('color').recommended_values)
+            color = secure_random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
         # Spawn the vehicle.
         if not rospy.get_param('~spawn_ego_vehicle'):
@@ -148,7 +151,8 @@ class CarlaEgoVehicle(object):
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
                 while self.player is None:
                     spawn_points = self.world.get_map().get_spawn_points()
-                    spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+                    spawn_point = secure_random.choice(
+                        spawn_points) if spawn_points else carla.Transform()
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
 
         # Read sensors from file

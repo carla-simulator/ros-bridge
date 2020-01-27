@@ -171,7 +171,7 @@ class CarlaRosBridge(object):
         while not self.carla_control_queue.empty():
             command = self.carla_control_queue.get()
 
-        while not command is None and not rospy.is_shutdown():
+        while command is not None and not rospy.is_shutdown():
             self.carla_run_state = command
 
             if self.carla_run_state == CarlaControl.PAUSE:
