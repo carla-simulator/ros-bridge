@@ -1,0 +1,36 @@
+uri: 'http://carla-assets-internal.s3.amazonaws.com/Releases/Linux/CARLA_0.9.6.tar.gz'
+md5sum: 5f82ee883e95903b88ea3d7e9e25f230
+install-script: |
+  #!/bin/bash
+  tar xvzf CARLA_0.9.6.tar.gz
+  cd PythonAPI/carla/dist/
+  mkdir carla-0.9.6-py2.7/
+  mkdir carla-0.9.6-py3.5/
+  cd carla-0.9.6-py2.7
+  unzip ../carla-0.9.6-py2.7-linux-x86_64.egg
+  cd ../carla-0.9.6-py3.5
+  unzip ../carla-0.9.6-py3.5-linux-x86_64.egg
+  cd ../
+  #!/bin/sh
+  PYTHON2="/usr/lib/python2.7"
+  if [ -d ${PYTHON2} ]
+  then
+    sudo cp -r carla-0.9.6-py2.7/carla /usr/lib/python2.7/
+  fi
+  PYTHON3="/usr/lib/python3"
+  if [ -d ${PYTHON3} ]
+  then
+    sudo cp -r carla-0.9.6-py3.5/carla /usr/lib/python3/dist-packages/
+  fi
+check-presence-script: |
+  #!/bin/bash
+  PYTHON2="/usr/lib/python2.7/carla"
+  PYTHON3="/usr/lib/python3dist-packages/carla"
+  if [ -d ${PYTHON2} ] || [ -d ${PYTHON3} ]
+  then
+    echo "carla is installed for python"
+    exit 0
+
+  else
+    exit 1
+  fi
