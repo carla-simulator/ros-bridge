@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2018-2019 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
@@ -127,6 +127,15 @@ class EgoVehicle(Vehicle):
                 wheel_info.tire_friction = wheel.tire_friction
                 wheel_info.damping_rate = wheel.damping_rate
                 wheel_info.max_steer_angle = math.radians(wheel.max_steer_angle)
+                wheel_info.radius = wheel.radius
+                wheel_info.max_brake_torque = wheel.max_brake_torque
+                wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
+                wheel_info.position.x = (wheel.position.x/100.0) - \
+                    self.carla_actor.get_transform().location.x
+                wheel_info.position.y = -((wheel.position.y/100.0) -
+                                          self.carla_actor.get_transform().location.y)
+                wheel_info.position.z = (wheel.position.z/100.0) - \
+                    self.carla_actor.get_transform().location.z
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
