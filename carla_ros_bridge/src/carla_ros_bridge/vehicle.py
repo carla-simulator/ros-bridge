@@ -39,7 +39,7 @@ class Vehicle(TrafficParticipant):
             prefix = "vehicle/{:03}".format(carla_actor.id)
 
         self.classification = Object.CLASSIFICATION_CAR
-        if carla_actor.attributes.has_key('object_type'):
+        if 'object_type' in carla_actor.attributes:
             if carla_actor.attributes['object_type'] == 'car':
                 self.classification = Object.CLASSIFICATION_CAR
             elif carla_actor.attributes['object_type'] == 'bike':
