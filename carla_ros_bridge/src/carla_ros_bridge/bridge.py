@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2018-2019 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
@@ -42,6 +42,7 @@ from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegm
 from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
+from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl
 
 
@@ -142,6 +143,11 @@ class CarlaRosBridge(object):
                                                actor_list=self.actors,
                                                filtered_id=None))
         self.debug_helper = DebugHelper(carla_world.debug)
+
+        # add traffic light pseudo sensor
+        self.pseudo_actors.append(TrafficLightsSensor(parent=None,
+                                                      communication=self.comm,
+                                                      actor_list=self.actors))
 
     def destroy(self):
         """
