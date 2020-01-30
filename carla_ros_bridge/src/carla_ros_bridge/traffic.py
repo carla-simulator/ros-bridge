@@ -11,6 +11,8 @@ Classes to handle Carla traffic objects
 """
 
 from carla_ros_bridge.actor import Actor
+from carla_msgs.msg import CarlaTrafficLightStatus
+from carla import TrafficLightState
 
 
 class Traffic(Actor):
@@ -57,3 +59,22 @@ class TrafficLight(Actor):
                                            parent=parent,
                                            communication=communication,
                                            prefix='traffic.traffic_light')
+
+    def get_status(self):
+        """
+        Get the current state of the traffic light
+        """
+        status = CarlaTrafficLightStatus()
+        status.id = self.get_id()
+        carla_state = self.carla_actor.get_state()
+        if carla_state == TrafficLightState.Red:
+            status.state = CarlaTrafficLightStatus.RED
+        elif carla_state == TrafficLightState.Yellow:
+            status.state = CarlaTrafficLightStatus.YELLOW
+        elif carla_state == TrafficLightState.Green:
+            status.state = CarlaTrafficLightStatus.GREEN
+        elif carla_state == TrafficLightState.Off:
+            status.state = CarlaTrafficLightStatus.OFF
+        else:
+            status.state = CarlaTrafficLightStatus.UNKNOWN
+        return status

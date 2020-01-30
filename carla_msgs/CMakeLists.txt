@@ -22,6 +22,8 @@ add_message_files(
   CarlaActorList.msg
   CarlaControl.msg
   CarlaStatus.msg
+  CarlaTrafficLightStatus.msg
+  CarlaTrafficLightStatusList.msg
   CarlaWalkerControl.msg
 )
 
