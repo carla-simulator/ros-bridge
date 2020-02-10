@@ -39,6 +39,9 @@ class TwistToVehicleControl(object):
         self.pub = rospy.Publisher("/carla/{}/vehicle_control_cmd".format(role_name), CarlaEgoVehicleControl, queue_size=1)
 
     def twist_received(self, twist):
+        """
+        receive twist and convert to carla vehicle control
+        """
         control = CarlaEgoVehicleControl()
         if twist == Twist():
             #stop
@@ -83,7 +86,7 @@ def main():
     :return:
     """
     rospy.init_node('convert_twist_to_vehicle_control', anonymous=True)
-    role_name = rospy.get_param("/role_name", "ego_vehicle")
+    role_name = rospy.get_param("~role_name", "ego_vehicle")
 
     twist_to_vehicle_control = TwistToVehicleControl(role_name)
     try:
