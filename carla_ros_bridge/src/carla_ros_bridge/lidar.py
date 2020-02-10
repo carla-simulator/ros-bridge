@@ -43,7 +43,7 @@ class Lidar(Sensor):
                                     synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
-    def get_ros_transform(self, transform):
+    def get_ros_transform(self, transform=None):
         """
         Function (override) to modify the tf messages sent by this lidar.
 
