@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+  <arg name="role_name" default="ego_vehicle"/>
+
+  <node pkg="carla_twist_to_control" type="carla_twist_to_control.py" name="carla_twist_to_control_$(arg role_name)" output="screen">
+    <param name="role_name" value="$(arg role_name)"/>
+  </node>
+
+</launch>
+
