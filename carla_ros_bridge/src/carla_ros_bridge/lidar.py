@@ -43,7 +43,7 @@ class Lidar(Sensor):
                                     synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
-    def get_ros_sensor_transform(self, transform):
+    def get_ros_transform(self, transform):
         """
         Function (override) to modify the tf messages sent by this lidar.
 
@@ -54,7 +54,7 @@ class Lidar(Sensor):
         :return: the filled tf message
         :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = super(Lidar, self).get_ros_sensor_transform(transform)
+        tf_msg = super(Lidar, self).get_ros_transform(transform)
 
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]

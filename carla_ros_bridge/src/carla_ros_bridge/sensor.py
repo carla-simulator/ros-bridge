@@ -99,7 +99,7 @@ class Sensor(Actor):
                         float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
-                self.publish_transform(self.get_ros_sensor_transform(carla_sensor_data.transform))
+                self.publish_transform(self.get_ros_transform(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
 
     @abstractmethod
@@ -113,16 +113,6 @@ class Sensor(Actor):
         """
         raise NotImplementedError(
             "This function has to be implemented by the derived classes")
-
-    def get_ros_sensor_transform(self, transform):
-        """
-        Get sensor tf (override, if required)
-
-        :param transform: carla sensor transform
-        :type transform: carla.Transform
-        """
-        tf_msg = super(Sensor, self).get_ros_transform(transform)
-        return tf_msg
 
     def _update_synchronous_event_sensor(self, frame):
         while True:
