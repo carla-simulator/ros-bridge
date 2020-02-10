@@ -111,7 +111,7 @@ class Camera(Sensor):
         self.publish_message(
             self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
 
-    def get_ros_sensor_transform(self, transform):
+    def get_ros_transform(self, transform):
         """
         Function (override) to modify the tf messages sent by this camera.
 
@@ -121,7 +121,7 @@ class Camera(Sensor):
         :return: the filled tf message
         :rtype: geometry_msgs.msg.TransformStamped
         """
-        tf_msg = super(Camera, self).get_ros_sensor_transform(transform)
+        tf_msg = super(Camera, self).get_ros_transform(transform)
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         quat_swap = tf.transformations.quaternion_from_matrix(
