@@ -5,6 +5,8 @@
 *   add IMU and Radar sensor
 *   Fix tf publishing in synchronous mode
 *   Add node to convert a twist to a vehicle control command
+*   Add node carla_spectator_camera
+*   Update carla_waypoint_publisher
 
 ## CARLA-ROS-Bridge 0.9.6
 
