@@ -9,12 +9,17 @@ receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
 
 use max wheel steer angle
 """
-import rospy
 import sys
+import rospy
 from geometry_msgs.msg import Twist
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo
 
 class TwistToVehicleControl(object):
+    """
+    receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
+
+    use max wheel steer angle
+    """
 
     MAX_LON_ACCELERATION = 10
 
@@ -23,20 +28,24 @@ class TwistToVehicleControl(object):
         Constructor
         """
         rospy.loginfo("Wait for vehicle info...")
-        vehicle_info=rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo)
+        vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
+                                              CarlaEgoVehicleInfo)
         if not vehicle_info.wheels:
             rospy.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
             sys.exit(1)
             
         self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle
         if not self.max_steering_angle:
-            rospy.logerr("Cannot determine max steering angle: Value is %s", self.max_steering_angle)
+            rospy.logerr("Cannot determine max steering angle: Value is %s",
+                         self.max_steering_angle)
             sys.exit(1)
-        rospy.loginfo("Vehicle info received. Max steering angle=%s", self.max_steering_angle)
+        rospy.loginfo("Vehicle info received. Max steering angle=%s",
+                      self.max_steering_angle)
 
         rospy.Subscriber("/carla/{}/twist".format(role_name), Twist, self.twist_received)
 
-        self.pub = rospy.Publisher("/carla/{}/vehicle_control_cmd".format(role_name), CarlaEgoVehicleControl, queue_size=1)
+        self.pub = rospy.Publisher("/carla/{}/vehicle_control_cmd".format(role_name),
+                                   CarlaEgoVehicleControl, queue_size=1)
 
     def twist_received(self, twist):
         """
@@ -50,37 +59,26 @@ class TwistToVehicleControl(object):
             control.steer = 0.
         else:
             if twist.linear.x > 0:
-                control.throttle = min(TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/TwistToVehicleControl.MAX_LON_ACCELERATION
+                control.throttle = min(TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/ \
+                                   TwistToVehicleControl.MAX_LON_ACCELERATION
             else:
                 control.reverse = True
-                control.throttle = max(-TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/-TwistToVehicleControl.MAX_LON_ACCELERATION
+                control.throttle = max(-TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/ \
+                                   -TwistToVehicleControl.MAX_LON_ACCELERATION
 
             if twist.angular.z > 0:
-                control.steer = -min(self.max_steering_angle, twist.angular.z)/self.max_steering_angle
+                control.steer = -min(self.max_steering_angle, twist.angular.z)/ \
+                                self.max_steering_angle
             else:
-                control.steer = -max(-self.max_steering_angle, twist.angular.z)/self.max_steering_angle
-            
+                control.steer = -max(-self.max_steering_angle, twist.angular.z)/ \
+                                self.max_steering_angle
             #invert steer for reverse case
             if control.reverse:
                 control.steer = -control.steer
-            
         self.pub.publish(control)
-
-    def run(self):
-        """
-
-        Control loop
-
-        :return:
-        """
-
-        rospy.spin()
-
-
 
 def main():
     """
-
     main function
 
     :return:
@@ -90,11 +88,10 @@ def main():
 
     twist_to_vehicle_control = TwistToVehicleControl(role_name)
     try:
-        twist_to_vehicle_control.run()
+        rospy.spin()
     finally:
         del twist_to_vehicle_control
         rospy.loginfo("Done")
-
 
 if __name__ == "__main__":
     main()
