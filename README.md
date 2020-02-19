@@ -48,24 +48,18 @@ For more information about configuring a ROS environment see
 
 First run the simulator (see carla documentation: <http://carla.readthedocs.io/en/latest/>)
 
-    ./CarlaUE4.sh -windowed -ResX=320 -ResY=240
+    # run carla in background
+    SDL_VIDEODRIVER=offscreen ./CarlaUE4.sh -opengl
 
-Wait for the message:
+Wait a few seconds, then start the ros bridge (choose one option):
 
-    Waiting for the client to connect...
-
-Then start the ros bridge (choose one option):
-
-    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
+    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg
     source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
 
     # Option 1: start the ros bridge
     roslaunch carla_ros_bridge carla_ros_bridge.launch
 
-    # Option 2: start the ros bridge together with RVIZ
-    roslaunch carla_ros_bridge carla_ros_bridge_with_rviz.launch
-
-    # Option 3: start the ros bridge together with an example ego vehicle
+    # Option 2: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
 ## Settings
@@ -267,17 +261,19 @@ The following markers are supported in 'map'-frame:
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------- |
 | `/carla/debug_marker` (subscriber) | [visualization_msgs.MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) | draw markers in CARLA world |
 
-## Carla Ego Vehicle
 
-`carla_ego_vehicle` provides a generic way to spawn an ego vehicle and attach sensors to it. You can find further documentation [here](carla_ego_vehicle/README.md).
+## Additional Functionality
 
-## Carla Infrastructure Sensors
-
-`carla_infrastructure` provides a generic way to spawn a set of infrastructure sensors defined in a config file. You can find further documentation [here](carla_infrastructure/README.md).
-
-## Waypoint calculation
-
-To make use of the Carla waypoint calculation a ROS Node is available to get waypoints. You can find further documentation [here](carla_waypoint_publisher/README.md).
+| Name                              | Description                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| [Carla Ego Vehicle](carla_ego_vehicle/README.md) | Provides a generic way to spawn an ego vehicle and attach sensors to it. |
+| [Carla Infrastructure](carla_infrastructure/README.md) | Provides a generic way to spawn a set of infrastructure sensors defined in a config file. |
+| [Carla Waypoint Publisher](carla_waypoint_publisher/README.md) | Provide routes and access to the Carla waypoint API |
+| [Carla ROS Scenario Runner](carla_ros_scenario_runner/README.md) | ROS node that wraps the functionality of the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) to execute scenarios. |
+| [Carla AD Agent](carla_ad_agent/README.md) | A basic AD agent, that can follow a route and avoid collisions with other vehicles and stop on red traffic lights. |
+| [Carla AD Demo](carla_ad_demo/README.md) | A meta package that provides everything to launch a CARLA ROS environment with an AD vehicle. |
+| [RVIZ Carla Plugin](rviz_carla_plugin/README.md) | A [RVIZ](http://wiki.ros.org/rviz) plugin to visualize/control CARLA. |
+| [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
 ## Troubleshooting
 
@@ -285,7 +281,7 @@ To make use of the Carla waypoint calculation a ROS Node is available to get way
 
 You're missing Carla Python. Please execute:
 
-    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/<your_egg_file>
+    export PYTHONPATH=$PYTHONPATH:<path/to/carla/>/PythonAPI/carla/dist/<your_egg_file>
 
 Please note that you have to put in the complete path to the egg-file including
 the egg-file itself. Please use the one, that is supported by your Python version.
