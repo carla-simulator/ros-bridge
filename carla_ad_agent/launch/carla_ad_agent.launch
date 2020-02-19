@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+  <arg name="role_name" default="ego_vehicle"/>
+  <arg name="target_speed" default="20"/>
+  <arg name="avoid_risk" default="True"/>
+
+  <node pkg="carla_ad_agent" type="carla_ad_agent.py" name="carla_ad_agent_$(arg role_name)" output="screen">
+    <param name="target_speed" value="$(arg target_speed)" />
+    <param name="role_name" value="$(arg role_name)" />
+    <param name="avoid_risk" value="$(arg avoid_risk)" />
+  </node>
+</launch>
+

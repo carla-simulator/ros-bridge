@@ -1,0 +1,71 @@
+<!-- -->
+<launch>
+  <!-- launch a complete carla-ros-environment with an ad agent that steers the ego-vehicle -->
+
+  <!-- carla parameter -->
+  <arg name='host' default='localhost'/> <!-- host the carla server is running on -->
+  <arg name='port' default='2000'/> <!-- port of the carla server -->
+  <arg name="town" default="Town01"/> <!-- the carla town to load-->
+  <arg name='synchronous_mode' default='False'/> <!-- should the synchronous mode be used? Enable to get reproducible results independent of the system workload -->
+  <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/><!-- should the ros bridge wait for a vehicle control command before proceeding with the next tick -->
+  <arg name='fixed_delta_seconds' default='0.05'/><!-- frequency of the carla ticks -->
+
+  <!-- spectator camera parameter -->
+  <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
+  <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
+  <arg name='spawn_point' default='127.4,195.4,0,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
+  <arg name="target_speed" default="30"/> <!-- target speed in km/h that the agent tries to follow -->
+  <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
+
+  <!-- Should the manual control node be started? -->
+  <arg name="execute_manual_control" default="True"/>
+
+  <!-- Set fixed goal (actual route is still random) -->
+  <node pkg="rostopic" type="rostopic" name="publish_goal"
+      args="pub /carla/ego_vehicle/goal geometry_msgs/PoseStamped '{ 'pose': { 'position': { 'x': 157.9, 'y': 29.8, 'z': 0.0 }, 'orientation': { 'x': 0.0, 'y': 0.0, 'z': 0.70711, 'w': 0.70711 } } }' -l"/>
+
+  
+  <!-- ===================================================== -->
+
+  <!-- The ros bridge -->
+  <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name='town' value='$(arg town)'/>
+    <arg name='synchronous_mode' value='$(arg synchronous_mode)'/>
+    <arg name='synchronous_mode_wait_for_vehicle_control_command' value='$(arg synchronous_mode_wait_for_vehicle_control_command)'/>
+    <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>
+  </include>
+
+  <!-- the ego vehicle, that will be controlled by the carla_ad_agent -->
+  <include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
+    <arg name="sensor_definition_file" default="$(find carla_ad_demo)/config/sensors.json"/>
+    <arg name='role_name' value='$(arg role_name)'/>
+    <arg name="spawn_point" value="$(arg spawn_point)"/>
+  </include>
+
+  <!-- The agent to control the ego vehicle -->
+  <include file="$(find carla_ad_agent)/launch/carla_ad_agent.launch">
+    <arg name="target_speed" value="$(arg target_speed)" />
+    <arg name="role_name" value="$(arg role_name)" />
+    <arg name="avoid_risk" value="$(arg avoid_risk)" />
+  </include>
+
+  <!-- Provide a route and access to the CARLA waypoint API (required by carla_ad_agent) -->
+  <include file="$(find carla_waypoint_publisher)/launch/carla_waypoint_publisher.launch">
+    <arg name='role_name' value='$(arg role_name)'/>
+  </include>
+
+  
+  <!-- (Optional) Visualize the ego vehicle (and support overriding the control) -->
+  <group if="$(arg execute_manual_control)">
+    <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
+      <arg name='role_name' value='$(arg role_name)'/>
+    </include>
+  </group>
+
+</launch>
+

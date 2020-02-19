@@ -110,13 +110,16 @@ class CarlaToRosWaypointConverter(object):
         #rospy.logwarn("Get waypoint {}".format(response.waypoint.pose.position))
         return response
 
-    def get_actor_waypoint(self, _):
+    def get_actor_waypoint(self, req):
         """
         Convenience method to get the waypoint for an actor
         """
+        rospy.loginfo("get_actor_waypoint(): Get waypoint of actor {}".format(req.id))
+        actor = self.world.get_actors().find(req.id)
+
         response = GetActorWaypointResponse()
-        if self.ego_vehicle:
-            carla_waypoint = self.map.get_waypoint(self.ego_vehicle.get_location())
+        if actor:
+            carla_waypoint = self.map.get_waypoint(actor.get_location())
             response.waypoint.pose.position.x = carla_waypoint.transform.location.x
             response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
             response.waypoint.pose.position.z = carla_waypoint.transform.location.z
@@ -125,7 +128,7 @@ class CarlaToRosWaypointConverter(object):
             response.waypoint.section_id = carla_waypoint.section_id
             response.waypoint.lane_id = carla_waypoint.lane_id
         else:
-            rospy.logwarn("get_actor_waypoint(): Ego vehicle not valid.")
+            rospy.logwarn("get_actor_waypoint(): Actor {} not valid.".format(req.id))
         return response
 
     def on_goal(self, goal):
