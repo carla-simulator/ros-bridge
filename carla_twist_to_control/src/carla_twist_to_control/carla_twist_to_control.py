@@ -14,7 +14,8 @@ import rospy
 from geometry_msgs.msg import Twist
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo
 
-class TwistToVehicleControl(object):
+
+class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
     """
     receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
 
@@ -30,11 +31,11 @@ class TwistToVehicleControl(object):
         rospy.loginfo("Wait for vehicle info...")
         vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
                                               CarlaEgoVehicleInfo)
-        if not vehicle_info.wheels:
+        if not vehicle_info.wheels:  # pylint: disable=no-member
             rospy.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
             sys.exit(1)
-            
-        self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle
+
+        self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle  # pylint: disable=no-member
         if not self.max_steering_angle:
             rospy.logerr("Cannot determine max steering angle: Value is %s",
                          self.max_steering_angle)
@@ -53,29 +54,27 @@ class TwistToVehicleControl(object):
         """
         control = CarlaEgoVehicleControl()
         if twist == Twist():
-            #stop
+            # stop
             control.throttle = 0.
             control.brake = 1.
             control.steer = 0.
         else:
             if twist.linear.x > 0:
-                control.throttle = min(TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/ \
-                                   TwistToVehicleControl.MAX_LON_ACCELERATION
+                control.throttle = min(TwistToVehicleControl.MAX_LON_ACCELERATION,
+                                       twist.linear.x) / TwistToVehicleControl.MAX_LON_ACCELERATION
             else:
                 control.reverse = True
-                control.throttle = max(-TwistToVehicleControl.MAX_LON_ACCELERATION, twist.linear.x)/ \
-                                   -TwistToVehicleControl.MAX_LON_ACCELERATION
+                control.throttle = max(-TwistToVehicleControl.MAX_LON_ACCELERATION,
+                                       twist.linear.x) / -TwistToVehicleControl.MAX_LON_ACCELERATION
 
             if twist.angular.z > 0:
-                control.steer = -min(self.max_steering_angle, twist.angular.z)/ \
-                                self.max_steering_angle
+                control.steer = -min(self.max_steering_angle, twist.angular.z) / \
+                    self.max_steering_angle
             else:
-                control.steer = -max(-self.max_steering_angle, twist.angular.z)/ \
-                                self.max_steering_angle
-            #invert steer for reverse case
-            if control.reverse:
-                control.steer = -control.steer
+                control.steer = -max(-self.max_steering_angle, twist.angular.z) / \
+                    self.max_steering_angle
         self.pub.publish(control)
+
 
 def main():
     """
@@ -93,6 +92,6 @@ def main():
         del twist_to_vehicle_control
         rospy.loginfo("Done")
 
+
 if __name__ == "__main__":
     main()
-
