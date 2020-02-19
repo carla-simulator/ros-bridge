@@ -1,0 +1,84 @@
+<!-- -->
+<launch>
+  <!-- carla parameter -->
+  <arg name='host' default='localhost'/> <!-- host the carla server is running on -->
+  <arg name='port' default='2000'/> <!-- port of the carla server -->
+  <arg name="town" default="Town01"/> <!-- the carla town to load-->
+  <arg name='synchronous_mode' default='True'/> <!-- should the synchronous mode be used? Enable to get reproducible results independent of the system workload -->
+  <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/><!-- should the ros bridge wait for a vehicle control command before proceeding with the next tick -->
+  <arg name='fixed_delta_seconds' default='0.05'/><!-- frequency of the carla ticks -->
+
+  <!-- scenario runner parameter -->
+  <arg name='scenario_runner_path' default='$(env SCENARIO_RUNNER_PATH)'/><!-- path to scenario runner -->
+
+  <!-- ego vehicle parameter -->
+  <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
+  <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
+  <arg name='spawn_point' default='127.4,195.4,0,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
+  <arg name="target_speed" default="30"/> <!-- target speed that the agent tries to follow -->
+  <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
+  <arg name="execute_manual_control" default="False"/> <!-- Should the manual control node be started? As rviz is used, disabled -->
+
+  <!-- spectator camera parameter -->
+  <arg name='resolution_x' default='800'/> <!-- width of the spectator camera image -->
+  <arg name='resolution_y' default='600'/> <!-- height of the spectator camera image -->
+  <arg name='fov' default='50'/> <!-- field of view of the spectator camera. -->
+
+  <!-- ===================================================== -->
+
+  <!-- The carla ad demo -->
+  <include file="$(find carla_ad_demo)/launch/carla_ad_demo.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name='town' value='$(arg town)'/>
+    <arg name='synchronous_mode' value='$(arg synchronous_mode)'/>
+    <arg name='synchronous_mode_wait_for_vehicle_control_command' value='$(arg synchronous_mode_wait_for_vehicle_control_command)'/>
+    <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>
+    <arg name="role_name" value='$(arg role_name)'/>
+    <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
+    <arg name='spawn_point' value='$(arg spawn_point)'/>
+    <arg name="target_speed" value='$(arg target_speed)'/>
+    <arg name="avoid_risk" value='$(arg avoid_risk)'/>
+    <arg name="execute_manual_control" value='$(arg execute_manual_control)'/>
+  </include>
+
+  <!-- a spectator camera that is attached to the ego vehicle and be controlled from within rviz -->
+  <include file="$(find carla_spectator_camera)/launch/carla_spectator_camera.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name="role_name" value="$(arg role_name)"/>
+    <arg name="resolution_x" value="$(arg resolution_x)"/>
+    <arg name="resolution_y" value="$(arg resolution_y)"/>
+    <arg name="fov" value="$(arg fov)"/>
+  </include>
+
+  <!-- To be able to maneuver with rviz, this node converts twist to vehicle control commands -->
+  <node pkg="carla_twist_to_control" type="carla_twist_to_control.py" name="carla_twist_to_control">
+    <remap from="/carla/$(arg role_name)/vehicle_control_cmd" to="/carla/$(arg role_name)/vehicle_control_cmd_manual"/>
+    <param name="role_name" value="$(arg role_name)"/>
+  </node>
+
+  <!-- Scenario Runner and an example scenario-->
+  <node pkg="rostopic" type="rostopic" name="publish_scenarios"
+    args="pub /carla/available_scenarios carla_ros_scenario_runner_types/CarlaScenarioList '{ 'scenarios':  
+      [
+        {
+          'name': 'FollowLeadingVehicle',
+          'scenario_file': '$(find carla_ad_demo)/config/FollowLeadingVehicle.xosc',
+          'destination': { 'position': { 'x': 7.1, 'y': 187.3, 'z': 0.0 } },
+          'target_speed': 15
+        }
+      ]
+    }' -l"/>
+  <include file="$(find carla_ros_scenario_runner)/launch/carla_ros_scenario_runner.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name="role_name" value="$(arg role_name)"/>
+    <arg name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
+
+  </include>
+
+  <!-- Rviz visualization-->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find carla_ad_demo)/config/carla_ad_demo.rviz" required="true" output="screen"/>
+
+</launch>

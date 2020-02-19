@@ -13,7 +13,7 @@ Additionally, services are provided to query CARLA waypoints.
 As the waypoint publisher requires some Carla PythonAPI functionality that is not part of the python egg-file, you
 have to extend your PYTHONPATH.
 
-    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/carla/
+    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/carla/
 
 To run it:
 
@@ -40,5 +40,5 @@ The calculated route is published:
 
 | Service                                                     | Description | Type                                                         |
 | ----------------------------------------------------------- | ----------- | -------------------------------------------------------------------- |
-| `/carla_waypoint_publisher/<ego vehicle name>/get_waypoint` | Get the waypoint for a specific location | [carla_waypoint_types.GetWaypoint](../carla_waypoint_types/srv/GetWaypoint.msg) |
-| `/carla_waypoint_publisher/<ego vehicle name>/get_actor_waypoint` | Get the waypoint for the ego vehicle | [carla_waypoint_types.GetActorWaypoint](../carla_waypoint_types/srv/GetActorWaypoint.msg) |
+| `/carla_waypoint_publisher/<ego vehicle name>/get_waypoint` | Get the waypoint for a specific location | [carla_waypoint_types.GetWaypoint](../carla_waypoint_types/srv/GetWaypoint.srv) |
+| `/carla_waypoint_publisher/<ego vehicle name>/get_actor_waypoint` | Get the waypoint for an actor id | [carla_waypoint_types.GetActorWaypoint](../carla_waypoint_types/srv/GetActorWaypoint.srv) |
