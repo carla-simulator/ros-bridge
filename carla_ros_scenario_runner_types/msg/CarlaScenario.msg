@@ -4,6 +4,8 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
-uint32 id
----
-carla_waypoint_types/CarlaWaypoint waypoint
+string name
+string scenario_file
+geometry_msgs/Pose destination
+float64 target_speed
+

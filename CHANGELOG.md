@@ -7,6 +7,10 @@
 *   Add node to convert a twist to a vehicle control command
 *   Add node carla_spectator_camera
 *   Update carla_waypoint_publisher
+*   Add carla_ros_scenario_runner
+*   Add rviz_carla_plugin
+*   Add carla_ad_agent
+*   Add carla_ad_demo
 
 ## CARLA-ROS-Bridge 0.9.6
 
