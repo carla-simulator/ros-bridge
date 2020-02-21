@@ -138,9 +138,20 @@ class CarlaEgoVehicle(object):
                                                                          spawn_point.location.z,
                                                                          spawn_point.rotation.yaw))
                 if self.player is not None:
-                    self.destroy()
+                    self.player.set_transform(spawn_point)
                 while self.player is None:
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+                    # Read sensors from file
+                    if not os.path.exists(self.sensor_definition_file):
+                        raise RuntimeError(
+                            "Could not read sensor-definition from {}".format(self.sensor_definition_file))
+                    json_sensors = None
+                    with open(self.sensor_definition_file) as handle:
+                        json_sensors = json.loads(handle.read())
+
+                    # Set up the sensors
+                    self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
+
             else:
                 if self.player is not None:
                     spawn_point = self.player.get_transform()
@@ -154,17 +165,6 @@ class CarlaEgoVehicle(object):
                         spawn_points) if spawn_points else carla.Transform()
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
 
-        if len(self.sensor_actors) ==0:
-            # Read sensors from file
-            if not os.path.exists(self.sensor_definition_file):
-                raise RuntimeError(
-                    "Could not read sensor-definition from {}".format(self.sensor_definition_file))
-            json_sensors = None
-            with open(self.sensor_definition_file) as handle:
-                json_sensors = json.loads(handle.read())
-
-            # Set up the sensors
-            self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
 
     def setup_sensors(self, sensors):
         """
