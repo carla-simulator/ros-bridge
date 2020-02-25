@@ -139,8 +139,7 @@ class CarlaEgoVehicle(object):
                                                                          spawn_point.rotation.yaw))
                 if self.player is not None:
                     spawn_vel = carla.Vector3d()
-                    self.player.set_velocity(spawn_vel)
-                    rospy.sleep(0.5)
+                    self.player.stop()
                     self.player.set_transform(spawn_point)
                 while self.player is None:
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
