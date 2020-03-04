@@ -163,7 +163,7 @@ class CarlaEgoVehicle(object):
             if not os.path.exists(self.sensor_definition_file):
                 raise RuntimeError(
                     "Could not read sensor-definition from {}".format(self.sensor_definition_file))
-                json_sensors = None
+            json_sensors = None
             with open(self.sensor_definition_file) as handle:
                 json_sensors = json.loads(handle.read())
 
@@ -171,7 +171,6 @@ class CarlaEgoVehicle(object):
             self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
 
             self.player_created = False
-
 
     def setup_sensors(self, sensors):
         """
