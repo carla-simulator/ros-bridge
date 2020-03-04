@@ -24,6 +24,7 @@ import carla
 # -- CarlaSpectatorCamera ------------------------------------------------------------
 # ==============================================================================
 
+
 class CarlaSpectatorCamera(object):
     """
     Spawns a camera, attached to an ego vehicle.
@@ -71,7 +72,7 @@ class CarlaSpectatorCamera(object):
             return None
         if self.pose.header.frame_id != self.role_name:
             rospy.logwarn("Unsupported frame received. Supported {}, received {}".format(
-                          self.role_name, self.pose.header.frame_id))
+                self.role_name, self.pose.header.frame_id))
             return None
         sensor_location = carla.Location(x=self.pose.pose.position.x,
                                          y=-self.pose.pose.position.y,
@@ -83,7 +84,7 @@ class CarlaSpectatorCamera(object):
             self.pose.pose.orientation.w
         )
         roll, pitch, yaw = euler_from_quaternion(quaternion)
-        #rotate to CARLA
+        # rotate to CARLA
         sensor_rotation = carla.Rotation(pitch=math.degrees(roll)-90,
                                          roll=math.degrees(pitch),
                                          yaw=-math.degrees(yaw)-90)
@@ -98,9 +99,9 @@ class CarlaSpectatorCamera(object):
             bp = bp_library.find("sensor.camera.rgb")
             bp.set_attribute('role_name', "spectator_view")
             rospy.loginfo("Creating camera with resolution {}x{}, fov {}".format(
-                          self.camera_resolution_x,
-                          self.camera_resolution_y,
-                          self.camera_fov))
+                self.camera_resolution_x,
+                self.camera_resolution_y,
+                self.camera_fov))
             bp.set_attribute('image_size_x', str(self.camera_resolution_x))
             bp.set_attribute('image_size_y', str(self.camera_resolution_y))
             bp.set_attribute('fov', str(self.camera_fov))
@@ -165,7 +166,7 @@ class CarlaSpectatorCamera(object):
         self.world = client.get_world()
 
         try:
-            r = rospy.Rate(10) # 10hz
+            r = rospy.Rate(10)  # 10hz
             while not rospy.is_shutdown():
                 self.find_ego_vehicle_actor()
                 r.sleep()

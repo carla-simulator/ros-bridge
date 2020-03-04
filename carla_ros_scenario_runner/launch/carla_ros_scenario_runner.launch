@@ -1,0 +1,16 @@
+<!-- -->
+<launch>
+  <arg name="host" default="localhost"/>
+  <arg name="port" default="2000"/>
+  <arg name="role_name" default="ego_vehicle"/>
+  <arg name="scenario_runner_path"/>
+
+  <node pkg="carla_ros_scenario_runner" type="carla_ros_scenario_runner.py" name="carla_ros_scenario_runner" output="screen" required="true">
+    <param name="host" value="$(arg host)"/>
+    <param name='port' value='$(arg port)'/>
+    <param name="role_name" value="$(arg role_name)"/>
+    <param name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
+  </node>
+
+</launch>
+
