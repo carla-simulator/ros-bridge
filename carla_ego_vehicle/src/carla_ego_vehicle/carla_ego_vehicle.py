@@ -52,6 +52,7 @@ class CarlaEgoVehicle(object):
         self.sensor_definition_file = rospy.get_param('~sensor_definition_file')
         self.world = None
         self.player = None
+        self.player_created = False
         self.sensor_actors = []
         self.actor_filter = rospy.get_param('~vehicle_filter', 'vehicle.*')
         self.actor_spawnpoint = None
@@ -138,33 +139,39 @@ class CarlaEgoVehicle(object):
                                                                          spawn_point.location.z,
                                                                          spawn_point.rotation.yaw))
                 if self.player is not None:
-                    self.destroy()
+                    self.player.set_transform(spawn_point)
                 while self.player is None:
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+                    self.player_created = True
+
             else:
                 if self.player is not None:
                     spawn_point = self.player.get_transform()
                     spawn_point.location.z += 2.0
                     spawn_point.rotation.roll = 0.0
                     spawn_point.rotation.pitch = 0.0
-                    self.destroy()
-                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+                    self.player.set_transform(spawn_point)
                 while self.player is None:
                     spawn_points = self.world.get_map().get_spawn_points()
                     spawn_point = secure_random.choice(
                         spawn_points) if spawn_points else carla.Transform()
                     self.player = self.world.try_spawn_actor(blueprint, spawn_point)
+                    self.player_created = True
 
-        # Read sensors from file
-        if not os.path.exists(self.sensor_definition_file):
-            raise RuntimeError(
-                "Could not read sensor-definition from {}".format(self.sensor_definition_file))
-        json_sensors = None
-        with open(self.sensor_definition_file) as handle:
-            json_sensors = json.loads(handle.read())
+        if self.player_created:
+            # Read sensors from file
+            if not os.path.exists(self.sensor_definition_file):
+                raise RuntimeError(
+                    "Could not read sensor-definition from {}".format(self.sensor_definition_file))
+                json_sensors = None
+            with open(self.sensor_definition_file) as handle:
+                json_sensors = json.loads(handle.read())
 
-        # Set up the sensors
-        self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
+            # Set up the sensors
+            self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
+
+            self.player_created = False
+
 
     def setup_sensors(self, sensors):
         """
