@@ -5,6 +5,7 @@ This meta package provides everything to launch a CARLA ROS environment with an 
 
 ![CARLA AD Demo](../docs/images/rviz_carla_plugin.png "rviz carla plugin")
 
+The Node setup is visualized [here](../docs/images/ad_demo.png "AD Demo Node Setup")
 
 ## Startup
 
