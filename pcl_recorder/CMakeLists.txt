@@ -13,7 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-roslaunch_add_file_check(launch)
+roslaunch_add_file_check(launch DEPENDENCIES
+  ${PROJECT_NAME}_node
+)
 
 include_directories(
   include

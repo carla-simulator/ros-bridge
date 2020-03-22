@@ -15,6 +15,7 @@
   <exec_depend>carla_twist_to_control</exec_depend>
   <exec_depend>carla_spectator_camera</exec_depend>
   <exec_depend>carla_ros_scenario_runner</exec_depend>
+  <exec_depend>rostopic</exec_depend>
   <export>
   </export>
 </package>
