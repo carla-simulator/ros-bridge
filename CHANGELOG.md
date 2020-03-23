@@ -1,5 +1,7 @@
 ## Latest changed
 
+## CARLA-ROS-Bridge 0.9.8
+
 *   change Lidar range in meters
 *   add new attributes for Gnss and Camera sensor
 *   add IMU and Radar sensor
