@@ -11,7 +11,8 @@ Classes to handle Carla traffic objects
 """
 
 from carla_ros_bridge.actor import Actor
-from carla_msgs.msg import CarlaTrafficLightStatus
+import carla_ros_bridge.transforms as trans
+from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo
 from carla import TrafficLightState
 
 
@@ -78,3 +79,17 @@ class TrafficLight(Actor):
         else:
             status.state = CarlaTrafficLightStatus.UNKNOWN
         return status
+
+    def get_info(self):
+        """
+        Get the info of the traffic light
+        """
+        info = CarlaTrafficLightInfo()
+        info.id = self.get_id()
+        info.transform = self.get_current_ros_pose()
+        info.trigger_volume.center = trans.carla_location_to_ros_point(
+            self.carla_actor.trigger_volume.location)
+        info.trigger_volume.size.x = self.carla_actor.trigger_volume.extent.x * 2.0
+        info.trigger_volume.size.y = self.carla_actor.trigger_volume.extent.y * 2.0
+        info.trigger_volume.size.z = self.carla_actor.trigger_volume.extent.z * 2.0
+        return info

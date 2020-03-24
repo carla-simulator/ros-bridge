@@ -264,6 +264,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | `/carla/marker`     | [visualization_msgs.Marker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html)             | visualization of vehicles and walkers |
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg)                                           | list of all carla actors              |
 | `/carla/traffic_lights` | [carla_msgs.CarlaTrafficLightStatusList](carla_msgs/msg/CarlaTrafficLightStatusList.msg)             | list of all traffic lights with their status |
+| `/carla/traffic_lights_info` | [carla_msgs.CarlaTrafficLightInfoList](carla_msgs/msg/CarlaTrafficLightInfoList.msg)             | static information for all traffic lights (e.g. position)|
 
 #### Status of CARLA
 
