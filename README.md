@@ -2,30 +2,40 @@
 
 This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
-**Important Note:**
-This documentation is for CARLA versions _newer_ than 0.9.4.
-
 ![rviz setup](./docs/images/rviz_carla_default.png "rviz")
-![depthcloud](./docs/images/depth_cloud_and_lidar.png "depthcloud")
-
-![short video](https://youtu.be/S_NoN2GBtdY)
 
 ## Features
 
--   [x] Cameras (depth, segmentation, rgb) support
--   [x] Transform publications
--   [x] Manual control using ackermann msg
--   [x] Handle ROS dependencies
--   [x] Marker/bounding box messages for cars/pedestrian
--   [x] Lidar sensor support
--   [x] Support CARLA synchronous mode
--   [ ] Add traffic light support
+- Provide Sensor Data (Lidar, Cameras (depth, segmentation, rgb), GNSS, Radar, IMU)
+- Provide Object Data (Transforms (via [tf](http://wiki.ros.org/tf)), Traffic light status, Visualization markers, Collision, Lane invasion)
+- Control AD Agents (Steer/Throttle/Brake)
+- Control CARLA (Support synchronous mode, Play/pause simulation, Set simulation parameters)
+
+### Additional Functionality
+
+Beside the bridging functionality, there are many more features provided in separate packages.
+
+| Name                              | Description                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| [Carla Ego Vehicle](carla_ego_vehicle/README.md) | Provides a generic way to spawn an ego vehicle and attach sensors to it. |
+| [Carla Manual Control](carla_manual_control/README.md) | A ROS-based visualization and control tool for an ego vehicle (similar to carla_manual_control.py provided by CARLA) |
+| [Carla Infrastructure](carla_infrastructure/README.md) | Provides a generic way to spawn a set of infrastructure sensors defined in a config file. |
+| [Carla Waypoint Publisher](carla_waypoint_publisher/README.md) | Provide routes and access to the Carla waypoint API |
+| [Carla ROS Scenario Runner](carla_ros_scenario_runner/README.md) | ROS node that wraps the functionality of the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) to execute scenarios. |
+| [Carla Ackermann Control](carla_ackermann_control/README.md) | A controller to convert ackermann commands to steer/throttle/brake|
+| [Carla AD Agent](carla_ad_agent/README.md) | A basic AD agent, that follows a route, avoids collisions with other vehicles and stops on red traffic lights. |
+| [RVIZ Carla Plugin](rviz_carla_plugin/README.md) | A [RVIZ](http://wiki.ros.org/rviz) plugin to visualize/control CARLA. |
+| [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
+
+For a quick overview, after following the [Setup section](#setup), please run the [CARLA AD Demo](carla_ad_demo/README.md). It provides a ready-to-use demonstrator of many of the features.
+
 
 ## Setup
 
-### For User
+### For Users
 
-    First add the apt repository:
+First add the apt repository:
+
 ##### For ROS Melodic Users
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 81061A1A042F527D &&
     sudo add-apt-repository "deb [trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
@@ -292,20 +302,6 @@ The following markers are supported in 'map'-frame:
 | Topic                              | Type                                                                                                   | Description                 |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------- |
 | `/carla/debug_marker` (subscriber) | [visualization_msgs.MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) | draw markers in CARLA world |
-
-
-## Additional Functionality
-
-| Name                              | Description                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| [Carla Ego Vehicle](carla_ego_vehicle/README.md) | Provides a generic way to spawn an ego vehicle and attach sensors to it. |
-| [Carla Infrastructure](carla_infrastructure/README.md) | Provides a generic way to spawn a set of infrastructure sensors defined in a config file. |
-| [Carla Waypoint Publisher](carla_waypoint_publisher/README.md) | Provide routes and access to the Carla waypoint API |
-| [Carla ROS Scenario Runner](carla_ros_scenario_runner/README.md) | ROS node that wraps the functionality of the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) to execute scenarios. |
-| [Carla AD Agent](carla_ad_agent/README.md) | A basic AD agent, that can follow a route and avoid collisions with other vehicles and stop on red traffic lights. |
-| [Carla AD Demo](carla_ad_demo/README.md) | A meta package that provides everything to launch a CARLA ROS environment with an AD vehicle. |
-| [RVIZ Carla Plugin](rviz_carla_plugin/README.md) | A [RVIZ](http://wiki.ros.org/rviz) plugin to visualize/control CARLA. |
-| [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
 ## Troubleshooting
 
