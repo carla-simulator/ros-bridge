@@ -29,5 +29,6 @@ class ScenarioRunnerRunner(ApplicationRunner):
         cmdline = ["/usr/bin/python", "{}/scenario_runner.py".format(self._path),
                    "--openscenario", "{}".format(scenario_file),
                    "--waitForEgo",
+                   "--timeout", "1000000",
                    "--host", self._host]
         return self.execute(cmdline, env=os.environ)
