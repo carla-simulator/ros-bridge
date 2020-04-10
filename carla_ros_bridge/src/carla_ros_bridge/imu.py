@@ -39,7 +39,7 @@ class ImuSensor(Sensor):
                                         parent=parent,
                                         communication=communication,
                                         synchronous_mode=synchronous_mode,
-                                        prefix="imu")
+                                        prefix="imu" + carla_actor.attributes.get('role_name'))
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
