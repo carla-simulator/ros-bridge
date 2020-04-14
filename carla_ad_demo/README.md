@@ -10,7 +10,7 @@ The Node setup is visualized [here](../docs/images/ad_demo.png "AD Demo Node Set
 ## Startup
 
     export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
-    export SCENARIO_RUNNER_PATH:=<path_to_scenario_runner>
+    export SCENARIO_RUNNER_PATH=<path_to_scenario_runner>
     roslaunch carla_ad_demo carla_ad_demo_with_rviz.launch
 
 ### Modes
