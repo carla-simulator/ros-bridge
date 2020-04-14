@@ -73,7 +73,11 @@ class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
             else:
                 control.steer = -max(-self.max_steering_angle, twist.angular.z) / \
                     self.max_steering_angle
-        self.pub.publish(control)
+        try:
+            self.pub.publish(control)
+        except rospy.ROSException as e:
+            if not rospy.is_shutdown():
+                rospy.logwarn("Error while publishing control: {}".format(e))
 
 
 def main():

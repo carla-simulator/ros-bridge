@@ -103,22 +103,32 @@ Start the ros bridge (choose one option):
     # Option 2: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
-## Settings
+## Configuration
 
-You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
+### Settings file
+
+You can modify the ros bridge configuration by editing [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
 
 If the rolename is within the list specified by ROS parameter `/carla/ego_vehicle/rolename`, the client is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
 
-### Mode
+### Launch file
 
-#### Default Mode
+Certain parameters can be set within the launch file [carla_ros_bridge.launch](carla_ros_bridge/launch/carla_ros_bridge.launch).
+
+#### Map
+
+The bridge is able to load a CARLA map by setting the launch-file parameter ```town```. Either specify an available CARLA Town (e.g. 'Town01') or a OpenDRIVE file (with ending '.xodr').
+
+#### Mode
+
+##### Default Mode
 
 In default mode (`synchronous_mode: false`) data is published:
 
 -   on every `world.on_tick()` callback
 -   on every `sensor.listen()` callback
 
-#### Synchronous Mode
+##### Synchronous Mode
 
 CAUTION: In synchronous mode, only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
 
@@ -126,7 +136,7 @@ In synchronous mode (`synchronous_mode: true`), the bridge waits for all sensor 
 
 Additionally you might set `synchronous_mode_wait_for_vehicle_control_command` to `true` to wait for a vehicle control command before executing the next tick.
 
-##### Control Synchronous Mode
+###### Control Synchronous Mode
 
 It is possible to control the simulation execution:
 
