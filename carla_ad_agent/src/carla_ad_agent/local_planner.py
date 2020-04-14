@@ -52,7 +52,6 @@ class LocalPlanner(object):
                                          PID controller
                                          {'K_P':, 'K_D':, 'K_I'}
         """
-        self._current_waypoint = None
         self.target_waypoint = None
         self._vehicle_controller = None
         self._global_plan = None
@@ -127,7 +126,6 @@ class LocalPlanner(object):
             if 'longitudinal_control_dict' in opt_dict:
                 args_longitudinal_dict = opt_dict['longitudinal_control_dict']
 
-        self._current_waypoint = self.get_waypoint(self._current_pose.position)
         self._vehicle_controller = VehiclePIDController(args_lateral=args_lateral_dict,
                                                         args_longitudinal=args_longitudinal_dict)
 
@@ -166,9 +164,6 @@ class LocalPlanner(object):
                         self._waypoints_queue.popleft())
                 else:
                     break
-
-        # current vehicle waypoint
-        self._current_waypoint = self.get_waypoint(self._current_pose.position)
 
         # target waypoint
         target_route_point = self._waypoint_buffer[0]
