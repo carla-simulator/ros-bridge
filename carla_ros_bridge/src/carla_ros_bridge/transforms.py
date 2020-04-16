@@ -207,7 +207,7 @@ def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
     return ros_vector
 
 
-def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation):
+def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation=None):
     """
     Convert a carla velocity to a ROS twist
 
@@ -218,13 +218,16 @@ def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, c
     :type carla_velocity: carla.Vector3D
     :param carla_angular_velocity: the carla angular velocity
     :type carla_angular_velocity: carla.Vector3D
-    :param carla_rotation: the carla rotation
+    :param carla_rotation: the carla rotation. If None, no rotation is executed
     :type carla_rotation: carla.Rotation
     :return: a ROS twist (with rotation)
     :rtype: geometry_msgs.msg.Twist
     """
     ros_twist = Twist()
-    ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
+    if carla_rotation:
+        ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
+    else:
+        ros_twist.linear = carla_location_to_ros_vector3(carla_linear_velocity)
     ros_twist.angular.x = math.radians(carla_angular_velocity.x)
     ros_twist.angular.y = -math.radians(carla_angular_velocity.y)
     ros_twist.angular.z = -math.radians(carla_angular_velocity.z)

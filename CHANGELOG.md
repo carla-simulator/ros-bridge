@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   ObjectSensor: Fix object twist
 *   Support loading OpenDRIVE map
 *   Traffic Lights: Only publish to /carla/traffic_lights on change
 *   Traffic Lights: Publish /carla/traffic_lights_info, containing the location and the trigger volume

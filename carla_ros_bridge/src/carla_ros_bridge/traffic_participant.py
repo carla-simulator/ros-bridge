@@ -68,7 +68,7 @@ class TrafficParticipant(Actor):
         odometry = Odometry(header=self.get_msg_header("map"))
         odometry.child_frame_id = self.get_prefix()
         odometry.pose.pose = self.get_current_ros_pose()
-        odometry.twist.twist = self.get_current_ros_twist()
+        odometry.twist.twist = self.get_current_ros_twist_rotated()
         self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
 
     def get_object_info(self):
