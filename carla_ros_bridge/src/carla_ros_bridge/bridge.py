@@ -52,7 +52,7 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.6"
+    CARLA_VERSION = "0.9.8"
 
     def __init__(self, carla_world, params):
         """
@@ -502,14 +502,23 @@ def main():
 
         carla_world = carla_client.get_world()
 
-        if "town" in parameters and carla_world.get_map().name != parameters["town"]:
-            rospy.loginfo("Loading new town: {} (previous: {})".format(
-                parameters["town"], carla_world.get_map().name))
-            carla_world = carla_client.load_world(parameters["town"])
+        if "town" in parameters:
+            if parameters["town"].endswith(".xodr"):
+                rospy.loginfo("Loading opendrive world from file '{}'".format(parameters["town"]))
+                with open(parameters["town"]) as od_file:
+                    data = od_file.read()
+                carla_world = carla_client.generate_opendrive_world(str(data))
+            else:
+                if carla_world.get_map().name != parameters["town"]:
+                    rospy.loginfo("Loading town '{}' (previous: '{}').".format(
+                        parameters["town"], carla_world.get_map().name))
+                    carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 
         carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
         carla_bridge.run()
+    except (IOError, RuntimeError) as e:
+        rospy.logerr("Error: {}".format(e))
     finally:
         del carla_world
         del carla_client

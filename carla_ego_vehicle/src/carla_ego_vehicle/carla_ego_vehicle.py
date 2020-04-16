@@ -180,8 +180,17 @@ class CarlaEgoVehicle(object):
         """
         actors = []
         bp_library = self.world.get_blueprint_library()
+        sensor_rolenames = []
         for sensor_spec in sensors:
             try:
+                if sensor_spec['id'] in sensor_rolenames:
+                    rospy.logfatal(
+                        "Sensor rolename '{}' is only allowed to be used once.".format(
+                            sensor_spec['id']))
+                    raise NameError(
+                        "Sensor rolename '{}' is only allowed to be used once.".format(
+                            sensor_spec['id']))
+                sensor_rolenames.append(sensor_spec['id'])
                 bp = bp_library.find(str(sensor_spec['type']))
                 bp.set_attribute('role_name', str(sensor_spec['id']))
                 if sensor_spec['type'].startswith('sensor.camera'):
@@ -305,7 +314,7 @@ class CarlaEgoVehicle(object):
             except KeyError as e:
                 rospy.logfatal(
                     "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))
-                continue
+                raise e
 
             # create sensor
             sensor_transform = carla.Transform(sensor_location, sensor_rotation)

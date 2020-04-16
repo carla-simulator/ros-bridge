@@ -1,12 +1,18 @@
 <!-- -->
 <launch>
+  <!-- CARLA connection -->
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
+
+  <!-- Ego vehicle -->
   <arg name='role_name' default='ego_vehicle'/>
   <arg name="vehicle_filter" default='vehicle.*'/>
-  <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
-  <arg name="spawn_point" default=""/>
+  <arg name="spawn_point" default=""/><!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
+
+  <!-- Map to load on startup (either a predefined CARLA town (e.g. 'Town01'), or a OpenDRIVE map file) -->
   <arg name="town" default=''/>
+
+  <!-- Synchronous mode-->
   <arg name='synchronous_mode' default=''/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default=''/>
   <arg name='fixed_delta_seconds' default=''/>
