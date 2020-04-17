@@ -180,17 +180,18 @@ class CarlaEgoVehicle(object):
         """
         actors = []
         bp_library = self.world.get_blueprint_library()
-        sensor_rolenames = []
+        sensor_names = []
         for sensor_spec in sensors:
             try:
-                if sensor_spec['id'] in sensor_rolenames:
+                sensor_name = str(sensor_spec['type']) + "/" + str(sensor_spec['id'])
+                if sensor_name in sensor_names:
                     rospy.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
                     raise NameError(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
-                sensor_rolenames.append(sensor_spec['id'])
+                sensor_names.append(sensor_name)
                 bp = bp_library.find(str(sensor_spec['type']))
                 bp.set_attribute('role_name', str(sensor_spec['id']))
                 if sensor_spec['type'].startswith('sensor.camera'):
