@@ -91,7 +91,10 @@ class CarlaAdAgent(object):
                 self._global_plan.poses)
             self._route_assigned = True
         else:
-            control = self._agent.run_step(self._target_speed)
+            control,finished = self._agent.run_step(self._target_speed)
+            if finished:
+                self._global_plan = None
+                self._route_assigned = False
 
         return control
 
@@ -102,12 +105,16 @@ class CarlaAdAgent(object):
 
         :return:
         """
-
+        r = rospy.Rate(10)
         while not rospy.is_shutdown():
-            control = self.run_step()
-            if control:
-                control.steer = -control.steer
-                self.vehicle_control_publisher.publish(control)
+            if self._global_plan:
+                control = self.run_step()
+                if control:
+                    control.steer = -control.steer
+                    self.vehicle_control_publisher.publish(control)
+            else:
+                r.sleep()
+
 
 
 def main():

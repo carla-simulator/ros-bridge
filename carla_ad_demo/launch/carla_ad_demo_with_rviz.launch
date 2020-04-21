@@ -68,7 +68,9 @@
         {
           'name': 'FollowLeadingVehicle',
           'scenario_file': '$(find carla_ad_demo)/config/FollowLeadingVehicle.xosc',
-          'destination': { 'position': { 'x': 7.1, 'y': 187.3, 'z': 0.0 } },
+          'waypoints': [
+            { 'position': { 'x': 7.1, 'y': 187.3, 'z': 0.0 } }
+          ],
           'target_speed': 15
         }
       ]
@@ -79,7 +81,8 @@
     <arg name='timeout' value='$(arg timeout)'/>
     <arg name="role_name" value="$(arg role_name)"/>
     <arg name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
-
+    <arg name="publish_waypoints" value="False"/> <!-- only usable if carla_wapoint_publisher is not publishing waypoints too-->
+    <arg name="publish_goal" value="True"/>
   </include>
 
   <!-- Rviz visualization-->

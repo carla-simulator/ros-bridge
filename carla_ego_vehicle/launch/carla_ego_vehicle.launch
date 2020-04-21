@@ -21,8 +21,8 @@
     This does not work for multiple ego-vehicles.
   -->
   <group if="$(eval remap_rviz_initialpose_goal)">
-    <node pkg="topic_tools" type="relay" name="goal_relay" args="/move_base_simple/goal /carla/ego_vehicle/goal"/>
-    <node pkg="topic_tools" type="relay" name="initialpose_relay" args="/initialpose /carla/ego_vehicle/initialpose"/>
+    <node pkg="topic_tools" type="relay" name="goal_relay_$(arg role_name)" args="/move_base_simple/goal /carla/$(arg role_name)/goal"/>
+    <node pkg="topic_tools" type="relay" name="initialpose_relay_$(arg role_name)" args="/initialpose /carla/$(arg role_name)/initialpose"/>
   </group>
 
   <node pkg="carla_ego_vehicle" type="carla_ego_vehicle.py" name="carla_ego_vehicle_$(arg role_name)" output="screen">

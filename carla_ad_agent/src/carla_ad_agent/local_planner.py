@@ -11,12 +11,9 @@ low-level waypoint following based on PID controllers.
 """
 
 from collections import deque
-import math
 import rospy
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Pose
-from tf.transformations import euler_from_quaternion
-from carla_waypoint_types.srv import GetWaypoint
 from carla_msgs.msg import CarlaEgoVehicleControl
 from vehicle_pid_controller import VehiclePIDController
 from misc import distance_vehicle
@@ -36,7 +33,7 @@ class LocalPlanner(object):
     # total distance)
     MIN_DISTANCE_PERCENTAGE = 0.9
 
-    def __init__(self, role_name, opt_dict=None):
+    def __init__(self, opt_dict=None):
         """
         :param vehicle: actor to apply to local planner logic onto
         :param opt_dict: dictionary of arguments with the following semantics:
@@ -52,53 +49,17 @@ class LocalPlanner(object):
                                          PID controller
                                          {'K_P':, 'K_D':, 'K_I'}
         """
-        self.target_waypoint = None
+        self.target_route_point = None
         self._vehicle_controller = None
-        self._global_plan = None
         self._waypoints_queue = deque(maxlen=20000)
         self._buffer_size = 5
         self._waypoint_buffer = deque(maxlen=self._buffer_size)
-        self._vehicle_yaw = None
-        self._current_speed = None
-        self._current_pose = None
 
         self._target_point_publisher = rospy.Publisher(
             "/next_target", PointStamped, queue_size=1)
-        rospy.wait_for_service('/carla_waypoint_publisher/{}/get_waypoint'.format(role_name))
-
-        self._get_waypoint_client = rospy.ServiceProxy(
-            '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
 
         # initializing controller
         self._init_controller(opt_dict)
-
-    def get_waypoint(self, location):
-        """
-        Helper to get waypoint from a ros service
-        """
-        try:
-            response = self._get_waypoint_client(location)
-            return response.waypoint
-        except (rospy.ServiceException, rospy.ROSInterruptException) as e:
-            if not rospy.is_shutdown:
-                rospy.logwarn("Service call failed: {}".format(e))
-
-    def odometry_updated(self, odo):
-        """
-        Callback on new odometry
-        """
-        self._current_speed = math.sqrt(odo.twist.twist.linear.x ** 2 +
-                                        odo.twist.twist.linear.y ** 2 +
-                                        odo.twist.twist.linear.z ** 2) * 3.6
-
-        self._current_pose = odo.pose.pose
-        quaternion = (
-            odo.pose.pose.orientation.x,
-            odo.pose.pose.orientation.y,
-            odo.pose.pose.orientation.z,
-            odo.pose.pose.orientation.w
-        )
-        _, _, self._vehicle_yaw = euler_from_quaternion(quaternion)
 
     def _init_controller(self, opt_dict):
         """
@@ -108,8 +69,6 @@ class LocalPlanner(object):
         :return:
         """
         # default params
-        self._current_speed = 0.0  # Km/h
-        self._current_pose = Pose()
         args_lateral_dict = {
             'K_P': 1.95,
             'K_D': 0.01,
@@ -129,24 +88,22 @@ class LocalPlanner(object):
         self._vehicle_controller = VehiclePIDController(args_lateral=args_lateral_dict,
                                                         args_longitudinal=args_longitudinal_dict)
 
-        self._global_plan = False
-
     def set_global_plan(self, current_plan):
         """
         set a global plan to follow
         """
-        self._waypoints_queue.clear()
+        self.target_route_point = None
         self._waypoint_buffer.clear()
+        self._waypoints_queue.clear()
         for elem in current_plan:
             self._waypoints_queue.append(elem.pose)
-        self._global_plan = True
 
-    def run_step(self, target_speed):
+    def run_step(self, target_speed, current_speed, current_pose):
         """
         Execute one step of local planning which involves running the longitudinal
         and lateral PID controllers to follow the waypoints trajectory.
         """
-        if not self._waypoints_queue:
+        if not self._waypoint_buffer and not self._waypoints_queue:
             control = CarlaEgoVehicleControl()
             control.steer = 0.0
             control.throttle = 0.0
@@ -154,7 +111,8 @@ class LocalPlanner(object):
             control.hand_brake = False
             control.manual_gear_shift = False
 
-            return control
+            rospy.loginfo("Route finished.")
+            return control,True
 
         #   Buffering the waypoints
         if not self._waypoint_buffer:
@@ -166,20 +124,17 @@ class LocalPlanner(object):
                     break
 
         # target waypoint
-        target_route_point = self._waypoint_buffer[0]
-
-        # for us redlight-detection
-        self.target_waypoint = self.get_waypoint(target_route_point.position)
+        self.target_route_point = self._waypoint_buffer[0]
 
         target_point = PointStamped()
         target_point.header.frame_id = "map"
-        target_point.point.x = target_route_point.position.x
-        target_point.point.y = target_route_point.position.y
-        target_point.point.z = target_route_point.position.z
+        target_point.point.x = self.target_route_point.position.x
+        target_point.point.y = self.target_route_point.position.y
+        target_point.point.z = self.target_route_point.position.z
         self._target_point_publisher.publish(target_point)
         # move using PID controllers
         control = self._vehicle_controller.run_step(
-            target_speed, self._current_speed, self._current_pose, target_route_point)
+            target_speed, current_speed, current_pose, self.target_route_point)
 
         # purge the queue of obsolete waypoints
         max_index = -1
@@ -189,10 +144,10 @@ class LocalPlanner(object):
 
         for i, route_point in enumerate(self._waypoint_buffer):
             if distance_vehicle(
-                    route_point, self._current_pose.position) < min_distance:
+                    route_point, current_pose.position) < min_distance:
                 max_index = i
         if max_index >= 0:
             for i in range(max_index + 1):
                 self._waypoint_buffer.popleft()
 
-        return control
+        return control,False
