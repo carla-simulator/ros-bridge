@@ -17,6 +17,7 @@ mkdir -p carla-ros-debian/carla-ros-bridge-$(rosversion -d)-0.9.8/carla-ros-brid
 
 cd carla-ros-debian/carla-ros-bridge
 
+#cloning carla-ros-bridge git repository
 git clone ${ROS_BRIDGE_GIT}
 rm -r ros-bridge/carla_msgs
 cp -a ros-bridge/* catkin_ws/src/
@@ -25,6 +26,7 @@ cd catkin_ws
 
 source /opt/ros/$(rosversion -d)/setup.bash
 
+#installing required dependency packages to build catkin_make
 sudo apt install ros-$(rosversion -d)-ainstein-radar-msgs ros-$(rosversion -d)-derived-object-msgs \
 ros-$(rosversion -d)-ackermann-msgs ros-$(rosversion -d)-carla-msgs ros-$(rosversion -d)-pcl-conversions \
 ros-$(rosversion -d)-rviz ros-$(rosversion -d)-rqt ros-$(rosversion -d)-pcl-ros
@@ -114,3 +116,4 @@ cd ..
 dpkg-buildpackage -uc -us -b #building debian package
 
 #install debian package using "sudo dpkg -i ../carla_ros-bridge-<rosversion>_amd64.deb"
+
