@@ -135,8 +135,9 @@ class CarlaRosBridge(object):
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
         self.carla_weather_subscriber = \
-            rospy.Subscriber("/carla/weather_control", CarlaWeatherParameters, self.on_weather_changed)
-                                
+            rospy.Subscriber("/carla/weather_control",
+                             CarlaWeatherParameters, self.on_weather_changed)
+
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
                                             communication=self.comm))
@@ -173,6 +174,10 @@ class CarlaRosBridge(object):
         rospy.loginfo("Exiting Bridge")
 
     def on_weather_changed(self, weather_parameters):
+        """
+        Callback on new weather parameters
+        :return:
+        """
         if not self.carla_world:
             return
         rospy.loginfo("Applying weather parameters...")
