@@ -16,7 +16,7 @@ import rospy
 
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Transform
 
 from carla import VehicleControl
 from carla import Vector3D
@@ -167,6 +167,9 @@ class EgoVehicle(Vehicle):
         """
         self.send_vehicle_msgs()
         super(EgoVehicle, self).update(frame, timestamp)
+        no_rotation = Transform()
+        no_rotation.rotation.x = 1.0
+        self.publish_transform(self.get_ros_transform(no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
 
     def destroy(self):
         """

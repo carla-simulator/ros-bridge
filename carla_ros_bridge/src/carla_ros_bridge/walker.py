@@ -23,7 +23,7 @@ class Walker(TrafficParticipant):
     Actor implementation details for pedestrians
     """
 
-    def __init__(self, carla_actor, parent, communication, prefix=None):
+    def __init__(self, carla_actor, parent, communication):
         """
         Constructor
 
@@ -36,7 +36,9 @@ class Walker(TrafficParticipant):
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        if not prefix:
+        if carla_actor.attributes.get('role_name'):
+            prefix = carla_actor.attributes.get('role_name')
+        else:
             prefix = "walker/{:03}".format(carla_actor.id)
 
         super(Walker, self).__init__(carla_actor=carla_actor,
@@ -47,6 +49,20 @@ class Walker(TrafficParticipant):
         self.control_subscriber = rospy.Subscriber(
             self.get_topic_prefix() + "/walker_control_cmd",
             CarlaWalkerControl, self.control_command_updated)
+
+    def destroy(self):
+        """
+        Function (override) to destroy this object.
+
+        Terminate ROS subscriptions
+        Finally forward call to super class.
+
+        :return:
+        """
+        rospy.logdebug("Destroy Walker(id={})".format(self.get_id()))
+        self.control_subscriber.unregister()
+        self.control_subscriber = None
+        super(Walker, self).destroy()
 
     def control_command_updated(self, ros_walker_control):
         """

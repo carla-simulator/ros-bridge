@@ -74,6 +74,12 @@ class CarlaRosBridge(object):
         self.actors = {}
         self.pseudo_actors = []
         self.carla_world = carla_world
+
+        weather = carla.WeatherParameters()
+        weather.cloudiness = 0
+        weather.precipitation = 0
+        weather.sun_altitude_angle = 90
+        self.carla_world.set_weather(weather)
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
         # set carla world settings

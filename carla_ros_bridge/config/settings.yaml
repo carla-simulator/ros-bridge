@@ -16,4 +16,4 @@ carla:
     # the role name of the vehicles that acts as ego vehicle for this ros bridge instance
     # Only the vehicles within this list are controllable from within ROS.
     # (the vehicle from CARLA is selected which has the attribute 'role_name' set to this value)
-    role_name: ["hero", "ego_vehicle"]
+    role_name: ["hero", "ego_vehicle", "hero1", "hero2", "hero3"]

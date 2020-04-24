@@ -296,6 +296,11 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | ------------------------------ | ---------------------------------------------------------------------------- | ------------------- |
 | `/carla/vehicle/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
 
+### TF
+
+The tf data is published for all actors. The child_frame_id correspond with the CARLA actor id.
+If a role name is specified, an additional (static) transform with role name as child_frame_id is published.
+
 ### Debug Marker
 
 It is possible to draw markers in CARLA.
