@@ -498,7 +498,7 @@ def main():
         carla_client = carla.Client(
             host=parameters['host'],
             port=parameters['port'])
-        carla_client.set_timeout(2.0)
+        carla_client.set_timeout(parameters['timeout'])
 
         carla_world = carla_client.get_world()
 
