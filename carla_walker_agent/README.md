@@ -1,13 +1,9 @@
-# CARLA AD Agent
+# CARLA Walker Agent
 
-An AD agent that can follow a given route.
-
-It avoids crashs with other vehicles and respects the state of the traffic lights.
-
-For a more comprehensive solution, have a look at [Autoware](https://www.autoware.ai/).
+An simple walker agent that can follow a given route.
 
 ## Publications
 
 | Topic                              | Type                | Description                 |
 | ---------------------------------- | ------------------- | --------------------------- |
-| `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs.CarlaEgoVehicleControl](../carla_msgs/msg/CarlaEgoVehicleControl.msg) | Vehicle control command |
+| `/carla/<ROLE NAME>/walker_control_cmd` | [carla_msgs.CarlaWalkerControl](../carla_msgs/msg/CarlaWalkerControl.msg) | Walker control command |

@@ -6,31 +6,44 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 """
-A basic AD agent using CARLA waypoints
+Agent for Walker
 """
 import rospy
-from nav_msgs.msg import Path
+import math
+from nav_msgs.msg import Path, Odometry
 from std_msgs.msg import Float64
 from carla_msgs.msg import CarlaWalkerControl
-from basic_agent import BasicAgent
+from geometry_msgs.msg import Pose, Vector3
 
 
-class CarlaAdAgent(object):
+class CarlaWalkerAgent(object):
     """
-    A basic AD agent using CARLA waypoints
+    walker agent
     """
+    # minimum distance to target waypoint before switching to next
+    MIN_DISTANCE = 0.5
 
-    def __init__(self, role_name, target_speed, avoid_risk,):
+    def __init__(self, role_name, target_speed):
         """
         Constructor
         """
         self._route_assigned = False
-        self._global_plan = None
-        self._agent = None
         self._target_speed = target_speed
+        self._waypoints = []
+        self._current_pose = Pose()
         rospy.on_shutdown(self.on_shutdown)
 
-        actor_id = None
+        #wait for ros bridge to create relevant topics
+        try:
+            rospy.wait_for_message(
+                 "/carla/{}/odometry".format(role_name), Odometry)
+        except rospy.ROSInterruptException as e:
+            if not rospy.is_shutdown():
+                raise e
+
+        self._odometry_subscriber = rospy.Subscriber(
+            "/carla/{}/odometry".format(role_name), Odometry, self.odometry_updated)
+
         self.control_publisher = rospy.Publisher(
             "/carla/{}/walker_control_cmd".format(role_name), CarlaWalkerControl, queue_size=1)
 
@@ -40,16 +53,12 @@ class CarlaAdAgent(object):
         self._target_speed_subscriber = rospy.Subscriber(
             "/carla/{}/target_speed".format(role_name), Float64, self.target_speed_updated)
 
-        self._agent = BasicAgent(role_name, actor_id,  # pylint: disable=no-member
-                                 avoid_risk)
-
     def on_shutdown(self):
         """
         callback on shutdown
         """
-        rospy.loginfo("Shutting down, stopping ego vehicle...")
-        if self._agent:
-            self.control_publisher.publish(self._agent.emergency_stop())
+        rospy.loginfo("Shutting down, stopping walker...")
+        self.control_publisher.publish(CarlaWalkerControl()) #stop
 
     def target_speed_updated(self, target_speed):
         """
@@ -62,34 +71,17 @@ class CarlaAdAgent(object):
         """
         callback on new route
         """
-        rospy.loginfo("New plan with {} waypoints received.".format(len(path.poses)))
-        if self._agent:
-            self.control_publisher.publish(self._agent.emergency_stop())
-        self._global_plan = path
-        self._route_assigned = False
+        rospy.loginfo("New plan with {} waypoints received. Assigning plan...".format(len(path.poses)))
+        self.control_publisher.publish(CarlaWalkerControl()) #stop
+        self._waypoints = []
+        for elem in path.poses:
+            self._waypoints.append(elem.pose)
 
-    def run_step(self):
+    def odometry_updated(self, odo):
         """
-        Execute one step of navigation.
+        callback on new odometry
         """
-        control = CarlaWalkerControl()
-
-        if not self._agent:
-            rospy.loginfo("Waiting for ego vehicle...")
-            return control
-
-        if not self._route_assigned and self._global_plan:
-            rospy.loginfo("Assigning plan...")
-            self._agent.set_global_plan(  # pylint: disable=protected-access
-                self._global_plan.poses)
-            self._route_assigned = True
-        else:
-            control,finished = self._agent.run_step(self._target_speed)
-            if finished:
-                self._global_plan = None
-                self._route_assigned = False
-
-        return control
+        self._current_pose = odo.pose.pose
 
     def run(self):
         """
@@ -98,19 +90,29 @@ class CarlaAdAgent(object):
 
         :return:
         """
-        r = rospy.Rate(10)
+        r = rospy.Rate(20)
         while not rospy.is_shutdown():
-            if self._global_plan:
-                control = self.run_step()
-                if control:
-                    self.control_publisher.publish(control)
-            else:
-                try:
-                    r.sleep()
-                except rospy.ROSInterruptException:
-                    pass
-
-
+            if self._waypoints:
+                control = CarlaWalkerControl()
+                direction = Vector3()
+                direction.x = self._waypoints[0].position.x - self._current_pose.position.x
+                direction.y = self._waypoints[0].position.y - self._current_pose.position.y
+                direction_norm = math.sqrt(direction.x**2 + direction.y**2)
+                if direction_norm > CarlaWalkerAgent.MIN_DISTANCE:
+                    control.speed = self._target_speed
+                    control.direction.x = direction.x / direction_norm
+                    control.direction.y = direction.y / direction_norm
+                else:
+                    self._waypoints = self._waypoints[1:]
+                    if self._waypoints:
+                        rospy.loginfo("next waypoint: {} {}".format(self._waypoints[0].position.x, self._waypoints[0].position.y))
+                    else:
+                        rospy.loginfo("Route finished.")
+                self.control_publisher.publish(control)
+            try:
+                r.sleep()
+            except rospy.ROSInterruptException:
+                pass
 
 def main():
     """
@@ -119,11 +121,10 @@ def main():
 
     :return:
     """
-    rospy.init_node('carla_ad_agent', anonymous=True)
+    rospy.init_node('carla_walker_agent', anonymous=True)
     role_name = rospy.get_param("~role_name", "ego_vehicle")
     target_speed = rospy.get_param("~target_speed", 20)
-    avoid_risk = rospy.get_param("~avoid_risk", True)
-    controller = CarlaAdAgent(role_name, target_speed, avoid_risk)
+    controller = CarlaWalkerAgent(role_name, target_speed)
     try:
         controller.run()
     finally:

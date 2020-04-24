@@ -11,7 +11,7 @@
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>topic_tools</exec_depend>
-  <exec_depend>carla_waypoint_types</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
   <exec_depend>carla_msgs</exec_depend>
   <export>
   </export>

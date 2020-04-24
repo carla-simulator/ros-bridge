@@ -17,8 +17,6 @@ catkin_package(
 
 catkin_install_python(PROGRAMS
   src/carla_walker_agent/carla_walker_agent.py
-  src/carla_walker_agent/basic_agent.py
-  src/carla_walker_agent/misc.py
   src/carla_walker_agent/__init__.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
