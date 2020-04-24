@@ -169,7 +169,8 @@ class EgoVehicle(Vehicle):
         super(EgoVehicle, self).update(frame, timestamp)
         no_rotation = Transform()
         no_rotation.rotation.x = 1.0
-        self.publish_transform(self.get_ros_transform(no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
+        self.publish_transform(self.get_ros_transform(
+            no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
 
     def destroy(self):
         """

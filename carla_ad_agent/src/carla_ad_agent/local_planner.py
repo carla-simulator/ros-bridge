@@ -13,7 +13,6 @@ low-level waypoint following based on PID controllers.
 from collections import deque
 import rospy
 from geometry_msgs.msg import PointStamped
-from geometry_msgs.msg import Pose
 from carla_msgs.msg import CarlaEgoVehicleControl
 from vehicle_pid_controller import VehiclePIDController
 from misc import distance_vehicle
@@ -112,7 +111,7 @@ class LocalPlanner(object):
             control.manual_gear_shift = False
 
             rospy.loginfo("Route finished.")
-            return control,True
+            return control, True
 
         #   Buffering the waypoints
         if not self._waypoint_buffer:
@@ -150,4 +149,4 @@ class LocalPlanner(object):
             for i in range(max_index + 1):
                 self._waypoint_buffer.popleft()
 
-        return control,False
+        return control, False

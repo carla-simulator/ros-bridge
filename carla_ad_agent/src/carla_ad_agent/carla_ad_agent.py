@@ -31,7 +31,7 @@ class CarlaAdAgent(object):
         rospy.on_shutdown(self.on_shutdown)
 
         # wait for ego vehicle
-	vehicle_info = None
+        vehicle_info = None
         try:
             vehicle_info = rospy.wait_for_message(
                 "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo)
@@ -96,7 +96,7 @@ class CarlaAdAgent(object):
                 self._global_plan.poses)
             self._route_assigned = True
         else:
-            control,finished = self._agent.run_step(self._target_speed)
+            control, finished = self._agent.run_step(self._target_speed)
             if finished:
                 self._global_plan = None
                 self._route_assigned = False
@@ -122,7 +122,6 @@ class CarlaAdAgent(object):
                     r.sleep()
                 except rospy.ROSInterruptException:
                     pass
-
 
 
 def main():

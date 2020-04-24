@@ -10,8 +10,8 @@ BasicAgent implements a basic agent that navigates scenes to reach a given
 target destination. This agent respects traffic lights and other vehicles.
 """
 
-import rospy
 import math
+import rospy
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
 from derived_object_msgs.msg import ObjectArray
@@ -31,7 +31,7 @@ class BasicAgent(Agent):
         """
         """
         super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk)
-        
+
         self._avoid_risk = avoid_risk
         self._current_speed = 0.0  # Km/h
         self._current_pose = Pose()
@@ -52,7 +52,8 @@ class BasicAgent(Agent):
             self._objects_subscriber = rospy.Subscriber(
                 "/carla/{}/objects".format(role_name), ObjectArray, self.objects_updated)
             self._get_actor_waypoint_client = rospy.ServiceProxy(
-                '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name), GetActorWaypoint)
+                '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
+                GetActorWaypoint)
 
         self._odometry_subscriber = rospy.Subscriber(
             "/carla/{}/odometry".format(role_name), Odometry, self.odometry_updated)
@@ -92,7 +93,8 @@ class BasicAgent(Agent):
             if "vehicle" in actor.type:
                 self._vehicle_id_list.append(actor.id)
             elif "traffic_light" in actor.type:
-                self._lights_id_list.append((actor.id, self.get_actor_waypoint(actor.id)))
+                self._lights_id_list.append(
+                    (actor.id, self.get_actor_waypoint(actor.id)))
 
     def objects_updated(self, objects):
         """
@@ -134,6 +136,7 @@ class BasicAgent(Agent):
         else:
             self._state = AgentState.NAVIGATING
             # standard local planner behavior
-            control,finished = self._local_planner.run_step(target_speed, self._current_speed, self._current_pose)
+            control, finished = self._local_planner.run_step(
+                target_speed, self._current_speed, self._current_pose)
 
-        return control,finished
+        return control, finished

@@ -31,7 +31,7 @@ class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
         rospy.loginfo("Wait for vehicle info...")
         try:
             vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
-                                                    CarlaEgoVehicleInfo)                        
+                                                  CarlaEgoVehicleInfo)
         except rospy.ROSInterruptException as e:
             if not rospy.is_shutdown():
                 raise e

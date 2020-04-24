@@ -131,7 +131,7 @@ class CarlaRosScenarioRunner(object):
                     self._scenario_runner.shutdown()
                     rospy.loginfo("Scenario Runner stopped.")
                 rospy.loginfo("Executing scenario {}...".format(current_req.name))
-                
+
                 # execute scenario
                 scenario_executed = self._scenario_runner.execute_scenario(
                     current_req.scenario_file)
@@ -139,11 +139,12 @@ class CarlaRosScenarioRunner(object):
                     # publish target speed
                     self._target_speed_publisher.publish(Float64(data=current_req.target_speed))
 
-                    # publish last pose of route as goal (can be used in conjunction with carla_waypoint_publisher)
+                    # publish last pose of route as goal
+                    # (can be used in conjunction with carla_waypoint_publisher)
                     if self._goal_publisher:
                         goal = PoseStamped()
                         if current_req.waypoints:
-                            goal.pose=current_req.waypoints[-1]
+                            goal.pose = current_req.waypoints[-1]
                         goal.header.stamp = rospy.get_rostime()
                         goal.header.frame_id = "map"
                         self._goal_publisher.publish(goal)
@@ -180,10 +181,11 @@ def main():
     rospy.init_node('carla_ros_scenario_runner', anonymous=True)
     role_name = rospy.get_param("~role_name", "ego_vehicle")
     scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
-    host = rospy.get_param("~host", "localhost")    
+    host = rospy.get_param("~host", "localhost")
     publish_waypoints = rospy.get_param("~publish_waypoints", False)
     publish_goal = rospy.get_param("~publish_goal", True)
-    scenario_runner = CarlaRosScenarioRunner(role_name, host, scenario_runner_path, publish_waypoints, publish_goal)
+    scenario_runner = CarlaRosScenarioRunner(
+        role_name, host, scenario_runner_path, publish_waypoints, publish_goal)
     try:
         scenario_runner.run()
     finally:
