@@ -38,11 +38,11 @@ First add the apt repository:
 
 ##### For ROS Melodic Users
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 81061A1A042F527D &&
-    sudo add-apt-repository "deb [trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
+    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
 
 ##### For ROS Kinetic Users
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9BE2A0CDC0161D6C &&
-    sudo add-apt-repository "deb [trusted=yes] http://dist.carla.org/carla-ros-bridge-kinetic xenial main"
+    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-kinetic xenial main"
 
 Then simply install the ROS bridge:
 
