@@ -43,7 +43,7 @@ from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl
+from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 
 class CarlaRosBridge(object):
@@ -75,11 +75,6 @@ class CarlaRosBridge(object):
         self.pseudo_actors = []
         self.carla_world = carla_world
 
-        weather = carla.WeatherParameters()
-        weather.cloudiness = 0
-        weather.precipitation = 0
-        weather.sun_altitude_angle = 90
-        self.carla_world.set_weather(weather)
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
         # set carla world settings
@@ -139,6 +134,9 @@ class CarlaRosBridge(object):
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
+        self.carla_weather_subscriber = \
+            rospy.Subscriber("/carla/weather_control", CarlaWeatherParameters, self.on_weather_changed)
+                                
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
                                             communication=self.comm))
@@ -164,6 +162,7 @@ class CarlaRosBridge(object):
         rospy.signal_shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
+        self.carla_weather_subscriber.unregister()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
             if self.on_tick_id:
@@ -172,6 +171,22 @@ class CarlaRosBridge(object):
         self._update_actors(set())
 
         rospy.loginfo("Exiting Bridge")
+
+    def on_weather_changed(self, weather_parameters):
+        if not self.carla_world:
+            return
+        rospy.loginfo("Applying weather parameters...")
+        weather = carla.WeatherParameters()
+        weather.cloudiness = weather_parameters.cloudiness
+        weather.precipitation = weather_parameters.precipitation
+        weather.precipitation_deposits = weather_parameters.precipitation_deposits
+        weather.wind_intensity = weather_parameters.wind_intensity
+        weather.fog_density = weather_parameters.fog_density
+        weather.fog_distance = weather_parameters.fog_distance
+        weather.wetness = weather_parameters.wetness
+        weather.sun_azimuth_angle = weather_parameters.sun_azimuth_angle
+        weather.sun_altitude_angle = weather_parameters.sun_altitude_angle
+        self.carla_world.set_weather(weather)
 
     def process_run_state(self):
         """
