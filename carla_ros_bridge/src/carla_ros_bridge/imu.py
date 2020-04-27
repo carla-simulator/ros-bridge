@@ -22,7 +22,7 @@ class ImuSensor(Sensor):
     Actor implementation details for imu sensor
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -34,12 +34,17 @@ class ImuSensor(Sensor):
         :type communication: carla_ros_bridge.communication
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
+        :param prefix: the topic prefix to be used for this actor.
+            If None, defaults to 'imu/<actor role name>'
+        :type prefix: string
         """
+        if prefix is None:
+            prefix = 'imu/' + carla_actor.attributes.get('role_name')
         super(ImuSensor, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
                                         communication=communication,
                                         synchronous_mode=synchronous_mode,
-                                        prefix="imu")
+                                        prefix=prefix)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
