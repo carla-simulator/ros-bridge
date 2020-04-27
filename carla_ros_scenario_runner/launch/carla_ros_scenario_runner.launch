@@ -4,12 +4,16 @@
   <arg name="port" default="2000"/>
   <arg name="role_name" default="ego_vehicle"/>
   <arg name="scenario_runner_path"/>
+  <arg name="publish_waypoints" default="False"/>
+  <arg name="publish_goal" default="True"/>
 
   <node pkg="carla_ros_scenario_runner" type="carla_ros_scenario_runner.py" name="carla_ros_scenario_runner" output="screen" required="true">
     <param name="host" value="$(arg host)"/>
     <param name='port' value='$(arg port)'/>
     <param name="role_name" value="$(arg role_name)"/>
     <param name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
+    <param name="publish_waypoints" value="$(arg publish_waypoints)" />
+    <param name="publish_goal" value="$(arg publish_goal)" />
   </node>
 
 </launch>

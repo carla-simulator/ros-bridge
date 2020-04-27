@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Rework tf frame names
 *   ObjectSensor: Fix object twist
 *   Support loading OpenDRIVE map
 *   Traffic Lights: Only publish to /carla/traffic_lights on change

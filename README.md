@@ -24,6 +24,7 @@ Beside the bridging functionality, there are many more features provided in sepa
 | [Carla ROS Scenario Runner](carla_ros_scenario_runner/README.md) | ROS node that wraps the functionality of the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) to execute scenarios. |
 | [Carla Ackermann Control](carla_ackermann_control/README.md) | A controller to convert ackermann commands to steer/throttle/brake|
 | [Carla AD Agent](carla_ad_agent/README.md) | A basic AD agent, that follows a route, avoids collisions with other vehicles and stops on red traffic lights. |
+| [Carla Walker Agent](carla_walker_agent/README.md) | A basic walker agent, that follows a route. |
 | [RVIZ Carla Plugin](rviz_carla_plugin/README.md) | A [RVIZ](http://wiki.ros.org/rviz) plugin to visualize/control CARLA. |
 | [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
@@ -275,6 +276,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg)                                           | list of all carla actors              |
 | `/carla/traffic_lights` | [carla_msgs.CarlaTrafficLightStatusList](carla_msgs/msg/CarlaTrafficLightStatusList.msg)             | list of all traffic lights with their status |
 | `/carla/traffic_lights_info` | [carla_msgs.CarlaTrafficLightInfoList](carla_msgs/msg/CarlaTrafficLightInfoList.msg)             | static information for all traffic lights (e.g. position)|
+| `/carla/weather_control` | [carla_msgs.CarlaWeatherParameters](carla_msgs/msg/CarlaWeatherParameters.msg)             | set the CARLA weather parameters|
 
 #### Status of CARLA
 
@@ -295,6 +297,19 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | Topic                          | Type                                                                         | Description         |
 | ------------------------------ | ---------------------------------------------------------------------------- | ------------------- |
 | `/carla/vehicle/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
+
+### TF
+
+The tf data is published for all traffic participants and sensors. 
+
+#### TF for traffic participants
+
+The `child_frame_id` corresponds with the CARLA actor id.
+If a role name is specified, an additional (static) transform with role name as child_frame_id is published.
+
+#### TF for sensors
+
+Sensors publish the transform, when the measurement is done. The `child_frame_id` corresponds with the prefix of the sensor topics.
 
 ### Debug Marker
 

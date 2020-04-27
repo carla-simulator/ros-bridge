@@ -56,21 +56,6 @@ class Vehicle(TrafficParticipant):
                                       communication=communication,
                                       prefix=prefix)
 
-    def update(self, frame, timestamp):
-        """
-        Function (override) to update this object.
-
-        On update vehicles send:
-        - tf global frame
-        - object message
-        - marker message
-
-        :return:
-        """
-        self.publish_transform(self.get_ros_transform())
-        self.publish_marker()
-        super(Vehicle, self).update(frame, timestamp)
-
     def get_marker_color(self):  # pylint: disable=no-self-use
         """
         Function (override) to return the color for marker messages.

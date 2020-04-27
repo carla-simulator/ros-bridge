@@ -29,8 +29,14 @@ class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
         Constructor
         """
         rospy.loginfo("Wait for vehicle info...")
-        vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
-                                              CarlaEgoVehicleInfo)
+        try:
+            vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
+                                                  CarlaEgoVehicleInfo)
+        except rospy.ROSInterruptException as e:
+            if not rospy.is_shutdown():
+                raise e
+            else:
+                sys.exit(0)
         if not vehicle_info.wheels:  # pylint: disable=no-member
             rospy.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
             sys.exit(1)
