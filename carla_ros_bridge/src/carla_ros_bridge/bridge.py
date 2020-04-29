@@ -519,17 +519,18 @@ def main():
             host=parameters['host'],
             port=parameters['port'])
         carla_client.set_timeout(parameters['timeout'])
-        
+
         # check carla version
         dist = pkg_resources.get_distribution("carla")
         if StrictVersion(dist.version) != StrictVersion(CarlaRosBridge.CARLA_VERSION):
             rospy.logfatal("CARLA python module version {} required. Found: {}".format(
-                    CarlaRosBridge.CARLA_VERSION, dist.version))
+                CarlaRosBridge.CARLA_VERSION, dist.version))
             sys.exit(1)
-        
-        if StrictVersion(carla_client.get_server_version()) != StrictVersion(CarlaRosBridge.CARLA_VERSION):
+
+        if StrictVersion(carla_client.get_server_version()) != \
+           StrictVersion(CarlaRosBridge.CARLA_VERSION):
             rospy.logfatal("CARLA Server version {} required. Found: {}".format(
-                    CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
+                CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
             sys.exit(1)
 
         carla_world = carla_client.get_world()
