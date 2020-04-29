@@ -1,5 +1,7 @@
 ## Latest changed
 
+*   Improve version check
+*   Fix cleanup
 *   Rework tf frame names
 *   ObjectSensor: Fix object twist
 *   Support loading OpenDRIVE map

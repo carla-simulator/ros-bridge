@@ -8,6 +8,7 @@
 """
 A basic AD agent using CARLA waypoints
 """
+import sys
 import rospy
 from nav_msgs.msg import Path
 from std_msgs.msg import Float64
@@ -35,9 +36,9 @@ class CarlaAdAgent(object):
         try:
             vehicle_info = rospy.wait_for_message(
                 "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo)
-        except rospy.ROSInterruptException as e:
-            if not rospy.is_shutdown():
-                raise e
+        except rospy.ROSException:
+            rospy.logerr("Timeout while waiting for world info!")
+            sys.exit(1)
 
         self._route_subscriber = rospy.Subscriber(
             "/carla/{}/waypoints".format(role_name), Path, self.path_updated)
