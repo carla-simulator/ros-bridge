@@ -18,6 +18,7 @@ except ImportError:
 import rospy
 
 from carla_ros_bridge.actor import Actor
+import carla_ros_bridge.transforms as trans
 
 
 class Sensor(Actor):
@@ -99,7 +100,8 @@ class Sensor(Actor):
                         float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
-                self.publish_transform(self.get_ros_transform(carla_sensor_data.transform))
+                self.publish_transform(self.get_ros_transform(
+                    trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
                 self.sensor_data_updated(carla_sensor_data)
 
     @abstractmethod
@@ -128,7 +130,8 @@ class Sensor(Actor):
                 rospy.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
                 self.publish_transform(
-                    self.get_ros_transform(carla_sensor_data.transform))
+                    self.get_ros_transform(
+                        trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -145,7 +148,9 @@ class Sensor(Actor):
                         rospy.logdebug("{}({}): process {}".format(
                             self.__class__.__name__, self.get_id(), frame))
                         self.publish_transform(
-                            self.get_ros_transform(carla_sensor_data.transform))
+                            self.get_ros_transform(
+                                trans.carla_transform_to_ros_transform(
+                                    carla_sensor_data.transform)))
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     else:

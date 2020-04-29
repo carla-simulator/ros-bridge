@@ -24,6 +24,7 @@ Beside the bridging functionality, there are many more features provided in sepa
 | [Carla ROS Scenario Runner](carla_ros_scenario_runner/README.md) | ROS node that wraps the functionality of the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) to execute scenarios. |
 | [Carla Ackermann Control](carla_ackermann_control/README.md) | A controller to convert ackermann commands to steer/throttle/brake|
 | [Carla AD Agent](carla_ad_agent/README.md) | A basic AD agent, that follows a route, avoids collisions with other vehicles and stops on red traffic lights. |
+| [Carla Walker Agent](carla_walker_agent/README.md) | A basic walker agent, that follows a route. |
 | [RVIZ Carla Plugin](rviz_carla_plugin/README.md) | A [RVIZ](http://wiki.ros.org/rviz) plugin to visualize/control CARLA. |
 | [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
@@ -38,11 +39,11 @@ First add the apt repository:
 
 ##### For ROS Melodic Users
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 81061A1A042F527D &&
-    sudo add-apt-repository "deb [trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
+    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
 
 ##### For ROS Kinetic Users
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9BE2A0CDC0161D6C &&
-    sudo add-apt-repository "deb [trusted=yes] http://dist.carla.org/carla-ros-bridge-kinetic xenial main"
+    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-kinetic xenial main"
 
 Then simply install the ROS bridge:
 
@@ -103,22 +104,32 @@ Start the ros bridge (choose one option):
     # Option 2: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 
-## Settings
+## Configuration
 
-You can setup the ros bridge configuration [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
+### Settings file
+
+You can modify the ros bridge configuration by editing [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
 
 If the rolename is within the list specified by ROS parameter `/carla/ego_vehicle/rolename`, the client is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
 
-### Mode
+### Launch file
 
-#### Default Mode
+Certain parameters can be set within the launch file [carla_ros_bridge.launch](carla_ros_bridge/launch/carla_ros_bridge.launch).
+
+#### Map
+
+The bridge is able to load a CARLA map by setting the launch-file parameter ```town```. Either specify an available CARLA Town (e.g. 'Town01') or a OpenDRIVE file (with ending '.xodr').
+
+#### Mode
+
+##### Default Mode
 
 In default mode (`synchronous_mode: false`) data is published:
 
 -   on every `world.on_tick()` callback
 -   on every `sensor.listen()` callback
 
-#### Synchronous Mode
+##### Synchronous Mode
 
 CAUTION: In synchronous mode, only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
 
@@ -126,7 +137,7 @@ In synchronous mode (`synchronous_mode: true`), the bridge waits for all sensor 
 
 Additionally you might set `synchronous_mode_wait_for_vehicle_control_command` to `true` to wait for a vehicle control command before executing the next tick.
 
-##### Control Synchronous Mode
+###### Control Synchronous Mode
 
 It is possible to control the simulation execution:
 
@@ -265,6 +276,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg)                                           | list of all carla actors              |
 | `/carla/traffic_lights` | [carla_msgs.CarlaTrafficLightStatusList](carla_msgs/msg/CarlaTrafficLightStatusList.msg)             | list of all traffic lights with their status |
 | `/carla/traffic_lights_info` | [carla_msgs.CarlaTrafficLightInfoList](carla_msgs/msg/CarlaTrafficLightInfoList.msg)             | static information for all traffic lights (e.g. position)|
+| `/carla/weather_control` | [carla_msgs.CarlaWeatherParameters](carla_msgs/msg/CarlaWeatherParameters.msg)             | set the CARLA weather parameters|
 
 #### Status of CARLA
 
@@ -285,6 +297,19 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | Topic                          | Type                                                                         | Description         |
 | ------------------------------ | ---------------------------------------------------------------------------- | ------------------- |
 | `/carla/vehicle/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
+
+### TF
+
+The tf data is published for all traffic participants and sensors. 
+
+#### TF for traffic participants
+
+The `child_frame_id` corresponds with the CARLA actor id.
+If a role name is specified, an additional (static) transform with role name as child_frame_id is published.
+
+#### TF for sensors
+
+Sensors publish the transform, when the measurement is done. The `child_frame_id` corresponds with the prefix of the sensor topics.
 
 ### Debug Marker
 

@@ -43,7 +43,7 @@ from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl
+from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 
 class CarlaRosBridge(object):
@@ -52,7 +52,7 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.6"
+    CARLA_VERSION = "0.9.8"
 
     def __init__(self, carla_world, params):
         """
@@ -74,6 +74,7 @@ class CarlaRosBridge(object):
         self.actors = {}
         self.pseudo_actors = []
         self.carla_world = carla_world
+
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
         # set carla world settings
@@ -133,6 +134,10 @@ class CarlaRosBridge(object):
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
+        self.carla_weather_subscriber = \
+            rospy.Subscriber("/carla/weather_control",
+                             CarlaWeatherParameters, self.on_weather_changed)
+
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
                                             communication=self.comm))
@@ -158,6 +163,7 @@ class CarlaRosBridge(object):
         rospy.signal_shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
+        self.carla_weather_subscriber.unregister()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
             if self.on_tick_id:
@@ -166,6 +172,26 @@ class CarlaRosBridge(object):
         self._update_actors(set())
 
         rospy.loginfo("Exiting Bridge")
+
+    def on_weather_changed(self, weather_parameters):
+        """
+        Callback on new weather parameters
+        :return:
+        """
+        if not self.carla_world:
+            return
+        rospy.loginfo("Applying weather parameters...")
+        weather = carla.WeatherParameters()
+        weather.cloudiness = weather_parameters.cloudiness
+        weather.precipitation = weather_parameters.precipitation
+        weather.precipitation_deposits = weather_parameters.precipitation_deposits
+        weather.wind_intensity = weather_parameters.wind_intensity
+        weather.fog_density = weather_parameters.fog_density
+        weather.fog_distance = weather_parameters.fog_distance
+        weather.wetness = weather_parameters.wetness
+        weather.sun_azimuth_angle = weather_parameters.sun_azimuth_angle
+        weather.sun_altitude_angle = weather_parameters.sun_altitude_angle
+        self.carla_world.set_weather(weather)
 
     def process_run_state(self):
         """
@@ -498,18 +524,27 @@ def main():
         carla_client = carla.Client(
             host=parameters['host'],
             port=parameters['port'])
-        carla_client.set_timeout(2.0)
+        carla_client.set_timeout(parameters['timeout'])
 
         carla_world = carla_client.get_world()
 
-        if "town" in parameters and carla_world.get_map().name != parameters["town"]:
-            rospy.loginfo("Loading new town: {} (previous: {})".format(
-                parameters["town"], carla_world.get_map().name))
-            carla_world = carla_client.load_world(parameters["town"])
+        if "town" in parameters:
+            if parameters["town"].endswith(".xodr"):
+                rospy.loginfo("Loading opendrive world from file '{}'".format(parameters["town"]))
+                with open(parameters["town"]) as od_file:
+                    data = od_file.read()
+                carla_world = carla_client.generate_opendrive_world(str(data))
+            else:
+                if carla_world.get_map().name != parameters["town"]:
+                    rospy.loginfo("Loading town '{}' (previous: '{}').".format(
+                        parameters["town"], carla_world.get_map().name))
+                    carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 
         carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
         carla_bridge.run()
+    except (IOError, RuntimeError) as e:
+        rospy.logerr("Error: {}".format(e))
     finally:
         del carla_world
         del carla_client

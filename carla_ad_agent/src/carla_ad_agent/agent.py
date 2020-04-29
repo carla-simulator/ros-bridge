@@ -33,7 +33,7 @@ class Agent(object):
     Base class for agent
     """
 
-    def __init__(self, role_name, vehicle_id):
+    def __init__(self, role_name, vehicle_id, avoid_risk):
         """
         """
         self._proximity_threshold = 10.0  # meters
@@ -44,27 +44,30 @@ class Agent(object):
         self._vehicle_id = vehicle_id
         self._last_traffic_light = None
 
-        rospy.wait_for_service('/carla_waypoint_publisher/{}/get_waypoint'.format(role_name))
+        if avoid_risk:
+            rospy.wait_for_service('/carla_waypoint_publisher/{}/get_waypoint'.format(role_name))
 
-        self._get_waypoint_client = rospy.ServiceProxy(
-            '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
+            self._get_waypoint_client = rospy.ServiceProxy(
+                '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
 
-        self._traffic_lights = []
-        self._traffic_light_status_subscriber = rospy.Subscriber(
-            "/carla/traffic_lights", CarlaTrafficLightStatusList, self.traffic_lights_updated)
+            self._traffic_lights = []
+            self._traffic_light_status_subscriber = rospy.Subscriber(
+                "/carla/traffic_lights", CarlaTrafficLightStatusList, self.traffic_lights_updated)
 
-        self._world_info_subscriber = rospy.Subscriber(
-            "/carla/world_info", CarlaWorldInfo, self.world_info_updated)
+            self._world_info_subscriber = rospy.Subscriber(
+                "/carla/world_info", CarlaWorldInfo, self.world_info_updated)
 
     def traffic_lights_updated(self, traffic_lights):
         """
         callback on new traffic light list
+        Only used if risk should be avoided.
         """
         self._traffic_lights = traffic_lights.traffic_lights
 
     def world_info_updated(self, world_info):
         """
         callback on new world info
+        Only used if risk should be avoided.
         """
         self._map_name = world_info.map_name
 
@@ -80,14 +83,6 @@ class Agent(object):
             odo.pose.pose.orientation.w
         )
         _, _, self._vehicle_yaw = euler_from_quaternion(quaternion)
-
-    def run_step(self, target_speed):  # pylint: disable=no-self-use,unused-argument
-        """
-        Execute one step of navigation.
-        :return: control
-        """
-        control = CarlaEgoVehicleControl()
-        return control
 
     def _is_light_red(self, lights_list):
         """
@@ -144,7 +139,8 @@ class Agent(object):
 
     def get_waypoint(self, location):
         """
-        Helper to get waypoint for location via ros service
+        Helper to get waypoint for location via ros service.
+        Only used if risk should be avoided.
         """
         if rospy.is_shutdown():
             return None
@@ -177,8 +173,13 @@ class Agent(object):
             # It is too late. Do not block the intersection! Keep going!
             return (False, None)
 
-        if self._local_planner.target_waypoint is not None:
-            if self._local_planner.target_waypoint.is_junction:
+        if self._local_planner.target_route_point is not None:
+            target_waypoint = self.get_waypoint(self._local_planner.target_route_point.position)
+            if not target_waypoint:
+                if not rospy.is_shutdown():
+                    rospy.logwarn("Could not get waypoint for target route point.")
+                return (False, None)
+            if target_waypoint.is_junction:
                 min_angle = 180.0
                 sel_magnitude = 0.0  # pylint: disable=unused-variable
                 sel_traffic_light = None

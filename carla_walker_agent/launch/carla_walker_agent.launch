@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+  <arg name="role_name" default="ego_vehicle"/>
+  <arg name="target_speed" default="2"/>
+  <arg name="mode" default="vehicle"/>
+
+  <node pkg="carla_walker_agent" type="carla_walker_agent.py" name="carla_walker_agent_$(arg role_name)" output="screen">
+    <param name="target_speed" value="$(arg target_speed)" />
+    <param name="role_name" value="$(arg role_name)" />
+    <param name="mode" value="$(arg mode)" />
+  </node>
+</launch>
+

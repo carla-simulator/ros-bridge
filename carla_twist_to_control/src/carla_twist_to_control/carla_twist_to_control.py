@@ -29,8 +29,14 @@ class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
         Constructor
         """
         rospy.loginfo("Wait for vehicle info...")
-        vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
-                                              CarlaEgoVehicleInfo)
+        try:
+            vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
+                                                  CarlaEgoVehicleInfo)
+        except rospy.ROSInterruptException as e:
+            if not rospy.is_shutdown():
+                raise e
+            else:
+                sys.exit(0)
         if not vehicle_info.wheels:  # pylint: disable=no-member
             rospy.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
             sys.exit(1)
@@ -73,7 +79,11 @@ class TwistToVehicleControl(object):  # pylint: disable=too-few-public-methods
             else:
                 control.steer = -max(-self.max_steering_angle, twist.angular.z) / \
                     self.max_steering_angle
-        self.pub.publish(control)
+        try:
+            self.pub.publish(control)
+        except rospy.ROSException as e:
+            if not rospy.is_shutdown():
+                rospy.logwarn("Error while publishing control: {}".format(e))
 
 
 def main():
