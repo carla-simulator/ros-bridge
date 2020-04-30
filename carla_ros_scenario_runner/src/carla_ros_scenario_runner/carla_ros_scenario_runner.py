@@ -47,7 +47,7 @@ class CarlaRosScenarioRunner(object):
     Execute scenarios via ros service
     """
 
-    def __init__(self, role_name, host, scenario_runner_path, publish_waypoints, publish_goal):
+    def __init__(self, role_name, host, port, scenario_runner_path, publish_waypoints, publish_goal):
         """
         Constructor
         """
@@ -69,6 +69,7 @@ class CarlaRosScenarioRunner(object):
         self._scenario_runner = ScenarioRunnerRunner(
             scenario_runner_path,
             host,
+            port,
             self.scenario_runner_status_updated,
             self.scenario_runner_log)
         self._request_queue = queue.Queue()
@@ -182,10 +183,11 @@ def main():
     role_name = rospy.get_param("~role_name", "ego_vehicle")
     scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
     host = rospy.get_param("~host", "localhost")
+    port = rospy.get_param("~port", 2000)
     publish_waypoints = rospy.get_param("~publish_waypoints", False)
     publish_goal = rospy.get_param("~publish_goal", True)
     scenario_runner = CarlaRosScenarioRunner(
-        role_name, host, scenario_runner_path, publish_waypoints, publish_goal)
+        role_name, host, port, scenario_runner_path, publish_waypoints, publish_goal)
     try:
         scenario_runner.run()
     finally:
