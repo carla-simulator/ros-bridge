@@ -7,7 +7,5 @@ catkin_python_setup()
 
 catkin_package()
 
-catkin_install_python(PROGRAMS
-  src/carla_common/transforms.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+catkin_install_python(PROGRAMS src/carla_common/transforms.py DESTINATION
+                      ${CATKIN_PACKAGE_BIN_DESTINATION})
