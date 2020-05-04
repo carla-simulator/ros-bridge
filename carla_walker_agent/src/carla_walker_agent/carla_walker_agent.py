@@ -33,10 +33,10 @@ class CarlaWalkerAgent(object):
         self._current_pose = Pose()
         rospy.on_shutdown(self.on_shutdown)
 
-        #wait for ros bridge to create relevant topics
+        # wait for ros bridge to create relevant topics
         try:
             rospy.wait_for_message(
-                 "/carla/{}/odometry".format(role_name), Odometry)
+                "/carla/{}/odometry".format(role_name), Odometry)
         except rospy.ROSInterruptException as e:
             if not rospy.is_shutdown():
                 raise e
@@ -58,7 +58,7 @@ class CarlaWalkerAgent(object):
         callback on shutdown
         """
         rospy.loginfo("Shutting down, stopping walker...")
-        self.control_publisher.publish(CarlaWalkerControl()) #stop
+        self.control_publisher.publish(CarlaWalkerControl())  # stop
 
     def target_speed_updated(self, target_speed):
         """
@@ -72,7 +72,7 @@ class CarlaWalkerAgent(object):
         callback on new route
         """
         rospy.loginfo("New plan with {} waypoints received. Assigning plan...".format(len(path.poses)))
-        self.control_publisher.publish(CarlaWalkerControl()) #stop
+        self.control_publisher.publish(CarlaWalkerControl())  # stop
         self._waypoints = []
         for elem in path.poses:
             self._waypoints.append(elem.pose)
@@ -105,7 +105,8 @@ class CarlaWalkerAgent(object):
                 else:
                     self._waypoints = self._waypoints[1:]
                     if self._waypoints:
-                        rospy.loginfo("next waypoint: {} {}".format(self._waypoints[0].position.x, self._waypoints[0].position.y))
+                        rospy.loginfo("next waypoint: {} {}".format(
+                            self._waypoints[0].position.x, self._waypoints[0].position.y))
                     else:
                         rospy.loginfo("Route finished.")
                 self.control_publisher.publish(control)
@@ -113,6 +114,7 @@ class CarlaWalkerAgent(object):
                 r.sleep()
             except rospy.ROSInterruptException:
                 pass
+
 
 def main():
     """
