@@ -28,6 +28,7 @@ from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWor
 PKG = 'test_roslaunch'
 TIMEOUT = 20
 
+
 class TestClock(unittest.TestCase):
 
     """
