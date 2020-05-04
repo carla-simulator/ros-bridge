@@ -522,12 +522,12 @@ def main():
 
         # check carla version
         dist = pkg_resources.get_distribution("carla")
-        if LooseVersion(dist.version) <= LooseVersion(CarlaRosBridge.CARLA_VERSION):
+        if LooseVersion(dist.version) < LooseVersion(CarlaRosBridge.CARLA_VERSION):
             rospy.logfatal("CARLA python module version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, dist.version))
             sys.exit(1)
 
-        if LooseVersion(carla_client.get_server_version()) <= \
+        if LooseVersion(carla_client.get_server_version()) < \
            LooseVersion(CarlaRosBridge.CARLA_VERSION):
             rospy.logfatal("CARLA Server version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
