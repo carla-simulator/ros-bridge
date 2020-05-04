@@ -75,7 +75,7 @@ install:
 script:
   - catkin build
   - export SCENARIO_RUNNER_PATH="" # the env var needs to be set for testing
-  - catkin test
+  - if [ ! $ROS_DISTRO -eq kinetic ]; then catkin test; fi;
   - catkin config --install
   - source devel/setup.bash
   - cd src/ros-bridge
