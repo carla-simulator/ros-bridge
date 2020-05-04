@@ -17,6 +17,7 @@ catkin_python_setup()
 catkin_package()
 
 roslaunch_add_file_check(launch)
+roslaunch_add_file_check(test)
 
 include_directories(
    ${catkin_INCLUDE_DIRS}
@@ -41,7 +42,7 @@ install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
-if(CATKIN_ENABLE_TESTING)
+if(CATKIN_ENABLE_TESTING AND NOT $ENV{CI})
   find_package(rostest REQUIRED)
   add_rostest(test/ros_bridge_client.test)
 endif()

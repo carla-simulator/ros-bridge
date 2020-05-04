@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-roslaunch_add_file_check(launch)
+roslaunch_add_file_check(launch IGNORE_UNSET_ARGS)
 
 catkin_package(
         CATKIN_DEPENDS
