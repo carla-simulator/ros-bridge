@@ -16,6 +16,7 @@
   <exec_depend>carla_spectator_camera</exec_depend>
   <exec_depend>carla_ros_scenario_runner</exec_depend>
   <exec_depend>rostopic</exec_depend>
+  <exec_depend>rviz</exec_depend>
   <export>
   </export>
 </package>
