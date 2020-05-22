@@ -4,7 +4,7 @@ Setup for carla_ros_bridge
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
-    if ROS_VERSION == 1:
+if ROS_VERSION == 1:
     from distutils.core import setup
     from catkin_pkg.python_setup import generate_distutils_setup
 
@@ -34,7 +34,7 @@ elif ROS_VERSION == 2:
         zip_safe=True,
         maintainer='CARLA Simulator Team',
         maintainer_email='carla.simulator@gmail.com',
-        description='CARLA ego vehicle for ROS2 bridge',
+        description='CARLA ROS2 bridge',
         license='MIT',
         tests_require=['pytest'],
         entry_points={
