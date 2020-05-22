@@ -30,6 +30,6 @@
     value="$(arg town)"
     unless="$(eval town == '')"/>
 
-  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen"/>
+  <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen" required="true"/>
     
 </launch>
