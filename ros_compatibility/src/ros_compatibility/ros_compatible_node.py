@@ -88,7 +88,7 @@ else:
 
 def main():
     print('This is a ros1 - ros2 compatibility module.',
-          'It's not meant to be executed, but rather imported')
+          'It is not meant to be executed, but rather imported')
 
 
 if __name__ == '__main__':
