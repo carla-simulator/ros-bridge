@@ -82,13 +82,13 @@ elif ROS_VERSION == 2:
             rclpy.shutdown()
 
 else:
-    raise NotImplementedError("Make sure you have valid " +
-                              "ROS_VERSION env variable")
+    raise NotImplementedError('Make sure you have valid ' +
+                              'ROS_VERSION env variable')
 
 
 def main():
     print('This is a ros1 - ros2 compatibility module.',
-          "It's not meant to be executed, but rather imported")
+          'It's not meant to be executed, but rather imported')
 
 
 if __name__ == '__main__':
