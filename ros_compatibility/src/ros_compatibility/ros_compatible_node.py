@@ -83,7 +83,7 @@ elif ROS_VERSION == 2:
 
 else:
     raise NotImplementedError("Make sure you have valid " +
-                              "ROS_VERSION env variable");
+                              "ROS_VERSION env variable")
 
 
 def main():
