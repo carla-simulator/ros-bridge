@@ -20,6 +20,7 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 from abc import abstractmethod
 
 import os
+import sys
 import random
 import math
 import json
@@ -354,9 +355,10 @@ class CarlaEgoVehicle(object):
         rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
             rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException as e:
+        except rospy.ROSException:
             rospy.logerr("Timeout while waiting for world info!")
-            raise e
+            sys.exit(1)
+
         rospy.loginfo("CARLA world available. Spawn ego vehicle...")
 
         client = carla.Client(self.host, self.port)
