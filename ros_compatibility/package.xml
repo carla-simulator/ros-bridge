@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ros_compatibility</name>
+  <version>0.0.0</version>
+  <description>The ros_compatibility package</description>
+  <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
+  <license>MIT</license>
+
+  <!-- ROS 2 DEPENDENCIES-->
+  <depend condition="$ROS_VERSION == 2">rclpy</depend>
+
+  <!-- ROS 1 DEPENDENCIES-->
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <build_depend condition="$ROS_VERSION == 1">rospy</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">std_msgs</build_depend>
+  <build_export_depend condition="$ROS_VERSION == 1">rospy</build_export_depend>
+  <build_export_depend condition="$ROS_VERSION == 1">std_msgs</build_export_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">std_msgs</exec_depend>
+
+  <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
+  </export>
+</package>
