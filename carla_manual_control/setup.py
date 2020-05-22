@@ -34,7 +34,7 @@ elif ROS_VERSION == 2:
         zip_safe=True,
         maintainer='CARLA Simulator Team',
         maintainer_email='carla.simulator@gmail.com',
-        description='CARLA ego vehicle for ROS2 bridge',
+        description='CARLA manual control for ROS2 bridge',
         license='MIT',
         tests_require=['pytest'],
         entry_points={

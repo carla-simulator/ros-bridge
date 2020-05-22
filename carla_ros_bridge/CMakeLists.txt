@@ -1,15 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(carla_ros_bridge)
 
-## Find catkin macros and libraries
-find_package(ament_cmake QUIET)
-if ( ament_cmake_FOUND )
-    find_package(rclpy REQUIRED)
+find_package(ros_environment REQUIRED)
+set(ROS_VERSION $ENV{ROS_VERSION})
 
-    ament_export_dependencies(rclpy)
-    ament_package()
-
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+if (${ROS_VERSION} EQUAL 1)
 
 	find_package(catkin REQUIRED COMPONENTS
 	  rospy
@@ -54,4 +49,11 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 	  find_package(rostest REQUIRED)
 	  add_rostest(test/ros_bridge_client.test)
 	endif()
+
+elseif (${ROS_VERSION} EQUAL 2)
+    find_package(ament_cmake REQUIRED)
+    find_package(rclpy REQUIRED)
+    ament_export_dependencies(rclpy)
+    ament_package()
+
 endif()
