@@ -155,15 +155,11 @@ class Actor(PseudoActor):
         """
         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
 
-        :param use_parent_frame: per default (True) the header.frame_id
-            is set to the frame of the actor's parent.
-            If this is set to False, the actor's own frame is used as basis.
-        :type use_parent_frame:  boolean
         :return:
         visualization_msgs.msg.Marker
         """
         marker = Marker(
-            header=self.get_msg_header())
+            header=self.get_msg_header(frame_id=str(self.get_id())))
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()

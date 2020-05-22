@@ -15,6 +15,7 @@ try:
 except ImportError:
     import Queue as queue
 
+import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
@@ -52,7 +53,7 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.8"
+    CARLA_VERSION = "0.9.9"
 
     def __init__(self, carla_world, params):
         """
@@ -63,13 +64,6 @@ class CarlaRosBridge(object):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
-        # check CARLA version
-        dist = pkg_resources.get_distribution("carla")
-        if LooseVersion(dist.version) < LooseVersion(self.CARLA_VERSION):
-            raise ImportError(
-                "CARLA version {} or newer required. CARLA version found: {}".format(
-                    self.CARLA_VERSION, dist))
-
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -525,6 +519,19 @@ def main():
             host=parameters['host'],
             port=parameters['port'])
         carla_client.set_timeout(parameters['timeout'])
+
+        # check carla version
+        dist = pkg_resources.get_distribution("carla")
+        if LooseVersion(dist.version) < LooseVersion(CarlaRosBridge.CARLA_VERSION):
+            rospy.logfatal("CARLA python module version {} required. Found: {}".format(
+                CarlaRosBridge.CARLA_VERSION, dist.version))
+            sys.exit(1)
+
+        if LooseVersion(carla_client.get_server_version()) < \
+           LooseVersion(CarlaRosBridge.CARLA_VERSION):
+            rospy.logfatal("CARLA Server version {} required. Found: {}".format(
+                CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
+            sys.exit(1)
 
         carla_world = carla_client.get_world()
 

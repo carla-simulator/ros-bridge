@@ -11,6 +11,7 @@ The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
 
+import sys
 import math
 import rospy
 from tf.transformations import euler_from_quaternion
@@ -157,9 +158,9 @@ class CarlaSpectatorCamera(object):
         rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
             rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException as e:
-            rospy.logerr("Timeout while waiting for world info!")
-            raise e
+        except rospy.ROSException:
+            rospy.logerr("Error while waiting for world info!")
+            sys.exit(1)
         rospy.loginfo("CARLA world available. Waiting for ego vehicle...")
 
         client = carla.Client(self.host, self.port)

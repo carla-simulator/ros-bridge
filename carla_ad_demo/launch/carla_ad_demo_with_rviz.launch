@@ -78,7 +78,6 @@
   <include file="$(find carla_ros_scenario_runner)/launch/carla_ros_scenario_runner.launch">
     <arg name='host' value='$(arg host)'/>
     <arg name='port' value='$(arg port)'/>
-    <arg name='timeout' value='$(arg timeout)'/>
     <arg name="role_name" value="$(arg role_name)"/>
     <arg name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
     <arg name="publish_waypoints" value="False"/> <!-- only usable if carla_wapoint_publisher is not publishing waypoints too-->

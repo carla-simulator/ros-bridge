@@ -18,6 +18,7 @@ The calculated route is published on '/carla/<ROLE NAME>/waypoints'
 Additionally, services are provided to interface CARLA waypoints.
 """
 import math
+import sys
 import threading
 
 import rospy
@@ -214,7 +215,7 @@ class CarlaToRosWaypointConverter(object):
             goal.location.y,
             goal.location.z))
 
-        dao = GlobalRoutePlannerDAO(self.world.get_map())
+        dao = GlobalRoutePlannerDAO(self.world.get_map(), sampling_resolution=1)
         grp = GlobalRoutePlanner(dao)
         grp.setup()
         route = grp.trace_route(self.ego_vehicle.get_location(),
@@ -254,15 +255,14 @@ def main():
     """
     main function
     """
-    rospy.init_node("carla_waypoint_publisher", anonymous=True)
-
-    # wait for ros-bridge to set up CARLA world
-    rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
     try:
+        rospy.init_node("carla_waypoint_publisher", anonymous=True)
+        # wait for ros-bridge to set up CARLA world
+        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-    except rospy.ROSException as e:
-        rospy.logerr("Timeout while waiting for world info!")
-        raise e
+    except rospy.ROSException:
+        rospy.logerr("Error while waiting for world info!")
+        sys.exit(1)
 
     host = rospy.get_param("/carla/host", "127.0.0.1")
     port = rospy.get_param("/carla/port", 2000)
