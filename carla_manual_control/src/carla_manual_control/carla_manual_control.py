@@ -27,7 +27,6 @@ Use ARROWS or WASD keys for control.
 """
 
 from __future__ import print_function
-# import random
 import os
 import datetime
 import math
@@ -363,8 +362,6 @@ class HUD(CompatibleNode):
             self.tf_listener_node = rclpy.create_node("tf_listener")
             self.tfBuffer = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tfBuffer, node=self.tf_listener_node)
-            # for pub in self.tf_listener.node.publishers:
-            #     print(pub.topic)
             self.time = Time()
             self.callback_group = ReentrantCallbackGroup()
 
