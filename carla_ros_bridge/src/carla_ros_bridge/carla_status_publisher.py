@@ -9,14 +9,24 @@
 """
 report the carla status
 """
+import os
 
-import rospy
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    import rospy
+    from ros_compatibility import CompatibleNode
+elif ROS_VERSION == 2:
+    import rclpy
+    from rclpy.callback_groups import ReentrantCallbackGroup
+    # TODO: import ros_compatibilty
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 from carla_msgs.msg import CarlaStatus
 
 
-class CarlaStatusPublisher(object):
-
+class CarlaStatusPublisher(CompatibleNode):
     """
     report the carla status
     """
@@ -26,12 +36,19 @@ class CarlaStatusPublisher(object):
         Constructor
 
         """
+        super(CarlaStatusPublisher, self).__init__("carla_status_publisher",
+                                                   latch=True,
+                                                   rospy_init=False)
         self.synchronous_mode = synchronous_mode
         self.synchronous_mode_running = True
         self.fixed_delta_seconds = fixed_delta_seconds
         self.frame = 0
-        self.carla_status_publisher = rospy.Publisher(
-            "/carla/status", CarlaStatus, queue_size=10, latch=True)
+        if ROS_VERSION == 1:
+            callback_group = None
+        elif ROS_VERSION == 2:
+            callback_group = ReentrantCallBackGroup()
+        self.carla_status_publisher = self.new_publisher(CarlaStatus, "/carla/status",
+                                                         callback_group=callback_group)
         self.publish()
 
     def publish(self):
