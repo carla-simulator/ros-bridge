@@ -5,6 +5,8 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     import rospy
 
+    latch_on = True
+
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         if from_sec:
             return rospy.Time.from_sec(sec)
@@ -23,10 +25,7 @@ if ROS_VERSION == 1:
     class QoSProfile():
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
-            if durability is not None and durability is not False:
-                self.latch = True
-            else:
-                self.latch = False
+            self.latch = bool(durability)
 
     class CompatibleNode(object):
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
@@ -92,6 +91,8 @@ elif ROS_VERSION == 2:
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     import rclpy
     from builtin_interfaces.msg import Time
+
+    latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         time = Time()
