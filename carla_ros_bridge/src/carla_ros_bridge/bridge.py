@@ -79,9 +79,9 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode = False
             carla_world.apply_settings(self.carla_settings)
 
-        rospy.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
+        self.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
         self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-        rospy.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
+        self.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
         self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
         carla_world.apply_settings(self.carla_settings)
 
@@ -202,15 +202,15 @@ class CarlaRosBridge(object):
 
             if self.carla_run_state == CarlaControl.PAUSE:
                 # wait for next command
-                rospy.loginfo("State set to PAUSED")
+                self.loginfo("State set to PAUSED")
                 self.status_publisher.set_synchronous_mode_running(False)
                 command = self.carla_control_queue.get()
             elif self.carla_run_state == CarlaControl.PLAY:
-                rospy.loginfo("State set to PLAY")
+                self.loginfo("State set to PLAY")
                 self.status_publisher.set_synchronous_mode_running(True)
                 return
             elif self.carla_run_state == CarlaControl.STEP_ONCE:
-                rospy.loginfo("Execute single step.")
+                self.loginfo("Execute single step.")
                 self.status_publisher.set_synchronous_mode_running(True)
                 self.carla_control_queue.put(CarlaControl.PAUSE)
                 return
@@ -235,10 +235,9 @@ class CarlaRosBridge(object):
 
             self.status_publisher.set_frame(frame)
             self.comm.update_clock(world_snapshot.timestamp)
-            rospy.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(
-                frame))
+            self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(frame))
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
-            rospy.logdebug("Waiting for sensor data finished.")
+            self.logdebug("Waiting for sensor data finished.")
             self.comm.send_msgs()
             self._update_actors(set([x.id for x in world_snapshot]))
 
@@ -246,9 +245,9 @@ class CarlaRosBridge(object):
                 # wait for all ego vehicles to send a vehicle control command
                 if self._expected_ego_vehicle_control_command_ids:
                     if not self._all_vehicle_control_commands_received.wait(1):
-                        rospy.logwarn("Timeout (1s) while waiting for vehicle control commands. "
-                                      "Missing command from actor ids {}".format(
-                                          self._expected_ego_vehicle_control_command_ids))
+                        self.logwarn("Timeout (1s) while waiting for vehicle control commands. "
+                                     "Missing command from actor ids {}".format(
+                            self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
     def _carla_time_tick(self, carla_snapshot):
@@ -312,7 +311,7 @@ class CarlaRosBridge(object):
                 # remove actor
                 actor = self.actors[id_to_delete]
                 with self.update_lock:
-                    rospy.loginfo("Remove {}(id={}, parent_id={}, prefix={})".format(
+                    self.loginfo("Remove {}(id={}, parent_id={}, prefix={})".format(
                         actor.__class__.__name__, actor.get_id(),
                         actor.get_parent_id(),
                         actor.get_prefix()))
@@ -323,7 +322,7 @@ class CarlaRosBridge(object):
                 updated_pseudo_actors = []
                 for pseudo_actor in self.pseudo_actors:
                     if pseudo_actor.get_parent_id() == id_to_delete:
-                        rospy.loginfo("Remove {}(parent_id={}, prefix={})".format(
+                        self.loginfo("Remove {}(parent_id={}, prefix={})".format(
                             pseudo_actor.__class__.__name__,
                             pseudo_actor.get_parent_id(),
                             pseudo_actor.get_prefix()))
@@ -430,16 +429,15 @@ class CarlaRosBridge(object):
         else:
             actor = Actor(carla_actor, parent, self.comm)
 
-        rospy.loginfo("Created {}(id={}, parent_id={},"
-                      " type={}, prefix={}, attributes={})".format(
-                          actor.__class__.__name__, actor.get_id(),
-                          actor.get_parent_id(), carla_actor.type_id,
-                          actor.get_prefix(), carla_actor.attributes))
+        self.loginfo("Created {}(id={}, parent_id={},"
+                     " type={}, prefix={}, attributes={})".format(actor.__class__.__name__, actor.get_id(),
+                                                                  actor.get_parent_id(), carla_actor.type_id,
+                                                                  actor.get_prefix(), carla_actor.attributes))
         with self.update_lock:
             self.actors[carla_actor.id] = actor
 
         for pseudo_actor in pseudo_actors:
-            rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
+            self.loginfo("Created {}(parent_id={}, prefix={})".format(
                 pseudo_actor.__class__.__name__,
                 pseudo_actor.get_parent_id(),
                 pseudo_actor.get_prefix()))
@@ -466,7 +464,7 @@ class CarlaRosBridge(object):
         This function is registered at rospy as shutdown handler.
 
         """
-        rospy.loginfo("Shutdown requested")
+        self.loginfo("Shutdown requested")
         self.destroy()
 
     def _update(self, frame_id, timestamp):
@@ -483,7 +481,7 @@ class CarlaRosBridge(object):
             try:
                 self.actors[actor_id].update(frame_id, timestamp)
             except RuntimeError as e:
-                rospy.logwarn("Update actor {}({}) failed: {}".format(
+                self.logwarn("Update actor {}({}) failed: {}".format(
                     self.actors[actor_id].__class__.__name__, actor_id, e))
                 continue
 
@@ -495,7 +493,7 @@ class CarlaRosBridge(object):
             if ego_vehicle_id in self._expected_ego_vehicle_control_command_ids:
                 self._expected_ego_vehicle_control_command_ids.remove(ego_vehicle_id)
             else:
-                rospy.logwarn(
+                self.logwarn(
                     "Unexpected vehicle control command received from {}".format(ego_vehicle_id))
             if not self._expected_ego_vehicle_control_command_ids:
                 self._all_vehicle_control_commands_received.set()
