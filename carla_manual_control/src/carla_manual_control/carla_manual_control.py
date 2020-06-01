@@ -208,23 +208,25 @@ class KeyboardControl(CompatibleNode):
         if ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
 
-        fast_qos_profile = QoSProfile(depth=1)
+        fast_qos = QoSProfile(depth=1)
+        fast_latched_qos = QoSProfile(depth=1, durability=latch_on)  # imported from ros_compat.
 
-        self.vehicle_control_manual_override_publisher = self.new_publisher(Bool,
-                                                                            "/carla/{}/vehicle_control_manual_override".format(
-                                                                                self.role_name),
-                                                                            qos_profile=fast_qos_profile)
+        self.vehicle_control_manual_override_publisher = \
+            self.new_publisher(Bool,
+                               "/carla/{}/vehicle_control_manual_override".format(self.role_name),
+                               qos_profile=fast_latched_qos)
 
         self.vehicle_control_manual_override = False
 
-        self.auto_pilot_enable_publisher = self.new_publisher(Bool,
-                                                              "/carla/{}/enable_autopilot".format(self.role_name),
-                                                              qos_profile=fast_qos_profile)
+        self.auto_pilot_enable_publisher = \
+            self.new_publisher(Bool,
+                               "/carla/{}/enable_autopilot".format(self.role_name),
+                               qos_profile=fast_qos)
 
-        self.vehicle_control_publisher = self.new_publisher(CarlaEgoVehicleControl,
-                                                            "/carla/{}/vehicle_control_cmd_manual".format(
-                                                                self.role_name),
-                                                            qos_profile=fast_qos_profile)
+        self.vehicle_control_publisher = \
+            self.new_publisher(CarlaEgoVehicleControl,
+                               "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
+                               qos_profile=fast_qos)
 
         self.carla_status_subscriber = self.create_subscriber(CarlaStatus,
                                                               "/carla/status",
