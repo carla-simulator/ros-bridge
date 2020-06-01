@@ -56,7 +56,8 @@ elif ROS_VERSION == 2:
     import tf2_ros
     from rclpy.qos import QoSProfile
     from threading import Thread, Lock, Event
-    from builtin_interfaces.msg import Time
+    # from builtin_interfaces.msg import Time
+    from rosgraph_msgs.msg import Clock
 
     sys.path.append(os.getcwd() + '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     from ros_compatible_node import CompatibleNode
@@ -397,7 +398,7 @@ class HUD(CompatibleNode):
                                                         "/carla/status",
                                                         self.carla_status_updated)
         if ROS_VERSION == 2:
-            self.clock_subscriber = self.create_subscriber(Time,
+            self.clock_subscriber = self.create_subscriber(Clock,
                                                            "/clock",
                                                            self.clock_status_updated)
 
@@ -418,8 +419,8 @@ class HUD(CompatibleNode):
         """
         self._notifications.tick(clock)
 
-    def clock_status_updated(self, time):
-        self.time = time
+    def clock_status_updated(self, clock):
+        self.time = clock.get_time()
 
     def carla_status_updated(self, data):
         """
