@@ -9,13 +9,26 @@
 """
 Class to handle Carla camera sensors
 """
+import os
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    import rospy
+    from tf import transformations
+    from ros_compatibility import *
+elif ROS_VERSION == 2:
+    import rclpy
+    import cv2
+    import transformations
+    # TODO: import ros_compatibilty
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
 from abc import abstractmethod
 
 import math
 import numpy
 
-import rospy
-import tf
 from cv_bridge import CvBridge
 from sensor_msgs.msg import CameraInfo
 
@@ -55,8 +68,8 @@ class Camera(Sensor):
                                      prefix=prefix)
 
         if self.__class__.__name__ == "Camera":
-            rospy.logwarn("Created Unsupported Camera Actor"
-                          "(id={}, parent_id={}, type={}, attributes={})".format(
+            self.logwarn("Created Unsupported Camera Actor"
+                         "(id={}, parent_id={}, type={}, attributes={})".format(
                               self.get_id(), self.get_parent_id(),
                               self.carla_actor.type_id, self.carla_actor.attributes))
         else:
@@ -96,7 +109,7 @@ class Camera(Sensor):
         """
         if ((carla_image.height != self._camera_info.height) or
                 (carla_image.width != self._camera_info.width)):
-            rospy.logerr(
+            self.logerr(
                 "Camera{} received image not matching configuration".format(self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_image=carla_image)
@@ -124,12 +137,12 @@ class Camera(Sensor):
         tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        quat_swap = tf.transformations.quaternion_from_matrix(
+        quat_swap = transformations.quaternion_from_matrix(
             [[0, 0, 1, 0],
              [-1, 0, 0, 0],
              [0, -1, 0, 0],
              [0, 0, 0, 1]])
-        quat = tf.transformations.quaternion_multiply(quat, quat_swap)
+        quat = transformations.quaternion_multiply(quat, quat_swap)
 
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
             quat)
