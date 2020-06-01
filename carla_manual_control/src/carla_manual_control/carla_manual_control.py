@@ -410,6 +410,7 @@ class HUD(CompatibleNode):
             self.gnss_subscriber.destroy()
             self.vehicle_status_subscriber.destroy()
             self.vehicle_info_subscriber.destroy()
+            self.clock_subscriber.destroy()
 
     def tick(self, clock):
         """
