@@ -22,27 +22,27 @@ import pkg_resources
 
 import carla
 
-from carla_ros_bridge.actor import Actor
-from carla_ros_bridge.communication import Communication
-from carla_ros_bridge.sensor import Sensor
+from src.carla_ros_bridge.actor import Actor
+from src.carla_ros_bridge.communication import Communication
+from src.carla_ros_bridge.sensor import Sensor
 
-from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from carla_ros_bridge.world_info import WorldInfo
-from carla_ros_bridge.spectator import Spectator
-from carla_ros_bridge.traffic import Traffic, TrafficLight
-from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.lidar import Lidar
-from carla_ros_bridge.radar import Radar
-from carla_ros_bridge.gnss import Gnss
-from carla_ros_bridge.imu import ImuSensor
-from carla_ros_bridge.ego_vehicle import EgoVehicle
-from carla_ros_bridge.collision_sensor import CollisionSensor
-from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
-from carla_ros_bridge.object_sensor import ObjectSensor
-from carla_ros_bridge.walker import Walker
-from carla_ros_bridge.debug_helper import DebugHelper
-from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+from src.carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
+from src.carla_ros_bridge.world_info import WorldInfo
+from src.carla_ros_bridge.spectator import Spectator
+from src.carla_ros_bridge.traffic import Traffic, TrafficLight
+from src.carla_ros_bridge.vehicle import Vehicle
+from src.carla_ros_bridge.lidar import Lidar
+from src.carla_ros_bridge.radar import Radar
+from src.carla_ros_bridge.gnss import Gnss
+from src.carla_ros_bridge.imu import ImuSensor
+from src.carla_ros_bridge.ego_vehicle import EgoVehicle
+from src.carla_ros_bridge.collision_sensor import CollisionSensor
+from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
+from src.carla_ros_bridge.object_sensor import ObjectSensor
+from src.carla_ros_bridge.walker import Walker
+from src.carla_ros_bridge.debug_helper import DebugHelper
+from src.carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 import os
@@ -144,8 +144,8 @@ class CarlaRosBridge(object):
 
         # add global object sensor
         self.pseudo_actors.append(
-            ObjectSensor(parent=None, communication=self.comm, actor_list=self.actors,
-                         filtered_id=None))
+            ObjectSensor(
+                parent=None, communication=self.comm, actor_list=self.actors, filtered_id=None))
         self.debug_helper = DebugHelper(carla_world.debug)
 
         # add traffic light pseudo sensor
@@ -388,8 +388,11 @@ class CarlaRosBridge(object):
                 actor = EgoVehicle(carla_actor, parent, self.comm,
                                    self._ego_vehicle_control_applied_callback)
                 pseudo_actors.append(
-                    ObjectSensor(parent=actor, communication=self.comm, actor_list=self.actors,
-                                 filtered_id=carla_actor.id))
+                    ObjectSensor(
+                        parent=actor,
+                        communication=self.comm,
+                        actor_list=self.actors,
+                        filtered_id=carla_actor.id))
             else:
                 actor = Vehicle(carla_actor, parent, self.comm)
         elif carla_actor.type_id.startswith("sensor"):
@@ -509,8 +512,8 @@ def main():
     """
     rospy.init_node("carla_bridge", anonymous=True)
     parameters = rospy.get_param('carla')
-    rospy.loginfo("Trying to connect to {host}:{port}".format(host=parameters['host'],
-                                                              port=parameters['port']))
+    rospy.loginfo("Trying to connect to {host}:{port}".format(
+        host=parameters['host'], port=parameters['port']))
 
     carla_bridge = None
     carla_world = None
