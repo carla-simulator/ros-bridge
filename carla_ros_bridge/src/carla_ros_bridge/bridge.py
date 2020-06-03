@@ -20,29 +20,29 @@ from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
-import carla
+# import carla
 
 from src.carla_ros_bridge.actor import Actor
-from src.carla_ros_bridge.communication import Communication
-from src.carla_ros_bridge.sensor import Sensor
+# from src.carla_ros_bridge.communication import Communication
+# from src.carla_ros_bridge.sensor import Sensor
 
-from src.carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from src.carla_ros_bridge.world_info import WorldInfo
-from src.carla_ros_bridge.spectator import Spectator
-from src.carla_ros_bridge.traffic import Traffic, TrafficLight
-from src.carla_ros_bridge.vehicle import Vehicle
-from src.carla_ros_bridge.lidar import Lidar
-from src.carla_ros_bridge.radar import Radar
-from src.carla_ros_bridge.gnss import Gnss
-from src.carla_ros_bridge.imu import ImuSensor
-from src.carla_ros_bridge.ego_vehicle import EgoVehicle
-from src.carla_ros_bridge.collision_sensor import CollisionSensor
-from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
-from src.carla_ros_bridge.object_sensor import ObjectSensor
-from src.carla_ros_bridge.walker import Walker
-from src.carla_ros_bridge.debug_helper import DebugHelper
-from src.carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+# from src.carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
+# from src.carla_ros_bridge.world_info import WorldInfo
+# from src.carla_ros_bridge.spectator import Spectator
+# from src.carla_ros_bridge.traffic import Traffic, TrafficLight
+# from src.carla_ros_bridge.vehicle import Vehicle
+# from src.carla_ros_bridge.lidar import Lidar
+# from src.carla_ros_bridge.radar import Radar
+# from src.carla_ros_bridge.gnss import Gnss
+# from src.carla_ros_bridge.imu import ImuSensor
+# from src.carla_ros_bridge.ego_vehicle import EgoVehicle
+# from src.carla_ros_bridge.collision_sensor import CollisionSensor
+# from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+# from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
+# from src.carla_ros_bridge.object_sensor import ObjectSensor
+# from src.carla_ros_bridge.walker import Walker
+# from src.carla_ros_bridge.debug_helper import DebugHelper
+# from src.carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 import os
@@ -50,20 +50,31 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
+    from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
+    import sys
+    import os
+    print(os.getcwd())
+    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     import rclpy
+    from rclpy.node import Node
+    from rclpy import executors
+    from ament_index_python.packages import get_package_share_directory
+    from ros_compatible_node import CompatibleNode
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class CarlaRosBridge(object):
+class CarlaRosBridge(CompatibleNode):
     """
     Carla Ros bridge
     """
 
     CARLA_VERSION = "0.9.9"
 
-    def __init__(self, carla_world, params):
+    def __init__(self, rospy_init=True):
         """
         Constructor
 
@@ -72,6 +83,9 @@ class CarlaRosBridge(object):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
+        super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init)
+
+    def initialize_bridge(self, carla_world, params):
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -112,8 +126,8 @@ class CarlaRosBridge(object):
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
-                rospy.Subscriber("/carla/control", CarlaControl,
-                                 lambda control: self.carla_control_queue.put(control.command))
+                self.create_subscriber(CarlaControl, "/carla/control", None,
+                                 qos_profile=lambda control: self.carla_control_queue.put(control.command))
 
             self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
@@ -510,14 +524,25 @@ def main():
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaBridge object
     """
-    rospy.init_node("carla_bridge", anonymous=True)
-    parameters = rospy.get_param('carla')
-    rospy.loginfo("Trying to connect to {host}:{port}".format(
-        host=parameters['host'], port=parameters['port']))
-
     carla_bridge = None
     carla_world = None
     carla_client = None
+
+    if ROS_VERSION == 1:
+        carla_bridge = CarlaRosBridge()
+
+    elif ROS_VERSION == 2:
+        rclpy.init(args=None)
+        carla_bridge = CarlaRosBridge()
+        executor = rclpy.executors.MultiThreadedExecutor()
+        init_node = rclpy.create_node("init_ros_bridge")
+        executor.add_node(init_node)
+
+    parameters = carla_bridge.get_param('carla.host')
+    print(parameters)
+    carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
+        host=parameters['host'], port=parameters['port']))
+
     try:
         carla_client = carla.Client(host=parameters['host'], port=parameters['port'])
         carla_client.set_timeout(parameters['timeout'])
@@ -525,13 +550,13 @@ def main():
         # check carla version
         dist = pkg_resources.get_distribution("carla")
         if LooseVersion(dist.version) < LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            rospy.logfatal("CARLA python module version {} required. Found: {}".format(
+            carla_bridge.logfatal("CARLA python module version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, dist.version))
             sys.exit(1)
 
         if LooseVersion(carla_client.get_server_version()) < \
            LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            rospy.logfatal("CARLA Server version {} required. Found: {}".format(
+            carla_bridge.logfatal("CARLA Server version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
             sys.exit(1)
 
@@ -539,22 +564,23 @@ def main():
 
         if "town" in parameters:
             if parameters["town"].endswith(".xodr"):
-                rospy.loginfo("Loading opendrive world from file '{}'".format(parameters["town"]))
+                carla_bridge.loginfo("Loading opendrive world from file '{}'".format(
+                    parameters["town"]))
                 with open(parameters["town"]) as od_file:
                     data = od_file.read()
                 carla_world = carla_client.generate_opendrive_world(str(data))
             else:
                 if carla_world.get_map().name != parameters["town"]:
-                    rospy.loginfo("Loading town '{}' (previous: '{}').".format(
+                    carla_bridge.loginfo("Loading town '{}' (previous: '{}').".format(
                         parameters["town"],
                         carla_world.get_map().name))
                     carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 
-        carla_bridge = CarlaRosBridge(carla_client.get_world(), parameters)
+        carla_bridge.initialize_bridge(carla_client.get_world(), parameters)
         carla_bridge.run()
     except (IOError, RuntimeError) as e:
-        rospy.logerr("Error: {}".format(e))
+        carla_bridge.logerr("Error: {}".format(e))
     finally:
         del carla_world
         del carla_client
