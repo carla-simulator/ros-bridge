@@ -14,13 +14,26 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     import rospy
+    from ros_compatibility import *
 elif ROS_VERSION == 2:
     import rclpy
+    from rclpy.qos import QoSDurabilityPolicy
+    from rclpy.qos import QoSProfile
+    import sys
+    print(os.getcwd())
+    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
+    import rclpy
+    from rclpy.node import Node
+    from rclpy import executors
+    from ament_index_python.packages import get_package_share_directory
+    from ros_compatible_node import CompatibleNode
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class PseudoActor(object):
+class PseudoActor(CompatibleNode):
     """
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
