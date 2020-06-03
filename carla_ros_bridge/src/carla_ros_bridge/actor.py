@@ -15,12 +15,11 @@ from geometry_msgs.msg import TransformStamped
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
 
-from carla_ros_bridge.pseudo_actor import PseudoActor
-import carla_ros_bridge.transforms as trans
+from src.carla_ros_bridge.pseudo_actor import PseudoActor
+import src.carla_ros_bridge.transforms as trans
 
 
 class Actor(PseudoActor):
-
     """
     Generic base class for all carla actors
     """
@@ -37,9 +36,7 @@ class Actor(PseudoActor):
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        super(Actor, self).__init__(parent=parent,
-                                    prefix=prefix,
-                                    communication=communication)
+        super(Actor, self).__init__(parent=parent, prefix=prefix, communication=communication)
         self.carla_actor = carla_actor
 
         if carla_actor.id > np.iinfo(np.uint32).max:
@@ -63,8 +60,7 @@ class Actor(PseudoActor):
         :return: the ROS pose of this actor
         :rtype: geometry_msgs.msg.Pose
         """
-        return trans.carla_transform_to_ros_pose(
-            self.carla_actor.get_transform())
+        return trans.carla_transform_to_ros_pose(self.carla_actor.get_transform())
 
     def get_current_ros_twist_rotated(self):
         """
@@ -73,10 +69,9 @@ class Actor(PseudoActor):
         :return: the ROS twist of this actor
         :rtype: geometry_msgs.msg.Twist
         """
-        return trans.carla_velocity_to_ros_twist(
-            self.carla_actor.get_velocity(),
-            self.carla_actor.get_angular_velocity(),
-            self.carla_actor.get_transform().rotation)
+        return trans.carla_velocity_to_ros_twist(self.carla_actor.get_velocity(),
+                                                 self.carla_actor.get_angular_velocity(),
+                                                 self.carla_actor.get_transform().rotation)
 
     def get_current_ros_twist(self):
         """
@@ -85,9 +80,8 @@ class Actor(PseudoActor):
         :return: the ROS twist of this actor
         :rtype: geometry_msgs.msg.Twist
         """
-        return trans.carla_velocity_to_ros_twist(
-            self.carla_actor.get_velocity(),
-            self.carla_actor.get_angular_velocity())
+        return trans.carla_velocity_to_ros_twist(self.carla_actor.get_velocity(),
+                                                 self.carla_actor.get_angular_velocity())
 
     def get_current_ros_accel(self):
         """
@@ -96,8 +90,7 @@ class Actor(PseudoActor):
         :return: the ROS twist of this actor
         :rtype: geometry_msgs.msg.Twist
         """
-        return trans.carla_acceleration_to_ros_accel(
-            self.carla_actor.get_acceleration())
+        return trans.carla_acceleration_to_ros_accel(self.carla_actor.get_acceleration())
 
     def get_id(self):
         """
@@ -158,8 +151,7 @@ class Actor(PseudoActor):
         :return:
         visualization_msgs.msg.Marker
         """
-        marker = Marker(
-            header=self.get_msg_header(frame_id=str(self.get_id())))
+        marker = Marker(header=self.get_msg_header(frame_id=str(self.get_id())))
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()
@@ -175,8 +167,7 @@ class Actor(PseudoActor):
         marker = self.get_marker()
         marker.type = Marker.CUBE
 
-        marker.pose = trans.carla_location_to_pose(
-            self.carla_actor.bounding_box.location)
+        marker.pose = trans.carla_location_to_pose(self.carla_actor.bounding_box.location)
         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
