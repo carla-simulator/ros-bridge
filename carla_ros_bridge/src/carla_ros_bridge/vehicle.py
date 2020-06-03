@@ -13,11 +13,10 @@ Classes to handle Carla vehicles
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 
-from carla_ros_bridge.traffic_participant import TrafficParticipant
+from src.carla_ros_bridge.traffic_participant import TrafficParticipant
 
 
 class Vehicle(TrafficParticipant):
-
     """
     Actor implementation details for vehicles
     """
@@ -51,10 +50,8 @@ class Vehicle(TrafficParticipant):
             elif carla_actor.attributes['object_type'] == 'other':
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
 
-        super(Vehicle, self).__init__(carla_actor=carla_actor,
-                                      parent=parent,
-                                      communication=communication,
-                                      prefix=prefix)
+        super(Vehicle, self).__init__(carla_actor=carla_actor, parent=parent,
+                                      communication=communication, prefix=prefix)
 
     def get_marker_color(self):  # pylint: disable=no-self-use
         """
