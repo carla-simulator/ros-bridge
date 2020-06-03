@@ -20,7 +20,7 @@ from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
-# import carla
+import carla
 
 from src.carla_ros_bridge.actor import Actor
 # from src.carla_ros_bridge.communication import Communication
@@ -527,7 +527,7 @@ def main():
     carla_bridge = None
     carla_world = None
     carla_client = None
-
+    parameters = {}
     if ROS_VERSION == 1:
         carla_bridge = CarlaRosBridge()
 
@@ -538,7 +538,17 @@ def main():
         init_node = rclpy.create_node("init_ros_bridge")
         executor.add_node(init_node)
 
-    parameters = carla_bridge.get_param('carla.host')
+        parameters['host'] = carla_bridge.get_param('carla.host', 'localhost')
+        parameters['port'] = carla_bridge.get_param('carla.port', 2000)
+        parameters['timeout'] = carla_bridge.get_param('carla.timeout', 2)
+        parameters['synchronous_mode'] = carla_bridge.get_param('carla.synchronous_mode', False)
+        parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
+            'carla.synchronous_mode_wait_for_vehicle_control_command', True)
+        parameters['fixed_delta_seconds'] = carla_bridge.get_param('carla.fixed_delta_seconds',
+                                                                   0.05)
+        parameters['ego_vehicle'] = carla_bridge.get_param(
+            'carla.ego_vehicle', ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
+
     print(parameters)
     carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
         host=parameters['host'], port=parameters['port']))
