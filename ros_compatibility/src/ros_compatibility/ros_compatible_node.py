@@ -5,6 +5,8 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     import rospy
 
+    latch_on = True
+
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         if from_sec:
             return rospy.Time.from_sec(sec)
@@ -19,13 +21,14 @@ if ROS_VERSION == 1:
     def destroy_subscription(subsription):
         subsription.unregister()
 
-
     class QoSProfile():
+
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
             self.latch = bool(durability)
 
     class QoSProfile():
+
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
             if durability is not None and durability is not False:
@@ -34,6 +37,7 @@ if ROS_VERSION == 1:
                 self.latch = False
 
     class CompatibleNode(object):
+
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
             if rospy_init:
                 rospy.init_node(node_name, anonymous=True)
@@ -68,8 +72,7 @@ if ROS_VERSION == 1:
 
         # assymetry in publisher/subscriber method naming due to rclpy having
         # create_publisher method.
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
+        def new_publisher(self, msg_type, topic, qos_profile=None, callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
@@ -77,13 +80,11 @@ if ROS_VERSION == 1:
             return rospy.Publisher(topic, msg_type, latch=qos_profile.latch,
                                    queue_size=qos_profile.depth)
 
-        def create_subscriber(self, msg_type, topic,
-                              callback, qos_profile=None,
+        def create_subscriber(self, msg_type, topic, callback, qos_profile=None,
                               callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
-            return rospy.Subscriber(topic, msg_type,
-                                    callback, queue_size=qos_profile.depth)
+            return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
         def spin(self, executor=None):
             rospy.spin()
@@ -98,11 +99,13 @@ elif ROS_VERSION == 2:
     import rclpy
     from builtin_interfaces.msg import Time
 
+    latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         time = Time()
         if from_sec:
             time.sec = int(sec)
-            time.nanosec = int((sec - int(sec)) * 1000_000_000)
+            time.nanosec = int((sec - int(sec)) * 1000000000)
         else:
             time.sec = int(sec)
             time.nanosec = int(nsec)
@@ -117,8 +120,8 @@ elif ROS_VERSION == 2:
     def destroy_subscription(subsription):
         subsription.destroy()
 
-
     class CompatibleNode(Node):
+
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
             super().__init__(node_name, allow_undeclared_parameters=True,
                              automatically_declare_parameters_from_overrides=True)
@@ -135,9 +138,8 @@ elif ROS_VERSION == 2:
                 return self.get_parameter(name).value
             if alternative_name is None:
                 alternative_name = name
-            return self.get_parameter_or(name,
-                                         Parameter(alternative_name, value=alternative_value)
-                                         ).value
+            return self.get_parameter_or(name, Parameter(alternative_name,
+                                                         value=alternative_value)).value
 
         def logdebug(self, text):
             self.get_logger().debug(text)
@@ -160,41 +162,21 @@ elif ROS_VERSION == 2:
         def logfatal(self, text):
             self.get_logger().fatal(text)
 
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
+        def new_publisher(self, msg_type, topic, qos_profile=None, callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
                 callback_group = self.callback_group
-            return self.create_publisher(msg_type, topic,
-                                         qos_profile, callback_group=callback_group)
+            return self.create_publisher(msg_type, topic, qos_profile,
+                                         callback_group=callback_group)
 
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
+        def create_subscriber(self, msg_type, topic, callback, qos_profile=None,
+                              callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
                 callback_group = self.callback_group
-            return self.create_publisher(msg_type, topic,
-                                         qos_profile, callback_group=callback_group)
-
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
-            if qos_profile is None:
-                qos_profile = self.qos_profile
-            if callback_group is None:
-                callback_group = self.callback_group
-            return self.create_publisher(msg_type, topic,
-                                         qos_profile, callback_group=callback_group)
-
-        def create_subscriber(self, msg_type, topic,
-                              callback, qos_profile=None, callback_group=None):
-            if qos_profile is None:
-                qos_profile = self.qos_profile
-            if callback_group is None:
-                callback_group = self.callback_group
-            return self.create_subscription(msg_type, topic,
-                                            callback, qos_profile,
+            return self.create_subscription(msg_type, topic, callback, qos_profile,
                                             callback_group=callback_group)
 
         def spin(self, executor=None):
@@ -204,8 +186,7 @@ elif ROS_VERSION == 2:
             rclpy.shutdown()
 
 else:
-    raise NotImplementedError('Make sure you have valid ' +
-                              'ROS_VERSION env variable')
+    raise NotImplementedError('Make sure you have valid ' + 'ROS_VERSION env variable')
 
 
 def main():

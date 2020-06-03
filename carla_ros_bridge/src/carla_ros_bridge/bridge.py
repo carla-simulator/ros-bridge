@@ -31,14 +31,14 @@ from src.carla_ros_bridge.world_info import WorldInfo
 from src.carla_ros_bridge.spectator import Spectator
 from src.carla_ros_bridge.traffic import Traffic, TrafficLight
 from src.carla_ros_bridge.vehicle import Vehicle
-# from src.carla_ros_bridge.lidar import Lidar
-# from src.carla_ros_bridge.radar import Radar
-# from src.carla_ros_bridge.gnss import Gnss
-# from src.carla_ros_bridge.imu import ImuSensor
-# from src.carla_ros_bridge.ego_vehicle import EgoVehicle
-# from src.carla_ros_bridge.collision_sensor import CollisionSensor
-# from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-# from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
+from src.carla_ros_bridge.lidar import Lidar
+from src.carla_ros_bridge.radar import Radar
+from src.carla_ros_bridge.gnss import Gnss
+from src.carla_ros_bridge.imu import ImuSensor
+from src.carla_ros_bridge.ego_vehicle import EgoVehicle
+from src.carla_ros_bridge.collision_sensor import CollisionSensor
+from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 from src.carla_ros_bridge.object_sensor import ObjectSensor
 from src.carla_ros_bridge.walker import Walker
 from src.carla_ros_bridge.debug_helper import DebugHelper
@@ -148,9 +148,9 @@ class CarlaRosBridge(CompatibleNode):
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
-        # self.carla_weather_subscriber = \
-        #     rospy.Subscriber("/carla/weather_control",
-        #                      CarlaWeatherParameters, self.on_weather_changed)
+        self.carla_weather_subscriber = \
+            self.create_subscriber("/carla/weather_control",
+                             CarlaWeatherParameters, self.on_weather_changed)
 
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, communication=self.comm))
@@ -171,7 +171,7 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        rospy.signal_shutdown("")
+        self.signal_shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
         self.carla_weather_subscriber.unregister()
@@ -182,7 +182,7 @@ class CarlaRosBridge(CompatibleNode):
             self.update_actor_thread.join()
         self._update_actors(set())
 
-        rospy.loginfo("Exiting Bridge")
+        self.loginfo("Exiting Bridge")
 
     def on_weather_changed(self, weather_parameters):
         """
@@ -191,7 +191,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         if not self.carla_world:
             return
-        rospy.loginfo("Applying weather parameters...")
+        self.loginfo("Applying weather parameters...")
         weather = carla.WeatherParameters()
         weather.cloudiness = weather_parameters.cloudiness
         weather.precipitation = weather_parameters.precipitation
@@ -529,6 +529,7 @@ def main():
     parameters = {}
     if ROS_VERSION == 1:
         carla_bridge = CarlaRosBridge()
+        rospy.init_node('carla_ros_bridge', anonymous=True)
 
     elif ROS_VERSION == 2:
         rclpy.init(args=None)
@@ -545,8 +546,9 @@ def main():
             'carla.synchronous_mode_wait_for_vehicle_control_command', True)
         parameters['fixed_delta_seconds'] = carla_bridge.get_param('carla.fixed_delta_seconds',
                                                                    0.05)
-        parameters['ego_vehicle'] = carla_bridge.get_param(
-            'carla.ego_vehicle', ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
+        role_name = carla_bridge.get_param('carla.ego_vehicle.role_name',
+                                           ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
+        parameters["ego_vehicle"] = {"role_name": role_name}
 
     print(parameters)
     carla_bridge.loginfo("Trying to connect to {host}:{port}".format(host=parameters['host'],

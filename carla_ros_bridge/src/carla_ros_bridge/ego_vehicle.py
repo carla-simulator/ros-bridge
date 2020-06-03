@@ -12,8 +12,6 @@ Classes to handle Carla vehicles
 import math
 import numpy
 
-import rospy
-
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist, Transform
@@ -21,15 +19,14 @@ from geometry_msgs.msg import Twist, Transform
 from carla import VehicleControl
 from carla import Vector3D
 
-from carla_ros_bridge.vehicle import Vehicle
-import carla_ros_bridge.transforms as transforms
+from src.carla_ros_bridge.vehicle import Vehicle
+import src.carla_ros_bridge.transforms as transforms
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle):
-
     """
     Vehicle implementation details for the ego vehicle
     """
@@ -45,36 +42,36 @@ class EgoVehicle(Vehicle):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(EgoVehicle, self).__init__(carla_actor=carla_actor,
-                                         parent=parent,
-                                         communication=communication,
-                                         prefix=carla_actor.attributes.get('role_name'))
+        super(EgoVehicle,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             prefix=carla_actor.attributes.get('role_name'))
 
         self.vehicle_info_published = False
         self.vehicle_control_override = False
         self._vehicle_control_applied_callback = vehicle_control_applied_callback
 
-        self.control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/vehicle_control_cmd",
+        self.control_subscriber = self.create_subscriber(
             CarlaEgoVehicleControl,
+            self.get_topic_prefix() + "/vehicle_control_cmd",
             lambda data: self.control_command_updated(data, manual_override=False))
 
-        self.manual_control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/vehicle_control_cmd_manual",
+        self.manual_control_subscriber = self.create_subscriber(
             CarlaEgoVehicleControl,
+            self.get_topic_prefix() + "/vehicle_control_cmd_manual",
             lambda data: self.control_command_updated(data, manual_override=True))
 
-        self.control_override_subscriber = rospy.Subscriber(
+        self.control_override_subscriber = self.create_subscriber(
+            Bool,
             self.get_topic_prefix() + "/vehicle_control_manual_override",
-            Bool, self.control_command_override)
+            self.control_command_override)
 
-        self.enable_autopilot_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/enable_autopilot",
-            Bool, self.enable_autopilot_updated)
+        self.enable_autopilot_subscriber = self.create_subscriber(
+            Bool,
+            self.get_topic_prefix() + "/enable_autopilot", self.enable_autopilot_updated)
 
-        self.twist_control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/twist_cmd",
-            Twist, self.twist_command_updated)
+        self.twist_control_subscriber = self.create_subscriber(
+            Twist,
+            self.get_topic_prefix() + "/twist_cmd", self.twist_command_updated)
 
     def get_marker_color(self):
         """
@@ -97,8 +94,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        vehicle_status = CarlaEgoVehicleStatus(
-            header=self.get_msg_header("map"))
+        vehicle_status = CarlaEgoVehicleStatus(header=self.get_msg_header("map"))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration.linear = transforms.carla_vector_to_ros_vector_rotated(
             self.carla_actor.get_acceleration(),
@@ -132,8 +128,8 @@ class EgoVehicle(Vehicle):
                 wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
                 wheel_info.position.x = (wheel.position.x/100.0) - \
                     self.carla_actor.get_transform().location.x
-                wheel_info.position.y = -((wheel.position.y/100.0) -
-                                          self.carla_actor.get_transform().location.y)
+                wheel_info.position.y = -(
+                    (wheel.position.y / 100.0) - self.carla_actor.get_transform().location.y)
                 wheel_info.position.z = (wheel.position.z/100.0) - \
                     self.carla_actor.get_transform().location.z
                 vehicle_info.wheels.append(wheel_info)
@@ -169,8 +165,9 @@ class EgoVehicle(Vehicle):
         super(EgoVehicle, self).update(frame, timestamp)
         no_rotation = Transform()
         no_rotation.rotation.x = 1.0
-        self.publish_transform(self.get_ros_transform(
-            no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
+        self.publish_transform(
+            self.get_ros_transform(no_rotation, frame_id=str(self.get_id()),
+                                   child_frame_id=self.get_prefix()))
 
     def destroy(self):
         """
@@ -181,7 +178,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        rospy.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
+        self.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
         self.control_subscriber.unregister()
         self.control_subscriber = None
         self.enable_autopilot_subscriber.unregister()
@@ -211,7 +208,7 @@ class EgoVehicle(Vehicle):
             linear_velocity.y = -rotated_linear_vector[1]
             linear_velocity.z = rotated_linear_vector[2]
 
-            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
+            self.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
             self.carla_actor.set_velocity(linear_velocity)
             self.carla_actor.set_angular_velocity(angular_velocity)
@@ -255,7 +252,7 @@ class EgoVehicle(Vehicle):
         :type enable_auto_pilot: std_msgs.Bool
         :return:
         """
-        rospy.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
+        self.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
         self.carla_actor.set_autopilot(enable_auto_pilot.data)
 
     @staticmethod

@@ -48,6 +48,9 @@ class PseudoActor(CompatibleNode):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
+
+        super(PseudoActor, self).__init__("pseudo_actor_node")
+
         self.parent = parent
         if self.parent:
             self.parent_id = parent.get_id()
