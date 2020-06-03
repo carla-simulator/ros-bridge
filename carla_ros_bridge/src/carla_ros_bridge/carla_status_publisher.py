@@ -19,7 +19,15 @@ if ROS_VERSION == 1:
 elif ROS_VERSION == 2:
     import rclpy
     from rclpy.callback_groups import ReentrantCallbackGroup
-    # TODO: import ros_compatibilty
+    import sys
+    print(os.getcwd())
+    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
+    from rclpy.node import Node
+    from rclpy import executors
+    from ament_index_python.packages import get_package_share_directory
+    from ros_compatible_node import CompatibleNode
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -36,8 +44,7 @@ class CarlaStatusPublisher(CompatibleNode):
         Constructor
 
         """
-        super(CarlaStatusPublisher, self).__init__("carla_status_publisher",
-                                                   latch=True,
+        super(CarlaStatusPublisher, self).__init__("carla_status_publisher", latch=True,
                                                    rospy_init=False)
         self.synchronous_mode = synchronous_mode
         self.synchronous_mode_running = True
@@ -46,7 +53,7 @@ class CarlaStatusPublisher(CompatibleNode):
         if ROS_VERSION == 1:
             callback_group = None
         elif ROS_VERSION == 2:
-            callback_group = ReentrantCallBackGroup()
+            callback_group = ReentrantCallbackGroup()
         self.carla_status_publisher = self.new_publisher(CarlaStatus, "/carla/status",
                                                          callback_group=callback_group)
         self.publish()
