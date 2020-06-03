@@ -10,11 +10,17 @@ Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
 
 from std_msgs.msg import Header
-import rospy
+import os
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+if ROS_VERSION == 1:
+    import rospy
+elif ROS_VERSION == 2:
+    import rclpy
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
 class PseudoActor(object):
-
     """
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
@@ -72,7 +78,13 @@ class PseudoActor(object):
         else:
             header.frame_id = self.get_prefix()
         if timestamp:
-            header.stamp = rospy.Time.from_sec(timestamp)
+            if ROS_VERSION == 1:
+                header.stamp = rospy.Time.from_sec(timestamp)
+            elif ROS_VERSION == 2:
+                header.stamp = rclpy.Time.from_sec(timestamp)
+            else:
+                raise NotImplementedError(
+                    "Make sure you have a valid ROS_VERSION env variable set.")
         else:
             header.stamp = self.communication.get_current_ros_time()
         return header
