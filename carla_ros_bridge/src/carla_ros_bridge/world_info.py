@@ -10,14 +10,11 @@
 Class to handle the carla map
 """
 
-import rospy
-
 from carla_msgs.msg import CarlaWorldInfo
-from carla_ros_bridge.pseudo_actor import PseudoActor
+from src.carla_ros_bridge.pseudo_actor import PseudoActor
 
 
 class WorldInfo(PseudoActor):
-
     """
     Publish the map
     """
@@ -32,8 +29,7 @@ class WorldInfo(PseudoActor):
         :type communication: carla_ros_bridge.communication
         """
 
-        super(WorldInfo, self).__init__(parent=None,
-                                        communication=communication,
+        super(WorldInfo, self).__init__(parent=None, communication=communication,
                                         prefix="world_info")
 
         self.carla_map = carla_world.get_map()
@@ -49,7 +45,7 @@ class WorldInfo(PseudoActor):
 
         :return:
         """
-        rospy.logdebug("Destroying WorldInfo()")
+        self.logdebug("Destroying WorldInfo()")
         self.carla_map = None
         super(WorldInfo, self).destroy()
 
