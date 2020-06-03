@@ -10,13 +10,12 @@ handle a object sensor
 """
 
 from derived_object_msgs.msg import ObjectArray
-from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.walker import Walker
-from carla_ros_bridge.pseudo_actor import PseudoActor
+from src.carla_ros_bridge.vehicle import Vehicle
+from src.carla_ros_bridge.walker import Walker
+from src.carla_ros_bridge.pseudo_actor import PseudoActor
 
 
 class ObjectSensor(PseudoActor):
-
     """
     Pseudo object sensor
     """
@@ -36,8 +35,7 @@ class ObjectSensor(PseudoActor):
         :type filtered_id: int
         """
 
-        super(ObjectSensor, self).__init__(parent=parent,
-                                           communication=communication,
+        super(ObjectSensor, self).__init__(parent=parent, communication=communication,
                                            prefix='objects')
         self.actor_list = actor_list
         self.filtered_id = filtered_id
