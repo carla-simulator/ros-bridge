@@ -725,9 +725,9 @@ def main(args=None):
         if ROS_VERSION == 2:
             executer = rclpy.executors.MultiThreadedExecutor(num_threads=12)
             executer.add_node(hud.tf_listener_node)
-            executer.add_node(hud.node)
-            executer.add_node(world.node)
-            executer.add_node(controller.node)
+            executer.add_node(hud)
+            executer.add_node(world)
+            executer.add_node(controller)
             thread = Thread(target=run, args=(executer,))
             thread.start()
 
