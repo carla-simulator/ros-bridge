@@ -60,7 +60,7 @@ elif ROS_VERSION == 2:
     import tf2_ros
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     from threading import Thread, Lock, Event
-    # from builtin_interfaces.msg import Time
+    from builtin_interfaces.msg import Time
     from rosgraph_msgs.msg import Clock
 
     sys.path.append(os.getcwd() + '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
