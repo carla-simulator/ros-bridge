@@ -25,12 +25,6 @@ if ROS_VERSION == 1:
 
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
-            self.latch = bool(durability)
-
-    class QoSProfile():
-
-        def __init__(self, depth=10, durability=None, **kwargs):
-            self.depth = depth
             if durability is not None and durability is not False:
                 self.latch = True
             else:
@@ -58,12 +52,6 @@ if ROS_VERSION == 1:
         def logwarn(self, text):
             rospy.logwarn(text)
 
-        def logwarn(self, text):
-            rospy.logwarn(text)
-
-        def logwarn(self, text):
-            rospy.logwarn(text)
-
         def logerr(self, text):
             rospy.logerr(text)
 
@@ -74,7 +62,7 @@ if ROS_VERSION == 1:
         # create_publisher method.
         def new_publisher(self, msg_type, topic, qos_profile=None, callback_group=None):
             if qos_profile is None:
-                qos_profile = self.qos_profile
+                qos_profile = QoSProfile(depth=10, durability=False)
             if callback_group is None:
                 callback_group = self.callback_group
             return rospy.Publisher(topic, msg_type, latch=qos_profile.latch,
@@ -83,14 +71,14 @@ if ROS_VERSION == 1:
         def create_subscriber(self, msg_type, topic, callback, qos_profile=None,
                               callback_group=None):
             if qos_profile is None:
-                qos_profile = self.qos_profile
+                qos_profile = QoSProfile(depth=10, durability=False)
             return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
         def spin(self, executor=None):
             rospy.spin()
 
         def shutdown(self):
-            pass
+            rospy.signal_shutdown("")
 
 elif ROS_VERSION == 2:
     from rclpy.node import Node
@@ -152,12 +140,6 @@ elif ROS_VERSION == 2:
 
         def logerr(self, text):
             self.get_logger().error(text)
-
-        def logwarn(self, text):
-            self.get_logger().warn(text)
-
-        def logwarn(self, text):
-            self.get_logger().warn(text)
 
         def logfatal(self, text):
             self.get_logger().fatal(text)
