@@ -62,8 +62,9 @@ elif ROS_VERSION == 2:
     from threading import Thread, Lock, Event
     from builtin_interfaces.msg import Time
     from rosgraph_msgs.msg import Clock
-
-    sys.path.append(os.getcwd() + '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
+    import sys
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     from ros_compatible_node import CompatibleNode
 
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
