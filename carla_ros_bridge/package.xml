@@ -31,7 +31,7 @@
   <exec_depend condition="$ROS_VERSION == 1">carla_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">carla_ego_vehicle</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">carla_manual_control</exec_depend>
-  
+
   <export>
     <build_type condition="$ROS_VERSION == 1">catkin</build_type>
     <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
