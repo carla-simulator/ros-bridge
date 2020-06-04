@@ -20,7 +20,7 @@ elif ROS_VERSION == 2:
     setup(
         name=package_name,
         version='0.0.0',
-        packages=['src/' + package_name],
+        packages=[package_name],
         data_files=[('share/ament_index/resource_index/packages', ['resource/' + package_name]),
                     ('share/' + package_name, ['package.xml']),
                     ('share/' + package_name + '/config', ['config/settings.yaml']),
@@ -33,6 +33,7 @@ elif ROS_VERSION == 2:
         license='MIT',
         tests_require=['pytest'],
         entry_points={
-            'console_scripts': ['bridge = src.carla_ros_bridge.bridge:main'],
+            'console_scripts': ['bridge = carla_ros_bridge.bridge:main'],
         },
+        package_dir={'': 'src'},
     )
