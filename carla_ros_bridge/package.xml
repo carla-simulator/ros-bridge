@@ -19,7 +19,6 @@
   <exec_depend condition="$ROS_VERSION == 1">tf</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">tf2</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">cv_bridge</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">geometry_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">std_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">rosbag_storage</exec_depend>
