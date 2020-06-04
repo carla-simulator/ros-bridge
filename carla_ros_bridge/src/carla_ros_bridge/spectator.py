@@ -10,7 +10,7 @@
 Classes to handle Carla spectator
 """
 
-from src.carla_ros_bridge.actor import Actor
+from carla_ros_bridge.actor import Actor
 
 
 class Spectator(Actor):

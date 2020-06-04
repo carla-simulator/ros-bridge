@@ -12,7 +12,13 @@ Classes to handle Carla lidars
 
 import numpy
 
-import tf
+import os
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    from tf.transformations import euler_from_quaternion, quaternion_from_euler
+elif ROS_VERSION == 2:
+    from transformations.transformations import euler_from_quaternion, quaternion_from_euler
 
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 
@@ -21,7 +27,6 @@ import carla_ros_bridge.transforms as trans
 
 
 class Lidar(Sensor):
-
     """
     Actor implementation details for lidars
     """
@@ -37,10 +42,8 @@ class Lidar(Sensor):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(Lidar, self).__init__(carla_actor=carla_actor,
-                                    parent=parent,
-                                    communication=communication,
-                                    synchronous_mode=synchronous_mode,
+        super(Lidar, self).__init__(carla_actor=carla_actor, parent=parent,
+                                    communication=communication, synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
@@ -58,12 +61,10 @@ class Lidar(Sensor):
 
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        dummy_roll, dummy_pitch, yaw = tf.transformations.euler_from_quaternion(
-            quat)
+        dummy_roll, dummy_pitch, yaw = euler_from_quaternion(quat)
         # set roll and pitch to zero
-        quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
+        quat = quaternion_from_euler(0, 0, yaw)
+        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg
 
     # pylint: disable=arguments-differ
@@ -76,10 +77,8 @@ class Lidar(Sensor):
         """
         header = self.get_msg_header()
 
-        lidar_data = numpy.frombuffer(
-            carla_lidar_measurement.raw_data, dtype=numpy.float32)
-        lidar_data = numpy.reshape(
-            lidar_data, (int(lidar_data.shape[0] / 3), 3))
+        lidar_data = numpy.frombuffer(carla_lidar_measurement.raw_data, dtype=numpy.float32)
+        lidar_data = numpy.reshape(lidar_data, (int(lidar_data.shape[0] / 3), 3))
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         # we need a copy here, because the data are read only in carla numpy
@@ -88,5 +87,4 @@ class Lidar(Sensor):
         # we also need to permute x and y
         lidar_data = lidar_data[..., [1, 0, 2]]
         point_cloud_msg = create_cloud_xyz32(header, lidar_data)
-        self.publish_message(
-            self.get_topic_prefix() + "/point_cloud", point_cloud_msg)
+        self.publish_message(self.get_topic_prefix() + "/point_cloud", point_cloud_msg)

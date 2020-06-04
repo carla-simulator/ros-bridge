@@ -22,27 +22,27 @@ import pkg_resources
 
 import carla
 
-from src.carla_ros_bridge.actor import Actor
-from src.carla_ros_bridge.communication import Communication
-from src.carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.actor import Actor
+from carla_ros_bridge.communication import Communication
+from carla_ros_bridge.sensor import Sensor
 
-from src.carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from src.carla_ros_bridge.world_info import WorldInfo
-from src.carla_ros_bridge.spectator import Spectator
-from src.carla_ros_bridge.traffic import Traffic, TrafficLight
-from src.carla_ros_bridge.vehicle import Vehicle
-from src.carla_ros_bridge.lidar import Lidar
-from src.carla_ros_bridge.radar import Radar
-from src.carla_ros_bridge.gnss import Gnss
-from src.carla_ros_bridge.imu import ImuSensor
-from src.carla_ros_bridge.ego_vehicle import EgoVehicle
-from src.carla_ros_bridge.collision_sensor import CollisionSensor
-from src.carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from src.carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
-from src.carla_ros_bridge.object_sensor import ObjectSensor
-from src.carla_ros_bridge.walker import Walker
-from src.carla_ros_bridge.debug_helper import DebugHelper
-from src.carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
+from carla_ros_bridge.world_info import WorldInfo
+from carla_ros_bridge.spectator import Spectator
+from carla_ros_bridge.traffic import Traffic, TrafficLight
+from carla_ros_bridge.vehicle import Vehicle
+# from carla_ros_bridge.lidar import Lidar
+# from carla_ros_bridge.radar import Radar
+from carla_ros_bridge.gnss import Gnss
+from carla_ros_bridge.imu import ImuSensor
+from carla_ros_bridge.ego_vehicle import EgoVehicle
+from carla_ros_bridge.collision_sensor import CollisionSensor
+from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
+from carla_ros_bridge.object_sensor import ObjectSensor
+from carla_ros_bridge.walker import Walker
+from carla_ros_bridge.debug_helper import DebugHelper
+from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 import os
@@ -82,7 +82,7 @@ class CarlaRosBridge(CompatibleNode):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
-        super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init)
+        super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
 
     def initialize_bridge(self, carla_world, params):
         self.parameters = params
@@ -149,8 +149,8 @@ class CarlaRosBridge(CompatibleNode):
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
 
         self.carla_weather_subscriber = \
-            self.create_subscriber("/carla/weather_control",
-                             CarlaWeatherParameters, self.on_weather_changed)
+            self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
+                             self.on_weather_changed)
 
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, communication=self.comm))
@@ -171,7 +171,7 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        self.signal_shutdown("")
+        self.shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
         self.carla_weather_subscriber.unregister()
@@ -529,7 +529,8 @@ def main():
     parameters = {}
     if ROS_VERSION == 1:
         carla_bridge = CarlaRosBridge()
-        rospy.init_node('carla_ros_bridge', anonymous=True)
+        # rospy.init_node('carla_ros_bridge', anonymous=True)
+        parameters = rospy.get_param('carla')
 
     elif ROS_VERSION == 2:
         rclpy.init(args=None)

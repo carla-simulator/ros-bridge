@@ -36,7 +36,6 @@ else:
 
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
-from builtin_interfaces.msg import Time
 
 
 class Communication(CompatibleNode):

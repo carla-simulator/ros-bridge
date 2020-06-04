@@ -10,8 +10,8 @@
 Classes to handle Carla traffic objects
 """
 
-from src.carla_ros_bridge.actor import Actor
-import src.carla_ros_bridge.transforms as trans
+from carla_ros_bridge.actor import Actor
+import carla_ros_bridge.transforms as trans
 from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo
 from carla import TrafficLightState
 

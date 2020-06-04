@@ -24,9 +24,9 @@ elif ROS_VERSION == 2:
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    import rclpy
     from rclpy.node import Node
     from rclpy import executors
+    from rclpy.time import Time
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode
 else:
@@ -49,7 +49,7 @@ class PseudoActor(CompatibleNode):
         :type communication: carla_ros_bridge.communication
         """
 
-        super(PseudoActor, self).__init__("pseudo_actor_node")
+        # super(PseudoActor, self).__init__("pseudo_actor_node")
 
         self.parent = parent
         if self.parent:
@@ -97,7 +97,15 @@ class PseudoActor(CompatibleNode):
             if ROS_VERSION == 1:
                 header.stamp = rospy.Time.from_sec(timestamp)
             elif ROS_VERSION == 2:
-                header.stamp = rclpy.Time.from_sec(timestamp)
+
+                def ros_timestamp(sec=0):
+                    from builtin_interfaces.msg import Time
+                    time = Time()
+                    time.sec = int(sec)
+                    time.nanosec = int((sec - int(sec)) * 1000000000)
+                    return time
+
+                header.stamp = ros_timestamp(timestamp)
             else:
                 raise NotImplementedError(
                     "Make sure you have a valid ROS_VERSION env variable set.")

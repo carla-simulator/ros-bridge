@@ -14,7 +14,7 @@ from derived_object_msgs.msg import Object
 from nav_msgs.msg import Odometry
 from shape_msgs.msg import SolidPrimitive
 
-from src.carla_ros_bridge.actor import Actor
+from carla_ros_bridge.actor import Actor
 
 
 class TrafficParticipant(Actor):
@@ -97,7 +97,7 @@ class TrafficParticipant(Actor):
         if self.get_classification() != Object.CLASSIFICATION_UNKNOWN:
             obj.object_classified = True
             obj.classification = self.get_classification()
-            obj.classification_certainty = 1.0
+            obj.classification_certainty = 1
             obj.classification_age = self.classification_age
 
         return obj

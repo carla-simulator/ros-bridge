@@ -12,7 +12,7 @@ Classes to handle Carla pedestrians
 
 from derived_object_msgs.msg import Object
 
-from src.carla_ros_bridge.traffic_participant import TrafficParticipant
+from carla_ros_bridge.traffic_participant import TrafficParticipant
 from carla_msgs.msg import CarlaWalkerControl
 from carla import WalkerControl
 

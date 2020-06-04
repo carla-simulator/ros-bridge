@@ -15,8 +15,8 @@ from geometry_msgs.msg import TransformStamped
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
 
-from src.carla_ros_bridge.pseudo_actor import PseudoActor
-import src.carla_ros_bridge.transforms as trans
+from carla_ros_bridge.pseudo_actor import PseudoActor
+import carla_ros_bridge.transforms as trans
 
 
 class Actor(PseudoActor):

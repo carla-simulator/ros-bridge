@@ -11,8 +11,8 @@ a sensor that reports the state of all traffic lights
 
 from carla_msgs.msg import CarlaTrafficLightStatusList,\
     CarlaTrafficLightInfoList
-from src.carla_ros_bridge.traffic import TrafficLight
-from src.carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_ros_bridge.traffic import TrafficLight
+from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
 class TrafficLightsSensor(PseudoActor):

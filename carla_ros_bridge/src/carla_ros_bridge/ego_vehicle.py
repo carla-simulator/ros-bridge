@@ -12,6 +12,22 @@ Classes to handle Carla vehicles
 import math
 import numpy
 
+import os
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    from ros_compatibility import CompatibleNode
+elif ROS_VERSION == 2:
+    import sys
+    print(os.getcwd())
+    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
+    from ament_index_python.packages import get_package_share_directory
+    from ros_compatible_node import CompatibleNode
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist, Transform
@@ -19,14 +35,14 @@ from geometry_msgs.msg import Twist, Transform
 from carla import VehicleControl
 from carla import Vector3D
 
-from src.carla_ros_bridge.vehicle import Vehicle
-import src.carla_ros_bridge.transforms as transforms
+from carla_ros_bridge.vehicle import Vehicle
+import carla_ros_bridge.transforms as transforms
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus
 
 
-class EgoVehicle(Vehicle):
+class EgoVehicle(Vehicle, CompatibleNode):
     """
     Vehicle implementation details for the ego vehicle
     """
@@ -42,9 +58,10 @@ class EgoVehicle(Vehicle):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(EgoVehicle,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
-                             prefix=carla_actor.attributes.get('role_name'))
+        Vehicle.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
+                         prefix=carla_actor.attributes.get('role_name'))
+        if ROS_VERSION == 2:
+            CompatibleNode.__init__(self, "ego_vehicle")
 
         self.vehicle_info_published = False
         self.vehicle_control_override = False
@@ -83,9 +100,9 @@ class EgoVehicle(Vehicle):
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
-        color.r = 0
-        color.g = 255
-        color.b = 0
+        color.r = 0.0
+        color.g = 255.0
+        color.b = 0.0
         return color
 
     def send_vehicle_msgs(self):

@@ -16,16 +16,29 @@ except ImportError:
 
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
 if ROS_VERSION == 1:
     import rospy
+    from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
+    import sys
+    print(os.getcwd())
+    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
+    sys.path.append(os.getcwd() +
+                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     import rclpy
+    from rclpy.node import Node
+    from rclpy import executors
+    from ament_index_python.packages import get_package_share_directory
+    from ros_compatible_node import CompatibleNode
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
-from src.carla_ros_bridge.actor import Actor
-import src.carla_ros_bridge.transforms as trans
+from carla_ros_bridge.actor import Actor
+import carla_ros_bridge.transforms as trans
 
 
-class Sensor(Actor):
+class Sensor(Actor, CompatibleNode):
     """
     Actor implementation details for sensors
     """
@@ -57,8 +70,10 @@ class Sensor(Actor):
         """
         if prefix is None:
             prefix = 'sensor'
-        super(Sensor, self).__init__(carla_actor=carla_actor, parent=parent,
-                                     communication=communication, prefix=prefix)
+        Actor.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
+                       prefix=prefix)
+        if ROS_VERSION == 2:
+            CompatibleNode.__init__(self, "sensor")
 
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
