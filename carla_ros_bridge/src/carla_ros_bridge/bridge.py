@@ -419,10 +419,10 @@ class CarlaRosBridge(CompatibleNode):
                 else:
                     actor = Camera(carla_actor, parent, self.comm,
                                    self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.radar"):
-                actor = Radar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+            # elif carla_actor.type_id.startswith("sensor.lidar"):
+            #     actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+            # elif carla_actor.type_id.startswith("sensor.other.radar"):
+            #     actor = Radar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
                 actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
