@@ -53,5 +53,4 @@ class CollisionSensor(Sensor):
         collision_msg.normal_impulse.y = collision_event.normal_impulse.y
         collision_msg.normal_impulse.z = collision_event.normal_impulse.z
 
-        self.publish_message(
-            self.get_topic_prefix(), collision_msg)
+        self.publish_message(self.get_topic_prefix(), collision_msg)

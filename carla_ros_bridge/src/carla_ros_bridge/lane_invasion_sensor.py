@@ -50,5 +50,4 @@ class LaneInvasionSensor(Sensor):
         lane_invasion_msg.header = self.get_msg_header()
         for marking in lane_invasion_event.crossed_lane_markings:
             lane_invasion_msg.crossed_lane_markings.append(marking.type)
-        self.publish_message(
-            self.get_topic_prefix(), lane_invasion_msg)
+        self.publish_message(self.get_topic_prefix(), lane_invasion_msg)

@@ -51,5 +51,4 @@ class Gnss(Sensor):
         navsatfix_msg.latitude = carla_gnss_measurement.latitude
         navsatfix_msg.longitude = carla_gnss_measurement.longitude
         navsatfix_msg.altitude = carla_gnss_measurement.altitude
-        self.publish_message(
-            self.get_topic_prefix() + "/fix", navsatfix_msg)
+        self.publish_message(self.get_topic_prefix() + "/fix", navsatfix_msg)
