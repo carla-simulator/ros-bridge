@@ -55,8 +55,8 @@ class Communication(CompatibleNode):
         self.ros_timestamp = ros_timestamp()
 
         # needed?
-        # self.pub['clock'] = self.new_publisher(Clock, 'clock')
-        # self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100))
+        self.pub['clock'] = self.new_publisher(Clock, 'clock')
+        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100))
 
     def send_msgs(self):
         """
@@ -64,12 +64,19 @@ class Communication(CompatibleNode):
 
         :return:
         """
+
         # prepare tf message
-        # tf_msg = TFMessage(self.tf_to_publish)
-        # try:
-        #     self.pub['tf'].publish(tf_msg)
-        # except Exception as error:  # pylint: disable=broad-except
-        #     self.logwarn("Failed to publish message: {}".format(error))
+        tf_msg = None
+
+        if ROS_VERSION == 1:
+            tf_msg = TFMessage(self.tf_to_publish)
+        elif ROS_VERSION == 2:
+            tf_msg = TFMessage()
+            tf_msg.transforms = self.tf_to_publish
+        try:
+            self.pub['tf'].publish(tf_msg)
+        except Exception as error:  # pylint: disable=broad-except
+            self.logwarn("Failed to publish message: {}".format(error))
 
         for publisher, msg in self.msgs_to_publish:
             try:
@@ -117,9 +124,11 @@ class Communication(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        # self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_secs=True)
-        # self.publish_message('clock', Clock(self.ros_timestamp))
-        pass
+        if ROS_VERSION == 1:
+            self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+            self.publish_message('clock', Clock(self.ros_timestamp))
+        elif ROS_VERSION == 2:
+            self.publish_message('clock', Clock())  # removed argument in ros 2 (?)
 
     def get_current_ros_time(self):
         """
