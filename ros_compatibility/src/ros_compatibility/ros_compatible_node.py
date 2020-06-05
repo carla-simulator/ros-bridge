@@ -28,7 +28,7 @@ if ROS_VERSION == 1:
             self.latch = bool(durability)
 
     class CompatibleNode(object):
-        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
+        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
             if rospy_init:
                 rospy.init_node(node_name, anonymous=True)
             self.qos_profile = QoSProfile(depth=queue_size, durability=latch)
