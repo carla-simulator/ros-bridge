@@ -6,7 +6,7 @@ set(ROS_VERSION $ENV{ROS_VERSION})
 set(CMAKE_CXX_STANDARD 11)
 
 set(MSG_FILES
-    RadarInfo.msg
+    # RadarInfo.msg
     RadarAlarm.msg
     RadarAlarmArray.msg
     RadarAlarmStamped.msg
@@ -27,6 +27,7 @@ if (${ROS_VERSION} EQUAL 1)
         DIRECTORY msg
         FILES
         ${MSG_FILES}
+        RadarInfo.msg
     )
 
     generate_messages(
@@ -69,6 +70,7 @@ elseif (${ROS_VERSION} EQUAL 2)
 
     rosidl_generate_interfaces(${PROJECT_NAME}
         ${MSG_FILES}
+        "msg/RadarInfo2.msg"
         DEPENDENCIES builtin_interfaces std_msgs
         ADD_LINTER_TESTS
     )
