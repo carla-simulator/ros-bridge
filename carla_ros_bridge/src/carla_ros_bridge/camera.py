@@ -45,7 +45,8 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None,
+                 sensor_name="Camera"):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -60,9 +61,9 @@ class Camera(Sensor):
         """
         if not prefix:
             prefix = 'camera'
-        super(Camera,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
-                             synchronous_mode=synchronous_mode, prefix=prefix)
+        super(Camera, self).__init__(carla_actor=carla_actor, parent=parent,
+                                     communication=communication, synchronous_mode=synchronous_mode,
+                                     prefix=prefix, sensor_name=sensor_name)
 
         if self.__class__.__name__ == "Camera":
             self.logwarn("Created Unsupported Camera Actor"
@@ -174,7 +175,8 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="RGBCamera"):
         """
         Constructor
 
@@ -190,7 +192,8 @@ class RgbCamera(Camera):
         super(RgbCamera,
               self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
                              synchronous_mode=synchronous_mode,
-                             prefix='camera/rgb/' + carla_actor.attributes.get('role_name'))
+                             prefix='camera/rgb/' + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -225,7 +228,8 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="DepthCamera"):
         """
         Constructor
 
@@ -241,7 +245,8 @@ class DepthCamera(Camera):
         super(DepthCamera,
               self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
                              synchronous_mode=synchronous_mode,
-                             prefix='camera/depth/' + carla_actor.attributes.get('role_name'))
+                             prefix='camera/depth/' + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -298,7 +303,8 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="SemanticSegmentationCamera"):
         """
         Constructor
 
@@ -314,7 +320,8 @@ class SemanticSegmentationCamera(Camera):
         super(SemanticSegmentationCamera, self).__init__(
             carla_actor=carla_actor, parent=parent, communication=communication,
             synchronous_mode=synchronous_mode,
-            prefix='camera/semantic_segmentation/' + carla_actor.attributes.get('role_name'))
+            prefix='camera/semantic_segmentation/' + carla_actor.attributes.get('role_name'),
+            sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """

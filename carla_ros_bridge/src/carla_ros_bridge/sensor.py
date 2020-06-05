@@ -44,16 +44,17 @@ class Sensor(Actor, CompatibleNode):
     """
 
     def __init__(
-        self,  # pylint: disable=too-many-arguments
-        carla_actor,
-        parent,
-        communication,
-        synchronous_mode,
-        is_event_sensor=False,  # only relevant in synchronous_mode:
-        # if a sensor only delivers data on special events,
-        # do not wait for it. That means you might get data from a
-        # sensor, that belongs to a different frame
-        prefix=None):
+            self,  # pylint: disable=too-many-arguments
+            carla_actor,
+            parent,
+            communication,
+            synchronous_mode,
+            is_event_sensor=False,  # only relevant in synchronous_mode:
+            # if a sensor only delivers data on special events,
+            # do not wait for it. That means you might get data from a
+            # sensor, that belongs to a different frame
+        prefix=None,
+            sensor_name=None):
         """
         Constructor
 
@@ -67,13 +68,17 @@ class Sensor(Actor, CompatibleNode):
         :type synchronous_mode: bool
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
+        :param sensor_name: sensor type
+        :type sensor_name: string
         """
         if prefix is None:
             prefix = 'sensor'
         Actor.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
                        prefix=prefix)
+        if sensor_name is None:
+            sensor_name = "Sensor"
         if ROS_VERSION == 2:
-            CompatibleNode.__init__(self, "sensor")
+            CompatibleNode.__init__(self, sensor_name)
 
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
