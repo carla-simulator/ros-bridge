@@ -13,11 +13,9 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from ros_compatibility import *
     latch = True
 elif ROS_VERSION == 2:
-    import rclpy
     from rclpy.qos import QoSDurabilityPolicy
     from rclpy.qos import QoSProfile
     import sys
@@ -25,9 +23,6 @@ elif ROS_VERSION == 2:
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    import rclpy
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode, ros_timestamp
     latch = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
