@@ -13,11 +13,9 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from tf import transformations
     from ros_compatibility import *
 elif ROS_VERSION == 2:
-    import rclpy
     # import cv2
     import transformations
     # TODO: import ros_compatibilty
