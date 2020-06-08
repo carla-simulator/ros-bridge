@@ -21,6 +21,12 @@ if ROS_VERSION == 1:
     def destroy_subscription(subsription):
         subsription.unregister()
 
+    class ROSException(rospy.ROSException):
+        pass
+
+    class ROSInterruptException(rospy.ROSInterruptException):
+        pass
+
     class QoSProfile():
 
         def __init__(self, depth=10, durability=None, **kwargs):
@@ -107,6 +113,12 @@ elif ROS_VERSION == 2:
 
     def destroy_subscription(subsription):
         subsription.destroy()
+
+    class ROSException(Exception):
+        pass
+
+    class ROSInterruptException(rclpy.ROSInterruptException):
+        pass
 
     class CompatibleNode(Node):
 
