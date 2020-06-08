@@ -8,6 +8,7 @@
   <arg name="role_name" default="ego_vehicle"/>
   <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
   <arg name="spawn_point" default=""/>
+  <arg name="spawn_ego_vehicle" default="True" />
 
   <include file="$(find carla_ego_vehicle)/launch/carla_ego_vehicle.launch">
     <arg name='host' value='$(arg host)'/>
@@ -17,6 +18,6 @@
     <arg name="sensor_definition_file" value='$(arg sensor_definition_file)'/>
     <arg name="role_name" value="$(arg role_name)"/>
     <arg name="spawn_point" value="$(arg spawn_point)"/>
+    <arg name="spawn_ego_vehicle" value="$(arg spawn_ego_vehicle)" />
   </include>
 </launch>
-
