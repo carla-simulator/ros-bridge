@@ -214,7 +214,7 @@ class CarlaRosBridge(CompatibleNode):
         while not self.carla_control_queue.empty():
             command = self.carla_control_queue.get()
 
-        while command is not None and not rospy.is_shutdown():
+        while command is not None and self.ros_ok():
             self.carla_run_state = command
 
             if self.carla_run_state == CarlaControl.PAUSE:
@@ -552,8 +552,8 @@ def main():
         parameters["ego_vehicle"] = {"role_name": role_name}
 
     print(parameters)
-    carla_bridge.loginfo("Trying to connect to {host}:{port}".format(host=parameters['host'],
-                                                                     port=parameters['port']))
+    carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
+        host=parameters['host'], port=parameters['port']))
 
     try:
         carla_client = carla.Client(host=parameters['host'], port=parameters['port'])
