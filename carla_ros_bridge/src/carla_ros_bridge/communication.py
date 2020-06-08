@@ -18,6 +18,7 @@ if ROS_VERSION == 1:
 elif ROS_VERSION == 2:
     from rclpy.qos import QoSDurabilityPolicy
     from rclpy.qos import QoSProfile
+    from rclpy.callback_groups import ReentrantCallbackGroup
     import sys
     print(os.getcwd())
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
@@ -48,6 +49,11 @@ class Communication(CompatibleNode):
         self.pub = {}
         self.subscribers = {}
         self.ros_timestamp = ros_timestamp()
+
+        if ROS_VERSION == 1:
+            self.callback_group = None
+        elif ROS_VERSION == 2:
+            self.callback_group = ReentrantCallbackGroup()
 
         # needed?
         self.pub['clock'] = self.new_publisher(Clock, 'clock')
@@ -105,10 +111,10 @@ class Communication(CompatibleNode):
             if topic not in self.pub:
                 if is_latched:
                     qos_profile = QoSProfile(depth=10, durability=latch)
-                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=qos_profile)
+                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=qos_profile, callback_group=self.callback_group)
                 else:
                     # Use default QoS profile.
-                    self.pub[topic] = self.new_publisher(type(msg), topic)
+                    self.pub[topic] = self.new_publisher(type(msg), topic, callback_group=self.callback_group)
             self.msgs_to_publish.append((self.pub[topic], msg))
 
     def update_clock(self, carla_timestamp):

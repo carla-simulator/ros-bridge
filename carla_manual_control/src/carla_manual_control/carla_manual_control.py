@@ -121,19 +121,22 @@ class World(CompatibleNode):
         self.hud = hud
         self.role_name = role_name
 
-        if ROS_VERSION == 2:
+        if ROS_VERSION == 1:
+            self.callback_group = None
+        elif ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
 
         self.image_subscriber = self.create_subscriber(
             Image, "/carla/{}/camera/rgb/view/image_color".format(self.role_name),
-            self.on_view_image)
+            self.on_view_image, callback_group=self.callback_group)
 
         self.collision_subscriber = self.create_subscriber(
-            CarlaCollisionEvent, "/carla/{}/collision".format(self.role_name), self.on_collision)
+            CarlaCollisionEvent, "/carla/{}/collision".format(self.role_name),
+            self.on_collision, callback_group=self.callback_group)
 
         self.lane_invasion_subscriber = self.create_subscriber(
             CarlaLaneInvasionEvent, "/carla/{}/lane_invasion".format(self.role_name),
-            self.on_lane_invasion)
+            self.on_lane_invasion, callback_group=self.callback_group)
 
     def on_collision(self, data):
         """
@@ -211,31 +214,34 @@ class KeyboardControl(CompatibleNode):
         self._control = CarlaEgoVehicleControl()
         self._steer_cache = 0.0
 
-        if ROS_VERSION == 2:
+        if ROS_VERSION == 1:
+            self.callback_group = None
+        elif ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
 
-        fast_qos = QoSProfile(depth=1)
-        fast_latched_qos = QoSProfile(depth=1, durability=latch_on)  # imported from ros_compat.
+        fast_qos = QoSProfile(depth=10)
+        fast_latched_qos = QoSProfile(depth=10)  # imported from ros_compat.
 
         self.vehicle_control_manual_override_publisher = \
             self.new_publisher(Bool,
                                "/carla/{}/vehicle_control_manual_override".format(self.role_name),
-                               qos_profile=fast_latched_qos)
+                               qos_profile=fast_latched_qos, callback_group=self.callback_group)
 
         self.vehicle_control_manual_override = False
 
         self.auto_pilot_enable_publisher = \
             self.new_publisher(Bool,
                                "/carla/{}/enable_autopilot".format(self.role_name),
-                               qos_profile=fast_qos)
+                               qos_profile=fast_qos, callback_group=self.callback_group)
 
         self.vehicle_control_publisher = \
             self.new_publisher(CarlaEgoVehicleControl,
                                "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
-                               qos_profile=fast_qos)
+                               qos_profile=fast_qos, callback_group=self.callback_group)
 
         self.carla_status_subscriber = self.create_subscriber(CarlaStatus, "/carla/status",
-                                                              self._on_new_carla_frame)
+                                                              self._on_new_carla_frame,
+                                                              callback_group=self.callback_group)
 
         self.set_autopilot(self._autopilot_enabled)
 
@@ -367,6 +373,7 @@ class HUD(CompatibleNode):
 
         if ROS_VERSION == 1:
             self.tf_listener = tf.TransformListener()
+            self.callback_group = None
         elif ROS_VERSION == 2:
             self.tf_listener_node = rclpy.create_node("tf_listener")
             self.tfBuffer = tf2_ros.Buffer()
@@ -376,35 +383,38 @@ class HUD(CompatibleNode):
 
         self.vehicle_status_subscriber = self.create_subscriber(
             CarlaEgoVehicleStatus, "/carla/{}/vehicle_status".format(self.role_name),
-            self.vehicle_status_updated)
+            self.vehicle_status_updated, callback_group=self.callback_group)
 
         self.vehicle_status_subscriber = self.create_subscriber(
             CarlaEgoVehicleStatus, "/carla/{}/vehicle_status".format(self.role_name),
-            self.vehicle_status_updated)
+            self.vehicle_status_updated, callback_group=self.callback_group)
 
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.vehicle_info_subscriber = self.create_subscriber(
             CarlaEgoVehicleInfo, "/carla/{}/vehicle_info".format(self.role_name),
-            self.vehicle_info_updated)
+            self.vehicle_info_updated, callback_group=self.callback_group)
 
         self.latitude = 0
         self.longitude = 0
         self.manual_control = False
 
         self.gnss_subscriber = self.create_subscriber(
-            NavSatFix, "/carla/{}/gnss/gnss1/fix".format(self.role_name), self.gnss_updated)
+            NavSatFix, "/carla/{}/gnss/gnss1/fix".format(self.role_name), self.gnss_updated,
+                                                        callback_group=self.callback_group)
 
         self.manual_control_subscriber = self.create_subscriber(
             Bool, "/carla/{}/vehicle_control_manual_override".format(self.role_name),
-            self.manual_control_override_updated)
+            self.manual_control_override_updated, callback_group=self.callback_group)
 
         self.carla_status = CarlaStatus()
         self.start_frame = None
         self.status_subscriber = self.create_subscriber(CarlaStatus, "/carla/status",
-                                                        self.carla_status_updated)
+                                                        self.carla_status_updated,
+                                                        callback_group=self.callback_group)
         if ROS_VERSION == 2:
-            self.clock_subscriber = self.create_subscriber(Clock, "/clock",
-                                                           self.clock_status_updated)
+            self.clock_subscriber = self.create_subscriber(Time, "/clock",
+                                                           self.clock_status_updated,
+                                                           callback_group=self.callback_group)
 
     def __del__(self):
         if ROS_VERSION == 1:
