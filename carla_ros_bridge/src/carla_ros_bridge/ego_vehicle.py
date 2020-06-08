@@ -22,7 +22,7 @@ from carla import VehicleControl
 from carla import Vector3D
 
 from carla_ros_bridge.vehicle import Vehicle
-import carla_ros_bridge.transforms as transforms
+import carla_common.transforms as transforms
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus
