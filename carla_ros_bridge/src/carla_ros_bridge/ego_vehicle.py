@@ -16,7 +16,7 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode
+    from ros_compatibility import CompatibleNode, destroy_subscription
 elif ROS_VERSION == 2:
     import sys
     print(os.getcwd())
