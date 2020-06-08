@@ -338,7 +338,7 @@ class KeyboardControl(CompatibleNode):
         self._steer_cache = min(0.7, max(-0.7, self._steer_cache))
         self._control.steer = round(self._steer_cache, 1)
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
-        self._control.hand_brake = keys[K_SPACE]
+        self._control.hand_brake = bool(keys[K_SPACE])
 
     @staticmethod
     def _is_quit_shortcut(key):
