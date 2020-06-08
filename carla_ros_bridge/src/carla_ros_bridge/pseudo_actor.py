@@ -13,24 +13,19 @@ from std_msgs.msg import Header
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
-    import rospy
     from ros_compatibility import *
 elif ROS_VERSION == 2:
-    import rclpy
-    from rclpy.qos import QoSDurabilityPolicy
-    from rclpy.qos import QoSProfile
     import sys
     print(os.getcwd())
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from rclpy.node import Node
-    from rclpy import executors
     from rclpy.time import Time
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode
 else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+    raise NotImplementedError(
+        "Make sure you have a valid ROS_VERSION env variable set.")
 
 
 class PseudoActor(CompatibleNode):
@@ -95,7 +90,7 @@ class PseudoActor(CompatibleNode):
             header.frame_id = self.get_prefix()
         if timestamp:
             if ROS_VERSION == 1:
-                header.stamp = rospy.Time.from_sec(timestamp)
+                header.stamp = self.ros_timestamp(sec=timestamp, from_sec=True)
             elif ROS_VERSION == 2:
 
                 def ros_timestamp(sec=0):
