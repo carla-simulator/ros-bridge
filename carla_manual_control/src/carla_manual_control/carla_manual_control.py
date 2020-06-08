@@ -433,8 +433,8 @@ class HUD(CompatibleNode):
         """
         self._notifications.tick(clock)
 
-    def clock_status_updated(self, clock):
-        self.time = clock.get_time()
+    def clock_status_updated(self, clock_time):
+        self.time = clock_time
 
     def carla_status_updated(self, data):
         """
