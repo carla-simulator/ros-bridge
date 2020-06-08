@@ -26,6 +26,7 @@ elif ROS_VERSION == 2:
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode, ros_timestamp
     latch = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+    from builtin_interfaces.msg import Time
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -51,12 +52,13 @@ class Communication(CompatibleNode):
 
         if ROS_VERSION == 1:
             self.callback_group = None
+            self.pub['clock'] = self.new_publisher(Clock, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
         elif ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
+            self.pub['clock'] = self.new_publisher(Time, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
 
         # needed?
-        self.pub['clock'] = self.new_publisher(Clock, 'clock')
-        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100))
+        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100), callback_group=self.callback_group)
 
     def send_msgs(self):
         """
@@ -124,11 +126,11 @@ class Communication(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
+        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
         if ROS_VERSION == 1:
-            self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
             self.publish_message('clock', Clock(self.ros_timestamp))
         elif ROS_VERSION == 2:
-            self.publish_message('clock', Clock())  # removed argument in ros 2 (?)
+            self.publish_message('clock', self.ros_timestamp)
 
     def get_current_ros_time(self):
         """
