@@ -18,7 +18,7 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode
+    from ros_compatibility import CompatibleNode, ros_ok
 elif ROS_VERSION == 2:
     import sys
     print(os.getcwd())
@@ -26,7 +26,7 @@ elif ROS_VERSION == 2:
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
+    from ros_compatible_node import CompatibleNode, ros_ok
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -117,7 +117,7 @@ class Sensor(Actor, CompatibleNode):
         # elif ROS_VERSION == 2:
         #     is_shutdown = False  # No is_shutdown equivalent in rclpy available without actually shutting down the node https://discourse.ros.org/t/mapping-between-rospy-and-rclpy/5737/2
 
-        if self.ros_ok():
+        if ros_ok():
             if self.synchronous_mode:
                 if self.sensor_tick_time:
                     self.next_data_expected_time = carla_sensor_data.timestamp + \
@@ -181,7 +181,7 @@ class Sensor(Actor, CompatibleNode):
                             self.__class__.__name__, self.get_id(), carla_sensor_data.frame, frame))
                 except queue.Empty:
                     # if not rospy.is_shutdown():
-                    if self.ros_ok():
+                    if ros_ok():
                         self.logwarn("{}({}): Expected Frame {} not received".format(
                             self.__class__.__name__, self.get_id(), frame))
                     return

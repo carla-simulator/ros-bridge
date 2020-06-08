@@ -50,7 +50,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
-    from ros_compatibility import CompatibleNode
+    from ros_compatibility import CompatibleNode, ros_ok
 elif ROS_VERSION == 2:
     import sys
     print(os.getcwd())
@@ -61,7 +61,7 @@ elif ROS_VERSION == 2:
     from rclpy.node import Node
     from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
+    from ros_compatible_node import CompatibleNode, ros_ok
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -214,7 +214,7 @@ class CarlaRosBridge(CompatibleNode):
         while not self.carla_control_queue.empty():
             command = self.carla_control_queue.get()
 
-        while command is not None and self.ros_ok():
+        while command is not None and ros_ok():
             self.carla_run_state = command
 
             if self.carla_run_state == CarlaControl.PAUSE:
