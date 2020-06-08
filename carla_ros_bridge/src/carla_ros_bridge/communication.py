@@ -16,8 +16,7 @@ if ROS_VERSION == 1:
     from ros_compatibility import *
     latch = True
 elif ROS_VERSION == 2:
-    from rclpy.qos import QoSDurabilityPolicy
-    from rclpy.qos import QoSProfile
+    from rclpy.qos import QoSDurabilityPolicy, QoSProfile
     from rclpy.callback_groups import ReentrantCallbackGroup
     import sys
     print(os.getcwd())
