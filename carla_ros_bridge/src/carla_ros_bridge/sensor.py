@@ -18,7 +18,6 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
     import sys
@@ -26,9 +25,6 @@ elif ROS_VERSION == 2:
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    import rclpy
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode
 else:
@@ -115,13 +111,13 @@ class Sensor(Actor, CompatibleNode):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        is_shutdown = None
-        if ROS_VERSION == 1:
-            is_shutdown = rospy.is_shutdown()
-        elif ROS_VERSION == 2:
-            is_shutdown = False  # No is_shutdown equivalent in rclpy available without actually shutting down the node https://discourse.ros.org/t/mapping-between-rospy-and-rclpy/5737/2
+        # is_shutdown = None
+        # if ROS_VERSION == 1:
+        #     is_shutdown = rospy.is_shutdown()
+        # elif ROS_VERSION == 2:
+        #     is_shutdown = False  # No is_shutdown equivalent in rclpy available without actually shutting down the node https://discourse.ros.org/t/mapping-between-rospy-and-rclpy/5737/2
 
-        if not is_shutdown:
+        if self.ros_ok():
             if self.synchronous_mode:
                 if self.sensor_tick_time:
                     self.next_data_expected_time = carla_sensor_data.timestamp + \
@@ -142,19 +138,20 @@ class Sensor(Actor, CompatibleNode):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        raise NotImplementedError("This function has to be implemented by the derived classes")
+        raise NotImplementedError(
+            "This function has to be implemented by the derived classes")
 
     def _update_synchronous_event_sensor(self, frame):
         while True:
             try:
                 carla_sensor_data = self.queue.get(block=False)
                 if carla_sensor_data.frame != frame:
-                    rospy.logwarn("{}({}): Received event for frame {}"
-                                  " (expected {}). Process it anyways.".format(
-                                      self.__class__.__name__, self.get_id(),
-                                      carla_sensor_data.frame, frame))
-                rospy.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
-                                                           frame))
+                    self.logwarn("{}({}): Received event for frame {}"
+                                 " (expected {}). Process it anyways.".format(
+                                     self.__class__.__name__, self.get_id(),
+                                     carla_sensor_data.frame, frame))
+                self.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
+                                                          frame))
                 self.publish_transform(
                     self.get_ros_transform(
                         trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
@@ -171,8 +168,8 @@ class Sensor(Actor, CompatibleNode):
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
                     if carla_sensor_data.frame == frame:
-                        rospy.logdebug("{}({}): process {}".format(self.__class__.__name__,
-                                                                   self.get_id(), frame))
+                        self.logdebug("{}({}): process {}".format(self.__class__.__name__,
+                                                                  self.get_id(), frame))
                         self.publish_transform(
                             self.get_ros_transform(
                                 trans.carla_transform_to_ros_transform(
@@ -180,11 +177,12 @@ class Sensor(Actor, CompatibleNode):
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     else:
-                        rospy.logwarn("{}({}): skipping old frame {}, expected {}".format(
+                        self.logwarn("{}({}): skipping old frame {}, expected {}".format(
                             self.__class__.__name__, self.get_id(), carla_sensor_data.frame, frame))
                 except queue.Empty:
-                    if not rospy.is_shutdown():
-                        rospy.logwarn("{}({}): Expected Frame {} not received".format(
+                    # if not rospy.is_shutdown():
+                    if self.ros_ok():
+                        self.logwarn("{}({}): Expected Frame {} not received".format(
                             self.__class__.__name__, self.get_id(), frame))
                     return
 
