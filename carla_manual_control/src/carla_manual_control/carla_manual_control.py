@@ -473,6 +473,24 @@ class HUD(CompatibleNode):
         self.latitude = data.latitude
         self.longitude = data.longitude
         self.update_info_text()
+    
+    @staticmethod
+    def quaternion_to_euler(x, y, z, w):
+
+        import math
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        X = math.degrees(math.atan2(t0, t1))
+
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        Y = math.degrees(math.asin(t2))
+
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        Z = math.degrees(math.atan2(t3, t4))
+        return X, Y, Z
 
     def update_info_text(self):
         """
@@ -495,7 +513,7 @@ class HUD(CompatibleNode):
                 q = self.tfBuffer.lookup_transform('map', self.role_name, when)
                 quaternion = q.transform.rotation
                 position = q.transform.translation
-                _, __, yaw = euler_from_quaternion(quaternion)
+                _, __, yaw = self.quaternion_to_euler(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
                 yaw = -math.degrees(yaw)
                 x = position.x
                 y = -position.y
