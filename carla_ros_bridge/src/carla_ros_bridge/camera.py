@@ -21,7 +21,7 @@ from sensor_msgs.msg import CameraInfo
 
 import carla
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
+import carla_common.transforms as trans
 
 
 class Camera(Sensor):

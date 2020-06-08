@@ -16,7 +16,7 @@
   <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
   <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
   <arg name='spawn_point' default='127.4,195.4,0,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
-  <arg name="target_speed" default="30"/> <!-- target speed that the agent tries to follow -->
+  <arg name="target_speed" default="15"/> <!-- target speed that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
   <arg name="execute_manual_control" default="False"/> <!-- Should the manual control node be started? As rviz is used, disabled -->
 
@@ -39,7 +39,6 @@
     <arg name="role_name" value='$(arg role_name)'/>
     <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
     <arg name='spawn_point' value='$(arg spawn_point)'/>
-    <arg name="target_speed" value='$(arg target_speed)'/>
     <arg name="avoid_risk" value='$(arg avoid_risk)'/>
     <arg name="execute_manual_control" value='$(arg execute_manual_control)'/>
   </include>
@@ -62,16 +61,15 @@
   </node>
 
   <!-- Scenario Runner and an example scenario-->
+  <node pkg="rostopic" type="rostopic" name="publish_target_speed"
+    args="pub -l /carla/ego_vehicle/target_speed std_msgs/Float64 '{ 'data': $(arg target_speed) }'"/>
+
   <node pkg="rostopic" type="rostopic" name="publish_scenarios"
     args="pub /carla/available_scenarios carla_ros_scenario_runner_types/CarlaScenarioList '{ 'scenarios':  
       [
         {
           'name': 'FollowLeadingVehicle',
-          'scenario_file': '$(find carla_ad_demo)/config/FollowLeadingVehicle.xosc',
-          'waypoints': [
-            { 'position': { 'x': 7.1, 'y': 187.3, 'z': 0.0 } }
-          ],
-          'target_speed': 15
+          'scenario_file': '$(find carla_ad_demo)/config/FollowLeadingVehicle.xosc'
         }
       ]
     }' -l"/>
@@ -80,8 +78,7 @@
     <arg name='port' value='$(arg port)'/>
     <arg name="role_name" value="$(arg role_name)"/>
     <arg name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
-    <arg name="publish_waypoints" value="False"/> <!-- only usable if carla_wapoint_publisher is not publishing waypoints too-->
-    <arg name="publish_goal" value="True"/>
+    <arg name="wait_for_ego" value="True"/>
   </include>
 
   <!-- Rviz visualization-->
