@@ -13,20 +13,13 @@ import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode
-elif ROS_VERSION == 2:
-    import rclpy
-    from rclpy.callback_groups import ReentrantCallbackGroup
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
-else:
+if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+if ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
+
+from ros_compatibility import *
 
 from carla_msgs.msg import CarlaStatus
 

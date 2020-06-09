@@ -12,20 +12,11 @@ Base Class to handle Pseudo Actors (that are not existing in Carla world)
 from std_msgs.msg import Header
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode, ros_timestamp
-elif ROS_VERSION == 2:
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from rclpy.time import Time
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, ros_timestamp
-else:
-    raise NotImplementedError(
-        "Make sure you have a valid ROS_VERSION env variable set.")
+
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from ros_compatibility import CompatibleNode, ros_timestamp
 
 
 class PseudoActor(CompatibleNode):

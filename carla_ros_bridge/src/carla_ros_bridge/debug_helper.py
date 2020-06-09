@@ -17,19 +17,13 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     from tf.transformations import euler_from_quaternion
-    from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
     from transformations.transformations import euler_from_quaternion
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
 else:
     raise NotImplementedError(
         'Make sure you have valid ' + 'ROS_VERSION env variable')
+
+from ros_compatibility import *
 
 
 class DebugHelper(CompatibleNode):

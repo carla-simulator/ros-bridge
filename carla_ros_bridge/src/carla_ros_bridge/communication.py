@@ -12,24 +12,14 @@ Handle communication of ROS topics
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile
-    latch = True
-elif ROS_VERSION == 2:
-    from rclpy.qos import QoSDurabilityPolicy, QoSProfile
-    from rclpy.callback_groups import ReentrantCallbackGroup
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, ros_timestamp
-    latch = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
-    from builtin_interfaces.msg import Time
-else:
+if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
+if ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
+    from builtin_interfaces.msg import Time
+
+from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
 
@@ -52,13 +42,13 @@ class Communication(CompatibleNode):
 
         if ROS_VERSION == 1:
             self.callback_group = None
-            self.pub['clock'] = self.new_publisher(Clock, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
+            self.pub['clock'] = self.new_publisher(Clock, 'clock')
         elif ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
-            self.pub['clock'] = self.new_publisher(Time, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
+            self.pub['clock'] = self.new_publisher(Time, 'clock')
 
         # needed?
-        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100), callback_group=self.callback_group)
+        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100))
 
     def send_msgs(self):
         """
@@ -111,11 +101,11 @@ class Communication(CompatibleNode):
         else:
             if topic not in self.pub:
                 if is_latched:
-                    qos_profile = QoSProfile(depth=10, durability=latch)
-                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=qos_profile, callback_group=self.callback_group)
+                    latched_profile = QoSProfile(depth=10, durability=latch)
+                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=latched_profile)
                 else:
                     # Use default QoS profile.
-                    self.pub[topic] = self.new_publisher(type(msg), topic, callback_group=self.callback_group)
+                    self.pub[topic] = self.new_publisher(type(msg), topic)
             self.msgs_to_publish.append((self.pub[topic], msg))
 
     def update_clock(self, carla_timestamp):

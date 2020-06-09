@@ -15,6 +15,8 @@ if ROS_VERSION == 1:
     from tf.transformations import quaternion_from_euler
 elif ROS_VERSION == 2:
     from transformations.transformations import quaternion_from_euler
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 from sensor_msgs.msg import Imu
 

@@ -50,21 +50,13 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
-    from ros_compatibility import CompatibleNode, ros_ok
 elif ROS_VERSION == 2:
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     import rclpy
-    from rclpy.node import Node
-    from rclpy import executors
     from rclpy.callback_groups import ReentrantCallbackGroup
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, ros_ok
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from ros_compatibility import *
 
 
 class CarlaRosBridge(CompatibleNode):
@@ -181,7 +173,7 @@ class CarlaRosBridge(CompatibleNode):
         self.shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
-        self.carla_weather_subscriber.unregister()
+        destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
             if self.on_tick_id:
