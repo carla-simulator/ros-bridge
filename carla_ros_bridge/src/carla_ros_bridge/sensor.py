@@ -20,6 +20,8 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
+from ros_compatibility import CompatibleNode, ros_ok
+
 from carla_ros_bridge.actor import Actor
 import carla_ros_bridge.transforms as trans
 

@@ -41,7 +41,7 @@ elif ROS_VERSION == 2:
     from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from transformations.transformations import euler_from_quaternion, quaternion_from_euler
-    from ros_compatible_node import CompatibleNode
+    from ros_compatibility import CompatibleNode
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 from carla_msgs.msg import CarlaStatus, CarlaWorldInfo

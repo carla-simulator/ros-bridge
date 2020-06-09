@@ -19,7 +19,7 @@ if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
     from builtin_interfaces.msg import Time
 
-from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile
+from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
 
