@@ -15,20 +15,13 @@ import numpy
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode, destroy_subscription
-elif ROS_VERSION == 2:
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, destroy_subscription
-    from rclpy.callback_groups import ReentrantCallbackGroup
-else:
+if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
+if ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
+
+from ros_compatibility import *
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist, Transform
@@ -74,29 +67,25 @@ class EgoVehicle(Vehicle, CompatibleNode):
         self.control_subscriber = self.create_subscriber(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd",
-            lambda data: self.control_command_updated(data, manual_override=False),
-            callback_group=self.callback_group)
+            lambda data: self.control_command_updated(data, manual_override=False))
 
         self.manual_control_subscriber = self.create_subscriber(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd_manual",
-            lambda data: self.control_command_updated(data, manual_override=True),
-            callback_group=self.callback_group)
+            lambda data: self.control_command_updated(data, manual_override=True))
 
         self.control_override_subscriber = self.create_subscriber(
             Bool,
             self.get_topic_prefix() + "/vehicle_control_manual_override",
-            self.control_command_override, callback_group=self.callback_group)
+            self.control_command_override)
 
         self.enable_autopilot_subscriber = self.create_subscriber(
             Bool,
-            self.get_topic_prefix() + "/enable_autopilot", self.enable_autopilot_updated,
-            callback_group=self.callback_group)
+            self.get_topic_prefix() + "/enable_autopilot", self.enable_autopilot_updated)
 
         self.twist_control_subscriber = self.create_subscriber(
             Twist,
-            self.get_topic_prefix() + "/twist_cmd", self.twist_command_updated,
-            callback_group=self.callback_group)
+            self.get_topic_prefix() + "/twist_cmd", self.twist_command_updated)
 
     def get_marker_color(self):
         """
