@@ -50,7 +50,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
-    from ros_compatibility import CompatibleNode
+    from ros_compatibility import CompatibleNode, ros_ok
 elif ROS_VERSION == 2:
     import sys
     print(os.getcwd())
@@ -60,8 +60,9 @@ elif ROS_VERSION == 2:
     import rclpy
     from rclpy.node import Node
     from rclpy import executors
+    from rclpy.callback_groups import ReentrantCallbackGroup
     from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
+    from ros_compatible_node import CompatibleNode, ros_ok
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -89,6 +90,11 @@ class CarlaRosBridge(CompatibleNode):
         self.actors = {}
         self.pseudo_actors = []
         self.carla_world = carla_world
+
+        if ROS_VERSION == 1:
+            self.callback_group = None
+        elif ROS_VERSION == 2:
+            self.callback_group = ReentrantCallbackGroup()
 
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
@@ -125,8 +131,8 @@ class CarlaRosBridge(CompatibleNode):
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
-                self.create_subscriber(CarlaControl, "/carla/control", None,
-                                 qos_profile=lambda control: self.carla_control_queue.put(control.command))
+                self.create_subscriber(CarlaControl, "/carla/control", 
+                lambda control: self.carla_control_queue.put(control.command), callback_group=self.callback_group)
 
             self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
@@ -150,7 +156,7 @@ class CarlaRosBridge(CompatibleNode):
 
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
-                             self.on_weather_changed)
+                             self.on_weather_changed, callback_group=self.callback_group)
 
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, communication=self.comm))
@@ -214,7 +220,7 @@ class CarlaRosBridge(CompatibleNode):
         while not self.carla_control_queue.empty():
             command = self.carla_control_queue.get()
 
-        while command is not None and not rospy.is_shutdown():
+        while command is not None and ros_ok():
             self.carla_run_state = command
 
             if self.carla_run_state == CarlaControl.PAUSE:
@@ -552,8 +558,8 @@ def main():
         parameters["ego_vehicle"] = {"role_name": role_name}
 
     print(parameters)
-    carla_bridge.loginfo("Trying to connect to {host}:{port}".format(host=parameters['host'],
-                                                                     port=parameters['port']))
+    carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
+        host=parameters['host'], port=parameters['port']))
 
     try:
         carla_client = carla.Client(host=parameters['host'], port=parameters['port'])

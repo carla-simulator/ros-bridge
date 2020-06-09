@@ -16,12 +16,11 @@ from carla_ros_bridge.sensor import Sensor
 
 
 class Gnss(Sensor):
-
     """
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="GNSS"):
         """
         Constructor
 
@@ -34,11 +33,10 @@ class Gnss(Sensor):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(Gnss, self).__init__(carla_actor=carla_actor,
-                                   parent=parent,
-                                   communication=communication,
-                                   synchronous_mode=synchronous_mode,
-                                   prefix="gnss/" + carla_actor.attributes.get('role_name'))
+        super(Gnss, self).__init__(carla_actor=carla_actor, parent=parent,
+                                   communication=communication, synchronous_mode=synchronous_mode,
+                                   prefix="gnss/" + carla_actor.attributes.get('role_name'),
+                                   sensor_name=sensor_name)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):
@@ -53,5 +51,4 @@ class Gnss(Sensor):
         navsatfix_msg.latitude = carla_gnss_measurement.latitude
         navsatfix_msg.longitude = carla_gnss_measurement.longitude
         navsatfix_msg.altitude = carla_gnss_measurement.altitude
-        self.publish_message(
-            self.get_topic_prefix() + "/fix", navsatfix_msg)
+        self.publish_message(self.get_topic_prefix() + "/fix", navsatfix_msg)

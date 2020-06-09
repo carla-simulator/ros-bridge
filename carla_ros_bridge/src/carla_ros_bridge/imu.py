@@ -27,7 +27,7 @@ class ImuSensor(Sensor):
     Actor implementation details for imu sensor
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="IMU"):
         """
         Constructor
 
@@ -43,7 +43,8 @@ class ImuSensor(Sensor):
         super(ImuSensor,
               self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
                              synchronous_mode=synchronous_mode,
-                             prefix="imu/" + carla_actor.attributes.get('role_name'))
+                             prefix="imu/" + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):

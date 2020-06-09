@@ -10,7 +10,11 @@
 Classes to handle Carla lidars
 """
 
+from __future__ import print_function
 import numpy
+
+import ctypes
+import struct
 
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -18,19 +22,15 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     from tf.transformations import euler_from_quaternion, quaternion_from_euler
 elif ROS_VERSION == 2:
-    import ctypes
-    from sensor_msgs.msg import PointCloud2, PointField
-    import struct
     from transformations.transformations import euler_from_quaternion, quaternion_from_euler
 
-_DATATYPES = {}
-_DATATYPES[PointField.FLOAT32] = ('f', 4)
-
-# from sensor_msgs.point_cloud2 import create_cloud_xyz32
-# from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, PointField
 
 from carla_ros_bridge.sensor import Sensor
 import carla_ros_bridge.transforms as trans
+
+_DATATYPES = {}
+_DATATYPES[PointField.FLOAT32] = ('f', 4)
 
 
 class Lidar(Sensor):
@@ -38,7 +38,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Lidar"):
         """
         Constructor
 
@@ -51,7 +51,8 @@ class Lidar(Sensor):
         """
         super(Lidar, self).__init__(carla_actor=carla_actor, parent=parent,
                                     communication=communication, synchronous_mode=synchronous_mode,
-                                    prefix='lidar/' + carla_actor.attributes.get('role_name'))
+                                    prefix='lidar/' + carla_actor.attributes.get('role_name'),
+                                    sensor_name=sensor_name)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """

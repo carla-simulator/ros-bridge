@@ -14,7 +14,6 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
     import rclpy
@@ -24,8 +23,6 @@ elif ROS_VERSION == 2:
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode
 else:

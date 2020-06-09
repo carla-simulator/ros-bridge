@@ -13,24 +13,20 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from ros_compatibility import *
     latch = True
 elif ROS_VERSION == 2:
-    import rclpy
-    from rclpy.qos import QoSDurabilityPolicy
-    from rclpy.qos import QoSProfile
+    from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+    from rclpy.callback_groups import ReentrantCallbackGroup
     import sys
     print(os.getcwd())
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    import rclpy
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode, ros_timestamp
     latch = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+    from builtin_interfaces.msg import Time
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -54,9 +50,15 @@ class Communication(CompatibleNode):
         self.subscribers = {}
         self.ros_timestamp = ros_timestamp()
 
+        if ROS_VERSION == 1:
+            self.callback_group = None
+            self.pub['clock'] = self.new_publisher(Clock, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
+        elif ROS_VERSION == 2:
+            self.callback_group = ReentrantCallbackGroup()
+            self.pub['clock'] = self.new_publisher(Time, 'clock', qos_profile=QoSProfile(depth=10), callback_group=self.callback_group)
+
         # needed?
-        # self.pub['clock'] = self.new_publisher(Clock, 'clock')
-        # self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100))
+        self.pub['tf'] = self.new_publisher(TFMessage, 'tf', qos_profile=QoSProfile(depth=100), callback_group=self.callback_group)
 
     def send_msgs(self):
         """
@@ -64,12 +66,19 @@ class Communication(CompatibleNode):
 
         :return:
         """
+
         # prepare tf message
-        # tf_msg = TFMessage(self.tf_to_publish)
-        # try:
-        #     self.pub['tf'].publish(tf_msg)
-        # except Exception as error:  # pylint: disable=broad-except
-        #     self.logwarn("Failed to publish message: {}".format(error))
+        tf_msg = None
+
+        if ROS_VERSION == 1:
+            tf_msg = TFMessage(self.tf_to_publish)
+        elif ROS_VERSION == 2:
+            tf_msg = TFMessage()
+            tf_msg.transforms = self.tf_to_publish
+        try:
+            self.pub['tf'].publish(tf_msg)
+        except Exception as error:  # pylint: disable=broad-except
+            self.logwarn("Failed to publish message: {}".format(error))
 
         for publisher, msg in self.msgs_to_publish:
             try:
@@ -103,10 +112,10 @@ class Communication(CompatibleNode):
             if topic not in self.pub:
                 if is_latched:
                     qos_profile = QoSProfile(depth=10, durability=latch)
-                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=qos_profile)
+                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=qos_profile, callback_group=self.callback_group)
                 else:
                     # Use default QoS profile.
-                    self.pub[topic] = self.new_publisher(type(msg), topic)
+                    self.pub[topic] = self.new_publisher(type(msg), topic, callback_group=self.callback_group)
             self.msgs_to_publish.append((self.pub[topic], msg))
 
     def update_clock(self, carla_timestamp):
@@ -117,9 +126,11 @@ class Communication(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        # self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_secs=True)
-        # self.publish_message('clock', Clock(self.ros_timestamp))
-        pass
+        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+        if ROS_VERSION == 1:
+            self.publish_message('clock', Clock(self.ros_timestamp))
+        elif ROS_VERSION == 2:
+            self.publish_message('clock', self.ros_timestamp)
 
     def get_current_ros_time(self):
         """

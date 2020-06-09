@@ -17,12 +17,11 @@ from carla_ros_bridge.sensor import Sensor
 
 
 class Radar(Sensor):
-
     """
     Actor implementation details of Carla RADAR
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Radar"):
         """
         Constructor
         :param carla_actor: carla actor object
@@ -34,11 +33,10 @@ class Radar(Sensor):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(Radar, self).__init__(carla_actor=carla_actor,
-                                    parent=parent,
-                                    communication=communication,
-                                    synchronous_mode=synchronous_mode,
-                                    prefix="radar/" + carla_actor.attributes.get('role_name'))
+        super(Radar, self).__init__(carla_actor=carla_actor, parent=parent,
+                                    communication=communication, synchronous_mode=synchronous_mode,
+                                    prefix="radar/" + carla_actor.attributes.get('role_name'),
+                                    sensor_name=sensor_name)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):

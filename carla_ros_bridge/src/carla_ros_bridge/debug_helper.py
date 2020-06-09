@@ -8,32 +8,28 @@
 """
 Class to draw marker
 """
+import carla
+from visualization_msgs.msg import Marker, MarkerArray
+import math
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
     from tf.transformations import euler_from_quaternion
     from ros_compatibility import CompatibleNode
 elif ROS_VERSION == 2:
-    import rclpy
     from transformations.transformations import euler_from_quaternion
     import sys
     print(os.getcwd())
     # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
     sys.path.append(os.getcwd() +
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from ros_compatible_node import CompatibleNode
 else:
-    raise NotImplementedError('Make sure you have valid ' + 'ROS_VERSION env variable')
-
-import math
-from visualization_msgs.msg import Marker, MarkerArray
-import carla
+    raise NotImplementedError(
+        'Make sure you have valid ' + 'ROS_VERSION env variable')
 
 
 class DebugHelper(CompatibleNode):
@@ -61,7 +57,7 @@ class DebugHelper(CompatibleNode):
 
         :return:
         """
-        rospy.logdebug("Destroy DebugHelper")
+        self.logdebug("Destroy DebugHelper")
         self.debug = None
         destroy_subscription(self.marker_subscriber)
         self.marker_subscriber = None
@@ -90,7 +86,8 @@ class DebugHelper(CompatibleNode):
             elif marker.type == Marker.CUBE:
                 self.draw_box(marker, lifetime, color)
             else:
-                rospy.logwarn("Marker type '{}' not supported.".format(marker.type))
+                self.logwarn(
+                    "Marker type '{}' not supported.".format(marker.type))
 
     def draw_arrow(self, marker, lifetime, color):
         """

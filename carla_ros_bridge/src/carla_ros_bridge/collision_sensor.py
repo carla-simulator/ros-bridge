@@ -15,12 +15,12 @@ from carla_msgs.msg import CarlaCollisionEvent
 
 
 class CollisionSensor(Sensor):
-
     """
     Actor implementation details for a collision sensor
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="CollisionSensor"):
         """
         Constructor
 
@@ -33,12 +33,10 @@ class CollisionSensor(Sensor):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(CollisionSensor, self).__init__(carla_actor=carla_actor,
-                                              parent=parent,
-                                              communication=communication,
-                                              synchronous_mode=synchronous_mode,
-                                              is_event_sensor=True,
-                                              prefix="collision")
+        super(CollisionSensor,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             synchronous_mode=synchronous_mode, is_event_sensor=True,
+                             prefix="collision", sensor_name=sensor_name)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, collision_event):
@@ -55,5 +53,4 @@ class CollisionSensor(Sensor):
         collision_msg.normal_impulse.y = collision_event.normal_impulse.y
         collision_msg.normal_impulse.z = collision_event.normal_impulse.z
 
-        self.publish_message(
-            self.get_topic_prefix(), collision_msg)
+        self.publish_message(self.get_topic_prefix(), collision_msg)
