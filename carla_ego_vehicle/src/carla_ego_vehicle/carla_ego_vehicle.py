@@ -40,7 +40,8 @@ elif ROS_VERSION == 2:
     from rclpy.node import Node
     from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
-    from transformations.transformations import euler_from_quaternion, quaternion_from_euler
+    from transforms3d.euler import euler2quat as quaternion_from_euler
+    from transforms3d.euler import quat2euler as euler_from_quaternion
     from ros_compatibility import CompatibleNode
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose

@@ -22,7 +22,9 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     from tf.transformations import euler_from_quaternion, quaternion_from_euler
 elif ROS_VERSION == 2:
-    from transformations.transformations import euler_from_quaternion, quaternion_from_euler
+    from transforms3d.euler import euler2quat as quaternion_from_euler
+    from transforms3d.euler import quat2euler as euler_from_quaternion
+    # from transformations.transformations import euler_from_quaternion, quaternion_from_euler
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
