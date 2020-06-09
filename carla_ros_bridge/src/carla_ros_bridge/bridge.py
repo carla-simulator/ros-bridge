@@ -250,7 +250,7 @@ class CarlaRosBridge(CompatibleNode):
                 # fill list of available ego vehicles
                 self._expected_ego_vehicle_control_command_ids = []
                 with self._expected_ego_vehicle_control_command_ids_lock:
-                    for actor_id, actor in self.actors.iteritems():
+                    for actor_id, actor in self.actors.items():
                         if isinstance(actor, EgoVehicle):
                             self._expected_ego_vehicle_control_command_ids.append(actor_id)
 
