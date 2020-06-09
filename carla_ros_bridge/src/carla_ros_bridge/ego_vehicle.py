@@ -54,11 +54,13 @@ class EgoVehicle(Vehicle, CompatibleNode):
         """
         Vehicle.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
                          prefix=carla_actor.attributes.get('role_name'))
+
         if ROS_VERSION == 1:
             self.callback_group = None
         elif ROS_VERSION == 2:
-            CompatibleNode.__init__(self, "ego_vehicle")
             self.callback_group = ReentrantCallbackGroup()
+
+        CompatibleNode.__init__(self, "ego_vehicle", rospy_init=False)
 
         self.vehicle_info_published = False
         self.vehicle_control_override = False
