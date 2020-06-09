@@ -53,6 +53,8 @@ elif ROS_VERSION == 2:
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     from threading import Thread, Lock, Event
     from builtin_interfaces.msg import Time
+else:
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 from ros_compatibility import CompatibleNode, latch_on
 
