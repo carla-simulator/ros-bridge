@@ -553,7 +553,7 @@ def main():
         parameters['host'] = carla_bridge.get_param('carla.host', 'localhost')
         parameters['port'] = carla_bridge.get_param('carla.port', 2000)
         parameters['timeout'] = carla_bridge.get_param('carla.timeout', 2)
-        parameters['synchronous_mode'] = carla_bridge.get_param('carla.synchronous_mode', False)
+        parameters['synchronous_mode'] = carla_bridge.get_param('carla.synchronous_mode', True)
         parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
             'carla.synchronous_mode_wait_for_vehicle_control_command', True)
         parameters['fixed_delta_seconds'] = carla_bridge.get_param('carla.fixed_delta_seconds',
