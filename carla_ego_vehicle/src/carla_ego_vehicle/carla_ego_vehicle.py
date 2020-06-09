@@ -228,7 +228,7 @@ class CarlaEgoVehicle(CompatibleNode):
             try:
                 sensor_name = str(sensor_spec['type']) + "/" + str(sensor_spec['id'])
                 if sensor_name in sensor_names:
-                    rospy.logfatal(
+                    self.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
                     raise NameError(
