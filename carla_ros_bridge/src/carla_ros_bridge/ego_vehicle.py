@@ -187,7 +187,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
         :return:
         """
         self.send_vehicle_msgs()
-        super(EgoVehicle, self).update(frame, timestamp)
+        Vehicle.update(self, frame, timestamp)
         no_rotation = Transform()
         no_rotation.rotation.x = 1.0
         self.publish_transform(
@@ -214,7 +214,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
         self.control_override_subscriber = None
         destroy_subscription(self.manual_control_subscriber)
         self.manual_control_subscriber = None
-        super(EgoVehicle, self).destroy()
+        Vehicle.destroy(self)
 
     def twist_command_updated(self, twist):
         """
