@@ -12,20 +12,11 @@ Base Class to handle Pseudo Actors (that are not existing in Carla world)
 from std_msgs.msg import Header
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-if ROS_VERSION == 1:
-    from ros_compatibility import *
-elif ROS_VERSION == 2:
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from rclpy.time import Time
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
-else:
-    raise NotImplementedError(
-        "Make sure you have a valid ROS_VERSION env variable set.")
+
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from ros_compatibility import *
 
 
 class PseudoActor(CompatibleNode):
@@ -89,21 +80,7 @@ class PseudoActor(CompatibleNode):
         else:
             header.frame_id = self.get_prefix()
         if timestamp:
-            if ROS_VERSION == 1:
-                header.stamp = self.ros_timestamp(sec=timestamp, from_sec=True)
-            elif ROS_VERSION == 2:
-
-                def ros_timestamp(sec=0):
-                    from builtin_interfaces.msg import Time
-                    time = Time()
-                    time.sec = int(sec)
-                    time.nanosec = int((sec - int(sec)) * 1000000000)
-                    return time
-
-                header.stamp = ros_timestamp(timestamp)
-            else:
-                raise NotImplementedError(
-                    "Make sure you have a valid ROS_VERSION env variable set.")
+            header.stamp = self.ros_timestamp(sec=timestamp, from_sec=True)
         else:
             header.stamp = self.communication.get_current_ros_time()
         return header
