@@ -17,17 +17,7 @@ except ImportError:
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from ros_compatibility import CompatibleNode, ros_ok
-elif ROS_VERSION == 2:
-    import sys
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, ros_ok
-else:
+if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 from carla_ros_bridge.actor import Actor
@@ -73,8 +63,8 @@ class Sensor(Actor, CompatibleNode):
                        prefix=prefix)
         if sensor_name is None:
             sensor_name = "Sensor"
-        if ROS_VERSION == 2:
-            CompatibleNode.__init__(self, sensor_name)
+
+        CompatibleNode.__init__(self, sensor_name, rospy_init=False)
 
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
@@ -111,12 +101,6 @@ class Sensor(Actor, CompatibleNode):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        # is_shutdown = None
-        # if ROS_VERSION == 1:
-        #     is_shutdown = rospy.is_shutdown()
-        # elif ROS_VERSION == 2:
-        #     is_shutdown = False  # No is_shutdown equivalent in rclpy available without actually shutting down the node https://discourse.ros.org/t/mapping-between-rospy-and-rclpy/5737/2
-
         if ros_ok():
             if self.synchronous_mode:
                 if self.sensor_tick_time:
