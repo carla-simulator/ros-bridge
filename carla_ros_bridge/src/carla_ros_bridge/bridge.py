@@ -74,7 +74,7 @@ class CarlaRosBridge(CompatibleNode):
 
     CARLA_VERSION = "0.9.9"
 
-    def __init__(self, rospy_init=True):
+    def __init__(self, rospy_init=True, executor=None):
         """
         Constructor
 
@@ -84,6 +84,7 @@ class CarlaRosBridge(CompatibleNode):
         :type params: dict
         """
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
+        self.executor = executor
 
     def initialize_bridge(self, carla_world, params):
         self.parameters = params
@@ -409,6 +410,8 @@ class CarlaRosBridge(CompatibleNode):
                 pseudo_actors.append(
                     ObjectSensor(parent=actor, communication=self.comm, actor_list=self.actors,
                                  filtered_id=carla_actor.id))
+                if ROS_VERSION == 2:
+                    self.executor.add_node(actor)
             else:
                 actor = Vehicle(carla_actor, parent, self.comm)
         elif carla_actor.type_id.startswith("sensor"):
@@ -468,7 +471,7 @@ class CarlaRosBridge(CompatibleNode):
 
         return actor
 
-    def run(self):
+    def run(self, executor=None):
         """
         Run the bridge functionality.
 
@@ -478,9 +481,10 @@ class CarlaRosBridge(CompatibleNode):
         """
         if ROS_VERSION == 1:
             rospy.on_shutdown(self.on_shutdown)
+            self.spin()
         elif ROS_VERSION == 2:
             rclpy.get_default_context().on_shutdown(self.on_shutdown)
-        self.spin()
+            executor.spin()
 
     def on_shutdown(self):
         """
@@ -532,6 +536,7 @@ def main():
     carla_bridge = None
     carla_world = None
     carla_client = None
+    executor = None
     parameters = {}
     if ROS_VERSION == 1:
         carla_bridge = CarlaRosBridge()
@@ -540,10 +545,10 @@ def main():
 
     elif ROS_VERSION == 2:
         rclpy.init(args=None)
-        carla_bridge = CarlaRosBridge()
-        executor = rclpy.executors.MultiThreadedExecutor()
-        init_node = rclpy.create_node("init_ros_bridge")
-        executor.add_node(init_node)
+        executor = rclpy.executors.MultiThreadedExecutor(num_threads=12)
+        carla_bridge = CarlaRosBridge(executor=executor)
+        # init_node = rclpy.create_node("init_ros_bridge")
+        executor.add_node(carla_bridge)
 
         parameters['host'] = carla_bridge.get_param('carla.host', 'localhost')
         parameters['port'] = carla_bridge.get_param('carla.port', 2000)
@@ -596,7 +601,7 @@ def main():
             carla_world.tick()
 
         carla_bridge.initialize_bridge(carla_client.get_world(), parameters)
-        carla_bridge.run()
+        carla_bridge.run(executor=executor)
     except (IOError, RuntimeError) as e:
         carla_bridge.logerr("Error: {}".format(e))
     finally:
