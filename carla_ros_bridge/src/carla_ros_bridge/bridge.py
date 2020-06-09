@@ -172,7 +172,7 @@ class CarlaRosBridge(CompatibleNode):
         self.shutdown("")
         self.debug_helper.destroy()
         self.shutdown.set()
-        self.carla_weather_subscriber.unregister()
+        destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.carla_settings.synchronous_mode:
             if self.on_tick_id:
