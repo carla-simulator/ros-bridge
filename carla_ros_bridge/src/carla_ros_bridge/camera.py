@@ -14,13 +14,12 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     from tf import transformations
-    from ros_compatibility import *
 elif ROS_VERSION == 2:
-    # import cv2
     import transformations
-    # TODO: import ros_compatibilty
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from ros_compatibility import *
 
 from abc import abstractmethod
 
