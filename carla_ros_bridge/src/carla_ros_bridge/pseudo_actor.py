@@ -13,7 +13,7 @@ from std_msgs.msg import Header
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
-    from ros_compatibility import *
+    from ros_compatibility import CompatibleNode, ros_timestamp
 elif ROS_VERSION == 2:
     import sys
     print(os.getcwd())
@@ -22,7 +22,7 @@ elif ROS_VERSION == 2:
                     '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     from rclpy.time import Time
     from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode
+    from ros_compatible_node import CompatibleNode, ros_timestamp
 else:
     raise NotImplementedError(
         "Make sure you have a valid ROS_VERSION env variable set.")
@@ -89,21 +89,7 @@ class PseudoActor(CompatibleNode):
         else:
             header.frame_id = self.get_prefix()
         if timestamp:
-            if ROS_VERSION == 1:
-                header.stamp = self.ros_timestamp(sec=timestamp, from_sec=True)
-            elif ROS_VERSION == 2:
-
-                def ros_timestamp(sec=0):
-                    from builtin_interfaces.msg import Time
-                    time = Time()
-                    time.sec = int(sec)
-                    time.nanosec = int((sec - int(sec)) * 1000000000)
-                    return time
-
-                header.stamp = ros_timestamp(timestamp)
-            else:
-                raise NotImplementedError(
-                    "Make sure you have a valid ROS_VERSION env variable set.")
+            header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         else:
             header.stamp = self.communication.get_current_ros_time()
         return header

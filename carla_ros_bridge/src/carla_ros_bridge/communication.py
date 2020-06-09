@@ -13,7 +13,7 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from ros_compatibility import *
+    from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile
     latch = True
 elif ROS_VERSION == 2:
     from rclpy.qos import QoSDurabilityPolicy, QoSProfile
