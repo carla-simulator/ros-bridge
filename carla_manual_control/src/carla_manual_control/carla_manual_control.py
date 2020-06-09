@@ -34,26 +34,18 @@ import numpy
 
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
-latch_on = None
-
 if ROS_VERSION == 1:
     import rospy
     from tf import LookupException
     from tf import ConnectivityException
     from tf import ExtrapolationException
     import tf
-    from ros_compatibility import CompatibleNode, QoSProfile
-
-    latch_on = True
+    from ros_compatibility import QoSProfile
 
 elif ROS_VERSION == 2:
-    # TODO: Optimise ros2 imports
     import rclpy
     from rclpy.callback_groups import ReentrantCallbackGroup
-    from transformations import euler_from_quaternion
     import transformations as tf
-    import cv2
-    import time
     from tf2_ros import LookupException
     from tf2_ros import ConnectivityException
     from tf2_ros import ExtrapolationException
@@ -61,13 +53,9 @@ elif ROS_VERSION == 2:
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     from threading import Thread, Lock, Event
     from builtin_interfaces.msg import Time
-    from rosgraph_msgs.msg import Clock
-    import sys
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ros_compatible_node import CompatibleNode
 
-    latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+from ros_compatibility import CompatibleNode, latch_on
+
 
 from std_msgs.msg import Bool
 from sensor_msgs.msg import NavSatFix
@@ -220,7 +208,7 @@ class KeyboardControl(CompatibleNode):
             self.callback_group = ReentrantCallbackGroup()
 
         fast_qos = QoSProfile(depth=10)
-        fast_latched_qos = QoSProfile(depth=10)  # imported from ros_compat.
+        fast_latched_qos = QoSProfile(depth=10, durability=latch_on)  # imported from ros_compat.
 
         self.vehicle_control_manual_override_publisher = \
             self.new_publisher(Bool,
