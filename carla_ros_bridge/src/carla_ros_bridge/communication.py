@@ -101,7 +101,7 @@ class Communication(CompatibleNode):
         else:
             if topic not in self.pub:
                 if is_latched:
-                    latched_profile = QoSProfile(depth=10, durability=latch)
+                    latched_profile = QoSProfile(depth=10, durability=latch_on)
                     self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=latched_profile)
                 else:
                     # Use default QoS profile.
