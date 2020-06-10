@@ -27,22 +27,15 @@ ROS_VERSION = int(os.environ['ROS_VERSION'])
 if ROS_VERSION == 1:
     import rospy
     from tf.transformations import euler_from_quaternion, quaternion_from_euler
-    from ros_compatibility import CompatibleNode
-
 
 elif ROS_VERSION == 2:
     import sys
-    import os
-    print(os.getcwd())
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() + '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
     import rclpy
-    from rclpy.node import Node
-    from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
     from transforms3d.euler import euler2quat as quaternion_from_euler
     from transforms3d.euler import quat2euler as euler_from_quaternion
-    from ros_compatibility import CompatibleNode
+
+from ros_compatibility import CompatibleNode
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
