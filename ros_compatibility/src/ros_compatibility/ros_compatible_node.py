@@ -82,6 +82,7 @@ if ROS_VERSION == 1:
             rospy.signal_shutdown("")
 
 elif ROS_VERSION == 2:
+    from rclpy.exceptions import ROSInterruptException
     from rclpy.node import Node
     from rclpy import Parameter
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
@@ -112,7 +113,7 @@ elif ROS_VERSION == 2:
     class ROSException(Exception):
         pass
 
-    class ROSInterruptException(rclpy.ROSInterruptException):
+    class ROSInterruptException(ROSInterruptException):
         pass
 
     class CompatibleNode(Node):

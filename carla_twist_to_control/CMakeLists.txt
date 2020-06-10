@@ -28,7 +28,6 @@ if (${ROS_VERSION} EQUAL 1)
     install(DIRECTORY launch/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
     )
-endif()
 
 elseif (${ROS_VERSION} EQUAL 2)
     find_package(ament_cmake REQUIRED)

@@ -18,14 +18,10 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
-    from ros_compatibility import CompatibleNode, ros_ok, ROSException, ROSInterruptException
 elif ROS_VERSION == 2:
     import rclpy
-    # TODO: fix setup.py to easily import CompatibleNode (as in ROS1)
-    sys.path.append(os.getcwd() +
-                    '/install/ros_compatibility/lib/python3.6/site-packages/src/ros_compatibility')
-    from ament_index_python.packages import get_package_share_directory
-    from ros_compatible_node import CompatibleNode, ros_ok, ROSException, ROSInterruptException
+
+from ros_compatibility import CompatibleNode, ros_ok, ROSException, ROSInterruptException
 
 
 class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-methods
@@ -42,17 +38,41 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         Constructor
         """
         super(TwistToVehicleControl, self).__init__("twist_to_control", rospy_init=rospy_init)
+        self.max_steering_angle = None
 
     def initialize_twist_to_control(self, role_name):
-        self.loginfo("Wait for vehicle info...")
-        try:
-            vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
-                                                  CarlaEgoVehicleInfo)
-        except ROSInterruptException as e:
-            if ros_ok:
-                raise e
-            else:
-                sys.exit(0)
+        if ROS_VERSION == 1:
+            self.loginfo("Wait for vehicle info...")
+            try:
+                vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
+                                                    CarlaEgoVehicleInfo)
+            except ROSInterruptException as e:
+                if ros_ok:
+                    raise e
+                else:
+                    sys.exit(0)
+
+        self.create_subscriber(CarlaEgoVehicleInfo, "/carla/{}/vehicle_info".format(role_name), self.update_vehicle_info)
+
+        # if not vehicle_info.wheels:  # pylint: disable=no-member
+        #     self.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
+        #     sys.exit(1)
+
+        # self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle  # pylint: disable=no-member
+        # if not self.max_steering_angle:
+        #     self.logerr("Cannot determine max steering angle: Value is %s",
+        #                 self.max_steering_angle)
+        #     sys.exit(1)
+        # self.loginfo("Vehicle info received. Max steering angle={}".format(self.max_steering_angle))
+
+        self.create_subscriber(Twist, "/carla/{}/twist".format(role_name), self.twist_received)
+
+        self.pub = self.new_publisher(CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name))
+
+    def update_vehicle_info(self, vehicle_info):
+        """
+        callback to receive ego-vehicle info
+        """
         if not vehicle_info.wheels:  # pylint: disable=no-member
             self.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
             sys.exit(1)
@@ -60,20 +80,18 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle  # pylint: disable=no-member
         if not self.max_steering_angle:
             self.logerr("Cannot determine max steering angle: Value is %s",
-                         self.max_steering_angle)
+                        self.max_steering_angle)
             sys.exit(1)
-        self.loginfo("Vehicle info received. Max steering angle=%s",
-                      self.max_steering_angle)
-
-        rospy.Subscriber("/carla/{}/twist".format(role_name), Twist, self.twist_received)
-
-        self.pub = rospy.Publisher("/carla/{}/vehicle_control_cmd".format(role_name),
-                                   CarlaEgoVehicleControl, queue_size=1)
+        self.loginfo("Vehicle info received. Max steering angle={}".format(self.max_steering_angle))
 
     def twist_received(self, twist):
         """
         receive twist and convert to carla vehicle control
         """
+        if self.max_steering_angle is None:
+            self.logwarn("Did not yet receive vehicle info.")
+            return
+
         control = CarlaEgoVehicleControl()
         if twist == Twist():
             # stop
