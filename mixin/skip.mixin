@@ -1,0 +1,21 @@
+{
+  "build": {
+    "skip": {
+      "packages-skip": ["carla_ackermann_control",
+                        "carla_ad_agent",
+                        "carla_ad_demo",
+                        "carla_infrastructure",
+                        "carla_ros_scenario_runner",
+                        "carla_ros_scenario_runner_types",
+                        "carla_spectator_camera",
+                        "carla_walker_agent",
+                        "carla_waypoint_publisher",
+                        "carla_waypoint_types",
+                        "pcl_recorder",
+                        "rqt_carla_control",
+                        "rviz_carla_plugin",
+                        "carla_twist_to_control"
+                        ],
+    }
+  }
+}
