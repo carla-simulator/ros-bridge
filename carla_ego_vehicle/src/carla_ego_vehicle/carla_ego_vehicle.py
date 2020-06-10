@@ -40,8 +40,9 @@ elif ROS_VERSION == 2:
     from rclpy.node import Node
     from rclpy import executors
     from ament_index_python.packages import get_package_share_directory
-    from transformations.transformations import euler_from_quaternion, quaternion_from_euler
-    from ros_compatible_node import CompatibleNode
+    from transforms3d.euler import euler2quat as quaternion_from_euler
+    from transforms3d.euler import quat2euler as euler_from_quaternion
+    from ros_compatibility import CompatibleNode
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
@@ -228,7 +229,7 @@ class CarlaEgoVehicle(CompatibleNode):
             try:
                 sensor_name = str(sensor_spec['type']) + "/" + str(sensor_spec['id'])
                 if sensor_name in sensor_names:
-                    rospy.logfatal(
+                    self.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
                     raise NameError(

@@ -28,17 +28,12 @@ if ROS_VERSION == 1:
         pass
 
     class QoSProfile():
-
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
-            if durability is not None and durability is not False:
-                self.latch = True
-            else:
-                self.latch = False
+            self.latch = bool(durability)
 
     class CompatibleNode(object):
-
-        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
+        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
             if rospy_init:
                 rospy.init_node(node_name, anonymous=True)
             self.qos_profile = QoSProfile(depth=queue_size, durability=latch)
@@ -77,7 +72,7 @@ if ROS_VERSION == 1:
         def create_subscriber(self, msg_type, topic, callback, qos_profile=None,
                               callback_group=None):
             if qos_profile is None:
-                qos_profile = QoSProfile(depth=10, durability=False)
+                qos_profile = self.qos_profile
             return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
         def spin(self, executor=None):
@@ -121,10 +116,9 @@ elif ROS_VERSION == 2:
         pass
 
     class CompatibleNode(Node):
-
-        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
+        def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
             super().__init__(node_name, allow_undeclared_parameters=True,
-                             automatically_declare_parameters_from_overrides=True)
+                             automatically_declare_parameters_from_overrides=True, **kwargs)
             if latch:
                 self.qos_profile = QoSProfile(
                     depth=queue_size,
@@ -138,8 +132,9 @@ elif ROS_VERSION == 2:
                 return self.get_parameter(name).value
             if alternative_name is None:
                 alternative_name = name
-            return self.get_parameter_or(name, Parameter(alternative_name,
-                                                         value=alternative_value)).value
+            return self.get_parameter_or(name,
+                                         Parameter(alternative_name, value=alternative_value)
+                                         ).value
 
         def logdebug(self, text):
             self.get_logger().debug(text)
@@ -180,7 +175,8 @@ elif ROS_VERSION == 2:
             rclpy.shutdown()
 
 else:
-    raise NotImplementedError('Make sure you have valid ' + 'ROS_VERSION env variable')
+    raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
+
 
 
 def main():

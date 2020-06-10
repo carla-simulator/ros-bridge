@@ -13,14 +13,14 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from tf import transformations
-    from ros_compatibility import *
+    from tf.transformations import quaternion_from_matrix, quaternion_multiply
 elif ROS_VERSION == 2:
-    # import cv2
-    import transformations
-    # TODO: import ros_compatibilty
+    from transforms3d.quaternions import mat2quat as quaternion_from_matrix
+    from transforms3d.quaternions import qmult as quaternion_multiply
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from ros_compatibility import *
 
 from abc import abstractmethod
 
@@ -121,7 +121,10 @@ class Camera(Sensor):
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
+        if ROS_VERSION == 1:
+            self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
+        elif ROS_VERSION == 2:
+            self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name() + '/camera_info', cam_info)
         self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
@@ -137,9 +140,13 @@ class Camera(Sensor):
         tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        quat_swap = transformations.quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
+        if ROS_VERSION == 1:
+            quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
                                                             [0, -1, 0, 0], [0, 0, 0, 1]])
-        quat = transformations.quaternion_multiply(quat, quat_swap)
+        elif ROS_VERSION == 2:
+            quat_swap = quaternion_from_matrix(numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
+                                                            numpy.asarray([0, -1, 0])]))
+        quat = quaternion_multiply(quat, quat_swap)
 
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg
