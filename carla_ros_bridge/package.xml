@@ -6,31 +6,37 @@
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
 
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>derived_object_msgs</exec_depend>
+  <exec_depend>shape_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>tf2_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <build_depend>ainstein_radar_msgs</build_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>carla_msgs</exec_depend>
+  <exec_depend>carla_ego_vehicle</exec_depend>
+  <exec_depend>carla_manual_control</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python-transforms3d-pip</exec_depend>
+  <exec_depend>ros_compatibility</exec_depend>
+
   <!-- ROS 2 DEPENDENCIES-->
   <depend condition="$ROS_VERSION == 2">rclpy</depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_python</buildtool_depend>
+  <exec_depend condition="$ROS_VERSION == 2">tf2_ros</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
   <!-- ROS 1 DEPENDENCIES-->
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <build_depend condition="$ROS_VERSION == 1">roslaunch</build_depend>
-  <build_depend condition="$ROS_VERSION == 1">ainstein_radar_msgs</build_depend>
   <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">sensor_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">visualization_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">tf</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">tf2</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">geometry_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">std_msgs</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">rosbag_storage</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">derived_object_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">shape_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">nav_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">tf2_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rosgraph_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">cv_bridge</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">carla_msgs</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">carla_ego_vehicle</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">carla_manual_control</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
 
   <export>
     <build_type condition="$ROS_VERSION == 1">catkin</build_type>
