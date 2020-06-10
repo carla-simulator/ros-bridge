@@ -27,6 +27,9 @@
   <exec_depend>carla_msgs</exec_depend>
   <exec_depend>carla_ego_vehicle</exec_depend>
   <exec_depend>carla_manual_control</exec_depend>
+<<<<<<< HEAD
   <export>
   </export>
+=======
+>>>>>>> Remove package.xml changes since ROS2 port for carla_ros_bridge is not done yet
 </package>
