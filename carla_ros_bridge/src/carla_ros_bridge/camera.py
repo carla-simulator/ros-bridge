@@ -121,7 +121,10 @@ class Camera(Sensor):
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
+        if ROS_VERSION == 1:
+            self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
+        elif ROS_VERSION == 2:
+            self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name() + '/camera_info', cam_info)
         self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
