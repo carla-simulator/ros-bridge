@@ -1,38 +1,25 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(carla_manual_control)
 
-find_package(ros_environment REQUIRED)
-set(ROS_VERSION $ENV{ROS_VERSION})
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  roslaunch
+)
 
-if (${ROS_VERSION} EQUAL 1)
+catkin_python_setup()
 
-	find_package(catkin REQUIRED COMPONENTS
-	  rospy
-	  roslaunch
-	)
+roslaunch_add_file_check(launch)
 
-	catkin_python_setup()
+catkin_package(
+  CATKIN_DEPENDS
+  rospy
+)
 
-	roslaunch_add_file_check(launch)
+catkin_install_python(PROGRAMS
+  src/carla_manual_control/carla_manual_control.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-	catkin_package(
-	  CATKIN_DEPENDS
-	  rospy
-	)
-
-	catkin_install_python(PROGRAMS
-	  src/carla_manual_control/carla_manual_control.py
-	  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-	)
-
-	install(DIRECTORY launch/
-	  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-	)
-
-elseif (${ROS_VERSION} EQUAL 2)
-    find_package(ament_cmake REQUIRED)
-    find_package(rclpy REQUIRED)
-    ament_export_dependencies(rclpy)
-    ament_package()
-
-endif()
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
