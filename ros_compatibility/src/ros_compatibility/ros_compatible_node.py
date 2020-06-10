@@ -21,7 +21,6 @@ if ROS_VERSION == 1:
     def destroy_subscription(subsription):
         subsription.unregister()
 
-
     class QoSProfile():
         def __init__(self, depth=10, durability=None, **kwargs):
             self.depth = depth
@@ -48,12 +47,6 @@ if ROS_VERSION == 1:
         def logwarn(self, text):
             rospy.logwarn(text)
 
-        def logwarn(self, text):
-            rospy.logwarn(text)
-
-        def logwarn(self, text):
-            rospy.logwarn(text)
-
         def logerr(self, text):
             rospy.logerr(text)
 
@@ -63,7 +56,7 @@ if ROS_VERSION == 1:
         # assymetry in publisher/subscriber method naming due to rclpy having
         # create_publisher method.
         def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
+                          qos_profile=None, callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
@@ -113,7 +106,6 @@ elif ROS_VERSION == 2:
     def destroy_subscription(subsription):
         subsription.destroy()
 
-
     class CompatibleNode(Node):
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True):
             super().__init__(node_name, allow_undeclared_parameters=True,
@@ -132,7 +124,8 @@ elif ROS_VERSION == 2:
             if alternative_name is None:
                 alternative_name = name
             return self.get_parameter_or(name,
-                                         Parameter(alternative_name, value=alternative_value)
+                                         Parameter(alternative_name,
+                                                   value=alternative_value)
                                          ).value
 
         def logdebug(self, text):
@@ -141,14 +134,8 @@ elif ROS_VERSION == 2:
         def loginfo(self, text):
             self.get_logger().info(text)
 
-        def logwarn(self, text):
-            self.get_logger().warn(text)
-
         def logerr(self, text):
             self.get_logger().error(text)
-
-        def logwarn(self, text):
-            self.get_logger().warn(text)
 
         def logwarn(self, text):
             self.get_logger().warn(text)
@@ -157,25 +144,7 @@ elif ROS_VERSION == 2:
             self.get_logger().fatal(text)
 
         def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
-            if qos_profile is None:
-                qos_profile = self.qos_profile
-            if callback_group is None:
-                callback_group = self.callback_group
-            return self.create_publisher(msg_type, topic,
-                                         qos_profile, callback_group=callback_group)
-
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
-            if qos_profile is None:
-                qos_profile = self.qos_profile
-            if callback_group is None:
-                callback_group = self.callback_group
-            return self.create_publisher(msg_type, topic,
-                                         qos_profile, callback_group=callback_group)
-
-        def new_publisher(self, msg_type, topic,
-                            qos_profile=None, callback_group=None):
+                          qos_profile=None, callback_group=None):
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
