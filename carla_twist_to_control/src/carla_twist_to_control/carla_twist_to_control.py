@@ -54,17 +54,6 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
 
         self.create_subscriber(CarlaEgoVehicleInfo, "/carla/{}/vehicle_info".format(role_name), self.update_vehicle_info)
 
-        # if not vehicle_info.wheels:  # pylint: disable=no-member
-        #     self.logerr("Cannot determine max steering angle: Vehicle has no wheels.")
-        #     sys.exit(1)
-
-        # self.max_steering_angle = vehicle_info.wheels[0].max_steer_angle  # pylint: disable=no-member
-        # if not self.max_steering_angle:
-        #     self.logerr("Cannot determine max steering angle: Value is %s",
-        #                 self.max_steering_angle)
-        #     sys.exit(1)
-        # self.loginfo("Vehicle info received. Max steering angle={}".format(self.max_steering_angle))
-
         self.create_subscriber(Twist, "/carla/{}/twist".format(role_name), self.twist_received)
 
         self.pub = self.new_publisher(CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name))
@@ -138,8 +127,7 @@ def main():
         rclpy.init(args=None)
         twist_to_vehicle_control = TwistToVehicleControl()
         executor = rclpy.executors.MultiThreadedExecutor()
-        init_node = rclpy.create_node("twist_to_control")  # TODO maybe this is initializing the node twice?
-        executor.add_node(init_node)
+        executor.add_node(twist_to_vehicle_control)
         role_name = twist_to_vehicle_control.get_param("role_name", "ego_vehicle")
 
     twist_to_vehicle_control.initialize_twist_to_control(role_name)

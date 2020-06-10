@@ -62,6 +62,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
 
         CompatibleNode.__init__(self, "ego_vehicle", rospy_init=False)
 
+        self.vehicle_info = None
         self.vehicle_info_published = False
         self.vehicle_control_override = False
         self._vehicle_control_applied_callback = vehicle_control_applied_callback
@@ -126,6 +127,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
         self.publish_message(self.get_topic_prefix() + "/vehicle_status", vehicle_status)
 
         # only send vehicle once (in latched-mode)
+        # TODO: Make latching work reliably in ROS2
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             vehicle_info = CarlaEgoVehicleInfo()
@@ -166,8 +168,12 @@ class EgoVehicle(Vehicle, CompatibleNode):
             vehicle_info.center_of_mass.x = vehicle_physics.center_of_mass.x
             vehicle_info.center_of_mass.y = vehicle_physics.center_of_mass.y
             vehicle_info.center_of_mass.z = vehicle_physics.center_of_mass.z
-
-            self.publish_message(self.get_topic_prefix() + "/vehicle_info", vehicle_info, True)
+            self.vehicle_info = vehicle_info
+            self.publish_message(self.get_topic_prefix() + "/vehicle_info",
+                                 vehicle_info, is_latched=True)
+        if ROS_VERSION == 2:
+            self.publish_message(self.get_topic_prefix() + "/vehicle_info",
+                                 self.vehicle_info, is_latched=True)
 
     def update(self, frame, timestamp):
         """
