@@ -1,59 +1,48 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(carla_ros_bridge)
 
-find_package(ros_environment REQUIRED)
-set(ROS_VERSION $ENV{ROS_VERSION})
+## Find catkin macros and libraries
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  sensor_msgs
+  geometry_msgs
+  derived_object_msgs
+  ainstein_radar_msgs
+  tf
+  roslaunch
+)
 
-if (${ROS_VERSION} EQUAL 1)
+catkin_python_setup()
 
-	find_package(catkin REQUIRED COMPONENTS
-	  rospy
-	  sensor_msgs
-	  geometry_msgs
-	  derived_object_msgs
-	  ainstein_radar_msgs
-	  tf
-	  roslaunch
-	)
+catkin_package()
 
-	catkin_python_setup()
+roslaunch_add_file_check(launch)
+roslaunch_add_file_check(test)
 
-	catkin_package()
+include_directories(
+   ${catkin_INCLUDE_DIRS}
+)
 
-	roslaunch_add_file_check(launch)
+install(PROGRAMS
+   src/carla_ros_bridge/bridge.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-	include_directories(
-	   ${catkin_INCLUDE_DIRS}
-	)
+install(FILES
+   test/ros_bridge_client.test
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
-	install(PROGRAMS
-	   src/carla_ros_bridge/bridge.py
-	   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-	)
+install(DIRECTORY
+   config
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
-	install(FILES
-	   test/ros_bridge_client.test
-	   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-	)
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 
-	install(DIRECTORY
-	   config
-	   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-	)
-
-	install(DIRECTORY launch/
-	  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-	)
-
-	if(CATKIN_ENABLE_TESTING)
-	  find_package(rostest REQUIRED)
-	  add_rostest(test/ros_bridge_client.test)
-	endif()
-
-elseif (${ROS_VERSION} EQUAL 2)
-    find_package(ament_cmake REQUIRED)
-    find_package(rclpy REQUIRED)
-    ament_export_dependencies(rclpy)
-    ament_package()
-
+if(CATKIN_ENABLE_TESTING AND NOT $ENV{CI})
+  find_package(rostest REQUIRED)
+  add_rostest(test/ros_bridge_client.test)
 endif()
