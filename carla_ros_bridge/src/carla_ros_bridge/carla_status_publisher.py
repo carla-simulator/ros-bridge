@@ -9,6 +9,8 @@
 """
 report the carla status
 """
+from carla_msgs.msg import CarlaStatus
+from ros_compatibility import *
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -18,10 +20,6 @@ if ROS_VERSION not in (1, 2):
 
 if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
-
-from ros_compatibility import *
-
-from carla_msgs.msg import CarlaStatus
 
 
 class CarlaStatusPublisher(CompatibleNode):

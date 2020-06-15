@@ -16,6 +16,10 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
+import carla
+from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from ros_compatibility import CompatibleNode
 import json
 import math
 import os
@@ -35,12 +39,6 @@ elif ROS_VERSION == 2:
     from transforms3d.euler import euler2quat as quaternion_from_euler
     from transforms3d.euler import quat2euler as euler_from_quaternion
 
-from ros_compatibility import CompatibleNode
-
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
-from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
-
-import carla
 
 secure_random = random.SystemRandom()
 
@@ -77,7 +75,6 @@ class CarlaEgoVehicle(CompatibleNode):
             # check argument and set spawn_point
             spawn_point_param = self.get_param('~spawn_point')
 
-
         elif ROS_VERSION == 2:
             self.host = self.get_param('carla.host', 'localhost')
             self.port = self.get_param('carla.port', 2000)
@@ -108,19 +105,18 @@ class CarlaEgoVehicle(CompatibleNode):
             self.actor_spawnpoint = pose
 
         self.initialpose_subscriber = self.create_subscriber(PoseWithCovarianceStamped,
-                                                             "/carla/{}/initialpose".format(self.role_name),
+                                                             "/carla/{}/initialpose".format(
+                                                                 self.role_name),
                                                              self.on_initialpose)
 
         self.loginfo("listening to server {}:{}".format(self.host, self.port))
         self.loginfo("using vehicle filter: {}".format(self.actor_filter))
-
 
     def spawn_ego_vehicle(self):
         if ROS_VERSION == 1:
             return self.get_param('~spawn_ego_vehicle')
         elif ROS_VERSION == 2:
             return self.get_parameter('spawn_ego_vehicle')
-
 
     def on_initialpose(self, initial_pose):
         """
@@ -161,7 +157,7 @@ class CarlaEgoVehicle(CompatibleNode):
                 spawn_point.location.x = self.actor_spawnpoint.position.x
                 spawn_point.location.y = -self.actor_spawnpoint.position.y
                 spawn_point.location.z = self.actor_spawnpoint.position.z + \
-                                         2  # spawn 2m above ground
+                    2  # spawn 2m above ground
                 quaternion = (
                     self.actor_spawnpoint.orientation.x,
                     self.actor_spawnpoint.orientation.y,
@@ -441,6 +437,7 @@ def main():
         executor.add_node(init_node)
         init_node.get_logger().info("Waiting for carla_bridge to start...")
         executor.spin()
+
 
 if __name__ == '__main__':
     main()

@@ -11,6 +11,9 @@ Classes to handle Carla lidars
 """
 
 from __future__ import print_function
+import carla_ros_bridge.transforms as trans
+from carla_ros_bridge.sensor import Sensor
+from sensor_msgs.msg import PointCloud2, PointField
 import numpy
 
 import ctypes
@@ -28,10 +31,6 @@ elif ROS_VERSION == 2:
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
-from sensor_msgs.msg import PointCloud2, PointField
-
-from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)

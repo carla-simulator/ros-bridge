@@ -9,6 +9,16 @@
 """
 Classes to handle Carla vehicles
 """
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
+    CarlaEgoVehicleControl, CarlaEgoVehicleStatus
+import carla_ros_bridge.transforms as transforms
+from carla_ros_bridge.vehicle import Vehicle
+from carla import Vector3D
+from carla import VehicleControl
+from geometry_msgs.msg import Twist, Transform
+from std_msgs.msg import Bool
+from std_msgs.msg import ColorRGBA
+from ros_compatibility import *
 import math
 import numpy
 
@@ -20,20 +30,6 @@ if ROS_VERSION not in (1, 2):
 
 if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
-
-from ros_compatibility import *
-from std_msgs.msg import ColorRGBA
-from std_msgs.msg import Bool
-from geometry_msgs.msg import Twist, Transform
-
-from carla import VehicleControl
-from carla import Vector3D
-
-from carla_ros_bridge.vehicle import Vehicle
-import carla_ros_bridge.transforms as transforms
-
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
-    CarlaEgoVehicleControl, CarlaEgoVehicleStatus
 
 
 class EgoVehicle(Vehicle, CompatibleNode):

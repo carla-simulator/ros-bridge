@@ -9,6 +9,9 @@
 """
 Handle communication of ROS topics
 """
+from tf2_msgs.msg import TFMessage
+from rosgraph_msgs.msg import Clock
+from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -18,10 +21,6 @@ if ROS_VERSION not in (1, 2):
 if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
     from builtin_interfaces.msg import Time
-
-from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
-from rosgraph_msgs.msg import Clock
-from tf2_msgs.msg import TFMessage
 
 
 class Communication(CompatibleNode):
@@ -102,7 +101,8 @@ class Communication(CompatibleNode):
             if topic not in self.pub:
                 if is_latched:
                     latched_profile = QoSProfile(depth=10, durability=latch_on)
-                    self.pub[topic] = self.new_publisher(type(msg), topic, qos_profile=latched_profile)
+                    self.pub[topic] = self.new_publisher(
+                        type(msg), topic, qos_profile=latched_profile)
                 else:
                     # Use default QoS profile.
                     self.pub[topic] = self.new_publisher(type(msg), topic)

@@ -9,6 +9,15 @@
 """
 Class to handle Carla camera sensors
 """
+import carla_ros_bridge.transforms as trans
+from carla_ros_bridge.sensor import Sensor
+import carla
+from sensor_msgs.msg import CameraInfo
+from cv_bridge import CvBridge
+import numpy
+import math
+from abc import abstractmethod
+from ros_compatibility import *
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -19,20 +28,6 @@ elif ROS_VERSION == 2:
     from transforms3d.quaternions import qmult as quaternion_multiply
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-from ros_compatibility import *
-
-from abc import abstractmethod
-
-import math
-import numpy
-
-from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
-
-import carla
-from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
 
 class Camera(Sensor):
@@ -110,7 +105,7 @@ class Camera(Sensor):
         :type carla_image: carla.Image
         """
         if ((carla_image.height != self._camera_info.height) or
-            (carla_image.width != self._camera_info.width)):
+                (carla_image.width != self._camera_info.width)):
             self.logerr("Camera{} received image not matching configuration".format(
                 self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(carla_image=carla_image)
@@ -124,7 +119,8 @@ class Camera(Sensor):
         if ROS_VERSION == 1:
             self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
         elif ROS_VERSION == 2:
-            self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name() + '/camera_info', cam_info)
+            self.publish_message(self.get_topic_prefix() + '/' +
+                                 self.get_image_topic_name() + '/camera_info', cam_info)
         self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
@@ -142,10 +138,10 @@ class Camera(Sensor):
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         if ROS_VERSION == 1:
             quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
-                                                            [0, -1, 0, 0], [0, 0, 0, 1]])
+                                                [0, -1, 0, 0], [0, 0, 0, 1]])
         elif ROS_VERSION == 2:
             quat_swap = quaternion_from_matrix(numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
-                                                            numpy.asarray([0, -1, 0])]))
+                                                              numpy.asarray([0, -1, 0])]))
         quat = quaternion_multiply(quat, quat_swap)
 
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)

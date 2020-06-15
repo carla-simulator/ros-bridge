@@ -9,14 +9,13 @@
 Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
 
+from ros_compatibility import CompatibleNode, ros_timestamp
 from std_msgs.msg import Header
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-from ros_compatibility import CompatibleNode, ros_timestamp
 
 
 class PseudoActor(CompatibleNode):

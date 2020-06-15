@@ -8,6 +8,7 @@
 """
 Class to draw marker
 """
+from ros_compatibility import *
 import carla
 from visualization_msgs.msg import Marker, MarkerArray
 import math
@@ -22,8 +23,6 @@ elif ROS_VERSION == 2:
 else:
     raise NotImplementedError(
         'Make sure you have valid ' + 'ROS_VERSION env variable')
-
-from ros_compatibility import *
 
 
 class DebugHelper(CompatibleNode):

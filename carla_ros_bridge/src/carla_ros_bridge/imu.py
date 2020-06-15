@@ -6,6 +6,9 @@
 """
 Classes to handle Carla imu sensor
 """
+import carla_ros_bridge.transforms as trans
+from carla_ros_bridge.sensor import Sensor
+from sensor_msgs.msg import Imu
 import math
 
 import os
@@ -17,11 +20,6 @@ elif ROS_VERSION == 2:
     from transformations.transformations import quaternion_from_euler
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-from sensor_msgs.msg import Imu
-
-from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
 
 
 class ImuSensor(Sensor):

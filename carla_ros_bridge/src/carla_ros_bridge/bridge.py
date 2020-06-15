@@ -11,7 +11,8 @@ Rosbridge class:
 Class that handle communication between CARLA and ROS
 """
 try:
-    import queue
+from ros_compatibility import *
+import queue
 except ImportError:
     import Queue as queue
 
@@ -55,8 +56,6 @@ elif ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-from ros_compatibility import *
 
 
 class CarlaRosBridge(CompatibleNode):
@@ -124,8 +123,8 @@ class CarlaRosBridge(CompatibleNode):
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
-                self.create_subscriber(CarlaControl, "/carla/control", 
-                lambda control: self.carla_control_queue.put(control.command), callback_group=self.callback_group)
+                self.create_subscriber(CarlaControl, "/carla/control",
+                                       lambda control: self.carla_control_queue.put(control.command), callback_group=self.callback_group)
 
             self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
@@ -149,7 +148,7 @@ class CarlaRosBridge(CompatibleNode):
 
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
-                             self.on_weather_changed, callback_group=self.callback_group)
+                                   self.on_weather_changed, callback_group=self.callback_group)
 
         # add world info
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, communication=self.comm))
