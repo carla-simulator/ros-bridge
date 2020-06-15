@@ -10,4 +10,4 @@ For a more comprehensive solution, have a look at [Autoware](https://www.autowar
 
 | Topic                              | Type                | Description                 |
 | ---------------------------------- | ------------------- | --------------------------- |
-| `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs.CarlaEgoVehicleControl](../carla_msgs/msg/CarlaEgoVehicleControl.msg) | Vehicle control command |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) | Vehicle control command |
