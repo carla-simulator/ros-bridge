@@ -33,4 +33,3 @@
     <param name="spawn_ego_vehicle" value="$(arg spawn_ego_vehicle)" />
   </node>
 </launch>
-

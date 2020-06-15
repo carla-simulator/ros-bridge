@@ -9,7 +9,6 @@
 """
 Classes to handle Carla Radar
 """
-import math
 
 from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection
 

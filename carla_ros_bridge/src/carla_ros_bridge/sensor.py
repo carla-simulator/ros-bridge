@@ -18,7 +18,7 @@ except ImportError:
 import rospy
 
 from carla_ros_bridge.actor import Actor
-import carla_ros_bridge.transforms as trans
+import carla_common.transforms as trans
 
 
 class Sensor(Actor):
@@ -153,7 +153,7 @@ class Sensor(Actor):
                                     carla_sensor_data.transform)))
                         self.sensor_data_updated(carla_sensor_data)
                         return
-                    else:
+                    elif carla_sensor_data.frame < frame:
                         rospy.logwarn("{}({}): skipping old frame {}, expected {}".format(
                             self.__class__.__name__,
                             self.get_id(),

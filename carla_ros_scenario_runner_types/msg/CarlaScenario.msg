@@ -6,6 +6,3 @@
 #
 string name
 string scenario_file
-geometry_msgs/Pose[] waypoints
-float64 target_speed
-

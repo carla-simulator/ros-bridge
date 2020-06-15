@@ -11,7 +11,7 @@ The Node setup is visualized [here](../docs/images/ad_demo.png "AD Demo Node Set
 
     export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
     export SCENARIO_RUNNER_PATH=<path_to_scenario_runner>
-    roslaunch carla_ad_demo carla_ad_demo_with_rviz.launch
+    roslaunch carla_ad_demo carla_ad_demo.launch
 
 ### Modes
 
@@ -27,11 +27,15 @@ You can modify start position and goal within the [launch file](launch/carla_ad_
 
 #### Scenario Execution
 
-If you prefer to execute a predefined scenario, select to example scenario "FollowLeadingVehicle" within the RVIZ Carla Plugin and press "Execute". The ego vehicle gets repositioned and the scenario is processed.
+If you prefer to execute a predefined scenario, launch:
 
-You can specify your own scenarios by publishing to `/carla/available_scenarios`. See the [launch file](launch/carla_ad_demo_with_rviz.launch) for an example.
+    roslaunch carla_ad_demo carla_ad_demo_with_scenario.launch
+    
+Select to example scenario "FollowLeadingVehicle" within the RVIZ Carla Plugin and press "Execute". The ego vehicle gets repositioned and the scenario is processed.
+
+You can specify your own scenarios by publishing to `/carla/available_scenarios`. See the [launch file](launch/carla_ad_demo_with_scenario.launch) for an example.
 
 
-## Troubleshooting
+##### Troubleshooting
 
 If the example scenario fails, please analyze the ros log and follow the scenario runner [Getting Started](https://github.com/carla-simulator/scenario_runner/blob/master/Docs/getting_started.md) to verify that it's working standalone.
