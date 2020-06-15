@@ -17,7 +17,6 @@ RUN apt-get update \
     ros-$ROS_VERSION-cv-bridge \
     ros-$ROS_VERSION-pcl-conversions \
     ros-$ROS_VERSION-pcl-ros \
-    ros-$ROS_VERSION-ainstein-radar \
     python-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 

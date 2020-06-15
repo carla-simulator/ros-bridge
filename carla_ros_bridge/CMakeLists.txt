@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   derived_object_msgs
-  ainstein_radar_msgs
   tf
   roslaunch
 )
