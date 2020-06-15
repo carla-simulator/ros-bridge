@@ -181,9 +181,7 @@ Currently the following sensors are supported:
 
 | Topic                                               | Type                                                                                                                                          |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [ainstein_radar_msgs.RadarTargetArray](https://github.com/AinsteinAI/ainstein_radar/blob/master/ainstein_radar_msgs/msg/RadarTargetArray.msg) |
-
-Radar data can be visualized on rviz using [ainstein_radar_rviz_plugins](https://wiki.ros.org/ainstein_radar_rviz_plugins).
+| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](carla_msgs/msg/CarlaRadarMeasurement.msg) |
 
 ##### IMU
 
