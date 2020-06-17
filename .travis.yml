@@ -8,17 +8,17 @@
 os: linux
 
 stages:
-    - check
-    - test
-    - docker
+  - check
+  - test
+  - docker
 
 cache:
-    - apt
+  - apt
 
 addons:
-    apt:
-        packages:
-        - python-pip
+  apt:
+    packages:
+    - python-pip
 
 jobs:
   include:
@@ -31,10 +31,23 @@ jobs:
     - name: "Xenial Kinetic"
       stage: test
       dist: xenial
-      env: ROS_DISTRO=kinetic
+      env:
+        - ROS_DISTRO=kinetic
+        - PYTHON_SUFFIX=""
     - name: "Bionic Melodic"
       dist: bionic
-      env: ROS_DISTRO=melodic
+      env:
+        - ROS_DISTRO=melodic
+        - PYTHON_SUFFIX=""
+    - name: "Focal Noetic"
+      dist: focal
+      env:
+        - ROS_DISTRO=noetic
+        - PYTHON_SUFFIX=3
+      addons:
+        apt:
+          packages:
+          - python3-pip
     - name: "Docker Kinetic"
       stage: docker
       services: docker
@@ -46,15 +59,20 @@ jobs:
       before_install: skip
       install: skip
       script: cd docker && ./build.sh --build-arg ROS_VERSION=melodic
+    - name: "Docker Noetic"
+      services: docker
+      before_install: skip
+      install: skip
+      script: cd docker && ./build.sh --build-arg ROS_VERSION=noetic PYTHON_VERSION=3.8
 
 before_install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
   - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   - sudo apt update
-  - sudo apt install -y ros-$ROS_DISTRO-desktop-full python-catkin-tools python-catkin-pkg python-catkin-pkg-modules python-rosdep python-wstool
+  - sudo apt install -y ros-$ROS_DISTRO-desktop-full python$PYTHON_SUFFIX-catkin-tools python$PYTHON_SUFFIX-catkin-pkg python$PYTHON_SUFFIX-catkin-pkg-modules python$PYTHON_SUFFIX-rosdep python$PYTHON_SUFFIX-wstool
 
 install:
-  - pip install --user -r requirements.txt
+  - pip$PYTHON_SUFFIX install --user -r requirements.txt
   - mkdir ros-bridge/
   - shopt -s dotglob
   - shopt -s extglob
