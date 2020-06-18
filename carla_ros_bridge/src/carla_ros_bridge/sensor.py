@@ -183,4 +183,4 @@ class Sensor(Actor, CompatibleNode):
             else:
                 self._update_synchronous_sensor(frame, timestamp)
 
-        super(Sensor, self).update(frame, timestamp)
+        Actor.update(self, frame, timestamp)
