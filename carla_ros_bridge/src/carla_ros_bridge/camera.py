@@ -108,20 +108,20 @@ class Camera(Sensor):
                 (carla_image.width != self._camera_info.width)):
             self.logerr("Camera{} received image not matching configuration".format(
                 self.get_prefix()))
-        image_data_array, encoding = self.get_carla_image_data_array(carla_image=carla_image)
-        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
+        image_data_array, encoding = self.get_carla_image_data_array(
+            carla_image=carla_image)
+        img_msg = Camera.cv_bridge.cv2_to_imgmsg(
+            image_data_array, encoding=encoding)
         # the camera data is in respect to the camera's own frame
         img_msg.header = self.get_msg_header()
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        if ROS_VERSION == 1:
-            self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
-        elif ROS_VERSION == 2:
-            self.publish_message(self.get_topic_prefix() + '/' +
-                                 self.get_image_topic_name() + '/camera_info', cam_info)
-        self.publish_message(self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
+        self.publish_message(self.get_topic_prefix() +
+                             '/camera_info', cam_info)
+        self.publish_message(self.get_topic_prefix() +
+                             '/' + self.get_image_topic_name(), img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """
