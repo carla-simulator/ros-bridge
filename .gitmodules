@@ -2,3 +2,7 @@
 	path = carla_msgs
 	url = https://github.com/carla-simulator/ros-carla-msgs
 	branch = master
+[submodule "astuff_sensor_msgs"]
+	path = astuff_sensor_msgs
+	url = git@github.com:astuff/astuff_sensor_msgs.git
+	branch = maint/ros1_2_hybrid
