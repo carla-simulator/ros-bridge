@@ -8,7 +8,8 @@
 """
 Classes to handle Carla sensors
 """
-import carla_ros_bridge.transforms as trans
+
+import carla_common.transforms as trans
 from carla_ros_bridge.actor import Actor
 from ros_compatibility import CompatibleNode, ros_ok
 from abc import abstractmethod
@@ -22,6 +23,8 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+
 
 
 class Sensor(Actor, CompatibleNode):
@@ -160,9 +163,12 @@ class Sensor(Actor, CompatibleNode):
                                     carla_sensor_data.transform)))
                         self.sensor_data_updated(carla_sensor_data)
                         return
-                    else:
+                    elif carla_sensor_data.frame < frame:
                         self.logwarn("{}({}): skipping old frame {}, expected {}".format(
-                            self.__class__.__name__, self.get_id(), carla_sensor_data.frame, frame))
+                            self.__class__.__name__,
+                            self.get_id(),
+                            carla_sensor_data.frame,
+                            frame))
                 except queue.Empty:
                     # if not rospy.is_shutdown():
                     if ros_ok():

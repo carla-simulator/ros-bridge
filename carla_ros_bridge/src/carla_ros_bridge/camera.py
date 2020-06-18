@@ -9,7 +9,7 @@
 """
 Class to handle Carla camera sensors
 """
-import carla_ros_bridge.transforms as trans
+import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
 import carla
 from sensor_msgs.msg import CameraInfo

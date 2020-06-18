@@ -18,9 +18,6 @@
   <arg name="target_speed" default="30"/> <!-- target speed in km/h that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
 
-  <!-- Should the manual control node be started? -->
-  <arg name="execute_manual_control" default="True"/>
-
   <!-- Set fixed goal (actual route is still random) -->
   <node pkg="rostopic" type="rostopic" name="publish_goal"
       args="pub /carla/ego_vehicle/goal geometry_msgs/PoseStamped '{ 'pose': { 'position': { 'x': 157.9, 'y': 29.8, 'z': 0.0 }, 'orientation': { 'x': 0.0, 'y': 0.0, 'z': 0.70711, 'w': 0.70711 } } }' -l"/>
@@ -64,14 +61,10 @@
     <arg name='timeout' value='$(arg timeout)'/>
     <arg name='role_name' value='$(arg role_name)'/>
   </include>
-
   
-  <!-- (Optional) Visualize the ego vehicle (and support overriding the control) -->
-  <group if="$(arg execute_manual_control)">
-    <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
-      <arg name='role_name' value='$(arg role_name)'/>
-    </include>
-  </group>
+  <!-- Visualize the ego vehicle (and support overriding the control) -->
+  <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
+    <arg name='role_name' value='$(arg role_name)'/>
+  </include>
 
 </launch>
-

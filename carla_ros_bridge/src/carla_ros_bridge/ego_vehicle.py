@@ -11,7 +11,7 @@ Classes to handle Carla vehicles
 """
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus
-import carla_ros_bridge.transforms as transforms
+import carla_common.transforms as transforms
 from carla_ros_bridge.vehicle import Vehicle
 from carla import Vector3D
 from carla import VehicleControl
@@ -182,10 +182,9 @@ class EgoVehicle(Vehicle, CompatibleNode):
         self.send_vehicle_msgs()
         Vehicle.update(self, frame, timestamp)
         no_rotation = Transform()
-        no_rotation.rotation.x = 1.0
-        self.publish_transform(
-            self.get_ros_transform(no_rotation, frame_id=str(self.get_id()),
-                                   child_frame_id=self.get_prefix()))
+        no_rotation.rotation.w = 1.0
+        self.publish_transform(self.get_ros_transform(
+            no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
 
     def destroy(self):
         """

@@ -9,9 +9,8 @@
 """
 Classes to handle Carla Radar
 """
-import math
 
-from ainstein_radar_msgs.msg import RadarTarget, RadarTargetArray
+from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection
 
 from carla_ros_bridge.sensor import Sensor
 
@@ -46,13 +45,13 @@ class Radar(Sensor):
         :param carla_radar_measurement: carla Radar measurement object
         :type carla_radar_measurement: carla.RadarMeasurement
         """
-        radar_target_array = RadarTargetArray()
-        radar_target_array.header = self.get_msg_header(timestamp=carla_radar_measurement.timestamp)
+        radar_msg = CarlaRadarMeasurement()
+        radar_msg.header = self.get_msg_header(timestamp=carla_radar_measurement.timestamp)
         for detection in carla_radar_measurement:
-            radar_target = RadarTarget()
-            radar_target.elevation = math.degrees(detection.altitude)
-            radar_target.speed = detection.velocity
-            radar_target.azimuth = math.degrees(detection.azimuth)
-            radar_target.range = detection.depth
-            radar_target_array.targets.append(radar_target)
-        self.publish_message(self.get_topic_prefix() + "/radar", radar_target_array)
+            radar_detection = CarlaRadarDetection()
+            radar_detection.altitude = detection.altitude
+            radar_detection.azimuth = detection.azimuth
+            radar_detection.depth = detection.depth
+            radar_detection.velocity = detection.velocity
+            radar_msg.detections.append(radar_detection)
+        self.publish_message(self.get_topic_prefix() + "/radar", radar_msg)

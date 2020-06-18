@@ -11,7 +11,6 @@ if (${ROS_VERSION} EQUAL 1)
 	  sensor_msgs
 	  geometry_msgs
 	  derived_object_msgs
-	  ainstein_radar_msgs
 	  tf
 	  roslaunch
 	)
@@ -20,7 +19,8 @@ if (${ROS_VERSION} EQUAL 1)
 
 	catkin_package()
 
-	roslaunch_add_file_check(launch)
+    roslaunch_add_file_check(launch)
+    roslaunch_add_file_check(test)
 
 	include_directories(
 	   ${catkin_INCLUDE_DIRS}

@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Fixed wrong TF for ego_vehicle
 *   Improve version check
 *   Fix cleanup
 *   Rework tf frame names
