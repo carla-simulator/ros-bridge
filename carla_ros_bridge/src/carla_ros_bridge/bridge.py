@@ -10,9 +10,10 @@ Rosbridge class:
 
 Class that handle communication between CARLA and ROS
 """
-try:
+
 from ros_compatibility import *
-import queue
+try:
+    import queue
 except ImportError:
     import Queue as queue
 
