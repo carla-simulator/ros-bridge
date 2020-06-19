@@ -98,10 +98,16 @@ class CarlaEgoVehicle(CompatibleNode):
                 math.radians(float(spawn_point[3])),
                 math.radians(float(spawn_point[4])),
                 math.radians(float(spawn_point[5])))
-            pose.orientation.x = quat[0]
-            pose.orientation.y = quat[1]
-            pose.orientation.z = quat[2]
-            pose.orientation.w = quat[3]
+            if ROS_VERSION == 1:
+                pose.orientation.x = quat[0]
+                pose.orientation.y = quat[1]
+                pose.orientation.z = quat[2]
+                pose.orientation.w = quat[3]
+            elif ROS_VERSION == 2:
+                pose.orientation.x = quat[1]
+                pose.orientation.y = quat[2]
+                pose.orientation.z = quat[3]
+                pose.orientation.w = quat[0]
             self.actor_spawnpoint = pose
 
         self.initialpose_subscriber = self.create_subscriber(PoseWithCovarianceStamped,
@@ -158,12 +164,20 @@ class CarlaEgoVehicle(CompatibleNode):
                 spawn_point.location.y = -self.actor_spawnpoint.position.y
                 spawn_point.location.z = self.actor_spawnpoint.position.z + \
                     2  # spawn 2m above ground
-                quaternion = (
-                    self.actor_spawnpoint.orientation.x,
-                    self.actor_spawnpoint.orientation.y,
-                    self.actor_spawnpoint.orientation.z,
-                    self.actor_spawnpoint.orientation.w
-                )
+                if ROS_VERSION == 1:
+                    quaternion = [
+                        self.actor_spawnpoint.orientation.x,
+                        self.actor_spawnpoint.orientation.y,
+                        self.actor_spawnpoint.orientation.z,
+                        self.actor_spawnpoint.orientation.w
+                    ]
+                elif ROS_VERSION == 2:
+                    quaternion = [
+                        self.actor_spawnpoint.orientation.w,
+                        self.actor_spawnpoint.orientation.x,
+                        self.actor_spawnpoint.orientation.y,
+                        self.actor_spawnpoint.orientation.z
+                    ]
                 _, _, yaw = euler_from_quaternion(quaternion)
                 spawn_point.rotation.yaw = -math.degrees(yaw)
                 self.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,

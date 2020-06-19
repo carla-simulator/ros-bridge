@@ -135,6 +135,9 @@ def carla_rotation_to_numpy_quaternion(carla_rotation):
     roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
     quat = quaternion_from_euler(roll, pitch, yaw)
 
+    if ROS_VERSION == 2:
+        quat = [quat[1], quat[2], quat[3], quat[0]]
+
     return quat
 
 

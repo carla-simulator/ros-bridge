@@ -72,10 +72,15 @@ class Lidar(Sensor):
         tf_msg = super(Lidar, self).get_ros_transform(transform, frame_id, child_frame_id)
 
         rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
+        if ROS_VERSION == 1:
+            quat = [rotation.x, rotation.y, rotation.z, rotation.w]
+        elif ROS_VERSION == 2:
+            quat = [rotation.w, rotation.x, rotation.y, rotation.z]
         dummy_roll, dummy_pitch, yaw = euler_from_quaternion(quat)
         # set roll and pitch to zero
         quat = quaternion_from_euler(0, 0, yaw)
+        if ROS_VERSION == 2:
+            quat = [quat[1], quat[2], quat[3], quat[0]]
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg
 
