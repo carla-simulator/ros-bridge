@@ -72,5 +72,7 @@ class ImuSensor(Sensor):
         quat = quaternion_from_euler(math.radians(imu_rotation.roll),
                                      math.radians(imu_rotation.pitch),
                                      math.radians(imu_rotation.yaw))
+        if ROS_VERSION == 2:
+            quat = [quat[1], quat[2], quat[3], quat[0]]
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
         self.publish_message(self.get_topic_prefix(), imu_msg)
