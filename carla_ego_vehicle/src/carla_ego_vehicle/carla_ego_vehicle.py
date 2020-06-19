@@ -16,6 +16,7 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
+import sys
 import carla
 from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
@@ -32,7 +33,6 @@ if ROS_VERSION == 1:
     import rospy
 
 elif ROS_VERSION == 2:
-    import sys
     import rclpy
     from ament_index_python.packages import get_package_share_directory
 
