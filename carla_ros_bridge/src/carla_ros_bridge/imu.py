@@ -15,14 +15,7 @@ import math
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from tf.transformations import quaternion_from_euler
-elif ROS_VERSION == 2:
-    from transforms3d.euler import euler2quat as quaternion_from_euler
-else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-
+from ros_compatibility import quaternion_from_euler
 
 class ImuSensor(Sensor):
     """
@@ -72,7 +65,5 @@ class ImuSensor(Sensor):
         quat = quaternion_from_euler(math.radians(imu_rotation.roll),
                                      math.radians(imu_rotation.pitch),
                                      math.radians(imu_rotation.yaw))
-        if ROS_VERSION == 2:
-            quat = [quat[1], quat[2], quat[3], quat[0]]
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
         self.publish_message(self.get_topic_prefix(), imu_msg)

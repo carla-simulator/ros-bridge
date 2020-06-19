@@ -19,7 +19,7 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 import carla
 from carla_msgs.msg import CarlaStatus, CarlaWorldInfo
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
-from ros_compatibility import CompatibleNode
+from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
 import json
 import math
 import os
@@ -30,14 +30,11 @@ ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
     import rospy
-    from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 elif ROS_VERSION == 2:
     import sys
     import rclpy
     from ament_index_python.packages import get_package_share_directory
-    from transforms3d.euler import euler2quat as quaternion_from_euler
-    from transforms3d.euler import quat2euler as euler_from_quaternion
 
 
 secure_random = random.SystemRandom()
@@ -98,16 +95,10 @@ class CarlaEgoVehicle(CompatibleNode):
                 math.radians(float(spawn_point[3])),
                 math.radians(float(spawn_point[4])),
                 math.radians(float(spawn_point[5])))
-            if ROS_VERSION == 1:
-                pose.orientation.x = quat[0]
-                pose.orientation.y = quat[1]
-                pose.orientation.z = quat[2]
-                pose.orientation.w = quat[3]
-            elif ROS_VERSION == 2:
-                pose.orientation.x = quat[1]
-                pose.orientation.y = quat[2]
-                pose.orientation.z = quat[3]
-                pose.orientation.w = quat[0]
+            pose.orientation.x = quat[0]
+            pose.orientation.y = quat[1]
+            pose.orientation.z = quat[2]
+            pose.orientation.w = quat[3]
             self.actor_spawnpoint = pose
 
         self.initialpose_subscriber = self.create_subscriber(PoseWithCovarianceStamped,
@@ -164,20 +155,12 @@ class CarlaEgoVehicle(CompatibleNode):
                 spawn_point.location.y = -self.actor_spawnpoint.position.y
                 spawn_point.location.z = self.actor_spawnpoint.position.z + \
                     2  # spawn 2m above ground
-                if ROS_VERSION == 1:
-                    quaternion = [
-                        self.actor_spawnpoint.orientation.x,
-                        self.actor_spawnpoint.orientation.y,
-                        self.actor_spawnpoint.orientation.z,
-                        self.actor_spawnpoint.orientation.w
-                    ]
-                elif ROS_VERSION == 2:
-                    quaternion = [
-                        self.actor_spawnpoint.orientation.w,
-                        self.actor_spawnpoint.orientation.x,
-                        self.actor_spawnpoint.orientation.y,
-                        self.actor_spawnpoint.orientation.z
-                    ]
+                quaternion = [
+                    self.actor_spawnpoint.orientation.x,
+                    self.actor_spawnpoint.orientation.y,
+                    self.actor_spawnpoint.orientation.z,
+                    self.actor_spawnpoint.orientation.w
+                ]
                 _, _, yaw = euler_from_quaternion(quaternion)
                 spawn_point.rotation.yaw = -math.degrees(yaw)
                 self.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,

@@ -17,18 +17,9 @@ from cv_bridge import CvBridge
 import numpy
 import math
 from abc import abstractmethod
-from ros_compatibility import *
+from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from tf.transformations import quaternion_from_matrix, quaternion_multiply
-elif ROS_VERSION == 2:
-    from transforms3d.quaternions import mat2quat as quaternion_from_matrix
-    from transforms3d.quaternions import qmult as quaternion_multiply
-else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
 
 class Camera(Sensor):
     """
@@ -135,18 +126,16 @@ class Camera(Sensor):
         """
         tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
         rotation = tf_msg.transform.rotation
+        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
+
         if ROS_VERSION == 1:
-            quat = [rotation.x, rotation.y, rotation.z, rotation.w]
             quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
                                                 [0, -1, 0, 0], [0, 0, 0, 1]])
-            quat = quaternion_multiply(quat, quat_swap)
         elif ROS_VERSION == 2:
-            quat = [rotation.w, rotation.x, rotation.y, rotation.z]
             quat_swap = quaternion_from_matrix(numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
                                                               numpy.asarray([0, -1, 0])]))
-            quat_swap = [quat_swap[1], quat_swap[2], quat_swap[3], quat_swap[0]]
-            quat = quaternion_multiply(quat, quat_swap)
-            quat = [quat[1], quat[2], quat[3], quat[0]]
+
+        quat = quaternion_multiply(quat, quat_swap)
 
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg

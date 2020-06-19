@@ -18,13 +18,7 @@ from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    from tf.transformations import euler_matrix, quaternion_from_euler
-elif ROS_VERSION == 2:
-    from transforms3d.euler import euler2mat as euler_matrix
-    from transforms3d.euler import euler2quat as quaternion_from_euler
-else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+from ros_compatibility import euler_matrix, quaternion_from_euler
 
 
 def carla_location_to_numpy_vector(carla_location):
@@ -134,9 +128,6 @@ def carla_rotation_to_numpy_quaternion(carla_rotation):
     """
     roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
     quat = quaternion_from_euler(roll, pitch, yaw)
-
-    if ROS_VERSION == 2:
-        quat = [quat[1], quat[2], quat[3], quat[0]]
 
     return quat
 

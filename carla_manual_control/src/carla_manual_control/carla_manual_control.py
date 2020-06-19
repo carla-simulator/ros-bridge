@@ -41,7 +41,6 @@ if ROS_VERSION == 1:
     from tf import ExtrapolationException
     import tf
     from ros_compatibility import QoSProfile
-    from tf.transformations import euler_from_quaternion
 
 elif ROS_VERSION == 2:
     import rclpy
@@ -54,11 +53,10 @@ elif ROS_VERSION == 2:
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     from threading import Thread, Lock, Event
     from builtin_interfaces.msg import Time
-    from transforms3d.euler import quat2euler as euler_from_quaternion
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
-from ros_compatibility import CompatibleNode, latch_on
+from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion
 
 
 from std_msgs.msg import Bool
@@ -487,7 +485,7 @@ class HUD(CompatibleNode):
                 q = self.tfBuffer.lookup_transform('map', self.role_name, when)
                 quaternion = q.transform.rotation
                 position = q.transform.translation
-                quaternion = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
+                quaternion = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
                 _, __, yaw = euler_from_quaternion(quaternion)
                 yaw = -math.degrees(yaw)
                 x = position.x

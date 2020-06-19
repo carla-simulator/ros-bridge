@@ -23,15 +23,9 @@ import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from tf.transformations import euler_from_quaternion, quaternion_from_euler
     from sensor_msgs.point_cloud2 import create_cloud_xyz32
-elif ROS_VERSION == 2:
-    from transforms3d.euler import euler2quat as quaternion_from_euler
-    from transforms3d.euler import quat2euler as euler_from_quaternion
-else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
-
+from ros_compatibility import quaternion_from_euler, euler_from_quaternion
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)
@@ -72,15 +66,10 @@ class Lidar(Sensor):
         tf_msg = super(Lidar, self).get_ros_transform(transform, frame_id, child_frame_id)
 
         rotation = tf_msg.transform.rotation
-        if ROS_VERSION == 1:
-            quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        elif ROS_VERSION == 2:
-            quat = [rotation.w, rotation.x, rotation.y, rotation.z]
+        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
         dummy_roll, dummy_pitch, yaw = euler_from_quaternion(quat)
         # set roll and pitch to zero
         quat = quaternion_from_euler(0, 0, yaw)
-        if ROS_VERSION == 2:
-            quat = [quat[1], quat[2], quat[3], quat[0]]
         tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg
 
