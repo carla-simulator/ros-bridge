@@ -4,5 +4,5 @@
 	branch = master
 [submodule "astuff_sensor_msgs"]
 	path = astuff_sensor_msgs
-	url = git@github.com:astuff/astuff_sensor_msgs.git
+	url = https://github.com/astuff/astuff_sensor_msgs.git
 	branch = maint/ros1_2_hybrid
