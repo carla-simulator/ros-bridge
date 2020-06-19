@@ -25,8 +25,6 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-
-
 class Sensor(Actor, CompatibleNode):
     """
     Actor implementation details for sensors

@@ -7,6 +7,7 @@
 Classes to handle Carla imu sensor
 """
 
+from ros_compatibility import quaternion_from_euler
 import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
 from sensor_msgs.msg import Imu
@@ -15,7 +16,6 @@ import math
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-from ros_compatibility import quaternion_from_euler
 
 class ImuSensor(Sensor):
     """

@@ -10,6 +10,7 @@
 Tool functions to convert transforms from carla to ROS coordinate system
 """
 
+from ros_compatibility import euler_matrix, quaternion_from_euler
 import math
 import numpy
 
@@ -17,8 +18,6 @@ from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist
 
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-from ros_compatibility import euler_matrix, quaternion_from_euler
 
 
 def carla_location_to_numpy_vector(carla_location):

@@ -21,6 +21,7 @@ from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
+
 class Camera(Sensor):
     """
     Sensor implementation details for cameras
