@@ -41,9 +41,11 @@ RUN echo "source /carla_ws/devel/setup.bash" >> ~/.bashrc
 SHELL ["/bin/bash", "-c" , "-l"]
 
 RUN sudo apt-get update && sudo apt-get install ros-eloquent-ros-environment
-RUN rosdep install --from-paths src/carla_msgs src/ros_compatibility -r -y
+RUN rosdep install --from-paths src -r -y
 RUN colcon info carla_msgs
 # .bashrc does not seem to do the source
-RUN source /opt/ros/$ROS_VERSION/setup.bash && colcon build --packages-select carla_msgs ros_compatibility
+RUN source /opt/ros/$ROS_VERSION/setup.bash && colcon mixin add skip file:///carla_ws/src/ros-bridge/mixin/index.yaml
+RUN source /opt/ros/$ROS_VERSION/setup.bash && colcon mixin update skip
+RUN source /opt/ros/$ROS_VERSION/setup.bash && colcon build --mixin skip
 
 CMD ["ros2", "run", "carla_ros_bridge" , "carla_ros_bridge.py"]
