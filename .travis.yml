@@ -55,7 +55,7 @@ jobs:
       services: docker
       before_install: skip
       install: skip
-      script: cd docker && docker build -t carla-ros-bridge -f Dockerfile.eloquent ./..
+      script: docker build -t carla-ros-bridge -f docker/Dockerfile.eloquent ./..
 
 before_install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
