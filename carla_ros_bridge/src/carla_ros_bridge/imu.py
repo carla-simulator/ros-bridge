@@ -12,7 +12,7 @@ import os
 
 import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu # pylint: disable=import-error
 
 from ros_compatibility import quaternion_from_euler
 

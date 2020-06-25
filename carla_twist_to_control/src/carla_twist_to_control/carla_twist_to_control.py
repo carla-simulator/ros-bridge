@@ -11,16 +11,16 @@ use max wheel steer angle
 """
 from ros_compatibility import CompatibleNode, ros_ok, ROSException, ROSInterruptException
 import sys
-from geometry_msgs.msg import Twist
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo
+from geometry_msgs.msg import Twist # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo # pylint: disable=import-error
 
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy
+    import rospy # pylint: disable=import-error
 elif ROS_VERSION == 2:
-    import rclpy
+    import rclpy # pylint: disable=import-error
 
 
 class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-methods

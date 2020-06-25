@@ -13,9 +13,9 @@ Base Classes to handle Actor objects
 import carla_common.transforms as trans
 import numpy as np
 from carla_ros_bridge.pseudo_actor import PseudoActor
-from geometry_msgs.msg import TransformStamped
-from std_msgs.msg import ColorRGBA
-from visualization_msgs.msg import Marker
+from geometry_msgs.msg import TransformStamped # pylint: disable=import-error
+from std_msgs.msg import ColorRGBA # pylint: disable=import-error
+from visualization_msgs.msg import Marker # pylint: disable=import-error
 
 
 class Actor(PseudoActor):

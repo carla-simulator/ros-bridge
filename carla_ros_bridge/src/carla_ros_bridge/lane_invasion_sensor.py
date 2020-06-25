@@ -10,7 +10,7 @@
 Classes to handle lane invasion events
 """
 
-from carla_msgs.msg import CarlaLaneInvasionEvent
+from carla_msgs.msg import CarlaLaneInvasionEvent # pylint: disable=import-error
 from carla_ros_bridge.sensor import Sensor
 
 

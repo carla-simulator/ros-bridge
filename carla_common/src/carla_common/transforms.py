@@ -14,7 +14,7 @@ from ros_compatibility import euler_matrix, quaternion_from_euler
 import math
 import numpy
 
-from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel
+from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel # pylint: disable=import-error
 
 import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))

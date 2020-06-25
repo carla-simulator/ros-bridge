@@ -10,7 +10,7 @@
 Class to handle the carla map
 """
 
-from carla_msgs.msg import CarlaWorldInfo
+from carla_msgs.msg import CarlaWorldInfo # pylint: disable=import-error
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 

@@ -11,7 +11,7 @@ report the carla status
 """
 import os
 
-from carla_msgs.msg import CarlaStatus
+from carla_msgs.msg import CarlaStatus # pylint: disable=import-error
 
 from ros_compatibility import *
 
@@ -21,7 +21,7 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup
+    from rclpy.callback_groups import ReentrantCallbackGroup # pylint: disable=import-error
 
 
 class CarlaStatusPublisher(CompatibleNode):

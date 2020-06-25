@@ -11,7 +11,7 @@ Tool functions to calculate vehicle physics
 
 import math
 
-from tf.transformations import euler_from_quaternion
+from tf.transformations import euler_from_quaternion # pylint: disable=import-error
 
 
 def get_vehicle_lay_off_engine_acceleration(vehicle_info):

@@ -11,8 +11,8 @@ Handle communication of ROS topics
 """
 import os
 
-from rosgraph_msgs.msg import Clock
-from tf2_msgs.msg import TFMessage
+from rosgraph_msgs.msg import Clock # pylint: disable=import-error
+from tf2_msgs.msg import TFMessage # pylint: disable=import-error
 
 from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
 
@@ -22,8 +22,8 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup
-    from builtin_interfaces.msg import Time
+    from rclpy.callback_groups import ReentrantCallbackGroup # pylint: disable=import-error
+    from builtin_interfaces.msg import Time # pylint: disable=import-error
 
 
 class Communication(CompatibleNode):

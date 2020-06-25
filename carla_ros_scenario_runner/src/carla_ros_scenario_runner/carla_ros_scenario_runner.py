@@ -16,12 +16,12 @@ try:
     import queue
 except ImportError:
     import Queue as queue
-import rospy
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
-from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
-from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
+import rospy # pylint: disable=import-error
+from geometry_msgs.msg import PoseStamped # pylint: disable=import-error
+from nav_msgs.msg import Path # pylint: disable=import-error
+from std_msgs.msg import Float64 # pylint: disable=import-error
+from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse # pylint: disable=import-error
+from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus # pylint: disable=import-error
 from application_runner import ApplicationStatus
 from scenario_runner_runner import ScenarioRunnerRunner
 

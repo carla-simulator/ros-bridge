@@ -11,8 +11,8 @@ Classes to handle Carla vehicles
 """
 
 from carla_ros_bridge.traffic_participant import TrafficParticipant
-from derived_object_msgs.msg import Object
-from std_msgs.msg import ColorRGBA
+from derived_object_msgs.msg import Object # pylint: disable=import-error
+from std_msgs.msg import ColorRGBA # pylint: disable=import-error
 
 
 class Vehicle(TrafficParticipant):

@@ -12,16 +12,16 @@ import math
 import os
 
 import carla
-from visualization_msgs.msg import Marker, MarkerArray
+from visualization_msgs.msg import Marker, MarkerArray # pylint: disable=import-error
 
 from ros_compatibility import *
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from tf.transformations import euler_from_quaternion
+    from tf.transformations import euler_from_quaternion # pylint: disable=import-error
 elif ROS_VERSION == 2:
-    from transformations.transformations import euler_from_quaternion
+    from transformations.transformations import euler_from_quaternion # pylint: disable=import-error
 else:
     raise NotImplementedError(
         'Make sure you have valid ' + 'ROS_VERSION env variable')

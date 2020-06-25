@@ -5,13 +5,13 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
-import rospy
-import roslaunch
-from std_msgs.msg import Float64
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
+import rospy # pylint: disable=import-error
+import roslaunch # pylint: disable=import-error
+from std_msgs.msg import Float64 # pylint: disable=import-error
+from geometry_msgs.msg import PoseStamped # pylint: disable=import-error
+from nav_msgs.msg import Path # pylint: disable=import-error
 import carla_common.transforms as trans
-from srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from srunner.scenariomanager.actorcontrols.basic_control import BasicControl # pylint: disable=import-error
 
 
 class RosVehicleControl(BasicControl):

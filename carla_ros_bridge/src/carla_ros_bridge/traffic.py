@@ -12,7 +12,7 @@ Classes to handle Carla traffic objects
 
 import carla_common.transforms as trans
 from carla import TrafficLightState
-from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo
+from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo # pylint: disable=import-error
 from carla_ros_bridge.actor import Actor
 
 

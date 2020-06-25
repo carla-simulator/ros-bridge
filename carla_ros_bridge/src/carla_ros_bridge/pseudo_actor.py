@@ -11,7 +11,7 @@ Base Class to handle Pseudo Actors (that are not existing in Carla world)
 
 import os
 
-from std_msgs.msg import Header
+from std_msgs.msg import Header # pylint: disable=import-error
 
 from ros_compatibility import CompatibleNode, ros_timestamp
 

@@ -11,7 +11,7 @@ Classes to handle Carla gnsss
 """
 
 from carla_ros_bridge.sensor import Sensor
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import NavSatFix # pylint: disable=import-error
 
 
 class Gnss(Sensor):

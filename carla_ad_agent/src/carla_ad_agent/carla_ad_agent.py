@@ -9,10 +9,10 @@
 A basic AD agent using CARLA waypoints
 """
 import sys
-import rospy
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl
+import rospy # pylint: disable=import-error
+from nav_msgs.msg import Path # pylint: disable=import-error
+from std_msgs.msg import Float64 # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl # pylint: disable=import-error
 from basic_agent import BasicAgent
 
 
