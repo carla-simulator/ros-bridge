@@ -107,6 +107,9 @@ class CarlaEgoVehicle(CompatibleNode):
         self.loginfo("using vehicle filter: {}".format(self.actor_filter))
 
     def spawn_ego_vehicle(self):
+        """
+        Helper method for condition-checking in self.restart().
+        """
         if ROS_VERSION == 1:
             return self.get_param('~spawn_ego_vehicle')
         elif ROS_VERSION == 2:
@@ -401,7 +404,8 @@ class CarlaEgoVehicle(CompatibleNode):
 def run_ego_vehicle(msg):
     """
     Callback function:
-    Called when bridge started - indicated by published /carla/status topic and runs CarlaEgoVehicle afterwards
+    Called when bridge started - indicated by published /carla/status topic
+    and runs CarlaEgoVehicle afterwards
     """
     ego_vehicle = CarlaEgoVehicle()
     try:
