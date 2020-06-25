@@ -10,13 +10,13 @@
 Tool functions to convert transforms from carla to ROS coordinate system
 """
 
-from ros_compatibility import euler_matrix, quaternion_from_euler
+import os
 import math
 import numpy
 
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
+from ros_compatibility import euler_matrix, quaternion_from_euler
 
-import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 

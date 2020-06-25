@@ -13,7 +13,7 @@ import os
 
 from std_msgs.msg import Header  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, ros_timestamp
+from ros_compatibility import ros_timestamp
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -21,7 +21,7 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class PseudoActor(CompatibleNode):
+class PseudoActor(object):
     """
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
@@ -36,8 +36,6 @@ class PseudoActor(CompatibleNode):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-
-        # super(PseudoActor, self).__init__("pseudo_actor_node")
 
         self.parent = parent
         if self.parent:

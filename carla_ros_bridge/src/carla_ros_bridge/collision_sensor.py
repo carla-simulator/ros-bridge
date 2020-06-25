@@ -18,6 +18,7 @@ class CollisionSensor(Sensor):
     """
     Actor implementation details for a collision sensor
     """
+    # pylint: disable=too-many-arguments
 
     def __init__(self, carla_actor, parent, communication, synchronous_mode,
                  sensor_name="CollisionSensor"):

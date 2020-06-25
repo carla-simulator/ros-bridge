@@ -11,18 +11,19 @@ Rosbridge class:
 Class that handle communication between CARLA and ROS
 """
 
-from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription
 
 try:
     import queue
 except ImportError:
     import Queue as queue
 
+import os
 import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
+from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription
 import carla
 
 from carla_ros_bridge.actor import Actor
@@ -48,7 +49,6 @@ from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters  # pylint: disable=import-error
 
-import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -80,7 +80,11 @@ class CarlaRosBridge(CompatibleNode):
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
 
+    # pylint: disable=attribute-defined-outside-init
     def initialize_bridge(self, carla_world, params):
+        """
+        Initialize the bridge
+        """
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -558,7 +562,7 @@ def main():
                                            ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
         parameters["ego_vehicle"] = {"role_name": role_name}
 
-    print(parameters)
+    print(parameters)  # pylint: disable=superfluous-parens
     carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
         host=parameters['host'], port=parameters['port']))
 

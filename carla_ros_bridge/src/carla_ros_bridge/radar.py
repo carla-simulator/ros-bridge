@@ -19,6 +19,7 @@ class Radar(Sensor):
     """
     Actor implementation details of Carla RADAR
     """
+    # pylint: disable=too-many-arguments
 
     def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Radar"):
         """

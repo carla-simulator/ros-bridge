@@ -12,18 +12,18 @@ Classes to handle Carla vehicles
 import math
 import os
 
-import carla_common.transforms as transforms
 import numpy
+from geometry_msgs.msg import Twist, Transform  # pylint: disable=import-error
+from std_msgs.msg import Bool  # pylint: disable=import-error
+from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
+import carla_common.transforms as transforms
 from carla import Vector3D
 from carla import VehicleControl
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
-from geometry_msgs.msg import Twist, Transform  # pylint: disable=import-error
-from std_msgs.msg import Bool  # pylint: disable=import-error
-from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 
-from ros_compatibility import *
+from ros_compatibility import CompatibleNode, destroy_subscription
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -125,7 +125,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
         self.publish_message(self.get_topic_prefix() + "/vehicle_status", vehicle_status)
 
         # only send vehicle once (in latched-mode)
-        # TODO: Make latching work reliably in ROS2
+        # TODO: Make latching work reliably in ROS2 # pylint: disable=fixme
         if not self.vehicle_info_published:
             self.vehicle_info_published = True
             vehicle_info = CarlaEgoVehicleInfo()

@@ -14,8 +14,6 @@ import datetime
 import numpy
 import rospy  # pylint: disable=import-error
 
-from simple_pid import PID  # pylint: disable=import-error
-
 from dynamic_reconfigure.server import Server  # pylint: disable=import-error
 from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
@@ -24,6 +22,8 @@ from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-mod
 from carla_ackermann_control.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig  # pylint: disable=no-name-in-module,import-error
 import carla_control_physics as phys  # pylint: disable=relative-import
+
+from simple_pid import PID  # pylint: disable=import-error
 
 
 class CarlaAckermannControl(object):

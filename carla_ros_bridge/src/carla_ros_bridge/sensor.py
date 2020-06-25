@@ -33,6 +33,7 @@ class Sensor(Actor, CompatibleNode):
     """
     Actor implementation details for sensors
     """
+    # pylint: disable=too-many-arguments
 
     def __init__(
             self,  # pylint: disable=too-many-arguments

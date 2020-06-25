@@ -15,7 +15,7 @@ from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import
 
 import carla
 
-from ros_compatibility import CompatibleNode
+from ros_compatibility import CompatibleNode, destroy_subscription
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

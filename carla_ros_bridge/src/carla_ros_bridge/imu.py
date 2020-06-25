@@ -10,9 +10,9 @@ Classes to handle Carla imu sensor
 import math
 import os
 
+from sensor_msgs.msg import Imu  # pylint: disable=import-error
 import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
-from sensor_msgs.msg import Imu  # pylint: disable=import-error
 
 from ros_compatibility import quaternion_from_euler
 
@@ -23,6 +23,7 @@ class ImuSensor(Sensor):
     """
     Actor implementation details for imu sensor
     """
+    # pylint: disable=too-many-arguments
 
     def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="IMU"):
         """
