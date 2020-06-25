@@ -12,13 +12,13 @@ Class to handle Carla camera sensors
 import math
 import os
 from abc import abstractmethod
+import numpy
+from cv_bridge import CvBridge  # pylint: disable=import-error
+from sensor_msgs.msg import CameraInfo  # pylint: disable=import-error
 
 import carla
 import carla_common.transforms as trans
-import numpy
 from carla_ros_bridge.sensor import Sensor
-from cv_bridge import CvBridge  # pylint: disable=import-error
-from sensor_msgs.msg import CameraInfo  # pylint: disable=import-error
 
 from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 
