@@ -16,18 +16,19 @@ import sys
 import ctypes
 import os
 import struct
-
-import carla_common.transforms as trans
 import numpy
-from carla_ros_bridge.sensor import Sensor
+
 from sensor_msgs.msg import PointCloud2, PointField  # pylint: disable=import-error
+import carla_common.transforms as trans
+from carla_ros_bridge.sensor import Sensor
 
 from ros_compatibility import quaternion_from_euler, euler_from_quaternion
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from sensor_msgs.point_cloud2 import create_cloud_xyz32  # pylint: disable=import-error
+    # pylint: disable=import-error,ungrouped-imports
+    from sensor_msgs.point_cloud2 import create_cloud_xyz32
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)
@@ -37,6 +38,7 @@ class Lidar(Sensor):
     """
     Actor implementation details for lidars
     """
+    # pylint: disable=too-many-arguments
 
     def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Lidar"):
         """
@@ -99,7 +101,8 @@ class Lidar(Sensor):
         if ROS_VERSION == 1:
             point_cloud_msg = create_cloud_xyz32(header, lidar_data)
 
-        # -- taken from http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
+        # -- taken from
+        # http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
         elif ROS_VERSION == 2:
             point_field_x_msg = PointField()
             point_field_x_msg.name = "x"

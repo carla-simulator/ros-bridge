@@ -10,8 +10,8 @@
 Classes to handle Carla gnsss
 """
 
-from carla_ros_bridge.sensor import Sensor
 from sensor_msgs.msg import NavSatFix  # pylint: disable=import-error
+from carla_ros_bridge.sensor import Sensor
 
 
 class Gnss(Sensor):
@@ -19,6 +19,7 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="GNSS"):
         """
         Constructor
