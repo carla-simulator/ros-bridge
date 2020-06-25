@@ -46,17 +46,17 @@ from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters # pylint: disable=import-error
+from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters  # pylint: disable=import-error
 
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    import rospy # pylint: disable=import-error
+    import rospy  # pylint: disable=import-error
 elif ROS_VERSION == 2:
-    import rclpy # pylint: disable=import-error
-    from rclpy.callback_groups import ReentrantCallbackGroup # pylint: disable=import-error
+    import rclpy  # pylint: disable=import-error
+    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 

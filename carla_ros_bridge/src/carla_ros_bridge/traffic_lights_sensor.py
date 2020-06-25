@@ -9,8 +9,8 @@
 a sensor that reports the state of all traffic lights
 """
 
-from carla_msgs.msg import CarlaTrafficLightStatusList, \
-    CarlaTrafficLightInfoList # pylint: disable=import-error
+from carla_msgs.msg import CarlaTrafficLightStatusList  # pylint: disable=import-error
+from carla_msgs.msg import CarlaTrafficLightInfoList  # pylint: disable=import-error
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.traffic import TrafficLight
 

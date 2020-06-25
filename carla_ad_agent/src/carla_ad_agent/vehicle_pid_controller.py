@@ -11,10 +11,10 @@
 from collections import deque
 import math
 import numpy as np
-import rospy # pylint: disable=import-error
-from tf.transformations import euler_from_quaternion # pylint: disable=import-error
-from geometry_msgs.msg import Point # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl # pylint: disable=import-error
+import rospy  # pylint: disable=import-error
+from tf.transformations import euler_from_quaternion  # pylint: disable=import-error
+from geometry_msgs.msg import Point  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 
 
 class VehiclePIDController(object):  # pylint: disable=too-few-public-methods

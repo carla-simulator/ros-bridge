@@ -15,12 +15,12 @@ import carla_common.transforms as transforms
 import numpy
 from carla import Vector3D
 from carla import VehicleControl
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel, \
-    CarlaEgoVehicleControl, CarlaEgoVehicleStatus # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
-from geometry_msgs.msg import Twist, Transform # pylint: disable=import-error
-from std_msgs.msg import Bool # pylint: disable=import-error
-from std_msgs.msg import ColorRGBA # pylint: disable=import-error
+from geometry_msgs.msg import Twist, Transform  # pylint: disable=import-error
+from std_msgs.msg import Bool  # pylint: disable=import-error
+from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 
 from ros_compatibility import *
 
@@ -30,7 +30,7 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup # pylint: disable=import-error
+    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
 class EgoVehicle(Vehicle, CompatibleNode):

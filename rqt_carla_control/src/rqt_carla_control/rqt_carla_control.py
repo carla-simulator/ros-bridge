@@ -9,15 +9,15 @@
 RQT Plugin to control CARLA
 """
 import os
-import rospy # pylint: disable=import-error
+import rospy  # pylint: disable=import-error
 import rospkg
 
-from qt_gui.plugin import Plugin # pylint: disable=import-error
-from python_qt_binding import loadUi # pylint: disable=import-error
+from qt_gui.plugin import Plugin  # pylint: disable=import-error
+from python_qt_binding import loadUi  # pylint: disable=import-error
 from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
 from python_qt_binding.QtGui import QPixmap, QIcon  # pylint: disable=no-name-in-module, import-error
 
-from carla_msgs.msg import CarlaControl, CarlaStatus # pylint: disable=import-error
+from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
 
 
 class CarlaControlPlugin(Plugin):

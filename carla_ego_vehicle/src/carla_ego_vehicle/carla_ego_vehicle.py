@@ -18,8 +18,8 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 """
 import sys
 import carla
-from carla_msgs.msg import CarlaStatus, CarlaWorldInfo # pylint: disable=import-error
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose # pylint: disable=import-error
+from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
 from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
 import json
 import math
@@ -30,11 +30,11 @@ from abc import abstractmethod
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
-    import rospy # pylint: disable=import-error
+    import rospy  # pylint: disable=import-error
 
 elif ROS_VERSION == 2:
-    import rclpy # pylint: disable=import-error
-    from ament_index_python.packages import get_package_share_directory # pylint: disable=import-error
+    import rclpy  # pylint: disable=import-error
+    from ament_index_python.packages import get_package_share_directory  # pylint: disable=import-error
 
 
 secure_random = random.SystemRandom()

@@ -20,14 +20,14 @@ import struct
 import carla_common.transforms as trans
 import numpy
 from carla_ros_bridge.sensor import Sensor
-from sensor_msgs.msg import PointCloud2, PointField # pylint: disable=import-error
+from sensor_msgs.msg import PointCloud2, PointField  # pylint: disable=import-error
 
 from ros_compatibility import quaternion_from_euler, euler_from_quaternion
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
-    from sensor_msgs.point_cloud2 import create_cloud_xyz32 # pylint: disable=import-error
+    from sensor_msgs.point_cloud2 import create_cloud_xyz32  # pylint: disable=import-error
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)

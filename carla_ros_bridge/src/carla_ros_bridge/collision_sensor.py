@@ -10,7 +10,7 @@
 Classes to handle collision events
 """
 
-from carla_msgs.msg import CarlaCollisionEvent # pylint: disable=import-error
+from carla_msgs.msg import CarlaCollisionEvent  # pylint: disable=import-error
 from carla_ros_bridge.sensor import Sensor
 
 

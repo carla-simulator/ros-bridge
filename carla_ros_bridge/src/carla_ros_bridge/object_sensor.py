@@ -12,7 +12,7 @@ handle a object sensor
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.walker import Walker
-from derived_object_msgs.msg import ObjectArray # pylint: disable=import-error
+from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
 
 
 class ObjectSensor(PseudoActor):

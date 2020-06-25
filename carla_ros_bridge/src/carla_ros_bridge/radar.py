@@ -10,7 +10,7 @@
 Classes to handle Carla Radar
 """
 
-from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection # pylint: disable=import-error
+from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection  # pylint: disable=import-error
 
 from carla_ros_bridge.sensor import Sensor
 

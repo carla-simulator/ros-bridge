@@ -11,14 +11,14 @@ target destination. This agent respects traffic lights and other vehicles.
 """
 
 import math
-import rospy # pylint: disable=import-error
-from nav_msgs.msg import Odometry # pylint: disable=import-error
-from geometry_msgs.msg import Pose # pylint: disable=import-error
-from derived_object_msgs.msg import ObjectArray # pylint: disable=import-error
-from carla_msgs.msg import CarlaActorList # pylint: disable=import-error
+import rospy  # pylint: disable=import-error
+from nav_msgs.msg import Odometry  # pylint: disable=import-error
+from geometry_msgs.msg import Pose  # pylint: disable=import-error
+from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
+from carla_msgs.msg import CarlaActorList  # pylint: disable=import-error
 from agent import Agent, AgentState
 from local_planner import LocalPlanner
-from carla_waypoint_types.srv import GetActorWaypoint
+from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
 
 
 class BasicAgent(Agent):
