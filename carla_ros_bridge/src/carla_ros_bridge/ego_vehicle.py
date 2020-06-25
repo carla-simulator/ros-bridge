@@ -10,6 +10,7 @@
 Classes to handle Carla vehicles
 """
 import math
+import os
 
 import carla_common.transforms as transforms
 import numpy

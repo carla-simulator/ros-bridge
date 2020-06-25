@@ -13,7 +13,7 @@ import os
 
 from carla_msgs.msg import CarlaStatus  # pylint: disable=import-error
 
-from ros_compatibility import *
+from ros_compatibility import CompatibleNode
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
