@@ -33,8 +33,9 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
+    # pylint: disable=too-many-arguments
     def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None,
-                 sensor_name="Camera"):  # pylint: disable=too-many-arguments
+                 sensor_name="Camera"):
         """
         Constructor
 
@@ -175,6 +176,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, carla_actor, parent, communication, synchronous_mode,
                  sensor_name="RGBCamera"):
         """
@@ -228,6 +230,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, carla_actor, parent, communication, synchronous_mode,
                  sensor_name="DepthCamera"):
         """
@@ -303,6 +306,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, carla_actor, parent, communication, synchronous_mode,
                  sensor_name="SemanticSegmentationCamera"):
         """
