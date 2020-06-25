@@ -17,15 +17,16 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
 import sys
-import carla
-from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
 import json
 import math
 import os
 import random
 from abc import abstractmethod
+
+import carla
+from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
+from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
 
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
