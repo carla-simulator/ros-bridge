@@ -5,7 +5,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
-    import  tf.transformations as trans
+    import tf.transformations as trans
 
     latch_on = True
 
@@ -159,7 +159,7 @@ elif ROS_VERSION == 2:
     class CompatibleNode(Node):
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
             super(CompatibleNode, self).__init__(node_name, allow_undeclared_parameters=True,
-                             automatically_declare_parameters_from_overrides=True, **kwargs)
+                                                 automatically_declare_parameters_from_overrides=True, **kwargs)
             if latch:
                 self.qos_profile = QoSProfile(
                     depth=queue_size,
@@ -217,7 +217,6 @@ elif ROS_VERSION == 2:
 
 else:
     raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
-
 
 
 def main():

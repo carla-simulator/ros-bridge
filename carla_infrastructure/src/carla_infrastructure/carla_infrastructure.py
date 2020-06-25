@@ -8,7 +8,7 @@
 """
 base class for spawning infrastructure sensors in ROS
 """
-
+# pylint: disable=import-error
 from __future__ import print_function
 
 import os
