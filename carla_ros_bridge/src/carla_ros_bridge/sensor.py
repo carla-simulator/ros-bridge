@@ -110,7 +110,7 @@ class Sensor(Actor, CompatibleNode):
             if self.synchronous_mode:
                 if self.sensor_tick_time:
                     self.next_data_expected_time = carla_sensor_data.timestamp + \
-                                                   float(self.sensor_tick_time)
+                        float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
                 self.publish_transform(
@@ -137,8 +137,8 @@ class Sensor(Actor, CompatibleNode):
                 if carla_sensor_data.frame != frame:
                     self.logwarn("{}({}): Received event for frame {}"
                                  " (expected {}). Process it anyways.".format(
-                        self.__class__.__name__, self.get_id(),
-                        carla_sensor_data.frame, frame))
+                                     self.__class__.__name__, self.get_id(),
+                                     carla_sensor_data.frame, frame))
                 self.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
                                                           frame))
                 self.publish_transform(

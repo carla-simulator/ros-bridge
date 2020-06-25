@@ -266,7 +266,7 @@ class CarlaRosBridge(CompatibleNode):
                     if not self._all_vehicle_control_commands_received.wait(1):
                         self.logwarn("Timeout (1s) while waiting for vehicle control commands. "
                                      "Missing command from actor ids {}".format(
-                            self._expected_ego_vehicle_control_command_ids))
+                                         self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
     def _carla_time_tick(self, carla_snapshot):

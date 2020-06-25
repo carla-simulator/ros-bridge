@@ -57,8 +57,8 @@ class Camera(Sensor):
         if self.__class__.__name__ == "Camera":
             self.logwarn("Created Unsupported Camera Actor"
                          "(id={}, parent_id={}, type={}, attributes={})".format(
-                self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
-                self.carla_actor.attributes))
+                             self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
+                             self.carla_actor.attributes))
         else:
             self._build_camera_info()
 
@@ -77,7 +77,7 @@ class Camera(Sensor):
         cx = camera_info.width / 2.0
         cy = camera_info.height / 2.0
         fx = camera_info.width / (
-                2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
+            2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
         fy = fx
         if ROS_VERSION == 1:
             camera_info.K = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]

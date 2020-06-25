@@ -142,11 +142,11 @@ class EgoVehicle(Vehicle, CompatibleNode):
                 wheel_info.max_brake_torque = wheel.max_brake_torque
                 wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
                 wheel_info.position.x = (wheel.position.x / 100.0) - \
-                                        self.carla_actor.get_transform().location.x
+                    self.carla_actor.get_transform().location.x
                 wheel_info.position.y = -(
-                        (wheel.position.y / 100.0) - self.carla_actor.get_transform().location.y)
+                    (wheel.position.y / 100.0) - self.carla_actor.get_transform().location.y)
                 wheel_info.position.z = (wheel.position.z / 100.0) - \
-                                        self.carla_actor.get_transform().location.z
+                    self.carla_actor.get_transform().location.z
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
@@ -283,8 +283,8 @@ class EgoVehicle(Vehicle, CompatibleNode):
         :rtype: float64
         """
         return carla_vector.x * carla_vector.x + \
-               carla_vector.y * carla_vector.y + \
-               carla_vector.z * carla_vector.z
+            carla_vector.y * carla_vector.y + \
+            carla_vector.z * carla_vector.z
 
     @staticmethod
     def get_vehicle_speed_squared(carla_vehicle):
