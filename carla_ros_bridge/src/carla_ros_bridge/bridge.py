@@ -11,7 +11,7 @@ Rosbridge class:
 Class that handle communication between CARLA and ROS
 """
 
-from ros_compatibility import *
+from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription
 
 try:
     import queue
