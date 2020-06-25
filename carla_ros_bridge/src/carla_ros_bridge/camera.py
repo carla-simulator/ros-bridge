@@ -69,8 +69,7 @@ class Camera(Sensor):
         camera info doesn't change over time
         """
         camera_info = CameraInfo()
-        # store info without header
-        # camera_info.header = None # TODO uncomment for ros 1 (?)
+
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
