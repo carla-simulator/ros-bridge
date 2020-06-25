@@ -23,7 +23,7 @@ from carla_ackermann_control.msg import EgoVehicleControlInfo  # pylint: disable
 from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig  # pylint: disable=no-name-in-module,import-error
 import carla_control_physics as phys  # pylint: disable=relative-import
 
-from simple_pid import PID  # pylint: disable=import-error
+from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
 
 
 class CarlaAckermannControl(object):
