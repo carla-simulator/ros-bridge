@@ -85,6 +85,7 @@ class Camera(Sensor):
             camera_info.R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
             camera_info.P = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         elif ROS_VERSION == 2:
+            # pylint: disable=assigning-non-slot
             camera_info.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
             camera_info.d = [0.0, 0.0, 0.0, 0.0, 0.0]
             camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]

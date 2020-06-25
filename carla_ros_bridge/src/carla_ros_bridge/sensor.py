@@ -9,6 +9,7 @@
 Classes to handle Carla sensors
 """
 
+import os
 from abc import abstractmethod
 
 import carla_common.transforms as trans
@@ -21,7 +22,6 @@ try:
 except ImportError:
     import Queue as queue
 
-import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

@@ -10,14 +10,13 @@
 Tool functions to convert transforms from carla to ROS coordinate system
 """
 
+from ros_compatibility import euler_matrix, quaternion_from_euler
 import math
-import os
-
 import numpy
+
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel
 
-from ros_compatibility import euler_matrix, quaternion_from_euler
-
+import os
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
@@ -207,8 +206,7 @@ def carla_vector_to_ros_vector_rotated(carla_vector, carla_rotation):
     return ros_vector
 
 
-def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity,
-                                carla_rotation=None):
+def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity, carla_rotation=None):
     """
     Convert a carla velocity to a ROS twist
 
@@ -226,8 +224,7 @@ def carla_velocity_to_ros_twist(carla_linear_velocity, carla_angular_velocity,
     """
     ros_twist = Twist()
     if carla_rotation:
-        ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity,
-                                                              carla_rotation)
+        ros_twist.linear = carla_vector_to_ros_vector_rotated(carla_linear_velocity, carla_rotation)
     else:
         ros_twist.linear = carla_location_to_ros_vector3(carla_linear_velocity)
     ros_twist.angular.x = math.radians(carla_angular_velocity.x)

@@ -10,10 +10,10 @@
 Classes to handle Carla pedestrians
 """
 
+from derived_object_msgs.msg import Object
 from carla import WalkerControl
 from carla_msgs.msg import CarlaWalkerControl
 from carla_ros_bridge.traffic_participant import TrafficParticipant
-from derived_object_msgs.msg import Object
 
 from ros_compatibility import destroy_subscription
 

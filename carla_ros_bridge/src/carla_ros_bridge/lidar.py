@@ -12,6 +12,7 @@ Classes to handle Carla lidars
 
 from __future__ import print_function
 
+import sys
 import ctypes
 import os
 import struct
