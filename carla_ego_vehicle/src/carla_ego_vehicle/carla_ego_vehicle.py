@@ -17,15 +17,17 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
 import sys
-import carla
-from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
 import json
 import math
 import os
 import random
 from abc import abstractmethod
+
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
+from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
+from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
+
+import carla
 
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
@@ -106,6 +108,7 @@ class CarlaEgoVehicle(CompatibleNode):
         self.loginfo("listening to server {}:{}".format(self.host, self.port))
         self.loginfo("using vehicle filter: {}".format(self.actor_filter))
 
+    # pylint: disable=inconsistent-return-statements
     def spawn_ego_vehicle(self):
         """
         Helper method for condition-checking in self.restart().
@@ -397,11 +400,11 @@ class CarlaEgoVehicle(CompatibleNode):
         self.loginfo("Ego spawned.")
         try:
             self.spin()
-        except:
+        except Exception:  # pylint: disable=broad-except
             self.shutdown()
 
 
-def run_ego_vehicle(msg):
+def run_ego_vehicle(msg):  # pylint: disable=unused-argument
     """
     Callback function:
     Called when bridge started - indicated by published /carla/status topic
