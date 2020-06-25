@@ -10,10 +10,9 @@
 Classes to handle Carla vehicles
 """
 
-from std_msgs.msg import ColorRGBA
-from derived_object_msgs.msg import Object
-
 from carla_ros_bridge.traffic_participant import TrafficParticipant
+from derived_object_msgs.msg import Object
+from std_msgs.msg import ColorRGBA
 
 
 class Vehicle(TrafficParticipant):

@@ -9,9 +9,11 @@
 """
 report the carla status
 """
-from carla_msgs.msg import CarlaStatus
-from ros_compatibility import *
 import os
+
+from carla_msgs.msg import CarlaStatus
+
+from ros_compatibility import *
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

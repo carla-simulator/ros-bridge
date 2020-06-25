@@ -10,11 +10,10 @@
 Classes to handle Carla traffic participants
 """
 
+from carla_ros_bridge.actor import Actor
 from derived_object_msgs.msg import Object
 from nav_msgs.msg import Odometry
 from shape_msgs.msg import SolidPrimitive
-
-from carla_ros_bridge.actor import Actor
 
 
 class TrafficParticipant(Actor):

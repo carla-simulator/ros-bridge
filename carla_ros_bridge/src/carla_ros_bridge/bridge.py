@@ -12,6 +12,7 @@ Class that handle communication between CARLA and ROS
 """
 
 from ros_compatibility import *
+
 try:
     import queue
 except ImportError:
@@ -48,6 +49,7 @@ from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 
 import os
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
@@ -125,7 +127,8 @@ class CarlaRosBridge(CompatibleNode):
 
             self.carla_control_subscriber = \
                 self.create_subscriber(CarlaControl, "/carla/control",
-                                       lambda control: self.carla_control_queue.put(control.command), callback_group=self.callback_group)
+                                       lambda control: self.carla_control_queue.put(
+                                           control.command), callback_group=self.callback_group)
 
             self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
@@ -263,7 +266,7 @@ class CarlaRosBridge(CompatibleNode):
                     if not self._all_vehicle_control_commands_received.wait(1):
                         self.logwarn("Timeout (1s) while waiting for vehicle control commands. "
                                      "Missing command from actor ids {}".format(
-                                         self._expected_ego_vehicle_control_command_ids))
+                            self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
     def _carla_time_tick(self, carla_snapshot):
@@ -395,7 +398,7 @@ class CarlaRosBridge(CompatibleNode):
             else:
                 actor = Traffic(carla_actor, parent, self.comm)
         elif carla_actor.type_id.startswith("vehicle"):
-            if carla_actor.attributes.get('role_name')\
+            if carla_actor.attributes.get('role_name') \
                     in self.parameters['ego_vehicle']['role_name']:
                 actor = EgoVehicle(carla_actor, parent, self.comm,
                                    self._ego_vehicle_control_applied_callback)
@@ -436,7 +439,8 @@ class CarlaRosBridge(CompatibleNode):
                 actor = LaneInvasionSensor(carla_actor, parent, self.comm,
                                            self.carla_settings.synchronous_mode)
             else:
-                actor = Sensor(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Sensor(carla_actor, parent, self.comm,
+                               self.carla_settings.synchronous_mode)
         elif carla_actor.type_id.startswith("spectator"):
             actor = Spectator(carla_actor, parent, self.comm)
         elif carla_actor.type_id.startswith("walker"):
@@ -570,7 +574,7 @@ def main():
             sys.exit(1)
 
         if LooseVersion(carla_client.get_server_version()) < \
-           LooseVersion(CarlaRosBridge.CARLA_VERSION):
+                LooseVersion(CarlaRosBridge.CARLA_VERSION):
             carla_bridge.logfatal("CARLA Server version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
             sys.exit(1)

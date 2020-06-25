@@ -10,8 +10,8 @@
 Classes to handle collision events
 """
 
-from carla_ros_bridge.sensor import Sensor
 from carla_msgs.msg import CarlaCollisionEvent
+from carla_ros_bridge.sensor import Sensor
 
 
 class CollisionSensor(Sensor):

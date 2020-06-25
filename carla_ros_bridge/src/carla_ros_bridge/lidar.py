@@ -11,21 +11,22 @@ Classes to handle Carla lidars
 """
 
 from __future__ import print_function
-from ros_compatibility import quaternion_from_euler, euler_from_quaternion
-import carla_common.transforms as trans
-from carla_ros_bridge.sensor import Sensor
-from sensor_msgs.msg import PointCloud2, PointField
-import numpy
 
 import ctypes
+import os
 import struct
 
-import os
+import carla_common.transforms as trans
+import numpy
+from carla_ros_bridge.sensor import Sensor
+from sensor_msgs.msg import PointCloud2, PointField
+
+from ros_compatibility import quaternion_from_euler, euler_from_quaternion
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     from sensor_msgs.point_cloud2 import create_cloud_xyz32
-
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)

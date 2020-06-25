@@ -10,9 +10,8 @@
 Classes to handle Carla gnsss
 """
 
-from sensor_msgs.msg import NavSatFix
-
 from carla_ros_bridge.sensor import Sensor
+from sensor_msgs.msg import NavSatFix
 
 
 class Gnss(Sensor):

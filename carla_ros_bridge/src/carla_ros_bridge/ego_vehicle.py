@@ -9,20 +9,21 @@
 """
 Classes to handle Carla vehicles
 """
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
-    CarlaEgoVehicleControl, CarlaEgoVehicleStatus
+import math
+
 import carla_common.transforms as transforms
-from carla_ros_bridge.vehicle import Vehicle
+import numpy
 from carla import Vector3D
 from carla import VehicleControl
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel, \
+    CarlaEgoVehicleControl, CarlaEgoVehicleStatus
+from carla_ros_bridge.vehicle import Vehicle
 from geometry_msgs.msg import Twist, Transform
 from std_msgs.msg import Bool
 from std_msgs.msg import ColorRGBA
-from ros_compatibility import *
-import math
-import numpy
 
-import os
+from ros_compatibility import *
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):
@@ -140,12 +141,12 @@ class EgoVehicle(Vehicle, CompatibleNode):
                 wheel_info.radius = wheel.radius
                 wheel_info.max_brake_torque = wheel.max_brake_torque
                 wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
-                wheel_info.position.x = (wheel.position.x/100.0) - \
-                    self.carla_actor.get_transform().location.x
+                wheel_info.position.x = (wheel.position.x / 100.0) - \
+                                        self.carla_actor.get_transform().location.x
                 wheel_info.position.y = -(
-                    (wheel.position.y / 100.0) - self.carla_actor.get_transform().location.y)
-                wheel_info.position.z = (wheel.position.z/100.0) - \
-                    self.carla_actor.get_transform().location.z
+                        (wheel.position.y / 100.0) - self.carla_actor.get_transform().location.y)
+                wheel_info.position.z = (wheel.position.z / 100.0) - \
+                                        self.carla_actor.get_transform().location.z
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
@@ -282,8 +283,8 @@ class EgoVehicle(Vehicle, CompatibleNode):
         :rtype: float64
         """
         return carla_vector.x * carla_vector.x + \
-            carla_vector.y * carla_vector.y + \
-            carla_vector.z * carla_vector.z
+               carla_vector.y * carla_vector.y + \
+               carla_vector.z * carla_vector.z
 
     @staticmethod
     def get_vehicle_speed_squared(carla_vehicle):

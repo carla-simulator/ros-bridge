@@ -10,13 +10,12 @@
 Base Classes to handle Actor objects
 """
 
+import carla_common.transforms as trans
 import numpy as np
+from carla_ros_bridge.pseudo_actor import PseudoActor
 from geometry_msgs.msg import TransformStamped
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
-
-from carla_ros_bridge.pseudo_actor import PseudoActor
-import carla_common.transforms as trans
 
 
 class Actor(PseudoActor):
@@ -40,7 +39,8 @@ class Actor(PseudoActor):
         self.carla_actor = carla_actor
 
         if carla_actor.id > np.iinfo(np.uint32).max:
-            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(carla_actor.id))
+            raise ValueError(
+                "Actor ID exceeds maximum supported value '{}'".format(carla_actor.id))
 
         self.carla_actor_id = carla_actor.id
 

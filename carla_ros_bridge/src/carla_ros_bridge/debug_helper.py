@@ -8,11 +8,13 @@
 """
 Class to draw marker
 """
-from ros_compatibility import *
-import carla
-from visualization_msgs.msg import Marker, MarkerArray
 import math
 import os
+
+import carla
+from visualization_msgs.msg import Marker, MarkerArray
+
+from ros_compatibility import *
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

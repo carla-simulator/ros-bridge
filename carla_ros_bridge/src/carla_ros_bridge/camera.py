@@ -9,16 +9,19 @@
 """
 Class to handle Carla camera sensors
 """
-import carla_common.transforms as trans
-from carla_ros_bridge.sensor import Sensor
-import carla
-from sensor_msgs.msg import CameraInfo
-from cv_bridge import CvBridge
-import numpy
 import math
-from abc import abstractmethod
-from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 import os
+from abc import abstractmethod
+
+import carla
+import carla_common.transforms as trans
+import numpy
+from carla_ros_bridge.sensor import Sensor
+from cv_bridge import CvBridge
+from sensor_msgs.msg import CameraInfo
+
+from ros_compatibility import quaternion_from_matrix, quaternion_multiply
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
@@ -47,14 +50,15 @@ class Camera(Sensor):
         if not prefix:
             prefix = 'camera'
         super(Camera, self).__init__(carla_actor=carla_actor, parent=parent,
-                                     communication=communication, synchronous_mode=synchronous_mode,
+                                     communication=communication,
+                                     synchronous_mode=synchronous_mode,
                                      prefix=prefix, sensor_name=sensor_name)
 
         if self.__class__.__name__ == "Camera":
             self.logwarn("Created Unsupported Camera Actor"
                          "(id={}, parent_id={}, type={}, attributes={})".format(
-                             self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
-                             self.carla_actor.attributes))
+                self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
+                self.carla_actor.attributes))
         else:
             self._build_camera_info()
 
@@ -73,7 +77,7 @@ class Camera(Sensor):
         cx = camera_info.width / 2.0
         cy = camera_info.height / 2.0
         fx = camera_info.width / (
-            2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
+                2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
         fy = fx
         if ROS_VERSION == 1:
             camera_info.K = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
@@ -133,8 +137,9 @@ class Camera(Sensor):
             quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
                                                 [0, -1, 0, 0], [0, 0, 0, 1]])
         elif ROS_VERSION == 2:
-            quat_swap = quaternion_from_matrix(numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
-                                                              numpy.asarray([0, -1, 0])]))
+            quat_swap = quaternion_from_matrix(
+                numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
+                               numpy.asarray([0, -1, 0])]))
 
         quat = quaternion_multiply(quat, quat_swap)
 
@@ -276,7 +281,7 @@ class DepthCamera(Camera):
         # Apply (R + G * 256 + B * 256 * 256) / (256**3 - 1) * 1000
         # according to the documentation:
         # https://carla.readthedocs.io/en/latest/cameras_and_sensors/#camera-depth-map
-        scales = numpy.array([65536.0, 256.0, 1.0, 0]) / (256**3 - 1) * 1000
+        scales = numpy.array([65536.0, 256.0, 1.0, 0]) / (256 ** 3 - 1) * 1000
         depth_image = numpy.dot(bgra_image, scales).astype(numpy.float32)
 
         # actually we want encoding '32FC1'

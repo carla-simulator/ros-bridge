@@ -9,10 +9,13 @@
 """
 Handle communication of ROS topics
 """
-from tf2_msgs.msg import TFMessage
-from rosgraph_msgs.msg import Clock
-from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
 import os
+
+from rosgraph_msgs.msg import Clock
+from tf2_msgs.msg import TFMessage
+
+from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):

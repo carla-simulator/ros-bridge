@@ -7,13 +7,15 @@
 Classes to handle Carla imu sensor
 """
 
-from ros_compatibility import quaternion_from_euler
+import math
+import os
+
 import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
 from sensor_msgs.msg import Imu
-import math
 
-import os
+from ros_compatibility import quaternion_from_euler
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 

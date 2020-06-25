@@ -9,16 +9,20 @@
 Classes to handle Carla sensors
 """
 
+from abc import abstractmethod
+
 import carla_common.transforms as trans
 from carla_ros_bridge.actor import Actor
+
 from ros_compatibility import CompatibleNode, ros_ok
-from abc import abstractmethod
+
 try:
     import queue
 except ImportError:
     import Queue as queue
 
 import os
+
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):
@@ -40,7 +44,7 @@ class Sensor(Actor, CompatibleNode):
             # if a sensor only delivers data on special events,
             # do not wait for it. That means you might get data from a
             # sensor, that belongs to a different frame
-        prefix=None,
+            prefix=None,
             sensor_name=None):
         """
         Constructor
@@ -106,7 +110,7 @@ class Sensor(Actor, CompatibleNode):
             if self.synchronous_mode:
                 if self.sensor_tick_time:
                     self.next_data_expected_time = carla_sensor_data.timestamp + \
-                        float(self.sensor_tick_time)
+                                                   float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
                 self.publish_transform(
@@ -133,8 +137,8 @@ class Sensor(Actor, CompatibleNode):
                 if carla_sensor_data.frame != frame:
                     self.logwarn("{}({}): Received event for frame {}"
                                  " (expected {}). Process it anyways.".format(
-                                     self.__class__.__name__, self.get_id(),
-                                     carla_sensor_data.frame, frame))
+                        self.__class__.__name__, self.get_id(),
+                        carla_sensor_data.frame, frame))
                 self.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
                                                           frame))
                 self.publish_transform(
@@ -145,10 +149,10 @@ class Sensor(Actor, CompatibleNode):
                 return
 
     def _update_synchronous_sensor(self, frame, timestamp):
-        while not self.next_data_expected_time or\
-            (not self.queue.empty() or
-             self.next_data_expected_time and
-             self.next_data_expected_time < timestamp):
+        while not self.next_data_expected_time or \
+                (not self.queue.empty() or
+                 self.next_data_expected_time and
+                 self.next_data_expected_time < timestamp):
             while True:
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)

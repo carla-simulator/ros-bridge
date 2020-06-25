@@ -10,8 +10,8 @@
 Classes to handle lane invasion events
 """
 
-from carla_ros_bridge.sensor import Sensor
 from carla_msgs.msg import CarlaLaneInvasionEvent
+from carla_ros_bridge.sensor import Sensor
 
 
 class LaneInvasionSensor(Sensor):
