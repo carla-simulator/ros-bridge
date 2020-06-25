@@ -11,8 +11,9 @@ Class to draw marker
 import math
 import os
 
-import carla
 from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import-error
+
+import carla
 
 from ros_compatibility import CompatibleNode
 
