@@ -65,9 +65,7 @@ class ImuSensor(Sensor):
 
         imu_rotation = carla_imu_measurement.transform.rotation
 
-        quat = tf.transformations.quaternion_from_euler(math.radians(imu_rotation.roll),
-                                                        math.radians(imu_rotation.pitch),
-                                                        math.radians(imu_rotation.yaw))
+        quat = trans.carla_rotation_to_numpy_quaternion(imu_rotation)
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
         self.publish_message(
             self.get_topic_prefix(), imu_msg)
