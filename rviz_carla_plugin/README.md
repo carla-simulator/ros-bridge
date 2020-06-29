@@ -42,8 +42,8 @@ Similar to the [rqt CARLA plugin](../rqt_carla_plugin), it's possible to control
 
 | Topic               | Type                      | Description                                            |
 | ------------------- | ------------------------- | ------------------------------------------------------ |
-| `/carla/status`     | [carla_msgs.CarlaStatus](../carla_msgs/msg/CarlaStatus.msg) | Read the status of CARLA, to enable/disable the UI |
-| `/carla/ego_vehicle/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](../carla_msgs/msg/CarlaEgoVehicleStatus.msg) | To display the current state of the ego vehicle |
+| `/carla/status`     | [carla_msgs.CarlaStatus](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaStatus.msg) | Read the status of CARLA, to enable/disable the UI |
+| `/carla/ego_vehicle/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleStatus.msg) | To display the current state of the ego vehicle |
 | `/carla/ego_vehicle/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | To display the current pose of the ego vehicle |
 | `/scenario_runner/status`     | [carla_ros_scenario_runner_types.CarlaScenarioRunnerStatus](../carla_ros_scenario_runner_types/msg/CarlaScenarioRunnerStatus.msg) | To visualize the scenario runner status |
 | `/carla/available_scenarios` | [carla_ros_scenario_runner_types.CarlaScenarioList](../carla_ros_scenario_runner_types/msg/CarlaScenarioList.msg) | For providing a list of scenarios to execute (disabled in combo box) |
@@ -52,7 +52,7 @@ Similar to the [rqt CARLA plugin](../rqt_carla_plugin), it's possible to control
 
 | Topic               | Type                      | Description                                            |
 | ------------------- | ------------------------- | ------------------------------------------------------ |
-| `/carla/control`     | [carla_msgs.CarlaControl](../carla_msgs/msg/CarlaControl.msg) | Start/pause CARLA |
+| `/carla/control`     | [carla_msgs.CarlaControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaControl.msg) | Start/pause CARLA |
 | `/carla/ego_vehicle/spectator_pose` | [geometry_msgs.PoseStamped](http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html) | Publish the current pose of the RVIZ camera view. |
 | `/carla/ego_vehicle/vehicle_control_manual_override` | [std_msgs.Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html) | To enable/disable the overriding of the vehicle control |
 | `/carla/ego_vehicle/twist` | [geometry_msgs.Twist](http://docs.ros.org/api/geometry_msgs/html/msg/Twist.html) | The twist command, created via mouse |
