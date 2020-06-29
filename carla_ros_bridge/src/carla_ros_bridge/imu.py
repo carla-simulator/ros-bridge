@@ -13,7 +13,7 @@ import tf
 from sensor_msgs.msg import Imu
 
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
+import carla_common.transforms as trans
 
 
 class ImuSensor(Sensor):

@@ -22,7 +22,7 @@ from carla import VehicleControl
 from carla import Vector3D
 
 from carla_ros_bridge.vehicle import Vehicle
-import carla_ros_bridge.transforms as transforms
+import carla_common.transforms as transforms
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus
@@ -168,7 +168,7 @@ class EgoVehicle(Vehicle):
         self.send_vehicle_msgs()
         super(EgoVehicle, self).update(frame, timestamp)
         no_rotation = Transform()
-        no_rotation.rotation.x = 1.0
+        no_rotation.rotation.w = 1.0
         self.publish_transform(self.get_ros_transform(
             no_rotation, frame_id=str(self.get_id()), child_frame_id=self.get_prefix()))
 
