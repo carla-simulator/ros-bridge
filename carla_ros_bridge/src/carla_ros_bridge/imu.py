@@ -6,9 +6,6 @@
 """
 Classes to handle Carla imu sensor
 """
-import math
-
-import tf
 
 from sensor_msgs.msg import Imu
 
