@@ -15,17 +15,9 @@ from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import
 
 import carla
 
-from ros_compatibility import CompatibleNode, destroy_subscription
+from ros_compatibility import CompatibleNode, destroy_subscription, euler_from_quaternion
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from tf.transformations import euler_from_quaternion  # pylint: disable=import-error
-elif ROS_VERSION == 2:
-    from transformations.transformations import euler_from_quaternion  # pylint: disable=import-error
-else:
-    raise NotImplementedError(
-        'Make sure you have valid ' + 'ROS_VERSION env variable')
 
 
 class DebugHelper(CompatibleNode):
