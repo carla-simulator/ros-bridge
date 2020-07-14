@@ -99,9 +99,9 @@ if ROS_VERSION == 1:
             rospy.signal_shutdown("")
 
 elif ROS_VERSION == 2:
+    from rclpy import Parameter
     from rclpy.exceptions import ROSInterruptException
     from rclpy.node import Node
-    from rclpy import Parameter
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
     import rclpy
     from builtin_interfaces.msg import Time
