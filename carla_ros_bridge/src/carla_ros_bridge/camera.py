@@ -9,23 +9,23 @@
 """
 Class to handle Carla camera sensors
 """
-from abc import abstractmethod
-
 import math
+import os
+from abc import abstractmethod
 import numpy
-
-import rospy
-import tf
-from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
+from cv_bridge import CvBridge  # pylint: disable=import-error
+from sensor_msgs.msg import CameraInfo  # pylint: disable=import-error
 
 import carla
+import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
+
+from ros_compatibility import quaternion_from_matrix, quaternion_multiply
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
 class Camera(Sensor):
-
     """
     Sensor implementation details for cameras
     """
@@ -33,7 +33,9 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None,
+                 sensor_name="Camera"):
         """
         Constructor
 
@@ -48,17 +50,16 @@ class Camera(Sensor):
         """
         if not prefix:
             prefix = 'camera'
-        super(Camera, self).__init__(carla_actor=carla_actor,
-                                     parent=parent,
+        super(Camera, self).__init__(carla_actor=carla_actor, parent=parent,
                                      communication=communication,
                                      synchronous_mode=synchronous_mode,
-                                     prefix=prefix)
+                                     prefix=prefix, sensor_name=sensor_name)
 
         if self.__class__.__name__ == "Camera":
-            rospy.logwarn("Created Unsupported Camera Actor"
-                          "(id={}, parent_id={}, type={}, attributes={})".format(
-                              self.get_id(), self.get_parent_id(),
-                              self.carla_actor.type_id, self.carla_actor.attributes))
+            self.logwarn("Created Unsupported Camera Actor"
+                         "(id={}, parent_id={}, type={}, attributes={})".format(
+                             self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
+                             self.carla_actor.attributes))
         else:
             self._build_camera_info()
 
@@ -69,8 +70,7 @@ class Camera(Sensor):
         camera info doesn't change over time
         """
         camera_info = CameraInfo()
-        # store info without header
-        camera_info.header = None
+
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
@@ -79,10 +79,17 @@ class Camera(Sensor):
         fx = camera_info.width / (
             2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
         fy = fx
-        camera_info.K = [fx, 0, cx, 0, fy, cy, 0, 0, 1]
-        camera_info.D = [0, 0, 0, 0, 0]
-        camera_info.R = [1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0]
-        camera_info.P = [fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1.0, 0]
+        if ROS_VERSION == 1:
+            camera_info.K = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+            camera_info.D = [0.0, 0.0, 0.0, 0.0, 0.0]
+            camera_info.R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            camera_info.P = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+        elif ROS_VERSION == 2:
+            # pylint: disable=assigning-non-slot
+            camera_info.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+            camera_info.d = [0.0, 0.0, 0.0, 0.0, 0.0]
+            camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         self._camera_info = camera_info
 
     # pylint: disable=arguments-differ
@@ -96,20 +103,22 @@ class Camera(Sensor):
         """
         if ((carla_image.height != self._camera_info.height) or
                 (carla_image.width != self._camera_info.width)):
-            rospy.logerr(
-                "Camera{} received image not matching configuration".format(self.get_prefix()))
+            self.logerr("Camera{} received image not matching configuration".format(
+                self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_image=carla_image)
-        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
+        img_msg = Camera.cv_bridge.cv2_to_imgmsg(
+            image_data_array, encoding=encoding)
         # the camera data is in respect to the camera's own frame
         img_msg.header = self.get_msg_header()
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
-        self.publish_message(
-            self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
+        self.publish_message(self.get_topic_prefix() +
+                             '/camera_info', cam_info)
+        self.publish_message(self.get_topic_prefix() +
+                             '/' + self.get_image_topic_name(), img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """
@@ -124,15 +133,18 @@ class Camera(Sensor):
         tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
         rotation = tf_msg.transform.rotation
         quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        quat_swap = tf.transformations.quaternion_from_matrix(
-            [[0, 0, 1, 0],
-             [-1, 0, 0, 0],
-             [0, -1, 0, 0],
-             [0, 0, 0, 1]])
-        quat = tf.transformations.quaternion_multiply(quat, quat_swap)
 
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
+        if ROS_VERSION == 1:
+            quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
+                                                [0, -1, 0, 0], [0, 0, 0, 1]])
+        elif ROS_VERSION == 2:
+            quat_swap = quaternion_from_matrix(
+                numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
+                               numpy.asarray([0, -1, 0])]))
+
+        quat = quaternion_multiply(quat, quat_swap)
+
+        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
         return tf_msg
 
     @abstractmethod
@@ -146,8 +158,7 @@ class Camera(Sensor):
         :return tuple (numpy data array containing the image information, encoding)
         :rtype tuple(numpy.ndarray, string)
         """
-        raise NotImplementedError(
-            "This function has to be re-implemented by derived classes")
+        raise NotImplementedError("This function has to be re-implemented by derived classes")
 
     @abstractmethod
     def get_image_topic_name(self):
@@ -157,17 +168,17 @@ class Camera(Sensor):
         :return image topic name
         :rtype string
         """
-        raise NotImplementedError(
-            "This function has to be re-implemented by derived classes")
+        raise NotImplementedError("This function has to be re-implemented by derived classes")
 
 
 class RgbCamera(Camera):
-
     """
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="RGBCamera"):
         """
         Constructor
 
@@ -180,12 +191,11 @@ class RgbCamera(Camera):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(RgbCamera, self).__init__(carla_actor=carla_actor,
-                                        parent=parent,
-                                        communication=communication,
-                                        synchronous_mode=synchronous_mode,
-                                        prefix='camera/rgb/' +
-                                        carla_actor.attributes.get('role_name'))
+        super(RgbCamera,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             synchronous_mode=synchronous_mode,
+                             prefix='camera/rgb/' + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -200,9 +210,8 @@ class RgbCamera(Camera):
         :rtype tuple(numpy.ndarray, string)
         """
 
-        carla_image_data_array = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
+        carla_image_data_array = numpy.ndarray(shape=(carla_image.height, carla_image.width, 4),
+                                               dtype=numpy.uint8, buffer=carla_image.raw_data)
 
         return carla_image_data_array, 'bgra8'
 
@@ -217,12 +226,13 @@ class RgbCamera(Camera):
 
 
 class DepthCamera(Camera):
-
     """
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="DepthCamera"):
         """
         Constructor
 
@@ -235,12 +245,11 @@ class DepthCamera(Camera):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(DepthCamera, self).__init__(carla_actor=carla_actor,
-                                          parent=parent,
-                                          communication=communication,
-                                          synchronous_mode=synchronous_mode,
-                                          prefix='camera/depth/' +
-                                          carla_actor.attributes.get('role_name'))
+        super(DepthCamera,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             synchronous_mode=synchronous_mode,
+                             prefix='camera/depth/' + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -269,14 +278,13 @@ class DepthCamera(Camera):
         #    shape=(carla_image.height, carla_image.width, 1),
         #    dtype=numpy.float32, buffer=carla_image.raw_data)
         #
-        bgra_image = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
+        bgra_image = numpy.ndarray(shape=(carla_image.height, carla_image.width, 4),
+                                   dtype=numpy.uint8, buffer=carla_image.raw_data)
 
         # Apply (R + G * 256 + B * 256 * 256) / (256**3 - 1) * 1000
         # according to the documentation:
         # https://carla.readthedocs.io/en/latest/cameras_and_sensors/#camera-depth-map
-        scales = numpy.array([65536.0, 256.0, 1.0, 0]) / (256**3 - 1) * 1000
+        scales = numpy.array([65536.0, 256.0, 1.0, 0]) / (256 ** 3 - 1) * 1000
         depth_image = numpy.dot(bgra_image, scales).astype(numpy.float32)
 
         # actually we want encoding '32FC1'
@@ -294,12 +302,13 @@ class DepthCamera(Camera):
 
 
 class SemanticSegmentationCamera(Camera):
-
     """
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+                 sensor_name="SemanticSegmentationCamera"):
         """
         Constructor
 
@@ -312,13 +321,11 @@ class SemanticSegmentationCamera(Camera):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(
-            SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
-                                                       parent=parent,
-                                                       communication=communication,
-                                                       synchronous_mode=synchronous_mode,
-                                                       prefix='camera/semantic_segmentation/' +
-                                                       carla_actor.attributes.get('role_name'))
+        super(SemanticSegmentationCamera, self).__init__(
+            carla_actor=carla_actor, parent=parent, communication=communication,
+            synchronous_mode=synchronous_mode,
+            prefix='camera/semantic_segmentation/' + carla_actor.attributes.get('role_name'),
+            sensor_name=sensor_name)
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -335,9 +342,8 @@ class SemanticSegmentationCamera(Camera):
         """
 
         carla_image.convert(carla.ColorConverter.CityScapesPalette)
-        carla_image_data_array = numpy.ndarray(
-            shape=(carla_image.height, carla_image.width, 4),
-            dtype=numpy.uint8, buffer=carla_image.raw_data)
+        carla_image_data_array = numpy.ndarray(shape=(carla_image.height, carla_image.width, 4),
+                                               dtype=numpy.uint8, buffer=carla_image.raw_data)
         return carla_image_data_array, 'bgra8'
 
     def get_image_topic_name(self):

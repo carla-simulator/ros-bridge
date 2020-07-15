@@ -9,7 +9,7 @@ import os
 from enum import Enum
 from threading import Thread, Event
 from datetime import datetime, timedelta
-import pexpect
+import pexpect  # pylint: disable=import-error
 
 
 class ApplicationStatus(Enum):

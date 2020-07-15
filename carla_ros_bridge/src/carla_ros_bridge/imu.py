@@ -6,23 +6,26 @@
 """
 Classes to handle Carla imu sensor
 """
+
 import math
+import os
 
-import tf
-
-from sensor_msgs.msg import Imu
-
+from sensor_msgs.msg import Imu  # pylint: disable=import-error
+import carla_common.transforms as trans
 from carla_ros_bridge.sensor import Sensor
-import carla_ros_bridge.transforms as trans
+
+from ros_compatibility import quaternion_from_euler
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
 class ImuSensor(Sensor):
-
     """
     Actor implementation details for imu sensor
     """
+    # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="IMU"):
         """
         Constructor
 
@@ -35,11 +38,11 @@ class ImuSensor(Sensor):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(ImuSensor, self).__init__(carla_actor=carla_actor,
-                                        parent=parent,
-                                        communication=communication,
-                                        synchronous_mode=synchronous_mode,
-                                        prefix="imu/" + carla_actor.attributes.get('role_name'))
+        super(ImuSensor,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             synchronous_mode=synchronous_mode,
+                             prefix="imu/" + carla_actor.attributes.get('role_name'),
+                             sensor_name=sensor_name)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
@@ -62,9 +65,8 @@ class ImuSensor(Sensor):
 
         imu_rotation = carla_imu_measurement.transform.rotation
 
-        quat = tf.transformations.quaternion_from_euler(math.radians(imu_rotation.roll),
-                                                        math.radians(imu_rotation.pitch),
-                                                        math.radians(imu_rotation.yaw))
+        quat = quaternion_from_euler(math.radians(imu_rotation.roll),
+                                     math.radians(imu_rotation.pitch),
+                                     math.radians(imu_rotation.yaw))
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
-        self.publish_message(
-            self.get_topic_prefix(), imu_msg)
+        self.publish_message(self.get_topic_prefix(), imu_msg)

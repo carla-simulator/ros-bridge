@@ -10,15 +10,14 @@
 Classes to handle Carla traffic participants
 """
 
-from derived_object_msgs.msg import Object
-from nav_msgs.msg import Odometry
-from shape_msgs.msg import SolidPrimitive
+from derived_object_msgs.msg import Object  # pylint: disable=import-error
+from nav_msgs.msg import Odometry  # pylint: disable=import-error
+from shape_msgs.msg import SolidPrimitive  # pylint: disable=import-error
 
 from carla_ros_bridge.actor import Actor
 
 
 class TrafficParticipant(Actor):
-
     """
     actor implementation details for traffic participant
     """
@@ -37,10 +36,8 @@ class TrafficParticipant(Actor):
         :type prefix: string
         """
         self.classification_age = 0
-        super(TrafficParticipant, self).__init__(carla_actor=carla_actor,
-                                                 parent=parent,
-                                                 communication=communication,
-                                                 prefix=prefix)
+        super(TrafficParticipant, self).__init__(carla_actor=carla_actor, parent=parent,
+                                                 communication=communication, prefix=prefix)
 
     def update(self, frame, timestamp):
         """
@@ -93,13 +90,14 @@ class TrafficParticipant(Actor):
         obj.shape.dimensions.extend([
             self.carla_actor.bounding_box.extent.x * 2.0,
             self.carla_actor.bounding_box.extent.y * 2.0,
-            self.carla_actor.bounding_box.extent.z * 2.0])
+            self.carla_actor.bounding_box.extent.z * 2.0
+        ])
 
         # Classification if available in attributes
         if self.get_classification() != Object.CLASSIFICATION_UNKNOWN:
             obj.object_classified = True
             obj.classification = self.get_classification()
-            obj.classification_certainty = 1.0
+            obj.classification_certainty = 1
             obj.classification_age = self.classification_age
 
         return obj

@@ -14,10 +14,11 @@ class ScenarioRunnerRunner(ApplicationRunner):
     Executes scenario runner
     """
 
-    def __init__(self, path, host, port, status_updated_fct, log_fct):
+    def __init__(self, path, host, port, wait_for_ego, status_updated_fct, log_fct):
         self._path = path
         self._host = host
         self._port = port
+        self._wait_for_ego = wait_for_ego
         super(ScenarioRunnerRunner, self).__init__(
             status_updated_fct,
             log_fct,
@@ -29,8 +30,9 @@ class ScenarioRunnerRunner(ApplicationRunner):
         """
         cmdline = ["/usr/bin/python", "{}/scenario_runner.py".format(self._path),
                    "--openscenario", "{}".format(scenario_file),
-                   "--waitForEgo",
                    "--timeout", "1000000",
                    "--host", self._host,
                    "--port", str(self._port)]
+        if self._wait_for_ego:
+            cmdline.append("--waitForEgo")
         return self.execute(cmdline, env=os.environ)

@@ -16,12 +16,12 @@ try:
     import queue
 except ImportError:
     import Queue as queue
-import rospy
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
-from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
-from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
+import rospy  # pylint: disable=import-error
+from geometry_msgs.msg import PoseStamped  # pylint: disable=import-error
+from nav_msgs.msg import Path  # pylint: disable=import-error
+from std_msgs.msg import Float64  # pylint: disable=import-error
+from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse  # pylint: disable=import-error
+from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus  # pylint: disable=import-error
 from application_runner import ApplicationStatus
 from scenario_runner_runner import ScenarioRunnerRunner
 
@@ -47,22 +47,10 @@ class CarlaRosScenarioRunner(object):
     Execute scenarios via ros service
     """
 
-    def __init__(self, role_name, host, port, scenario_runner_path, publish_waypoints, publish_goal):
+    def __init__(self, role_name, host, port, scenario_runner_path, wait_for_ego):
         """
         Constructor
         """
-        self._goal_publisher = None
-        if publish_goal:
-            self._goal_publisher = rospy.Publisher(
-                "/carla/{}/goal".format(role_name), PoseStamped, queue_size=1, latch=True)
-        self._target_speed_publisher = rospy.Publisher(
-            "/carla/{}/target_speed".format(role_name), Float64, queue_size=1, latch=True)
-
-        self._path_publisher = None
-        if publish_waypoints:
-            self._path_publisher = rospy.Publisher(
-                "/carla/{}/waypoints".format(role_name), Path, queue_size=1, latch=True)
-
         self._status_publisher = rospy.Publisher(
             "/scenario_runner/status", CarlaScenarioRunnerStatus, queue_size=1, latch=True)
         self.scenario_runner_status_updated(ApplicationStatus.STOPPED)
@@ -70,6 +58,7 @@ class CarlaRosScenarioRunner(object):
             scenario_runner_path,
             host,
             port,
+            wait_for_ego,
             self.scenario_runner_status_updated,
             self.scenario_runner_log)
         self._request_queue = queue.Queue()
@@ -136,29 +125,7 @@ class CarlaRosScenarioRunner(object):
                 # execute scenario
                 scenario_executed = self._scenario_runner.execute_scenario(
                     current_req.scenario_file)
-                if scenario_executed:
-                    # publish target speed
-                    self._target_speed_publisher.publish(Float64(data=current_req.target_speed))
-
-                    # publish last pose of route as goal
-                    # (can be used in conjunction with carla_waypoint_publisher)
-                    if self._goal_publisher:
-                        goal = PoseStamped()
-                        if current_req.waypoints:
-                            goal.pose = current_req.waypoints[-1]
-                        goal.header.stamp = rospy.get_rostime()
-                        goal.header.frame_id = "map"
-                        self._goal_publisher.publish(goal)
-
-                    # publish the waypoints (can directly be used within carla_ad_agent)
-                    if self._path_publisher:
-                        path = Path()
-                        path.header.stamp = rospy.get_rostime()
-                        path.header.frame_id = "map"
-                        for pose in current_req.waypoints:
-                            path.poses.append(PoseStamped(pose=pose))
-                        self._path_publisher.publish(path)
-                else:
+                if not scenario_executed:
                     rospy.logwarn("Unable to execute scenario.")
                 current_req = None
             else:
@@ -182,12 +149,11 @@ def main():
     rospy.init_node('carla_ros_scenario_runner', anonymous=True)
     role_name = rospy.get_param("~role_name", "ego_vehicle")
     scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
+    wait_for_ego = rospy.get_param("~wait_for_ego", "True")
     host = rospy.get_param("~host", "localhost")
     port = rospy.get_param("~port", 2000)
-    publish_waypoints = rospy.get_param("~publish_waypoints", False)
-    publish_goal = rospy.get_param("~publish_goal", True)
     scenario_runner = CarlaRosScenarioRunner(
-        role_name, host, port, scenario_runner_path, publish_waypoints, publish_goal)
+        role_name, host, port, scenario_runner_path, wait_for_ego)
     try:
         scenario_runner.run()
     finally:

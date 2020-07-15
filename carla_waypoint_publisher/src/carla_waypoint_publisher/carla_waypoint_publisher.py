@@ -21,14 +21,14 @@ import math
 import sys
 import threading
 
-import rospy
-import tf
-from tf.transformations import euler_from_quaternion
-from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
-from carla_msgs.msg import CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint
-from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint
+import rospy  # pylint: disable=import-error
+import tf  # pylint: disable=import-error
+from tf.transformations import euler_from_quaternion  # pylint: disable=import-error
+from nav_msgs.msg import Path  # pylint: disable=import-error
+from geometry_msgs.msg import PoseStamped  # pylint: disable=import-error
+from carla_msgs.msg import CarlaWorldInfo  # pylint: disable=import-error
+from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint  # pylint: disable=import-error
+from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint  # pylint: disable=import-error
 
 import carla
 

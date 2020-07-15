@@ -14,7 +14,6 @@ from carla_ros_bridge.actor import Actor
 
 
 class Spectator(Actor):
-
     """
     Actor implementation details for spectators
     """
@@ -30,7 +29,5 @@ class Spectator(Actor):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(Spectator, self).__init__(carla_actor=carla_actor,
-                                        parent=parent,
-                                        prefix='spectator',
+        super(Spectator, self).__init__(carla_actor=carla_actor, parent=parent, prefix='spectator',
                                         communication=communication)

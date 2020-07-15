@@ -27,7 +27,7 @@ cd catkin_ws
 source /opt/ros/$(rosversion -d)/setup.bash
 
 #installing required dependency packages to build catkin_make
-sudo apt install ros-$(rosversion -d)-ainstein-radar-msgs ros-$(rosversion -d)-derived-object-msgs \
+sudo apt install ros-$(rosversion -d)-derived-object-msgs \
 ros-$(rosversion -d)-ackermann-msgs ros-$(rosversion -d)-carla-msgs ros-$(rosversion -d)-pcl-conversions \
 ros-$(rosversion -d)-rviz ros-$(rosversion -d)-rqt ros-$(rosversion -d)-pcl-ros
 
@@ -84,7 +84,6 @@ Depends: ros-$(rosversion -d)-carla-msgs,
 	 ros-$(rosversion -d)-message-runtime,
 	 ros-$(rosversion -d)-geometry-msgs,
 	 ros-$(rosversion -d)-message-generation,
-	 ros-$(rosversion -d)-ainstein-radar-msgs,
 	 ros-$(rosversion -d)-visualization-msgs,
 	 ros-$(rosversion -d)-tf,
 	 ros-$(rosversion -d)-tf2,

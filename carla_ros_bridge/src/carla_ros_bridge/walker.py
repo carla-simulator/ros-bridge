@@ -9,16 +9,16 @@
 """
 Classes to handle Carla pedestrians
 """
-import rospy
-from derived_object_msgs.msg import Object
 
-from carla_ros_bridge.traffic_participant import TrafficParticipant
-from carla_msgs.msg import CarlaWalkerControl
+from derived_object_msgs.msg import Object  # pylint: disable=import-error
 from carla import WalkerControl
+from carla_msgs.msg import CarlaWalkerControl  # pylint: disable=import-error
+from carla_ros_bridge.traffic_participant import TrafficParticipant
+
+from ros_compatibility import destroy_subscription
 
 
 class Walker(TrafficParticipant):
-
     """
     Actor implementation details for pedestrians
     """
@@ -41,14 +41,12 @@ class Walker(TrafficParticipant):
         else:
             prefix = "walker/{:03}".format(carla_actor.id)
 
-        super(Walker, self).__init__(carla_actor=carla_actor,
-                                     parent=parent,
-                                     communication=communication,
-                                     prefix=prefix)
+        super(Walker, self).__init__(carla_actor=carla_actor, parent=parent,
+                                     communication=communication, prefix=prefix)
 
-        self.control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/walker_control_cmd",
-            CarlaWalkerControl, self.control_command_updated)
+        self.control_subscriber = self.create_subscriber(
+            CarlaWalkerControl,
+            self.get_topic_prefix() + "/walker_control_cmd", self.control_command_updated)
 
     def destroy(self):
         """
@@ -59,8 +57,8 @@ class Walker(TrafficParticipant):
 
         :return:
         """
-        rospy.logdebug("Destroy Walker(id={})".format(self.get_id()))
-        self.control_subscriber.unregister()
+        self.logdebug("Destroy Walker(id={})".format(self.get_id()))
+        destroy_subscription(self.control_subscriber)
         self.control_subscriber = None
         super(Walker, self).destroy()
 

@@ -9,16 +9,24 @@
 Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
 
-from std_msgs.msg import Header
-import rospy
+import os
+
+from std_msgs.msg import Header  # pylint: disable=import-error
+
+from ros_compatibility import CompatibleNode, ros_timestamp
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class PseudoActor(object):
-
+class PseudoActor(CompatibleNode):
     """
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
 
+    # pylint: disable=super-init-not-called
     def __init__(self, parent, communication, prefix=None):
         """
         Constructor
@@ -29,6 +37,7 @@ class PseudoActor(object):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
+
         self.parent = parent
         if self.parent:
             self.parent_id = parent.get_id()
@@ -72,7 +81,7 @@ class PseudoActor(object):
         else:
             header.frame_id = self.get_prefix()
         if timestamp:
-            header.stamp = rospy.Time.from_sec(timestamp)
+            header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         else:
             header.stamp = self.communication.get_current_ros_time()
         return header

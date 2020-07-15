@@ -1,0 +1,21 @@
+ego_vehicle_node:
+  ros__parameters:
+    use_sim_time: true
+    carla:
+      # the network connection for the python connection to CARLA
+      host: localhost
+      port: 2000
+      # vehicles
+      vehicle_filter: vehicle.*
+      # enable/disable synchronous mode. If enabled ros-bridge waits until
+      # expected data is received for all sensors
+      synchronous_mode: true
+      synchronous_mode_wait_for_vehicle_control_command: false
+      # set the fixed timestep length
+      fixed_delta_seconds: 0.05
+      # configuration values for the ego vehicle
+      ego_vehicle:
+        # the role name of the vehicles that acts as ego vehicle for this ros bridge instance
+        # Only the vehicles within this list are controllable from within ROS.
+        # (the vehicle from CARLA is selected which has the attribute 'role_name' set to this value)
+        role_name: ["hero", "ego_vehicle"]

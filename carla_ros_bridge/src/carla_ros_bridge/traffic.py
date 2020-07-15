@@ -10,14 +10,13 @@
 Classes to handle Carla traffic objects
 """
 
-from carla_ros_bridge.actor import Actor
-import carla_ros_bridge.transforms as trans
-from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo
+import carla_common.transforms as trans
 from carla import TrafficLightState
+from carla_msgs.msg import CarlaTrafficLightStatus, CarlaTrafficLightInfo  # pylint: disable=import-error
+from carla_ros_bridge.actor import Actor
 
 
 class Traffic(Actor):
-
     """
     Actor implementation details for traffic objects
     """
@@ -33,14 +32,11 @@ class Traffic(Actor):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(Traffic, self).__init__(carla_actor=carla_actor,
-                                      parent=parent,
-                                      communication=communication,
-                                      prefix='traffic')
+        super(Traffic, self).__init__(carla_actor=carla_actor, parent=parent,
+                                      communication=communication, prefix='traffic')
 
 
 class TrafficLight(Actor):
-
     """
     Traffic implementation details for traffic lights
     """
@@ -56,10 +52,9 @@ class TrafficLight(Actor):
         :param communication: communication-handle
         :type communication: carla_ros_bridge.communication
         """
-        super(TrafficLight, self).__init__(carla_actor=carla_actor,
-                                           parent=parent,
-                                           communication=communication,
-                                           prefix='traffic.traffic_light')
+        super(TrafficLight,
+              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+                             prefix='traffic.traffic_light')
 
     def get_status(self):
         """
@@ -87,7 +82,7 @@ class TrafficLight(Actor):
         info = CarlaTrafficLightInfo()
         info.id = self.get_id()
         info.transform = self.get_current_ros_pose()
-        info.trigger_volume.center = trans.carla_location_to_ros_point(
+        info.trigger_volume.center = trans.carla_location_to_ros_vector3(
             self.carla_actor.trigger_volume.location)
         info.trigger_volume.size.x = self.carla_actor.trigger_volume.extent.x * 2.0
         info.trigger_volume.size.y = self.carla_actor.trigger_volume.extent.y * 2.0

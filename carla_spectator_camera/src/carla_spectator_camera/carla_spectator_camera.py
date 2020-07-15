@@ -10,7 +10,7 @@ Spawns a camera, attached to an ego vehicle.
 The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
-
+# pylint: disable=import-error
 import sys
 import math
 import rospy
