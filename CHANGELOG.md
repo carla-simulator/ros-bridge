@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Add intensity value to point cloud message
 *   Fixed wrong TF for ego_vehicle
 *   Improve version check
 *   Fix cleanup
