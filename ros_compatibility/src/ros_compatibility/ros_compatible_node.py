@@ -56,6 +56,9 @@ if ROS_VERSION == 1:
             self.qos_profile = QoSProfile(depth=queue_size, durability=latch)
             self.callback_group = None
 
+        def destroy(self):
+            pass
+
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if alternative_value is None:
                 return rospy.get_param(name)
@@ -167,6 +170,9 @@ elif ROS_VERSION == 2:
             else:
                 self.qos_profile = QoSProfile(depth=queue_size)
             self.callback_group = None
+
+        def destroy(self):
+            self.destroy_node()
 
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if alternative_value is None:

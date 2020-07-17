@@ -23,7 +23,7 @@ from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pyli
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
 
-from ros_compatibility import CompatibleNode, destroy_subscription
+from ros_compatibility import CompatibleNode, destroy_subscription, QoSProfile, latch_on
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -39,7 +39,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
     Vehicle implementation details for the ego vehicle
     """
 
-    def __init__(self, carla_actor, parent, communication, vehicle_control_applied_callback):
+    def __init__(self, carla_actor, parent, node, vehicle_control_applied_callback):
         """
         Constructor
 
@@ -47,11 +47,13 @@ class EgoVehicle(Vehicle, CompatibleNode):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         """
-        Vehicle.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
+        Vehicle.__init__(self, carla_actor=carla_actor, parent=parent, node=node,
                          prefix=carla_actor.attributes.get('role_name'))
+        self.vehicle_status_publisher = node.new_publisher(CarlaEgoVehicleStatus, self.get_topic_prefix() + "/vehicle_status")
+        self.vehicle_info_publisher = node.new_publisher(CarlaEgoVehicleInfo, self.get_topic_prefix() + "/vehicle_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
 
         if ROS_VERSION == 1:
             self.callback_group = None
@@ -122,7 +124,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
         vehicle_status.control.reverse = self.carla_actor.get_control().reverse
         vehicle_status.control.gear = self.carla_actor.get_control().gear
         vehicle_status.control.manual_gear_shift = self.carla_actor.get_control().manual_gear_shift
-        self.publish_message(self.get_topic_prefix() + "/vehicle_status", vehicle_status)
+        self.vehicle_status_publisher.publish(vehicle_status)
 
         # only send vehicle once (in latched-mode)
         # TODO: Make latching work reliably in ROS2 # pylint: disable=fixme
@@ -167,11 +169,7 @@ class EgoVehicle(Vehicle, CompatibleNode):
             vehicle_info.center_of_mass.y = vehicle_physics.center_of_mass.y
             vehicle_info.center_of_mass.z = vehicle_physics.center_of_mass.z
             self.vehicle_info = vehicle_info
-            self.publish_message(self.get_topic_prefix() + "/vehicle_info",
-                                 vehicle_info, is_latched=True)
-        if ROS_VERSION == 2:
-            self.publish_message(self.get_topic_prefix() + "/vehicle_info",
-                                 self.vehicle_info, is_latched=True)
+            self.vehicle_info_publisher.publish(vehicle_info)
 
     def update(self, frame, timestamp):
         """

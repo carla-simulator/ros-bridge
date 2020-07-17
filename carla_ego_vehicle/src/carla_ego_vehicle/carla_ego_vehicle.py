@@ -377,6 +377,7 @@ class CarlaEgoVehicle(CompatibleNode):
         if self.player and self.player.is_alive:
             self.player.destroy()
         self.player = None
+        super(CarlaEgoVehicle, self).destroy()
 
     def run(self):
         """
@@ -432,13 +433,21 @@ def main():
         executor = rclpy.executors.MultiThreadedExecutor()
         init_node = rclpy.create_node("init_ego")
         init_node.create_subscription(CarlaStatus,
-                                      '/carla/status',
+                                      '/carla/world_info',
                                       run_ego_vehicle,
                                       1)
         executor.add_node(init_node)
         init_node.get_logger().info("Waiting for carla_bridge to start...")
-        executor.spin()
+        
+        try:
+            executor.spin()
+        except KeyboardInterrupt:
+            pass
+        
+        init_node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
     main()
+

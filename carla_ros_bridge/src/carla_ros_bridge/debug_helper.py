@@ -20,21 +20,21 @@ from ros_compatibility import CompatibleNode, destroy_subscription, euler_from_q
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
-class DebugHelper(CompatibleNode):
+class DebugHelper(object):
     """
     Helper to draw markers in CARLA
     """
 
-    def __init__(self, carla_debug_helper):
+    def __init__(self, carla_debug_helper, node):
         """
         Constructor
 
         :param carla_debug_helper: carla debug helper
         :type carla_debug_helper: carla.DebugHelper
         """
-        super(DebugHelper, self).__init__("debug_helper", rospy_init=False)
         self.debug = carla_debug_helper
-        self.marker_subscriber = self.create_subscriber(MarkerArray, "/carla/debug_marker",
+        self.node = node
+        self.marker_subscriber = self.node.create_subscriber(MarkerArray, "/carla/debug_marker",
                                                         self.on_marker)
 
     def destroy(self):
@@ -45,7 +45,7 @@ class DebugHelper(CompatibleNode):
 
         :return:
         """
-        self.logdebug("Destroy DebugHelper")
+        self.node.logdebug("Destroy DebugHelper")
         self.debug = None
         destroy_subscription(self.marker_subscriber)
         self.marker_subscriber = None
@@ -56,7 +56,7 @@ class DebugHelper(CompatibleNode):
         """
         for marker in marker_array.markers:
             if marker.header.frame_id != "map":
-                self.logwarn("Could not draw marker in frame '{}'. Only 'map' supported.".format(
+                self.node.logwarn("Could not draw marker in frame '{}'. Only 'map' supported.".format(
                     marker.header.frame_id))
                 continue
             lifetime = -1.
@@ -74,7 +74,7 @@ class DebugHelper(CompatibleNode):
             elif marker.type == Marker.CUBE:
                 self.draw_box(marker, lifetime, color)
             else:
-                self.logwarn(
+                self.node.logwarn(
                     "Marker type '{}' not supported.".format(marker.type))
 
     def draw_arrow(self, marker, lifetime, color):
@@ -83,7 +83,7 @@ class DebugHelper(CompatibleNode):
         """
         if marker.points:
             if not len(marker.points) == 2:
-                self.logwarn("Drawing arrow from points requires two points. Received {}".format(
+                self.node.logwarn("Drawing arrow from points requires two points. Received {}".format(
                     len(marker.points)))
                 return
             thickness = marker.scale.x
@@ -91,14 +91,14 @@ class DebugHelper(CompatibleNode):
             start = carla.Location(x=marker.points[0].x, y=-marker.points[0].y,
                                    z=marker.points[0].z)
             end = carla.Location(x=marker.points[1].x, y=-marker.points[1].y, z=marker.points[1].z)
-            self.loginfo("Draw Arrow from {} to {} (color: {}, lifetime: {}, "
+            self.node.loginfo("Draw Arrow from {} to {} (color: {}, lifetime: {}, "
                          "thickness: {}, arrow_size: {})".format(start, end, color, lifetime,
                                                                  thickness, arrow_size))
             self.debug.draw_arrow(start, end, thickness=thickness, arrow_size=arrow_size,
                                   color=color, life_time=lifetime)
 
         else:
-            self.logwarn("Drawing arrow from Position/Orientation not yet supported. "
+            self.node.logwarn("Drawing arrow from Position/Orientation not yet supported. "
                          "Please use points.")
 
     def draw_points(self, marker, lifetime, color):
@@ -108,7 +108,7 @@ class DebugHelper(CompatibleNode):
         for point in marker.points:
             location = carla.Location(x=point.x, y=-point.y, z=point.z)
             size = marker.scale.x
-            self.loginfo("Draw Point {} (color: {}, lifetime: {}, size: {})".format(
+            self.node.loginfo("Draw Point {} (color: {}, lifetime: {}, size: {})".format(
                 location, color, lifetime, size))
             self.debug.draw_point(location, size=size, color=color, life_time=lifetime)
 
@@ -117,7 +117,7 @@ class DebugHelper(CompatibleNode):
         draw lines from ros marker
         """
         if len(marker.points) < 2:
-            self.logwarn("Drawing line-strip requires at least two points. Received {}".format(
+            self.node.logwarn("Drawing line-strip requires at least two points. Received {}".format(
                 len(marker.points)))
             return
         last_point = None
@@ -126,7 +126,7 @@ class DebugHelper(CompatibleNode):
             if last_point:
                 start = carla.Location(x=last_point.x, y=-last_point.y, z=last_point.z)
                 end = carla.Location(x=point.x, y=-point.y, z=point.z)
-                self.loginfo("Draw Line from {} to {} (color: {}, lifetime: {}, "
+                self.node.loginfo("Draw Line from {} to {} (color: {}, lifetime: {}, "
                              "thickness: {})".format(start, end, color, lifetime, thickness))
                 self.debug.draw_line(start, end, thickness=thickness, color=color,
                                      life_time=lifetime)
@@ -152,6 +152,6 @@ class DebugHelper(CompatibleNode):
         rotation.roll = math.degrees(roll)
         rotation.pitch = math.degrees(pitch)
         rotation.yaw = -math.degrees(yaw)
-        self.loginfo("Draw Box {} (rotation: {}, color: {}, lifetime: {})".format(
+        self.node.loginfo("Draw Box {} (rotation: {}, color: {}, lifetime: {})".format(
             box, rotation, color, lifetime))
         self.debug.draw_box(box, rotation, thickness=0.1, color=color, life_time=lifetime)

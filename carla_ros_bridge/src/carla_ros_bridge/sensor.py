@@ -39,7 +39,7 @@ class Sensor(Actor, CompatibleNode):
             self,  # pylint: disable=too-many-arguments
             carla_actor,
             parent,
-            communication,
+            node,
             synchronous_mode,
             is_event_sensor=False,  # only relevant in synchronous_mode:
             # if a sensor only delivers data on special events,
@@ -54,8 +54,8 @@ class Sensor(Actor, CompatibleNode):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         :param prefix: the topic prefix to be used for this actor
@@ -65,7 +65,7 @@ class Sensor(Actor, CompatibleNode):
         """
         if prefix is None:
             prefix = 'sensor'
-        Actor.__init__(self, carla_actor=carla_actor, parent=parent, communication=communication,
+        Actor.__init__(self, carla_actor=carla_actor, parent=parent, node=node,
                        prefix=prefix)
         if sensor_name is None:
             sensor_name = "Sensor"
@@ -83,8 +83,8 @@ class Sensor(Actor, CompatibleNode):
         except (KeyError, ValueError):
             self.sensor_tick_time = None
 
-        if self.__class__.__name__ != "Sensor":
-            self.carla_actor.listen(self._callback_sensor_data)
+    def listen(self):
+        self.carla_actor.listen(self._callback_sensor_data)
 
     def destroy(self):
         """

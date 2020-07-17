@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 #
+# Copyright (c) 2018, Willow Garage, Inc.
 # Copyright (c) 2018-2019 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
@@ -40,7 +40,7 @@ class Lidar(Sensor):
     """
     # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Lidar"):
+    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="Lidar"):
         """
         Constructor
 
@@ -48,13 +48,17 @@ class Lidar(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         """
         super(Lidar, self).__init__(carla_actor=carla_actor, parent=parent,
-                                    communication=communication, synchronous_mode=synchronous_mode,
+                                    node=node, synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
+                                    
+        self.lidar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix() +
+                             "/point_cloud")
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -109,8 +113,7 @@ class Lidar(Sensor):
 
         # --
 
-        self.publish_message(self.get_topic_prefix() +
-                             "/point_cloud", point_cloud_msg)
+        self.lidar_publisher.publish(point_cloud_msg)
 
 
 # http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
