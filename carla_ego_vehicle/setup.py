@@ -2,6 +2,7 @@
 Setup for carla_ego_vehicle
 """
 import os
+from glob import glob
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
@@ -28,7 +29,8 @@ elif ROS_VERSION == 2:
              ['resource/' + package_name]),
             ('share/' + package_name, ['package.xml']),
             ('share/' + package_name + '/config',
-             ['config/settings.yaml', 'config/sensors.json'])
+             ['config/settings.yaml', 'config/sensors.json']),
+            (os.path.join('share', package_name), glob('launch/*.launch.py'))
         ],
         install_requires=['setuptools'],
         zip_safe=True,
@@ -39,7 +41,7 @@ elif ROS_VERSION == 2:
         tests_require=['pytest'],
         entry_points={
             'console_scripts': [
-                'ego_vehicle = src.carla_ego_vehicle.carla_ego_vehicle:main'
+                'carla_ego_vehicle = src.carla_ego_vehicle.carla_ego_vehicle:main'
             ],
         },
     )

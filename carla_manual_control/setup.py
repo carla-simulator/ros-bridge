@@ -2,6 +2,7 @@
 Setup for carla_manual_control
 """
 import os
+from glob import glob
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
@@ -23,6 +24,7 @@ elif ROS_VERSION == 2:
         data_files=[
             ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
             ('share/' + package_name, ['package.xml']),
+            (os.path.join('share', package_name), glob('launch/*.launch.py'))
         ],
         install_requires=['setuptools'],
         zip_safe=True,
@@ -32,7 +34,7 @@ elif ROS_VERSION == 2:
         license='MIT',
         tests_require=['pytest'],
         entry_points={
-            'console_scripts': ['manual_control = carla_manual_control.carla_manual_control:main'],
+            'console_scripts': ['carla_manual_control = carla_manual_control.carla_manual_control:main'],
         },
         package_dir={'': 'src'},
     )
