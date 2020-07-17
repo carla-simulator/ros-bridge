@@ -14,7 +14,7 @@ import os
 from abc import abstractmethod
 import numpy
 from cv_bridge import CvBridge  # pylint: disable=import-error
-from sensor_msgs.msg import CameraInfo  # pylint: disable=import-error
+from sensor_msgs.msg import CameraInfo, Image  # pylint: disable=import-error
 
 import carla
 import carla_common.transforms as trans
@@ -34,7 +34,7 @@ class Camera(Sensor):
     cv_bridge = CvBridge()
 
     # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None,
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None,
                  sensor_name="Camera"):
         """
         Constructor
@@ -43,15 +43,16 @@ class Camera(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
         if not prefix:
             prefix = 'camera'
+
         super(Camera, self).__init__(carla_actor=carla_actor, parent=parent,
-                                     communication=communication,
+                                     node=node,
                                      synchronous_mode=synchronous_mode,
                                      prefix=prefix, sensor_name=sensor_name)
 
@@ -62,6 +63,14 @@ class Camera(Sensor):
                              self.carla_actor.attributes))
         else:
             self._build_camera_info()
+            
+        self.camera_info_publisher = node.new_publisher(CameraInfo, self.get_topic_prefix() +
+                             '/camera_info')
+        self.camera_publisher = node.new_publisher(Image, self.get_topic_prefix() +
+                             '/' + self.get_image_topic_name())
+
+        self.listen()
+
 
     def _build_camera_info(self):
         """
@@ -115,10 +124,8 @@ class Camera(Sensor):
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() +
-                             '/camera_info', cam_info)
-        self.publish_message(self.get_topic_prefix() +
-                             '/' + self.get_image_topic_name(), img_msg)
+        self.camera_info_publisher.publish(cam_info)
+        self.camera_publisher.publish(img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """
@@ -177,7 +184,7 @@ class RgbCamera(Camera):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+    def __init__(self, carla_actor, parent, node, synchronous_mode,
                  sensor_name="RGBCamera"):
         """
         Constructor
@@ -186,13 +193,13 @@ class RgbCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(RgbCamera,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+              self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              synchronous_mode=synchronous_mode,
                              prefix='camera/rgb/' + carla_actor.attributes.get('role_name'),
                              sensor_name=sensor_name)
@@ -231,7 +238,7 @@ class DepthCamera(Camera):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+    def __init__(self, carla_actor, parent, node, synchronous_mode,
                  sensor_name="DepthCamera"):
         """
         Constructor
@@ -240,13 +247,13 @@ class DepthCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(DepthCamera,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+              self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              synchronous_mode=synchronous_mode,
                              prefix='camera/depth/' + carla_actor.attributes.get('role_name'),
                              sensor_name=sensor_name)
@@ -307,7 +314,7 @@ class SemanticSegmentationCamera(Camera):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, communication, synchronous_mode,
+    def __init__(self, carla_actor, parent, node, synchronous_mode,
                  sensor_name="SemanticSegmentationCamera"):
         """
         Constructor
@@ -316,13 +323,13 @@ class SemanticSegmentationCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(SemanticSegmentationCamera, self).__init__(
-            carla_actor=carla_actor, parent=parent, communication=communication,
+            carla_actor=carla_actor, parent=parent, node=node,
             synchronous_mode=synchronous_mode,
             prefix='camera/semantic_segmentation/' + carla_actor.attributes.get('role_name'),
             sensor_name=sensor_name)

@@ -23,7 +23,7 @@ class Walker(TrafficParticipant):
     Actor implementation details for pedestrians
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, node):
         """
         Constructor
 
@@ -31,8 +31,8 @@ class Walker(TrafficParticipant):
         :type carla_actor: carla.Walker
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
@@ -42,7 +42,7 @@ class Walker(TrafficParticipant):
             prefix = "walker/{:03}".format(carla_actor.id)
 
         super(Walker, self).__init__(carla_actor=carla_actor, parent=parent,
-                                     communication=communication, prefix=prefix)
+                                     node=node, prefix=prefix)
 
         self.control_subscriber = self.create_subscriber(
             CarlaWalkerControl,

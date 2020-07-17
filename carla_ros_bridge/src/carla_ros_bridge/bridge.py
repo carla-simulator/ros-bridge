@@ -23,7 +23,11 @@ from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
-from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription
+from rosgraph_msgs.msg import Clock
+from tf2_msgs.msg import TFMessage
+from visualization_msgs.msg import Marker  # pylint: disable=import-error
+
+from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription, ros_shutdown, ros_timestamp
 import carla
 
 from carla_ros_bridge.actor import Actor
@@ -77,6 +81,13 @@ class CarlaRosBridge(CompatibleNode):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
+        self.debug_helper = None
+        self.carla_weather_subscriber = None
+        self.update_lock = Lock()
+        self.carla_control_queue = queue.Queue()
+        self.on_tick_id = None
+        self.update_actor_thread = None
+        self.carla_settings = None
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
 
@@ -85,6 +96,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         Initialize the bridge
         """
+        self.ros_timestamp = None
         self.parameters = params
         self.actors = {}
         self.pseudo_actors = []
@@ -112,12 +124,12 @@ class CarlaRosBridge(CompatibleNode):
         carla_world.apply_settings(self.carla_settings)
 
         self.comm = Communication()
-        self.update_lock = Lock()
 
-        self.carla_control_queue = queue.Queue()
-
+        self.marker_publisher = self.new_publisher(Marker, '/carla/marker')
+        self.tf_publisher = self.new_publisher(TFMessage, 'tf')
         self.status_publisher = CarlaStatusPublisher(self.carla_settings.synchronous_mode,
-                                                     self.carla_settings.fixed_delta_seconds)
+                                                     self.carla_settings.fixed_delta_seconds,
+                                                     self)
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -159,17 +171,17 @@ class CarlaRosBridge(CompatibleNode):
                                    self.on_weather_changed, callback_group=self.callback_group)
 
         # add world info
-        self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, communication=self.comm))
+        self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, node=self))
 
         # add global object sensor
         self.pseudo_actors.append(
-            ObjectSensor(parent=None, communication=self.comm, actor_list=self.actors,
+            ObjectSensor(parent=None, node=self, actor_list=self.actors,
                          filtered_id=None))
-        self.debug_helper = DebugHelper(carla_world.debug)
+        self.debug_helper = DebugHelper(carla_world.debug, self)
 
         # add traffic light pseudo sensor
         self.pseudo_actors.append(
-            TrafficLightsSensor(parent=None, communication=self.comm, actor_list=self.actors))
+            TrafficLightsSensor(parent=None, node=self, actor_list=self.actors))
 
     def destroy(self):
         """
@@ -177,18 +189,20 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        self.shutdown("")
-        self.debug_helper.destroy()
+        if self.debug_helper:
+            self.debug_helper.destroy()
         self.shutdown.set()
-        destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
-        if not self.carla_settings.synchronous_mode:
-            if self.on_tick_id:
-                self.carla_world.remove_on_tick(self.on_tick_id)
-            self.update_actor_thread.join()
+        if self.carla_settings:
+            if not self.carla_settings.synchronous_mode:
+                if self.on_tick_id:
+                    self.carla_world.remove_on_tick(self.on_tick_id)
+                if self.update_actor_thread:
+                    self.update_actor_thread.join()
         self._update_actors(set())
 
         self.loginfo("Exiting Bridge")
+        super(CarlaRosBridge, self).destroy()
 
     def on_weather_changed(self, weather_parameters):
         """
@@ -257,11 +271,10 @@ class CarlaRosBridge(CompatibleNode):
             world_snapshot = self.carla_world.get_snapshot()
 
             self.status_publisher.set_frame(frame)
-            self.comm.update_clock(world_snapshot.timestamp)
+            self.update_clock(world_snapshot.timestamp)
             self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(frame))
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             self.logdebug("Waiting for sensor data finished.")
-            self.comm.send_msgs()
             self._update_actors(set([x.id for x in world_snapshot]))
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
@@ -291,10 +304,10 @@ class CarlaRosBridge(CompatibleNode):
             if self.update_lock.acquire(False):
                 if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
                     self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
-                    self.comm.update_clock(carla_snapshot.timestamp)
+                    self.update_clock(carla_snapshot.timestamp)
                     self.status_publisher.set_frame(carla_snapshot.frame)
+                    
                     self._update(carla_snapshot.frame, carla_snapshot.timestamp.elapsed_seconds)
-                    self.comm.send_msgs()
                 self.update_lock.release()
 
             # if possible push current snapshot to update-actors-thread
@@ -302,6 +315,20 @@ class CarlaRosBridge(CompatibleNode):
                 self.update_actors_queue.put_nowait(set([x.id for x in carla_snapshot]))
             except queue.Full:
                 pass
+
+    def update_clock(self, carla_timestamp):
+        """
+        perform the update of the clock
+
+        :param carla_timestamp: the current carla time
+        :type carla_timestamp: carla.Timestamp
+        :return:
+        """
+        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+        if ROS_VERSION == 1:
+            self.comm.publish_message('clock', Clock(self.ros_timestamp))
+        elif ROS_VERSION == 2:
+            self.comm.publish_message('clock', self.ros_timestamp)
 
     def _update_actors_thread(self):
         """
@@ -398,59 +425,59 @@ class CarlaRosBridge(CompatibleNode):
         pseudo_actors = []
         if carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
-                actor = TrafficLight(carla_actor, parent, self.comm)
+                actor = TrafficLight(carla_actor, parent, node=self)
             else:
-                actor = Traffic(carla_actor, parent, self.comm)
+                actor = Traffic(carla_actor, parent, node=self)
         elif carla_actor.type_id.startswith("vehicle"):
             if carla_actor.attributes.get('role_name') \
                     in self.parameters['ego_vehicle']['role_name']:
-                actor = EgoVehicle(carla_actor, parent, self.comm,
+                actor = EgoVehicle(carla_actor, parent, self,
                                    self._ego_vehicle_control_applied_callback)
                 pseudo_actors.append(
-                    ObjectSensor(parent=actor, communication=self.comm, actor_list=self.actors,
+                    ObjectSensor(parent=actor, node=self, actor_list=self.actors,
                                  filtered_id=carla_actor.id))
                 if ROS_VERSION == 2:
                     self.executor.add_node(actor)
             else:
-                actor = Vehicle(carla_actor, parent, self.comm)
+                actor = Vehicle(carla_actor, parent, self)
         elif carla_actor.type_id.startswith("sensor"):
             if carla_actor.type_id.startswith("sensor.camera"):
                 if carla_actor.type_id.startswith("sensor.camera.rgb"):
-                    actor = RgbCamera(carla_actor, parent, self.comm,
+                    actor = RgbCamera(carla_actor, parent, self,
                                       self.carla_settings.synchronous_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.depth"):
-                    actor = DepthCamera(carla_actor, parent, self.comm,
+                    actor = DepthCamera(carla_actor, parent, self,
                                         self.carla_settings.synchronous_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-                    actor = SemanticSegmentationCamera(carla_actor, parent, self.comm,
+                    actor = SemanticSegmentationCamera(carla_actor, parent, self,
                                                        self.carla_settings.synchronous_mode)
                 else:
-                    actor = Camera(carla_actor, parent, self.comm,
+                    actor = Camera(carla_actor, parent, self,
                                    self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Lidar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.radar"):
-                actor = Radar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Radar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
-                actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Gnss(carla_actor, parent, self, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
-                actor = ImuSensor(carla_actor, parent, self.comm,
+                actor = ImuSensor(carla_actor, parent, self,
                                   self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.collision"):
-                actor = CollisionSensor(carla_actor, parent, self.comm,
+                actor = CollisionSensor(carla_actor, parent, self,
                                         self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-                actor = LaneInvasionSensor(carla_actor, parent, self.comm,
+                actor = LaneInvasionSensor(carla_actor, parent, self,
                                            self.carla_settings.synchronous_mode)
             else:
-                actor = Sensor(carla_actor, parent, self.comm,
+                actor = Sensor(carla_actor, parent, self,
                                self.carla_settings.synchronous_mode)
         elif carla_actor.type_id.startswith("spectator"):
-            actor = Spectator(carla_actor, parent, self.comm)
+            actor = Spectator(carla_actor, parent, node=self)
         elif carla_actor.type_id.startswith("walker"):
-            actor = Walker(carla_actor, parent, self.comm)
+            actor = Walker(carla_actor, parent, node=self)
         else:
-            actor = Actor(carla_actor, parent, self.comm)
+            actor = Actor(carla_actor, parent, node=self)
 
         self.loginfo("Created {}(id={}, parent_id={},"
                      " type={}, prefix={}, attributes={})".format(actor.__class__.__name__,
@@ -470,31 +497,6 @@ class CarlaRosBridge(CompatibleNode):
                 self.pseudo_actors.append(pseudo_actor)
 
         return actor
-
-    def run(self, executor=None):
-        """
-        Run the bridge functionality.
-
-        Registers on shutdown callback at rospy and spins ROS.
-
-        :return:
-        """
-        if ROS_VERSION == 1:
-            rospy.on_shutdown(self.on_shutdown)
-            self.spin()
-        elif ROS_VERSION == 2:
-            rclpy.get_default_context().on_shutdown(self.on_shutdown)
-            executor.spin()
-
-    def on_shutdown(self):
-        """
-        Function to be called on shutdown.
-
-        This function is registered at rospy as shutdown handler.
-
-        """
-        self.loginfo("Shutdown requested")
-        self.destroy()
 
     def _update(self, frame_id, timestamp):
         """
@@ -527,6 +529,24 @@ class CarlaRosBridge(CompatibleNode):
             if not self._expected_ego_vehicle_control_command_ids:
                 self._all_vehicle_control_commands_received.set()
 
+    def publish_tf_message(self, msg):
+        """
+        Function to publish ROS TF message.
+        """
+        
+        # prepare tf message
+        tf_msg = None
+        tf_to_publish = []
+        tf_to_publish.append(msg)
+        if ROS_VERSION == 1:
+            tf_msg = TFMessage(tf_to_publish)
+        elif ROS_VERSION == 2:
+            tf_msg = TFMessage()
+            tf_msg.transforms = tf_to_publish
+        try:
+            self.tf_publisher.publish(tf_msg)
+        except Exception as error:  # pylint: disable=broad-except
+            self.logwarn("Failed to publish message: {}".format(error))
 
 def main():
     """
@@ -541,7 +561,6 @@ def main():
     if ROS_VERSION == 1:
         carla_bridge = CarlaRosBridge()
         # rospy.init_node('carla_ros_bridge', anonymous=True)
-        parameters = rospy.get_param('carla')
 
     elif ROS_VERSION == 2:
         rclpy.init(args=None)
@@ -550,19 +569,18 @@ def main():
         # init_node = rclpy.create_node("init_ros_bridge")
         executor.add_node(carla_bridge)
 
-        parameters['host'] = carla_bridge.get_param('carla.host', 'localhost')
-        parameters['port'] = carla_bridge.get_param('carla.port', 2000)
-        parameters['timeout'] = carla_bridge.get_param('carla.timeout', 2)
-        parameters['synchronous_mode'] = carla_bridge.get_param('carla.synchronous_mode', True)
-        parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
-            'carla.synchronous_mode_wait_for_vehicle_control_command', True)
-        parameters['fixed_delta_seconds'] = carla_bridge.get_param('carla.fixed_delta_seconds',
-                                                                   0.05)
-        role_name = carla_bridge.get_param('carla.ego_vehicle.role_name',
-                                           ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
-        parameters["ego_vehicle"] = {"role_name": role_name}
+    parameters['host'] = carla_bridge.get_param('host', 'localhost')
+    parameters['port'] = carla_bridge.get_param('port', 2000)
+    parameters['timeout'] = carla_bridge.get_param('timeout', 2)
+    parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', False)
+    parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
+        'carla.synchronous_mode_wait_for_vehicle_control_command', True)
+    parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
+                                                                0.05)
+    role_name = carla_bridge.get_param('ego_vehicle_role_name',
+                                        ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
+    parameters["ego_vehicle"] = {"role_name": role_name}
 
-    print(parameters)  # pylint: disable=superfluous-parens
     carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
         host=parameters['host'], port=parameters['port']))
 
@@ -573,15 +591,13 @@ def main():
         # check carla version
         dist = pkg_resources.get_distribution("carla")
         if LooseVersion(dist.version) < LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            carla_bridge.logfatal("CARLA python module version {} required. Found: {}".format(
-                CarlaRosBridge.CARLA_VERSION, dist.version))
-            sys.exit(1)
+            raise RuntimeError("CARLA Server version {} required. Found: {}".format(
+                CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
 
         if LooseVersion(carla_client.get_server_version()) < \
                 LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            carla_bridge.logfatal("CARLA Server version {} required. Found: {}".format(
+            raise RuntimeError("CARLA Server version {} required. Found: {}".format(
                 CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
-            sys.exit(1)
 
         carla_world = carla_client.get_world()
 
@@ -601,10 +617,18 @@ def main():
             carla_world.tick()
 
         carla_bridge.initialize_bridge(carla_client.get_world(), parameters)
-        carla_bridge.run(executor=executor)
+        
+        if ROS_VERSION == 1:
+            rospy.spin()
+        elif ROS_VERSION == 2:
+            executor.spin()
     except (IOError, RuntimeError) as e:
         carla_bridge.logerr("Error: {}".format(e))
+    except KeyboardInterrupt:
+        pass
     finally:
+        carla_bridge.destroy()
+        ros_shutdown()
         del carla_world
         del carla_client
 

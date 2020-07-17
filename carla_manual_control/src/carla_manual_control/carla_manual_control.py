@@ -36,7 +36,7 @@ from carla_msgs.msg import CarlaCollisionEvent
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Bool
-from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion
+from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion, ros_ok
 import os
 import datetime
 import math
@@ -725,7 +725,7 @@ def main(args=None):
             thread = Thread(target=run, args=(executer,))
             thread.start()
 
-        while not_shutdown():
+        while ros_ok():
             clock.tick_busy_loop(60)
             if controller.parse_events(clock):
                 return
@@ -739,14 +739,6 @@ def main(args=None):
             if ROS_VERSION == 2:
                 thread.join()
         pygame.quit()
-
-
-def not_shutdown():
-    if ROS_VERSION == 1:
-        return not rospy.core.is_shutdown()
-    elif ROS_VERSION == 2:
-        return rclpy.ok()
-
 
 if __name__ == '__main__':
     main()

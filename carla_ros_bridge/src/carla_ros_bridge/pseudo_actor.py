@@ -13,7 +13,7 @@ import os
 
 from std_msgs.msg import Header  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, ros_timestamp
+from ros_compatibility import CompatibleNode, ros_timestamp, QoSProfile, latch_on
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -21,22 +21,23 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class PseudoActor(CompatibleNode):
+class PseudoActor(object):
     """
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
 
     # pylint: disable=super-init-not-called
-    def __init__(self, parent, communication, prefix=None):
+    def __init__(self, parent, node, prefix=None):
         """
         Constructor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.PseudoActor
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         """
+        self.pub ={}#TODO
 
         self.parent = parent
         if self.parent:
@@ -44,7 +45,7 @@ class PseudoActor(CompatibleNode):
         else:
             self.parent_id = None
 
-        self.communication = communication
+        self.node = node
 
         # Concatenate the onw prefix to the the parent topic name if not empty.
         self.prefix = ""
@@ -61,13 +62,6 @@ class PseudoActor(CompatibleNode):
         :return:
         """
         self.parent = None
-        self.communication = None
-
-    def publish_message(self, topic, msg, is_latched=False):
-        """
-        hand message over to communication layer
-        """
-        return self.communication.publish_message(topic, msg, is_latched)
 
     def get_msg_header(self, frame_id=None, timestamp=None):
         """
@@ -80,10 +74,11 @@ class PseudoActor(CompatibleNode):
             header.frame_id = frame_id
         else:
             header.frame_id = self.get_prefix()
+
         if timestamp:
             header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         else:
-            header.stamp = self.communication.get_current_ros_time()
+            header.stamp = self.node.ros_timestamp
         return header
 
     def get_parent_id(self):

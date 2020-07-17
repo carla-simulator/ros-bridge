@@ -21,7 +21,7 @@ class Traffic(Actor):
     Actor implementation details for traffic objects
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, node):
         """
         Constructor
 
@@ -29,11 +29,11 @@ class Traffic(Actor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         """
         super(Traffic, self).__init__(carla_actor=carla_actor, parent=parent,
-                                      communication=communication, prefix='traffic')
+                                      node=node, prefix='traffic')
 
 
 class TrafficLight(Actor):
@@ -41,7 +41,7 @@ class TrafficLight(Actor):
     Traffic implementation details for traffic lights
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, node):
         """
         Constructor
 
@@ -49,11 +49,11 @@ class TrafficLight(Actor):
         :type carla_actor: carla.TrafficLight
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         """
         super(TrafficLight,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+              self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              prefix='traffic.traffic_light')
 
     def get_status(self):

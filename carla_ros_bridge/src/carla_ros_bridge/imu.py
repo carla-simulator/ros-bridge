@@ -25,7 +25,7 @@ class ImuSensor(Sensor):
     """
     # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="IMU"):
+    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="IMU"):
         """
         Constructor
 
@@ -33,16 +33,18 @@ class ImuSensor(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(ImuSensor,
-              self).__init__(carla_actor=carla_actor, parent=parent, communication=communication,
+              self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              synchronous_mode=synchronous_mode,
                              prefix="imu/" + carla_actor.attributes.get('role_name'),
                              sensor_name=sensor_name)
+        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix())
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):
@@ -70,5 +72,4 @@ class ImuSensor(Sensor):
 
         quat = trans.carla_rotation_to_numpy_quaternion(imu_rotation)
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
-        self.publish_message(
-            self.get_topic_prefix(), imu_msg)
+        self.imu_publisher.publish(imu_msg)

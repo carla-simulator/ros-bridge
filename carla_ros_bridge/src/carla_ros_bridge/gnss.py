@@ -20,7 +20,7 @@ class Gnss(Sensor):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="GNSS"):
+    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="GNSS"):
         """
         Constructor
 
@@ -28,15 +28,16 @@ class Gnss(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(Gnss, self).__init__(carla_actor=carla_actor, parent=parent,
-                                   communication=communication, synchronous_mode=synchronous_mode,
+                                   node=node, synchronous_mode=synchronous_mode,
                                    prefix="gnss/" + carla_actor.attributes.get('role_name'),
                                    sensor_name=sensor_name)
+        self.gnss_publisher = node.new_publisher(NavSatFix, self.get_topic_prefix() + "/fix")
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):
@@ -51,4 +52,4 @@ class Gnss(Sensor):
         navsatfix_msg.latitude = carla_gnss_measurement.latitude
         navsatfix_msg.longitude = carla_gnss_measurement.longitude
         navsatfix_msg.altitude = carla_gnss_measurement.altitude
-        self.publish_message(self.get_topic_prefix() + "/fix", navsatfix_msg)
+        self.gnss_publisher.publish(navsatfix_msg)

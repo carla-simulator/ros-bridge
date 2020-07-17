@@ -21,22 +21,24 @@ class Radar(Sensor):
     """
     # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, sensor_name="Radar"):
+    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="Radar"):
         """
         Constructor
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: CompatibleNode
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(Radar, self).__init__(carla_actor=carla_actor, parent=parent,
-                                    communication=communication, synchronous_mode=synchronous_mode,
+                                    node=node, synchronous_mode=synchronous_mode,
                                     prefix="radar/" + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
+        self.radar_publisher = node.new_publisher(CarlaRadarMeasurement, self.get_topic_prefix() + "/radar")
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):
@@ -55,4 +57,4 @@ class Radar(Sensor):
             radar_detection.depth = detection.depth
             radar_detection.velocity = detection.velocity
             radar_msg.detections.append(radar_detection)
-        self.publish_message(self.get_topic_prefix() + "/radar", radar_msg)
+        self.radar_publisher.publish(radar_msg)
