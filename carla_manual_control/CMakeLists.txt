@@ -26,11 +26,8 @@ elseif(${ROS_VERSION} EQUAL 2)
   find_package(rclpy REQUIRED)
   ament_export_dependencies(rclpy)
 
-    # Install launch files.
-    install(DIRECTORY
-    launch
-    DESTINATION share/${PROJECT_NAME}/
-    )
+  # Install launch files.
+  install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
 
   ament_package()
 
