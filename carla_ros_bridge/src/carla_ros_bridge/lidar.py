@@ -28,7 +28,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     # pylint: disable=import-error,ungrouped-imports
-    from sensor_msgs.point_cloud2 import create_cloud_xyz32
+    from sensor_msgs.point_cloud2 import create_cloud
 
 _DATATYPES = {}
 _DATATYPES[PointField.FLOAT32] = ('f', 4)
@@ -56,27 +56,6 @@ class Lidar(Sensor):
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
 
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function (override) to modify the tf messages sent by this lidar.
-
-        The lidar transformation has to be altered:
-        for some reasons lidar sends already a rotated cloud,
-        so herein, we need to ignore pitch and roll
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Lidar, self).get_ros_transform(transform, frame_id, child_frame_id)
-
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        dummy_roll, dummy_pitch, yaw = euler_from_quaternion(quat)
-        # set roll and pitch to zero
-        quat = quaternion_from_euler(0, 0, yaw)
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(quat)
-        return tf_msg
-
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -87,64 +66,46 @@ class Lidar(Sensor):
         """
         header = self.get_msg_header()
 
-        lidar_data = numpy.frombuffer(carla_lidar_measurement.raw_data, dtype=numpy.float32)
-        lidar_data = numpy.reshape(lidar_data, (int(lidar_data.shape[0] / 3), 3))
-
-        # we take the oposite of y axis
+        lidar_data = numpy.fromstring(
+            bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
+        lidar_data = numpy.reshape(
+            lidar_data, (int(lidar_data.shape[0] / 4), 4))
+        # we take the opposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
-        # we need a copy here, because the data are read only in carla numpy
-        # array
-        lidar_data = -lidar_data
-        # we also need to permute x and y
-        lidar_data = lidar_data[..., [1, 0, 2]]
+        lidar_data[:, 1] *= -1
+
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+        ]
 
         if ROS_VERSION == 1:
-            point_cloud_msg = create_cloud_xyz32(header, lidar_data)
+            point_cloud_msg = create_cloud(header, fields, lidar_data)
 
         # -- taken from
         # http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
         elif ROS_VERSION == 2:
-            point_field_x_msg = PointField()
-            point_field_x_msg.name = "x"
-            point_field_x_msg.offset = 0
-            point_field_x_msg.datatype = PointField.FLOAT32
-            point_field_x_msg.count = 1
-
-            point_field_y_msg = PointField()
-            point_field_y_msg.name = "y"
-            point_field_y_msg.offset = 4
-            point_field_y_msg.datatype = PointField.FLOAT32
-            point_field_y_msg.count = 1
-
-            point_field_z_msg = PointField()
-            point_field_z_msg.name = "z"
-            point_field_z_msg.offset = 8
-            point_field_z_msg.datatype = PointField.FLOAT32
-            point_field_z_msg.count = 1
-
-            fields = [point_field_x_msg, point_field_y_msg, point_field_z_msg]
-
             cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
-            buff = ctypes.create_string_buffer(
-                cloud_struct.size * len(lidar_data))
+
+            buff = ctypes.create_string_buffer(cloud_struct.size * len(lidar_data))
 
             point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
-
             offset = 0
-            for pt in lidar_data:
-                pack_into(buff, offset, *pt)
+            for p in lidar_data:
+                pack_into(buff, offset, *p)
                 offset += point_step
 
-            point_cloud_msg = PointCloud2()
-            point_cloud_msg.header = header
-            point_cloud_msg.height = 1
-            point_cloud_msg.width = len(lidar_data)
-            point_cloud_msg.is_dense = False
-            point_cloud_msg.is_bigendian = False
-            point_cloud_msg.fields = fields
-            point_cloud_msg.point_step = cloud_struct.size
-            point_cloud_msg.row_step = cloud_struct.size * len(lidar_data)
-            point_cloud_msg.data = buff.raw
+            point_cloud_msg = PointCloud2(header=header,
+                                          height=1,
+                                          width=len(lidar_data),
+                                          is_dense=False,
+                                          is_bigendian=False,
+                                          fields=fields,
+                                          point_step=cloud_struct.size,
+                                          row_step=cloud_struct.size * len(lidar_data),
+                                          data=buff.raw)
 
         # --
 

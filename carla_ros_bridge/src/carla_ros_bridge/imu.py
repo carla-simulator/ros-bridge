@@ -55,18 +55,20 @@ class ImuSensor(Sensor):
         imu_msg = Imu()
         imu_msg.header = self.get_msg_header(timestamp=carla_imu_measurement.timestamp)
 
-        imu_msg.angular_velocity.x = carla_imu_measurement.gyroscope.x
+        # Carla uses a left-handed coordinate convention (X forward, Y right, Z up).
+        # Here, these measurements are converted to the right-handed ROS convention
+        #  (X forward, Y left, Z up).
+        imu_msg.angular_velocity.x = -carla_imu_measurement.gyroscope.x
         imu_msg.angular_velocity.y = carla_imu_measurement.gyroscope.y
-        imu_msg.angular_velocity.z = carla_imu_measurement.gyroscope.z
+        imu_msg.angular_velocity.z = -carla_imu_measurement.gyroscope.z
 
         imu_msg.linear_acceleration.x = carla_imu_measurement.accelerometer.x
-        imu_msg.linear_acceleration.y = carla_imu_measurement.accelerometer.y
+        imu_msg.linear_acceleration.y = -carla_imu_measurement.accelerometer.y
         imu_msg.linear_acceleration.z = carla_imu_measurement.accelerometer.z
 
         imu_rotation = carla_imu_measurement.transform.rotation
 
-        quat = quaternion_from_euler(math.radians(imu_rotation.roll),
-                                     math.radians(imu_rotation.pitch),
-                                     math.radians(imu_rotation.yaw))
+        quat = trans.carla_rotation_to_numpy_quaternion(imu_rotation)
         imu_msg.orientation = trans.numpy_quaternion_to_ros_quaternion(quat)
-        self.publish_message(self.get_topic_prefix(), imu_msg)
+        self.publish_message(
+            self.get_topic_prefix(), imu_msg)

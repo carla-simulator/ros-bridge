@@ -4,7 +4,19 @@ This is a wrapper to execute OpenScenarios with the CARLA [scenario runner](http
 
 It is best used from within the [rviz_carla_plugin](../rviz_carla_plugin).
 
-Currently it is not supported to switch the Carla Town. Therefore the scenario needs to use the currently active Town.
+Currently it is not supported to switch the CARLA Town. Therefore the scenario needs to use the currently active Town.
+
+Please have a look at the [example scenario](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ad_demo/config/FollowLeadingVehicle.xosc), especially at the way the ros-controller is set up.
+
+    <Controller name="EgoVehicleAgent">
+        <Properties>
+            <Property name="module" value="carla_ros_scenario_runner.ros_vehicle_control" />
+            <Property name="launch" value="carla_ad_agent.launch"/>
+            <Property name="launch-package" value="carla_ad_agent"/>
+        </Properties>
+    </Controller>
+
+By this section within the openscenario definition, an instance of `carla_ad_agent` is launched (i.e. `roslaunch <launch-package> <launch> ..` is executed). Any aditional `<Property>` is appened as ros parameter (name:=value).
 
 ## Setup
 
@@ -42,4 +54,6 @@ To run a scenario from commandline:
 | Topic                                 | Description | Type                                                                 |
 | ------------------------------------- | ----------- | -------------------------------------------------------------------- |
 | `/scenario_runner/status`     | The current status of the scenario runner execution (e.g. used by the [rviz_carla_plugin](../rviz_carla_plugin)) | [carla_ros_scenario_runner_types.CarlaScenarioRunnerStatus](../carla_ros_scenario_runner_types/msg/CarlaScenarioRunnerStatus.msg) |
+
+
 

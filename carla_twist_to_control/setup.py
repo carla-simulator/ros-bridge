@@ -26,7 +26,7 @@ elif ROS_VERSION == 2:
         packages=[package_name],
         data_files=[('share/ament_index/resource_index/packages', ['resource/' + package_name]),
                     ('share/' + package_name, ['package.xml']),
-        ],
+                    ],
         install_requires=['setuptools'],
         zip_safe=True,
         maintainer='CARLA Simulator Team',

@@ -27,6 +27,16 @@ Use ARROWS or WASD keys for control.
 """
 
 from __future__ import print_function
+from carla_msgs.msg import CarlaStatus
+from carla_msgs.msg import CarlaEgoVehicleInfo
+from carla_msgs.msg import CarlaEgoVehicleStatus
+from carla_msgs.msg import CarlaEgoVehicleControl
+from carla_msgs.msg import CarlaLaneInvasionEvent
+from carla_msgs.msg import CarlaCollisionEvent
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import NavSatFix
+from std_msgs.msg import Bool
+from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion
 import os
 import datetime
 import math
@@ -56,18 +66,6 @@ elif ROS_VERSION == 2:
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
-from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion
-
-
-from std_msgs.msg import Bool
-from sensor_msgs.msg import NavSatFix
-from sensor_msgs.msg import Image
-from carla_msgs.msg import CarlaCollisionEvent
-from carla_msgs.msg import CarlaLaneInvasionEvent
-from carla_msgs.msg import CarlaEgoVehicleControl
-from carla_msgs.msg import CarlaEgoVehicleStatus
-from carla_msgs.msg import CarlaEgoVehicleInfo
-from carla_msgs.msg import CarlaStatus
 
 try:
     import pygame
@@ -390,7 +388,7 @@ class HUD(CompatibleNode):
 
         self.gnss_subscriber = self.create_subscriber(
             NavSatFix, "/carla/{}/gnss/gnss1/fix".format(self.role_name), self.gnss_updated,
-                                                        callback_group=self.callback_group)
+            callback_group=self.callback_group)
 
         self.manual_control_subscriber = self.create_subscriber(
             Bool, "/carla/{}/vehicle_control_manual_override".format(self.role_name),
@@ -573,7 +571,7 @@ class HUD(CompatibleNode):
                 if isinstance(item, list):
                     if len(item) > 1:
                         points = [(x + 8, v_offset + 8 + (1.0 - y) * 30) for x, y in enumerate(item)
-                                 ]
+                                  ]
                         pygame.draw.lines(display, (255, 136, 0), False, points, 2)
                     item = None
                     v_offset += 18
