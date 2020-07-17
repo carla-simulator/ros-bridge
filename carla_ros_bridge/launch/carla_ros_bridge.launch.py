@@ -38,7 +38,8 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='ego_vehicle_role_names',
-            default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2", "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]
+            default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2",
+                           "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]
         ),
         launch_ros.actions.Node(
             package='carla_ros_bridge',
