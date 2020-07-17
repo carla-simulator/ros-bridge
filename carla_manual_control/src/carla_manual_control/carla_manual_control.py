@@ -394,7 +394,6 @@ class HUD(CompatibleNode):
             self.manual_control_override_updated, callback_group=self.callback_group)
 
         self.carla_status = CarlaStatus()
-        self.start_frame = None
         self.status_subscriber = self.create_subscriber(CarlaStatus, "/carla/status",
                                                         self.carla_status_updated,
                                                         callback_group=self.callback_group)
@@ -428,8 +427,6 @@ class HUD(CompatibleNode):
         Callback on carla status
         """
         self.carla_status = data
-        if self.start_frame is None:
-            self.start_frame = self.carla_status.frame
         self.update_info_text()
 
     def manual_control_override_updated(self, data):
@@ -500,16 +497,15 @@ class HUD(CompatibleNode):
         fps = 0
 
         if ROS_VERSION == 1:
-            time = int(rospy.get_rostime().to_sec())
+            time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
         elif ROS_VERSION == 2:
-            time = float((self.carla_status.frame - self.start_frame) *
-                         self.carla_status.fixed_delta_seconds)
+            time = str(datetime.timedelta(seconds=float(self.get_clock().now().nanoseconds)/10**9))[:10]
 
         if self.carla_status.fixed_delta_seconds:
             fps = 1 / self.carla_status.fixed_delta_seconds
         self._info_text = [
             'Frame: % 22s' % self.carla_status.frame,
-            'Simulation time: % 12s' % datetime.timedelta(seconds=time),
+            'Simulation time: % 12s' % time,
             'FPS: % 24.1f' % fps, '',
             'Vehicle: % 20s' % ' '.join(self.vehicle_info.type.title().split('.')[1:]),
             'Speed:   % 15.0f km/h' % (3.6 * self.vehicle_status.velocity),

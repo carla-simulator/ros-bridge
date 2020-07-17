@@ -23,15 +23,14 @@ from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
-from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
 from visualization_msgs.msg import Marker  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription, ros_shutdown, ros_timestamp
+from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription, ros_shutdown, ros_timestamp, QoSProfile, latch_on
 import carla
 
+
 from carla_ros_bridge.actor import Actor
-from carla_ros_bridge.communication import Communication
 from carla_ros_bridge.sensor import Sensor
 
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
@@ -56,11 +55,13 @@ from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWe
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
+from rosgraph_msgs.msg import Clock
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error
 elif ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
+    from builtin_interfaces.msg import Time
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
@@ -88,6 +89,9 @@ class CarlaRosBridge(CompatibleNode):
         self.on_tick_id = None
         self.update_actor_thread = None
         self.carla_settings = None
+        self.shutdown = None
+        self.actors = {}
+        self.pseudo_actors = []
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
 
@@ -96,15 +100,14 @@ class CarlaRosBridge(CompatibleNode):
         """
         Initialize the bridge
         """
-        self.ros_timestamp = None
         self.parameters = params
-        self.actors = {}
-        self.pseudo_actors = []
         self.carla_world = carla_world
 
         if ROS_VERSION == 1:
+            self.ros_timestamp = 0
             self.callback_group = None
         elif ROS_VERSION == 2:
+            self.ros_timestamp = Time()
             self.callback_group = ReentrantCallbackGroup()
 
         self.synchronous_mode_update_thread = None
@@ -123,10 +126,13 @@ class CarlaRosBridge(CompatibleNode):
         self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
         carla_world.apply_settings(self.carla_settings)
 
-        self.comm = Communication()
-
         self.marker_publisher = self.new_publisher(Marker, '/carla/marker')
         self.tf_publisher = self.new_publisher(TFMessage, 'tf')
+        if ROS_VERSION == 1:
+            self.clock_publisher = self.new_publisher(Clock, 'clock')
+        elif ROS_VERSION == 2:
+            self.clock_publisher = self.new_publisher(Clock, 'clock')
+        self.actor_list_publisher = self.new_publisher(CarlaActorList, "/carla/actor_list", qos_profile=QoSProfile(depth=10, durability=latch_on))
         self.status_publisher = CarlaStatusPublisher(self.carla_settings.synchronous_mode,
                                                      self.carla_settings.fixed_delta_seconds,
                                                      self)
@@ -191,7 +197,8 @@ class CarlaRosBridge(CompatibleNode):
         """
         if self.debug_helper:
             self.debug_helper.destroy()
-        self.shutdown.set()
+        if self.shutdown:
+            self.shutdown.set()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if self.carla_settings:
             if not self.carla_settings.synchronous_mode:
@@ -326,9 +333,9 @@ class CarlaRosBridge(CompatibleNode):
         """
         self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
         if ROS_VERSION == 1:
-            self.comm.publish_message('clock', Clock(self.ros_timestamp))
+            self.clock_publisher.publish(Clock(self.ros_timestamp))
         elif ROS_VERSION == 2:
-            self.comm.publish_message('clock', self.ros_timestamp)
+            self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
 
     def _update_actors_thread(self):
         """
@@ -408,7 +415,7 @@ class CarlaRosBridge(CompatibleNode):
 
             ros_actor_list.actors.append(ros_actor)
 
-        self.comm.publish_message("/carla/actor_list", ros_actor_list, is_latched=True)
+        self.actor_list_publisher.publish(ros_actor_list)
 
     def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
         """

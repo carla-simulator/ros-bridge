@@ -432,7 +432,7 @@ def main():
         rclpy.init(args=None)
         executor = rclpy.executors.MultiThreadedExecutor()
         init_node = rclpy.create_node("init_ego")
-        init_node.create_subscription(CarlaStatus,
+        init_node.create_subscription(CarlaWorldInfo,
                                       '/carla/world_info',
                                       run_ego_vehicle,
                                       1)
