@@ -55,7 +55,6 @@ if ROS_VERSION == 1:
 elif ROS_VERSION == 2:
     import rclpy
     from rclpy.callback_groups import ReentrantCallbackGroup
-    import transformations as tf
     from tf2_ros import LookupException
     from tf2_ros import ConnectivityException
     from tf2_ros import ExtrapolationException
