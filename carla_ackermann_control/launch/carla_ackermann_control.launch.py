@@ -13,7 +13,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_ackermann_control',
-            executable='carla_ackermann_control_node.py',
+            node_executable='carla_ackermann_control_node',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
             parameters=[
