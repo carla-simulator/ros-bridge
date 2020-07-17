@@ -35,7 +35,7 @@ class DebugHelper(object):
         self.debug = carla_debug_helper
         self.node = node
         self.marker_subscriber = self.node.create_subscriber(MarkerArray, "/carla/debug_marker",
-                                                        self.on_marker)
+                                                             self.on_marker)
 
     def destroy(self):
         """
@@ -92,14 +92,14 @@ class DebugHelper(object):
                                    z=marker.points[0].z)
             end = carla.Location(x=marker.points[1].x, y=-marker.points[1].y, z=marker.points[1].z)
             self.node.loginfo("Draw Arrow from {} to {} (color: {}, lifetime: {}, "
-                         "thickness: {}, arrow_size: {})".format(start, end, color, lifetime,
-                                                                 thickness, arrow_size))
+                              "thickness: {}, arrow_size: {})".format(start, end, color, lifetime,
+                                                                      thickness, arrow_size))
             self.debug.draw_arrow(start, end, thickness=thickness, arrow_size=arrow_size,
                                   color=color, life_time=lifetime)
 
         else:
             self.node.logwarn("Drawing arrow from Position/Orientation not yet supported. "
-                         "Please use points.")
+                              "Please use points.")
 
     def draw_points(self, marker, lifetime, color):
         """
@@ -127,7 +127,7 @@ class DebugHelper(object):
                 start = carla.Location(x=last_point.x, y=-last_point.y, z=last_point.z)
                 end = carla.Location(x=point.x, y=-point.y, z=point.z)
                 self.node.loginfo("Draw Line from {} to {} (color: {}, lifetime: {}, "
-                             "thickness: {})".format(start, end, color, lifetime, thickness))
+                                  "thickness: {})".format(start, end, color, lifetime, thickness))
                 self.debug.draw_line(start, end, thickness=thickness, color=color,
                                      life_time=lifetime)
             last_point = point

@@ -38,7 +38,8 @@ class TrafficParticipant(Actor):
         self.classification_age = 0
         super(TrafficParticipant, self).__init__(carla_actor=carla_actor, parent=parent,
                                                  node=node, prefix=prefix)
-        self.odometry_publisher = node.new_publisher(Odometry, self.get_topic_prefix() + "/odometry")
+        self.odometry_publisher = node.new_publisher(
+            Odometry, self.get_topic_prefix() + "/odometry")
 
     def update(self, frame, timestamp):
         """

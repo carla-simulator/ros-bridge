@@ -38,7 +38,7 @@ class CollisionSensor(Sensor):
               self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              synchronous_mode=synchronous_mode, is_event_sensor=True,
                              prefix="collision", sensor_name=sensor_name)
-                             
+
         self.collision_publisher = node.new_publisher(CarlaCollisionEvent, self.get_topic_prefix())
         self.listen()
 

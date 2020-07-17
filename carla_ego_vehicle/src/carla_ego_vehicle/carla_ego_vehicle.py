@@ -438,16 +438,15 @@ def main():
                                       1)
         executor.add_node(init_node)
         init_node.get_logger().info("Waiting for carla_bridge to start...")
-        
+
         try:
             executor.spin()
         except KeyboardInterrupt:
             pass
-        
+
         init_node.destroy_node()
         rclpy.shutdown()
 
 
 if __name__ == '__main__':
     main()
-

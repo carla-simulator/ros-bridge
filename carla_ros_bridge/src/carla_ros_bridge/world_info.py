@@ -15,6 +15,7 @@ from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from ros_compatibility import QoSProfile, latch_on
 
+
 class WorldInfo(PseudoActor):
     """
     Publish the map
@@ -35,8 +36,9 @@ class WorldInfo(PseudoActor):
 
         self.carla_map = carla_world.get_map()
 
-        self.world_info_publisher = node.new_publisher(CarlaWorldInfo, self.get_topic_prefix(), qos_profile=QoSProfile(depth=10, durability=latch_on))
-       
+        self.world_info_publisher = node.new_publisher(
+            CarlaWorldInfo, self.get_topic_prefix(), qos_profile=QoSProfile(depth=10, durability=latch_on))
+
         self.map_published = False
 
     def destroy(self):

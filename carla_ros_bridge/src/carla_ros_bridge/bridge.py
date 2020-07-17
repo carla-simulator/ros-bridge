@@ -13,7 +13,8 @@ Class that handle communication between CARLA and ROS
 
 
 try:
-    import queue
+from rosgraph_msgs.msg import Clock
+import queue
 except ImportError:
     import Queue as queue
 
@@ -55,7 +56,6 @@ from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWe
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-from rosgraph_msgs.msg import Clock
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error
 elif ROS_VERSION == 2:
@@ -132,7 +132,8 @@ class CarlaRosBridge(CompatibleNode):
             self.clock_publisher = self.new_publisher(Clock, 'clock')
         elif ROS_VERSION == 2:
             self.clock_publisher = self.new_publisher(Clock, 'clock')
-        self.actor_list_publisher = self.new_publisher(CarlaActorList, "/carla/actor_list", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.actor_list_publisher = self.new_publisher(
+            CarlaActorList, "/carla/actor_list", qos_profile=QoSProfile(depth=10, durability=latch_on))
         self.status_publisher = CarlaStatusPublisher(self.carla_settings.synchronous_mode,
                                                      self.carla_settings.fixed_delta_seconds,
                                                      self)
@@ -313,7 +314,7 @@ class CarlaRosBridge(CompatibleNode):
                     self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
                     self.update_clock(carla_snapshot.timestamp)
                     self.status_publisher.set_frame(carla_snapshot.frame)
-                    
+
                     self._update(carla_snapshot.frame, carla_snapshot.timestamp.elapsed_seconds)
                 self.update_lock.release()
 
@@ -540,7 +541,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         Function to publish ROS TF message.
         """
-        
+
         # prepare tf message
         tf_msg = None
         tf_to_publish = []
@@ -554,6 +555,7 @@ class CarlaRosBridge(CompatibleNode):
             self.tf_publisher.publish(tf_msg)
         except Exception as error:  # pylint: disable=broad-except
             self.logwarn("Failed to publish message: {}".format(error))
+
 
 def main():
     """
@@ -583,9 +585,9 @@ def main():
     parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
         'carla.synchronous_mode_wait_for_vehicle_control_command', True)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
-                                                                0.05)
+                                                               0.05)
     role_name = carla_bridge.get_param('ego_vehicle_role_name',
-                                        ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
+                                       ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
     parameters["ego_vehicle"] = {"role_name": role_name}
 
     carla_bridge.loginfo("Trying to connect to {host}:{port}".format(
@@ -624,7 +626,7 @@ def main():
             carla_world.tick()
 
         carla_bridge.initialize_bridge(carla_client.get_world(), parameters)
-        
+
         if ROS_VERSION == 1:
             rospy.spin()
         elif ROS_VERSION == 2:

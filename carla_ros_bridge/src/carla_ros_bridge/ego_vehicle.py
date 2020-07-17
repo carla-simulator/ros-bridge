@@ -52,8 +52,10 @@ class EgoVehicle(Vehicle, CompatibleNode):
         """
         Vehicle.__init__(self, carla_actor=carla_actor, parent=parent, node=node,
                          prefix=carla_actor.attributes.get('role_name'))
-        self.vehicle_status_publisher = node.new_publisher(CarlaEgoVehicleStatus, self.get_topic_prefix() + "/vehicle_status")
-        self.vehicle_info_publisher = node.new_publisher(CarlaEgoVehicleInfo, self.get_topic_prefix() + "/vehicle_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.vehicle_status_publisher = node.new_publisher(
+            CarlaEgoVehicleStatus, self.get_topic_prefix() + "/vehicle_status")
+        self.vehicle_info_publisher = node.new_publisher(CarlaEgoVehicleInfo, self.get_topic_prefix(
+        ) + "/vehicle_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
 
         if ROS_VERSION == 1:
             self.callback_group = None

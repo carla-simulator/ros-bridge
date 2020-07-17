@@ -55,9 +55,9 @@ class Lidar(Sensor):
                                     node=node, synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
-                                    
+
         self.lidar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix() +
-                             "/point_cloud")
+                                                  "/point_cloud")
         self.listen()
 
     # pylint: disable=arguments-differ

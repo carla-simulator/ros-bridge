@@ -63,14 +63,13 @@ class Camera(Sensor):
                              self.carla_actor.attributes))
         else:
             self._build_camera_info()
-            
+
         self.camera_info_publisher = node.new_publisher(CameraInfo, self.get_topic_prefix() +
-                             '/camera_info')
+                                                        '/camera_info')
         self.camera_publisher = node.new_publisher(Image, self.get_topic_prefix() +
-                             '/' + self.get_image_topic_name())
+                                                   '/' + self.get_image_topic_name())
 
         self.listen()
-
 
     def _build_camera_info(self):
         """

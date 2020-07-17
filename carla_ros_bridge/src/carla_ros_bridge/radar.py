@@ -37,7 +37,8 @@ class Radar(Sensor):
                                     node=node, synchronous_mode=synchronous_mode,
                                     prefix="radar/" + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
-        self.radar_publisher = node.new_publisher(CarlaRadarMeasurement, self.get_topic_prefix() + "/radar")
+        self.radar_publisher = node.new_publisher(
+            CarlaRadarMeasurement, self.get_topic_prefix() + "/radar")
         self.listen()
 
     # pylint: disable=arguments-differ

@@ -16,6 +16,7 @@ from carla_ros_bridge.traffic import TrafficLight
 
 from ros_compatibility import QoSProfile, latch_on
 
+
 class TrafficLightsSensor(PseudoActor):
     """
     a sensor that reports the state of all traffic lights
@@ -38,8 +39,10 @@ class TrafficLightsSensor(PseudoActor):
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
-        self.traffic_lights_info_publisher = node.new_publisher(CarlaTrafficLightInfoList, self.get_topic_prefix() + "traffic_lights_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
-        self.traffic_light_status_publisher = node.new_publisher(CarlaTrafficLightStatusList, self.get_topic_prefix() + "traffic_lights", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.traffic_lights_info_publisher = node.new_publisher(CarlaTrafficLightInfoList, self.get_topic_prefix(
+        ) + "traffic_lights_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.traffic_light_status_publisher = node.new_publisher(CarlaTrafficLightStatusList, self.get_topic_prefix(
+        ) + "traffic_lights", qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     def destroy(self):
         """

@@ -499,7 +499,8 @@ class HUD(CompatibleNode):
         if ROS_VERSION == 1:
             time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
         elif ROS_VERSION == 2:
-            time = str(datetime.timedelta(seconds=float(self.get_clock().now().nanoseconds)/10**9))[:10]
+            time = str(datetime.timedelta(seconds=float(
+                self.get_clock().now().nanoseconds)/10**9))[:10]
 
         if self.carla_status.fixed_delta_seconds:
             fps = 1 / self.carla_status.fixed_delta_seconds
@@ -735,6 +736,7 @@ def main(args=None):
             if ROS_VERSION == 2:
                 thread.join()
         pygame.quit()
+
 
 if __name__ == '__main__':
     main()

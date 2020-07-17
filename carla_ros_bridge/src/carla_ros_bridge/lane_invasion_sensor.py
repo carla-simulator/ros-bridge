@@ -38,7 +38,8 @@ class LaneInvasionSensor(Sensor):
               self).__init__(carla_actor=carla_actor, parent=parent, node=node,
                              synchronous_mode=synchronous_mode, is_event_sensor=True,
                              prefix="lane_invasion", sensor_name=sensor_name)
-        self.lane_invasion_publisher = node.new_publisher(CarlaLaneInvasionEvent, self.get_topic_prefix())
+        self.lane_invasion_publisher = node.new_publisher(
+            CarlaLaneInvasionEvent, self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ

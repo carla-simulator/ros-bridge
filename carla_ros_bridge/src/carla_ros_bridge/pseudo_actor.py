@@ -37,7 +37,7 @@ class PseudoActor(object):
         :param node: node-handle
         :type node: CompatibleNode
         """
-        self.pub ={}#TODO
+        self.pub = {}  # TODO
 
         self.parent = parent
         if self.parent:
