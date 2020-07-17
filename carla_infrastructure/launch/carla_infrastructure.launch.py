@@ -24,7 +24,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_infrastructure',
-            executable='carla_infrastructure.py',
+            node_executable='carla_infrastructure.py',
             name='carla_infrastructure',
             output='screen',
             parameters=[

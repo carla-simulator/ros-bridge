@@ -13,7 +13,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
-            executable='carla_twist_to_control.py',
+            node_executable='carla_twist_to_control.py',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
             parameters=[
