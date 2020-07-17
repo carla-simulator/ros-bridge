@@ -161,8 +161,9 @@ elif ROS_VERSION == 2:
 
     class CompatibleNode(Node):
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
+            param = Parameter('use_sim_time', Parameter.Type.BOOL, True)
             super(CompatibleNode, self).__init__(node_name, allow_undeclared_parameters=True,
-                                                 automatically_declare_parameters_from_overrides=True, **kwargs)
+                                                 automatically_declare_parameters_from_overrides=True, parameter_overrides=[param],**kwargs)
             if latch:
                 self.qos_profile = QoSProfile(
                     depth=queue_size,

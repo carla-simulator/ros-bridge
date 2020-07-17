@@ -1,5 +1,8 @@
 <!-- -->
 <launch>
+  <!-- global parameter to set CARLA as time source -->
+  <param name="use_sim_time" value="True"/>
+
   <!-- the network connection for the python connection to CARLA -->
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
@@ -21,7 +24,6 @@
   <arg name='ego_vehicle_role_name' default='["hero", "ego_vehicle", "hero0", "hero1", "hero2", "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]'/>
       
   <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen" required="true">
-    <param name="use_sim_time" value="True"/>
     <param name="host" value="$(arg host)" unless="$(eval host == '')"/>
     <param name="carla/port" value="$(arg port)" unless="$(eval port == '')"/>
     <param name="carla/timeout" value="$(arg timeout)" unless="$(eval timeout == '')"/>
