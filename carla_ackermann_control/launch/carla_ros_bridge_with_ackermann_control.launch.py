@@ -11,13 +11,13 @@ def generate_launch_description():
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_ros_bridge'), 'launch/carla_ros_bridge.launch.py')
+                    'carla_ros_bridge'), 'carla_ros_bridge.launch.py')
             )
         ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_ackermann_control'), 'launch/carla_ackermann_control.launch.py')
+                    'carla_ackermann_control'), 'carla_ackermann_control.launch.py')
             )
         )
     ])
