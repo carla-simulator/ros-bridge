@@ -12,9 +12,9 @@ Class that handle communication between CARLA and ROS
 """
 
 
-try:
 from rosgraph_msgs.msg import Clock
-import queue
+try:
+    import queue
 except ImportError:
     import Queue as queue
 
