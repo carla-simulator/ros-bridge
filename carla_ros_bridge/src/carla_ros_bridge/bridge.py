@@ -121,9 +121,10 @@ class CarlaRosBridge(CompatibleNode):
             self.carla_settings.synchronous_mode = False
             carla_world.apply_settings(self.carla_settings)
 
-        self.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
+        self.loginfo("Parameters:")
+        for key in self.parameters:
+            self.loginfo("  {}: {}".format(key, self.parameters[key]))
         self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-        self.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
         self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
         carla_world.apply_settings(self.carla_settings)
 
@@ -587,7 +588,7 @@ def main():
     parameters['timeout'] = carla_bridge.get_param('timeout', 2)
     parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', False)
     parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
-        'carla.synchronous_mode_wait_for_vehicle_control_command', True)
+        'synchronous_mode_wait_for_vehicle_control_command', True)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
                                                                0.05)
     role_name = carla_bridge.get_param('ego_vehicle_role_name',
