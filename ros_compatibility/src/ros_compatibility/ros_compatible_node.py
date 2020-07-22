@@ -60,9 +60,11 @@ if ROS_VERSION == 1:
             pass
 
         def get_param(self, name, alternative_value=None, alternative_name=None):
+            if name.startswith('/'):
+                raise RuntimeError("Only private parameters are supported.")
             if alternative_value is None:
-                return rospy.get_param(name)
-            return rospy.get_param(name, alternative_value)
+                return rospy.get_param("~" + name)
+            return rospy.get_param("~" + name, alternative_value)
 
         def logdebug(self, text):
             rospy.logdebug(text)
