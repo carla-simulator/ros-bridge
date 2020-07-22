@@ -44,7 +44,7 @@ class Walker(TrafficParticipant):
         super(Walker, self).__init__(carla_actor=carla_actor, parent=parent,
                                      node=node, prefix=prefix)
 
-        self.control_subscriber = self.create_subscriber(
+        self.control_subscriber = self.node.create_subscriber(
             CarlaWalkerControl,
             self.get_topic_prefix() + "/walker_control_cmd", self.control_command_updated)
 

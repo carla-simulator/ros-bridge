@@ -34,7 +34,7 @@ if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
-class EgoVehicle(Vehicle, CompatibleNode):
+class EgoVehicle(Vehicle):
     """
     Vehicle implementation details for the ego vehicle
     """
@@ -62,33 +62,31 @@ class EgoVehicle(Vehicle, CompatibleNode):
         elif ROS_VERSION == 2:
             self.callback_group = ReentrantCallbackGroup()
 
-        CompatibleNode.__init__(self, "ego_vehicle", rospy_init=False)
-
         self.vehicle_info = None
         self.vehicle_info_published = False
         self.vehicle_control_override = False
         self._vehicle_control_applied_callback = vehicle_control_applied_callback
 
-        self.control_subscriber = self.create_subscriber(
+        self.control_subscriber = self.node.create_subscriber(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd",
             lambda data: self.control_command_updated(data, manual_override=False))
 
-        self.manual_control_subscriber = self.create_subscriber(
+        self.manual_control_subscriber = self.node.create_subscriber(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd_manual",
             lambda data: self.control_command_updated(data, manual_override=True))
 
-        self.control_override_subscriber = self.create_subscriber(
+        self.control_override_subscriber = self.node.create_subscriber(
             Bool,
             self.get_topic_prefix() + "/vehicle_control_manual_override",
             self.control_command_override)
 
-        self.enable_autopilot_subscriber = self.create_subscriber(
+        self.enable_autopilot_subscriber = self.node.create_subscriber(
             Bool,
             self.get_topic_prefix() + "/enable_autopilot", self.enable_autopilot_updated)
 
-        self.twist_control_subscriber = self.create_subscriber(
+        self.twist_control_subscriber = self.node.create_subscriber(
             Twist,
             self.get_topic_prefix() + "/twist_cmd", self.twist_command_updated)
 
