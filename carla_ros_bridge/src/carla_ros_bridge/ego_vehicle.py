@@ -23,7 +23,7 @@ from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pyli
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
 
-from ros_compatibility import CompatibleNode, destroy_subscription, QoSProfile, latch_on
+from ros_compatibility import destroy_subscription, QoSProfile, latch_on
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -195,7 +195,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        self.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
+        self.node.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
         destroy_subscription(self.control_subscriber)
         self.control_subscriber = None
         destroy_subscription(self.enable_autopilot_subscriber)
@@ -225,7 +225,7 @@ class EgoVehicle(Vehicle):
             linear_velocity.y = -rotated_linear_vector[1]
             linear_velocity.z = rotated_linear_vector[2]
 
-            self.logdebug("Set velocity linear: {}, angular: {}".format(
+            self.node.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
             self.carla_actor.set_velocity(linear_velocity)
             self.carla_actor.set_angular_velocity(angular_velocity)
@@ -269,7 +269,7 @@ class EgoVehicle(Vehicle):
         :type enable_auto_pilot: std_msgs.Bool
         :return:
         """
-        self.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
+        self.node.logdebug("Ego vehicle: Set autopilot to {}".format(enable_auto_pilot.data))
         self.carla_actor.set_autopilot(enable_auto_pilot.data)
 
     @staticmethod
