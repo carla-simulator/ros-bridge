@@ -57,7 +57,7 @@ class Walker(TrafficParticipant):
 
         :return:
         """
-        self.logdebug("Destroy Walker(id={})".format(self.get_id()))
+        self.node.logdebug("Destroy Walker(id={})".format(self.get_id()))
         destroy_subscription(self.control_subscriber)
         self.control_subscriber = None
         super(Walker, self).destroy()
