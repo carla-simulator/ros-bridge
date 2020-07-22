@@ -41,6 +41,7 @@ from carla_ros_bridge.collision_sensor import CollisionSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera
 from carla_ros_bridge.object_sensor import ObjectSensor
+from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
@@ -417,6 +418,9 @@ class CarlaRosBridge(object):
                     carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.collision"):
                 actor = CollisionSensor(
+                    carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+            elif carla_actor.type_id.startswith("sensor.other.rss"):
+                actor = RssSensor(
                     carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
                 actor = LaneInvasionSensor(
