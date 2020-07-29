@@ -13,7 +13,7 @@ from enum import Enum
 import math
 import rospy
 from tf.transformations import euler_from_quaternion
-from misc import is_within_distance_ahead, compute_magnitude_angle
+from misc import is_within_distance_ahead, compute_magnitude_angle # pylint: disable=relative-import
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus,\
     CarlaTrafficLightStatusList, CarlaWorldInfo
 from carla_waypoint_types.srv import GetWaypoint
