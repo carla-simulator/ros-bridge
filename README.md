@@ -4,7 +4,7 @@ This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/rviz_carla_default.png "rviz")
 
-**This version requires CARLA 0.9.9**
+**This version requires CARLA 0.9.9.5**
 
 ## Features
 
