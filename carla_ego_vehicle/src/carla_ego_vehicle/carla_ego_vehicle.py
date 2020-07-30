@@ -260,7 +260,8 @@ class CarlaEgoVehicle(object):
                         bp.set_attribute('lens_x_size', str(sensor_spec['lens_x_size']))
                         bp.set_attribute('lens_y_size', str(sensor_spec['lens_y_size']))
                         bp.set_attribute('bloom_intensity', str(sensor_spec['bloom_intensity']))
-                        bp.set_attribute('lens_flare_intensity', str(sensor_spec['lens_flare_intensity']))
+                        bp.set_attribute('lens_flare_intensity', str(
+                            sensor_spec['lens_flare_intensity']))
                 elif sensor_spec['type'].startswith('sensor.lidar'):
                     bp.set_attribute('range', str(sensor_spec['range']))
                     bp.set_attribute('rotation_frequency', str(sensor_spec['rotation_frequency']))
