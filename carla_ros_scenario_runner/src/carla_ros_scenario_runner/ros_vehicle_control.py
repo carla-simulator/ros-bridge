@@ -5,16 +5,23 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+"""
+ROS Vehicle Control usable by scenario-runner
+"""
+
 import rospy
 import roslaunch
 from std_msgs.msg import Float64
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 import carla_common.transforms as trans
-from srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from srunner.scenariomanager.actorcontrols.basic_control import BasicControl # pylint: disable=import-error
 
 
 class RosVehicleControl(BasicControl):
+    """
+    ROS Vehicle Control usable by scenario-runner
+    """
 
     def __init__(self, actor, args=None):
         super(RosVehicleControl, self).__init__(actor)
@@ -62,22 +69,33 @@ class RosVehicleControl(BasicControl):
                 "{}: Missing value for 'launch' and/or 'launch-package'.".format(self._role_name))
 
     def update_target_speed(self, speed):
+        """
+        Update the actor's target speed and set _init_speed to False.
+
+        Args:
+            speed (float): New target speed [m/s].
+        """
         super(RosVehicleControl, self).update_target_speed(speed)
         rospy.loginfo("{}: Target speed changed to {}".format(self._role_name, speed))
         self._target_speed_publisher.publish(Float64(data=speed))
 
     def update_waypoints(self, waypoints, start_time=None):
+        """
+        Execute on tick of the controller's control loop
+        """
         super(RosVehicleControl, self).update_waypoints(waypoints, start_time)
         rospy.loginfo("{}: Waypoints changed.".format(self._role_name))
         path = Path()
         path.header.stamp = rospy.get_rostime()
         path.header.frame_id = "map"
         for wpt in waypoints:
-            print(wpt)
             path.poses.append(PoseStamped(pose=trans.carla_transform_to_ros_pose(wpt)))
         self._path_publisher.publish(path)
 
     def reset(self):
+        """
+        Reset the controller
+        """
         if self._carla_actor and self._carla_actor.is_alive:
             self._carla_actor = None
         if self._target_speed_publisher:
@@ -88,4 +106,7 @@ class RosVehicleControl(BasicControl):
             self._path_publisher = None
 
     def run_step(self):
+        """
+        Execute on tick of the controller's control loop
+        """
         pass

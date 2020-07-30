@@ -16,8 +16,8 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
 from derived_object_msgs.msg import ObjectArray
 from carla_msgs.msg import CarlaActorList
-from agent import Agent, AgentState
-from local_planner import LocalPlanner
+from agent import Agent, AgentState # pylint: disable=relative-import
+from local_planner import LocalPlanner # pylint: disable=relative-import
 from carla_waypoint_types.srv import GetActorWaypoint
 
 

@@ -54,7 +54,7 @@ before_install:
   - sudo apt install -y ros-$ROS_DISTRO-desktop-full python-catkin-tools python-catkin-pkg python-catkin-pkg-modules python-rosdep python-wstool
 
 install:
-  - pip install --user pylint simple-pid
+  - pip install --user -r requirements.txt
   - mkdir ros-bridge/
   - shopt -s dotglob
   - shopt -s extglob
@@ -75,7 +75,7 @@ script:
   - catkin config --install
   - source devel/setup.bash
   - cd src/ros-bridge
-  # - make pylint
+  - make pylint
 
 after_failure:
   - tail --lines=2000 build.log

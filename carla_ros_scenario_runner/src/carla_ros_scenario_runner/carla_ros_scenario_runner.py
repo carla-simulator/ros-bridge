@@ -17,13 +17,10 @@ try:
 except ImportError:
     import Queue as queue
 import rospy
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
 from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
 from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
-from application_runner import ApplicationStatus
-from scenario_runner_runner import ScenarioRunnerRunner
+from application_runner import ApplicationStatus # pylint: disable=relative-import
+from scenario_runner_runner import ScenarioRunnerRunner # pylint: disable=relative-import
 
 # Check Python dependencies of scenario runner
 try:
@@ -47,7 +44,7 @@ class CarlaRosScenarioRunner(object):
     Execute scenarios via ros service
     """
 
-    def __init__(self, role_name, host, port, scenario_runner_path, wait_for_ego):
+    def __init__(self, host, port, scenario_runner_path, wait_for_ego):
         """
         Constructor
         """
@@ -147,13 +144,12 @@ def main():
     :return:
     """
     rospy.init_node('carla_ros_scenario_runner', anonymous=True)
-    role_name = rospy.get_param("~role_name", "ego_vehicle")
     scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
     wait_for_ego = rospy.get_param("~wait_for_ego", "True")
     host = rospy.get_param("~host", "localhost")
     port = rospy.get_param("~port", 2000)
     scenario_runner = CarlaRosScenarioRunner(
-        role_name, host, port, scenario_runner_path, wait_for_ego)
+        host, port, scenario_runner_path, wait_for_ego)
     try:
         scenario_runner.run()
     finally:
