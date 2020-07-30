@@ -223,7 +223,8 @@ class CarlaEgoVehicle(object):
                             sensor_spec['exposure_min_bright']))
                         bp.set_attribute('exposure_max_bright', str(
                             sensor_spec['exposure_max_bright']))
-                        bp.set_attribute('exposure_speed_up', str(sensor_spec['exposure_speed_up']))
+                        bp.set_attribute('exposure_speed_up', str(
+                            sensor_spec['exposure_speed_up']))
                         bp.set_attribute('exposure_speed_down', str(
                             sensor_spec['exposure_speed_down']))
                         bp.set_attribute('calibration_constant', str(
