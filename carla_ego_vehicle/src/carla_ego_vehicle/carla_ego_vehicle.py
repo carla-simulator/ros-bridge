@@ -49,8 +49,8 @@ class CarlaEgoVehicle(object):
     def __init__(self):
         rospy.init_node('ego_vehicle', anonymous=True)
         self.host = rospy.get_param('/carla/host', '127.0.0.1')
-        self.port = rospy.get_param('/carla/port', '2000')
-        self.timeout = rospy.get_param('/carla/timeout', '2')
+        self.port = rospy.get_param('/carla/port', 2000)
+        self.timeout = rospy.get_param('/carla/timeout', 10)
         self.sensor_definition_file = rospy.get_param('~sensor_definition_file')
         self.world = None
         self.player = None
