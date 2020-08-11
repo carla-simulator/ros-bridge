@@ -446,8 +446,6 @@ class CarlaRosBridge(CompatibleNode):
                 pseudo_actors.append(
                     ObjectSensor(parent=actor, node=self, actor_list=self.actors,
                                  filtered_id=carla_actor.id))
-                if ROS_VERSION == 2:
-                    self.executor.add_node(actor)
             else:
                 actor = Vehicle(carla_actor, parent, self)
         elif carla_actor.type_id.startswith("sensor"):
