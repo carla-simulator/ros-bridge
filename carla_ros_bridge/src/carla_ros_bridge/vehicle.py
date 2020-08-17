@@ -34,7 +34,7 @@ class Vehicle(TrafficParticipant):
         :type prefix: string
         """
         if not prefix:
-            prefix = "vehicle/{:03}".format(carla_actor.id)
+            prefix = "vehicle/v{:03}".format(carla_actor.id)
 
         self.classification = Object.CLASSIFICATION_CAR
         if 'object_type' in carla_actor.attributes:
