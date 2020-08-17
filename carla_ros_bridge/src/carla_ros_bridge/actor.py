@@ -139,9 +139,9 @@ class Actor(PseudoActor):
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
-        color.r = 0
-        color.g = 0
-        color.b = 255
+        color.r = 0.0
+        color.g = 0.0
+        color.b = 255.0
         return color
 
     def get_marker(self):

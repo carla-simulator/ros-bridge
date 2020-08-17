@@ -60,9 +60,9 @@ class Vehicle(TrafficParticipant):
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
-        color.r = 255
-        color.g = 0
-        color.b = 0
+        color.r = 255.0
+        color.g = 0.0
+        color.b = 0.0
         return color
 
     def get_classification(self):
