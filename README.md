@@ -289,14 +289,14 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 | Topic                                                | Type                                                                         | Description        |
 | ---------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
-| `/carla/walker/<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWalkerControl.msg)       | Control a walker   |
-| `/carla/walker/<ID>/odometry`                        | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of walker |
+| `/carla/walker/w<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWalkerControl.msg)       | Control a walker   |
+| `/carla/walker/w<ID>/odometry`                        | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of walker |
 
 ### Other Vehicles
 
 | Topic                          | Type                                                                         | Description         |
 | ------------------------------ | ---------------------------------------------------------------------------- | ------------------- |
-| `/carla/vehicle/<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
+| `/carla/vehicle/v<ID>/odometry` | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of vehicle |
 
 ### TF
 

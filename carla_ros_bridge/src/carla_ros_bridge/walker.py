@@ -39,7 +39,7 @@ class Walker(TrafficParticipant):
         if carla_actor.attributes.get('role_name'):
             prefix = carla_actor.attributes.get('role_name')
         else:
-            prefix = "walker/{:03}".format(carla_actor.id)
+            prefix = "walker/w{:03}".format(carla_actor.id)
 
         super(Walker, self).__init__(carla_actor=carla_actor, parent=parent,
                                      node=node, prefix=prefix)
