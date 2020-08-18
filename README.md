@@ -4,7 +4,7 @@ This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/rviz_carla_default.png "rviz")
 
-**This version requires CARLA 0.9.9**
+**This version requires CARLA 0.9.9.5**
 
 ## Features
 
@@ -150,7 +150,7 @@ The following topic allows to control the stepping.
 
 | Topic            | Type                                                       |
 | ---------------- | ---------------------------------------------------------- |
-| `/carla/control` | [carla_msgs.CarlaControl](carla_msgs/msg/CarlaControl.msg) |
+| `/carla/control` | [carla_msgs.CarlaControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaControl.msg) |
 
 A [CARLA Control rqt plugin](rqt_carla_control/README.md) is available to publish to the topic.
 
@@ -181,7 +181,7 @@ Currently the following sensors are supported:
 
 | Topic                                               | Type                                                                                                                                          |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](carla_msgs/msg/CarlaRadarMeasurement.msg) |
+| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaRadarMeasurement.msg) |
 
 ##### IMU
 
@@ -199,13 +199,13 @@ Currently the following sensors are supported:
 
 | Topic                          | Type                                                                     | Description              |
 | ------------------------------ | ------------------------------------------------------------------------ | ------------------------ |
-| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](carla_msgs/msg/CarlaCollisionEvent.msg) | publish collision events |
+| `/carla/<ROLE NAME>/collision` | [carla_msgs.CarlaCollisionEvent](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaCollisionEvent.msg) | publish collision events |
 
 ##### Lane Invasion Sensor
 
 | Topic                              | Type                                                                           | Description                     |
 | ---------------------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
-| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](carla_msgs/msg/CarlaLaneInvasionEvent.msg) | publish events on lane-invasion |
+| `/carla/<ROLE NAME>/lane_invasion` | [carla_msgs.CarlaLaneInvasionEvent](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaLaneInvasionEvent.msg) | publish events on lane-invasion |
 
 #### Object Sensor
 
@@ -217,11 +217,11 @@ Currently the following sensors are supported:
 
 | Topic                                                             | Type                                                                           |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber)             | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
-| `/carla/<ROLE NAME>/vehicle_control_cmd_manual` (subscriber)      | [carla_msgs.CarlaEgoVehicleControl](carla_msgs/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd` (subscriber)             | [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) |
+| `/carla/<ROLE NAME>/vehicle_control_cmd_manual` (subscriber)      | [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) |
 | `/carla/<ROLE NAME>/vehicle_control_manual_override` (subscriber) | [std_msgs.Bool](http://docs.ros.org/api/std_msgs/html/msg/Bool.html)           |
-| `/carla/<ROLE NAME>/vehicle_status`                               | [carla_msgs.CarlaEgoVehicleStatus](carla_msgs/msg/CarlaEgoVehicleStatus.msg)   |
-| `/carla/<ROLE NAME>/vehicle_info`                                 | [carla_msgs.CarlaEgoVehicleInfo](carla_msgs/msg/CarlaEgoVehicleInfo.msg)       |
+| `/carla/<ROLE NAME>/vehicle_status`                               | [carla_msgs.CarlaEgoVehicleStatus](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleStatus.msg)   |
+| `/carla/<ROLE NAME>/vehicle_info`                                 | [carla_msgs.CarlaEgoVehicleInfo](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleInfo.msg)       |
 
 There are two modes to control the vehicle.
 
@@ -261,7 +261,7 @@ Currently this method applies the complete linear vector, but only the yaw from 
 
 ##### Carla Ackermann Control
 
-In certain cases, the [Carla Control Command](carla_msgs/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
+In certain cases, the [Carla Control Command](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) is not ideal to connect to an AD stack.
 Therefore a ROS-based node `carla_ackermann_control` is provided which reads [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html/msg/AckermannDrive.html) messages.
 You can find further documentation [here](carla_ackermann_control/README.md).
 
@@ -273,23 +273,23 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | ------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `/carla/objects`    | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | all vehicles and walkers              |
 | `/carla/marker`     | [visualization_msgs.Marker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html)             | visualization of vehicles and walkers |
-| `/carla/actor_list` | [carla_msgs.CarlaActorList](carla_msgs/msg/CarlaActorList.msg)                                           | list of all carla actors              |
-| `/carla/traffic_lights` | [carla_msgs.CarlaTrafficLightStatusList](carla_msgs/msg/CarlaTrafficLightStatusList.msg)             | list of all traffic lights with their status |
-| `/carla/traffic_lights_info` | [carla_msgs.CarlaTrafficLightInfoList](carla_msgs/msg/CarlaTrafficLightInfoList.msg)             | static information for all traffic lights (e.g. position)|
-| `/carla/weather_control` | [carla_msgs.CarlaWeatherParameters](carla_msgs/msg/CarlaWeatherParameters.msg)             | set the CARLA weather parameters|
+| `/carla/actor_list` | [carla_msgs.CarlaActorList](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaActorList.msg)                                           | list of all carla actors              |
+| `/carla/traffic_lights` | [carla_msgs.CarlaTrafficLightStatusList](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaTrafficLightStatusList.msg)             | list of all traffic lights with their status |
+| `/carla/traffic_lights_info` | [carla_msgs.CarlaTrafficLightInfoList](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaTrafficLightInfoList.msg)             | static information for all traffic lights (e.g. position)|
+| `/carla/weather_control` | [carla_msgs.CarlaWeatherParameters](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWeatherParameters.msg)             | set the CARLA weather parameters|
 
 #### Status of CARLA
 
 | Topic               | Type                                                           | Description                                            |
 | ------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
-| `/carla/status`     | [carla_msgs.CarlaStatus](carla_msgs/msg/CarlaStatus.msg)       |                                                        |
-| `/carla/world_info` | [carla_msgs.CarlaWorldInfo](carla_msgs/msg/CarlaWorldInfo.msg) | Info about the CARLA world/level (e.g. OPEN Drive map) |
+| `/carla/status`     | [carla_msgs.CarlaStatus](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaStatus.msg)       |                                                        |
+| `/carla/world_info` | [carla_msgs.CarlaWorldInfo](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWorldInfo.msg) | Info about the CARLA world/level (e.g. OPEN Drive map) |
 
 ### Walker
 
 | Topic                                                | Type                                                                         | Description        |
 | ---------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
-| `/carla/walker/<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](carla_msgs/msg/CarlaWalkerControl.msg)       | Control a walker   |
+| `/carla/walker/<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWalkerControl.msg)       | Control a walker   |
 | `/carla/walker/<ID>/odometry`                        | [nav_msgs.Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) | odometry of walker |
 
 ### Other Vehicles

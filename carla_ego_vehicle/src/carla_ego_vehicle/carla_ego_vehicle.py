@@ -49,8 +49,8 @@ class CarlaEgoVehicle(object):
     def __init__(self):
         rospy.init_node('ego_vehicle', anonymous=True)
         self.host = rospy.get_param('/carla/host', '127.0.0.1')
-        self.port = rospy.get_param('/carla/port', '2000')
-        self.timeout = rospy.get_param('/carla/timeout', '2')
+        self.port = rospy.get_param('/carla/port', 2000)
+        self.timeout = rospy.get_param('/carla/timeout', 10)
         self.sensor_definition_file = rospy.get_param('~sensor_definition_file')
         self.world = None
         self.player = None
@@ -223,7 +223,8 @@ class CarlaEgoVehicle(object):
                             sensor_spec['exposure_min_bright']))
                         bp.set_attribute('exposure_max_bright', str(
                             sensor_spec['exposure_max_bright']))
-                        bp.set_attribute('exposure_speed_up', str(sensor_spec['exposure_speed_up']))
+                        bp.set_attribute('exposure_speed_up', str(
+                            sensor_spec['exposure_speed_up']))
                         bp.set_attribute('exposure_speed_down', str(
                             sensor_spec['exposure_speed_down']))
                         bp.set_attribute('calibration_constant', str(
@@ -258,6 +259,9 @@ class CarlaEgoVehicle(object):
                         bp.set_attribute('lens_kcube', str(sensor_spec['lens_kcube']))
                         bp.set_attribute('lens_x_size', str(sensor_spec['lens_x_size']))
                         bp.set_attribute('lens_y_size', str(sensor_spec['lens_y_size']))
+                        bp.set_attribute('bloom_intensity', str(sensor_spec['bloom_intensity']))
+                        bp.set_attribute('lens_flare_intensity', str(
+                            sensor_spec['lens_flare_intensity']))
                 elif sensor_spec['type'].startswith('sensor.lidar'):
                     bp.set_attribute('range', str(sensor_spec['range']))
                     bp.set_attribute('rotation_frequency', str(sensor_spec['rotation_frequency']))

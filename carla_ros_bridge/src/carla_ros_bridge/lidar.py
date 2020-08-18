@@ -12,13 +12,10 @@ Classes to handle Carla lidars
 
 import numpy
 
-import tf
-
-from sensor_msgs.point_cloud2 import create_cloud_xyz32
+from sensor_msgs.point_cloud2 import create_cloud
+from sensor_msgs.msg import PointField
 
 from carla_ros_bridge.sensor import Sensor
-import carla_common.transforms as trans
-
 
 class Lidar(Sensor):
 
@@ -43,29 +40,6 @@ class Lidar(Sensor):
                                     synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
 
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function (override) to modify the tf messages sent by this lidar.
-
-        The lidar transformation has to be altered:
-        for some reasons lidar sends already a rotated cloud,
-        so herein, we need to ignore pitch and roll
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Lidar, self).get_ros_transform(transform, frame_id, child_frame_id)
-
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        dummy_roll, dummy_pitch, yaw = tf.transformations.euler_from_quaternion(
-            quat)
-        # set roll and pitch to zero
-        quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
-        return tf_msg
-
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -75,18 +49,20 @@ class Lidar(Sensor):
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
         header = self.get_msg_header()
+        fields = [
+            PointField('x', 0, PointField.FLOAT32, 1),
+            PointField('y', 4, PointField.FLOAT32, 1),
+            PointField('z', 8, PointField.FLOAT32, 1),
+            PointField('intensity', 12, PointField.FLOAT32, 1),
+        ]
 
-        lidar_data = numpy.frombuffer(
+        lidar_data = numpy.fromstring(
             carla_lidar_measurement.raw_data, dtype=numpy.float32)
         lidar_data = numpy.reshape(
-            lidar_data, (int(lidar_data.shape[0] / 3), 3))
+            lidar_data, (int(lidar_data.shape[0] / 4), 4))
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
-        # we need a copy here, because the data are read only in carla numpy
-        # array
-        lidar_data = -lidar_data
-        # we also need to permute x and y
-        lidar_data = lidar_data[..., [1, 0, 2]]
-        point_cloud_msg = create_cloud_xyz32(header, lidar_data)
+        lidar_data[:, 1] *= -1
+        point_cloud_msg = create_cloud(header, fields, lidar_data)
         self.publish_message(
             self.get_topic_prefix() + "/point_cloud", point_cloud_msg)

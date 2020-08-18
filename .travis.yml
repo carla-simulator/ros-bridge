@@ -25,14 +25,9 @@ jobs:
     - name: "Check code formatting"
       stage: check
       before_install: skip
-      install: pip install --user pep8 autopep8
+      install: pip install --user -r requirements.txt
       script:
-        - autopep8 carla_ros_bridge/src/carla_common/*.py --in-place --max-line-length=100
-        - autopep8 carla_ros_bridge/src/carla_ros_bridge/*.py --in-place --max-line-length=100
-        - autopep8 carla_ackermann_control/src/carla_ackermann_control/*.py --in-place --max-line-length=100
-        - autopep8 carla_ego_vehicle/src/carla_ego_vehicle/*.py --in-place --max-line-length=100
-        - autopep8 carla_waypoint_publisher/src/carla_waypoint_publisher/*.py --in-place --max-line-length=100
-        - git diff --quiet HEAD --; if [ ! $? -eq 0 ]; then echo "Code is not autopep8 compliant. Please run check.sh"; git diff HEAD --; exit 1; fi
+        - make check_format
     - name: "Xenial Kinetic"
       stage: test
       dist: xenial
@@ -59,7 +54,7 @@ before_install:
   - sudo apt install -y ros-$ROS_DISTRO-desktop-full python-catkin-tools python-catkin-pkg python-catkin-pkg-modules python-rosdep python-wstool
 
 install:
-  - pip install --user pylint simple-pid
+  - pip install --user -r requirements.txt
   - mkdir ros-bridge/
   - shopt -s dotglob
   - shopt -s extglob
@@ -80,7 +75,7 @@ script:
   - catkin config --install
   - source devel/setup.bash
   - cd src/ros-bridge
-  - pylint --rcfile=.pylintrc carla_common/src/carla_common/ carla_ackermann_control/src/carla_ackermann_control/ carla_ros_bridge/src/carla_ros_bridge/ carla_ego_vehicle/src/carla_ego_vehicle/ carla_waypoint_publisher/src/carla_waypoint_publisher/
+  - make pylint
 
 after_failure:
   - tail --lines=2000 build.log
