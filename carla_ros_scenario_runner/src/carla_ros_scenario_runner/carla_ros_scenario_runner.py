@@ -19,8 +19,8 @@ except ImportError:
 import rospy
 from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
 from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
-from application_runner import ApplicationStatus # pylint: disable=relative-import
-from scenario_runner_runner import ScenarioRunnerRunner # pylint: disable=relative-import
+from application_runner import ApplicationStatus  # pylint: disable=relative-import
+from scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
 
 # Check Python dependencies of scenario runner
 try:

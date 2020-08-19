@@ -15,7 +15,7 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 import carla_common.transforms as trans
-from srunner.scenariomanager.actorcontrols.basic_control import BasicControl # pylint: disable=import-error
+from srunner.scenariomanager.actorcontrols.basic_control import BasicControl  # pylint: disable=import-error
 
 
 class RosVehicleControl(BasicControl):

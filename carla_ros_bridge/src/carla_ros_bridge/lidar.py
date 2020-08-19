@@ -17,6 +17,7 @@ from sensor_msgs.msg import PointField
 
 from carla_ros_bridge.sensor import Sensor
 
+
 class Lidar(Sensor):
 
     """
