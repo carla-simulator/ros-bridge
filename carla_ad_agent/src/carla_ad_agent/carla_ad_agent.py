@@ -13,7 +13,7 @@ import rospy
 from nav_msgs.msg import Path
 from std_msgs.msg import Float64
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl
-from basic_agent import BasicAgent # pylint: disable=relative-import
+from basic_agent import BasicAgent  # pylint: disable=relative-import
 
 
 class CarlaAdAgent(object):
