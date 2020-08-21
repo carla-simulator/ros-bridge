@@ -93,7 +93,7 @@ script:
   - catkin config --install
   - source devel/setup.bash
   - cd src/ros-bridge
-  - make pylint
+  - if [ ! $ROS_DISTRO -eq noetic ]; then make pylint; fi;
 
 after_failure:
   - tail --lines=2000 build.log
