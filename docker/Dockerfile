@@ -26,7 +26,7 @@ ARG CARLA_VERSION
 ARG PYTHON_VERSION
 
 COPY --from=carla --chown=root /home/carla/PythonAPI /opt/carla/PythonAPI
-RUN python$PYTHON_VERSION -m easy_install /opt/carla/PythonAPI/carla/dist/carla-$CARLA_VERSION-py$PYTHON_VERSION-linux-x86_64.egg
+ENV PYTHONPATH=/opt/carla/PythonAPI/carla/dist/carla-$CARLA_VERSION-py$PYTHON_VERSION-linux-x86_64.egg
 
 COPY carla_ackermann_control /opt/carla-ros-bridge/src/carla_ackermann_control
 COPY carla_common /opt/carla-ros-bridge/src/carla_common
