@@ -66,12 +66,16 @@ This will install carla-ros-bridge-<melodic or kinetic> in /opt/carla-ros-bridge
     git submodule update --init
     cd ../catkin_ws/src
     ln -s ../../ros-bridge
-    source /opt/ros/kinetic/setup.bash
+    source /opt/ros/<melodic or kinetic>/setup.bash
     cd ..
 
     #install required ros-dependencies
     rosdep update
     rosdep install --from-paths src --ignore-src -r
+    
+    #additional packages not included by the default ros install
+    sudo apt-get install ros-<melodic or kinetic>-ackermann-msgs
+    sudo apt-get install ros-<melodic or kinetic>-derived-object-msgs
 
     #build
     catkin_make
