@@ -441,7 +441,8 @@ class HUD(object):
         render the display
         """
         if self._show_info:
-            info_surface = pygame.Surface((220, self.dim[1])) # pylint: disable=too-many-function-args
+            info_surface = pygame.Surface(
+                (220, self.dim[1]))  # pylint: disable=too-many-function-args
             info_surface.set_alpha(100)
             display.blit(info_surface, (0, 0))
             v_offset = 4
@@ -495,14 +496,14 @@ class FadingText(object):
         self.dim = dim
         self.pos = pos
         self.seconds_left = 0
-        self.surface = pygame.Surface(self.dim) # pylint: disable=too-many-function-args
+        self.surface = pygame.Surface(self.dim)  # pylint: disable=too-many-function-args
 
     def set_text(self, text, color=(255, 255, 255), seconds=2.0):
         """
         set the text
         """
         text_texture = self.font.render(text, True, color)
-        self.surface = pygame.Surface(self.dim) # pylint: disable=too-many-function-args
+        self.surface = pygame.Surface(self.dim)  # pylint: disable=too-many-function-args
         self.seconds_left = seconds
         self.surface.fill((0, 0, 0, 0))
         self.surface.blit(text_texture, (10, 11))
@@ -537,7 +538,7 @@ class HelpText(object):
         self.dim = (680, len(lines) * 22 + 12)
         self.pos = (0.5 * width - 0.5 * self.dim[0], 0.5 * height - 0.5 * self.dim[1])
         self.seconds_left = 0
-        self.surface = pygame.Surface(self.dim) # pylint: disable=too-many-function-args
+        self.surface = pygame.Surface(self.dim)  # pylint: disable=too-many-function-args
         self.surface.fill((0, 0, 0, 0))
         for n, line in enumerate(lines):
             text_texture = self.font.render(line, True, (255, 255, 255))
