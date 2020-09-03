@@ -61,7 +61,7 @@ This will install carla-ros-bridge in /opt/carla-ros-bridge
     git submodule update --init
     cd ../catkin_ws/src
     ln -s ../../ros-bridge
-    source /opt/ros/kinetic/setup.bash
+    source /opt/ros/<kinetic or melodic>/setup.bash
     cd ..
 
     #install required ros-dependencies
