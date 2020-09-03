@@ -42,7 +42,9 @@
             "lens_k": -1.0,
             "lens_kcube": 0.0,
             "lens_x_size": 0.08,
-            "lens_y_size": 0.08
+            "lens_y_size": 0.08,
+            "bloom_intensity": 0.675,
+            "lens_flare_intensity": 0.1
         }
     ]
 }
