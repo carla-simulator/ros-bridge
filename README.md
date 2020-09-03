@@ -39,20 +39,15 @@ For a quick overview, after following the [Setup section](#setup), please run th
 
 First add the apt repository:
 
-##### For ROS Melodic Users
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 81061A1A042F527D &&
-    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-melodic/ bionic main"
-
-##### For ROS Kinetic Users
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9BE2A0CDC0161D6C &&
-    sudo add-apt-repository "deb [arch=amd64 trusted=yes] http://dist.carla.org/carla-ros-bridge-kinetic xenial main"
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1AF1527DE64CB8D9
+    sudo add-apt-repository "deb [arch=amd64] http://dist.carla.org/carla $(lsb_release -sc) main"
 
 Then simply install the ROS bridge:
 
-    sudo apt update &&
-    sudo apt install carla-ros-bridge-<melodic or kinetic>
+    sudo apt-get update
+    sudo apt-get install carla-ros-bridge
 
-This will install carla-ros-bridge-<melodic or kinetic> in /opt/carla-ros-bridge
+This will install carla-ros-bridge in /opt/carla-ros-bridge
 
 ### For Developers
 
