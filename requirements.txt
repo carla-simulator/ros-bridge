@@ -2,3 +2,5 @@ pep8
 autopep8
 cmake_format
 pylint
+transforms3d
+pygame
