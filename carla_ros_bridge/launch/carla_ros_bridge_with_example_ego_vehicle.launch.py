@@ -34,19 +34,19 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value=''
+            default_value='Town01'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
-            default_value=''
+            default_value='False'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
-            default_value=''
+            default_value='True'
         ),
         launch.actions.DeclareLaunchArgument(
             name='fixed_delta_seconds',
-            default_value=''
+            default_value='0.05'
         ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(

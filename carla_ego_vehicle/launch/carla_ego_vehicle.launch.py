@@ -24,7 +24,8 @@ def generate_launch_description():
             default_value='vehicle.*'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='sensor_definition_file'
+            name='sensor_definition_file',
+            default_value=''
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
@@ -87,13 +88,13 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {
-                    '/carla/host': launch.substitutions.LaunchConfiguration('host')
+                    'carla/host': launch.substitutions.LaunchConfiguration('host')
                 },
                 {
-                    '/carla/port': launch.substitutions.LaunchConfiguration('port')
+                    'carla/port': launch.substitutions.LaunchConfiguration('port')
                 },
                 {
-                    '/carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
+                    'carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
                 },
                 {
                     'sensor_definition_file': launch.substitutions.LaunchConfiguration('sensor_definition_file')
