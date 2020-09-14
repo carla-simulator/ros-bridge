@@ -64,7 +64,7 @@ before_install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
   - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   - sudo apt update
-  - sudo apt install -y ros-$ROS_DISTRO-desktop-full python$PYTHON_SUFFIX-catkin-tools python$PYTHON_SUFFIX-catkin-pkg python$PYTHON_SUFFIX-catkin-pkg-modules python$PYTHON_SUFFIX-rosdep python$PYTHON_SUFFIX-wstool
+  - sudo apt install -y ros-$ROS_DISTRO-desktop-full python$PYTHON_SUFFIX-osrf-pycommon python$PYTHON_SUFFIX-catkin-tools python$PYTHON_SUFFIX-catkin-pkg python$PYTHON_SUFFIX-catkin-pkg-modules python$PYTHON_SUFFIX-rosdep python$PYTHON_SUFFIX-wstool
 
 install:
   - pip$PYTHON_SUFFIX install --user -r requirements.txt

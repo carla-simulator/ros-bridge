@@ -19,6 +19,7 @@ RUN apt-get update && \
     ros-$ROS_VERSION-cv-bridge \
     ros-$ROS_VERSION-pcl-conversions \
     ros-$ROS_VERSION-pcl-ros \
+    python$PYTHON_SUFFIX-osrf-pycommon \
     python$PYTHON_SUFFIX-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 
