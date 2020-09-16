@@ -70,9 +70,9 @@ class CarlaEgoVehicle(CompatibleNode):
 
         if ROS_VERSION == 1:
             self.sensor_definition_file = self.get_param('sensor_definition_file', 'sensors.json')
-        elif ROS_VERSION == 2:           
+        elif ROS_VERSION == 2:
             sensor_path = get_package_share_directory('carla_ego_vehicle') + '/config/sensors.json'
-            self.sensor_definition_file = self.get_param('sensor_definition_file', sensor_path)           
+            self.sensor_definition_file = self.get_param('sensor_definition_file', sensor_path)
         if spawn_point_param and self.spawn_ego_vehicle():
             self.loginfo("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
             spawn_point = spawn_point_param.split(',')
