@@ -97,6 +97,15 @@ if ROS_VERSION == 1:
                 qos_profile = self.qos_profile
             return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
+        def now_sec(self):
+            return rospy.get_rostime().to_sec()
+
+        def new_rate(self, rate):
+            return rospy.Rate(rate)
+
+        def new_timer(self, timer_period_sec, callback):
+            return rospy.Timer(rospy.Duration(timer_period_sec), callback)
+
         def spin(self, executor=None):
             rospy.spin()
 
@@ -217,6 +226,15 @@ elif ROS_VERSION == 2:
                 callback_group = self.callback_group
             return self.create_subscription(msg_type, topic, callback, qos_profile,
                                             callback_group=callback_group)
+
+        def now_sec(self):
+            return self.get_clock().now().nanoseconds / (1000 * 1000 * 1000)
+
+        def new_rate(self, rate):
+            return self.create_rate(rate)
+
+        def new_timer(self, timer_period_sec, callback):
+            return self.create_timer(timer_period_sec, callback)
 
         def spin(self, executor=None):
             rclpy.spin(self)
