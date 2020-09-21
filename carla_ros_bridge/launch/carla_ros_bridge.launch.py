@@ -10,31 +10,31 @@ def generate_launch_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='host',
-            default_value=''
+            default_value='localhost'
         ),
         launch.actions.DeclareLaunchArgument(
             name='port',
-            default_value=''
+            default_value='2000'
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value=''
+            default_value='2'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
-            default_value=''
+            default_value='False'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
-            default_value=''
+            default_value='True'
         ),
         launch.actions.DeclareLaunchArgument(
             name='fixed_delta_seconds',
-            default_value=''
+            default_value='0.05'
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value=''
+            default_value='Town01'
         ),
         launch.actions.DeclareLaunchArgument(
             name='ego_vehicle_role_names',
@@ -52,28 +52,28 @@ def generate_launch_description():
                     'use_sim_time': True
                 },
                 {
-                    'carla/host': launch.substitutions.LaunchConfiguration('host')
+                    'host': launch.substitutions.LaunchConfiguration('host')
                 },
                 {
-                    'carla/port': launch.substitutions.LaunchConfiguration('port')
+                    'port': launch.substitutions.LaunchConfiguration('port')
                 },
                 {
-                    'carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
+                    'timeout': launch.substitutions.LaunchConfiguration('timeout')
                 },
                 {
-                    'carla/synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode')
+                    'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode')
                 },
                 {
-                    'carla/synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command')
+                    'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command')
                 },
                 {
-                    'carla/fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
+                    'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
                 },
                 {
-                    'carla/town': launch.substitutions.LaunchConfiguration('town')
+                    'town': launch.substitutions.LaunchConfiguration('town')
                 },
                 {
-                    'carla/ego_vehicle/role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_names')
+                    'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_names')
                 }
             ]
         )

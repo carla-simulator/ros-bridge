@@ -60,27 +60,19 @@ class CarlaEgoVehicle(CompatibleNode):
         self.player_created = False
         self.sensor_actors = []
         self.actor_spawnpoint = None
-        self.timeout = self.get_param('/carla/timeout', 2)
+        self.timeout = self.get_param('carla/timeout', 2)
+        self.host = self.get_param('carla/host', 'localhost')
+        self.port = self.get_param('carla/port', 2000)
+        self.actor_filter = self.get_param('vehicle_filter', 'vehicle.*')
+        self.role_name = self.get_param('role_name', 'ego_vehicle')
+        # check argument and set spawn_point
+        spawn_point_param = self.get_param('spawn_point')
 
         if ROS_VERSION == 1:
-            self.host = self.get_param('/carla/host', '127.0.0.1')
-            self.port = self.get_param('/carla/port', '2000')
-            self.sensor_definition_file = self.get_param('~sensor_definition_file', 'sensors.json')
-            self.actor_filter = self.get_param('~vehicle_filter', 'vehicle.*')
-            self.role_name = self.get_param('~role_name', 'ego_vehicle')
-            # check argument and set spawn_point
-            spawn_point_param = self.get_param('~spawn_point')
-
+            self.sensor_definition_file = self.get_param('sensor_definition_file', 'sensors.json')
         elif ROS_VERSION == 2:
-            self.host = self.get_param('carla.host', 'localhost')
-            self.port = self.get_param('carla.port', 2000)
             sensor_path = get_package_share_directory('carla_ego_vehicle') + '/config/sensors.json'
             self.sensor_definition_file = self.get_param('sensor_definition_file', sensor_path)
-            self.actor_filter = self.get_param('vehicle_filter', 'vehicle.*')
-            self.role_name = self.get_param('role_name', 'ego_vehicle')
-            # check argument and set spawn_point
-            spawn_point_param = self.get_param('spawn_point')
-
         if spawn_point_param and self.spawn_ego_vehicle():
             self.loginfo("Using ros parameter for spawnpoint: {}".format(spawn_point_param))
             spawn_point = spawn_point_param.split(',')
