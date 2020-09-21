@@ -266,7 +266,7 @@ def main():
 
     host = rospy.get_param("/carla/host", "127.0.0.1")
     port = rospy.get_param("/carla/port", 2000)
-    timeout = rospy.get_param("/carla/timeout", 2)
+    timeout = rospy.get_param("/carla/timeout", 10)
 
     rospy.loginfo("CARLA world available. Trying to connect to {host}:{port}".format(
         host=host, port=port))

@@ -11,11 +11,11 @@ low-level waypoint following based on PID controllers.
 """
 
 from collections import deque
-import rospy  # pylint: disable=import-error
-from geometry_msgs.msg import PointStamped  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
-from vehicle_pid_controller import VehiclePIDController
-from misc import distance_vehicle
+import rospy
+from geometry_msgs.msg import PointStamped
+from carla_msgs.msg import CarlaEgoVehicleControl
+from vehicle_pid_controller import VehiclePIDController  # pylint: disable=relative-import
+from misc import distance_vehicle  # pylint: disable=relative-import
 
 
 class LocalPlanner(object):

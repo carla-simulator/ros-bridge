@@ -45,8 +45,8 @@ class CarlaSpectatorCamera(object):
         self.camera_resolution_y = rospy.get_param("~resolution_y", 600)
         self.camera_fov = rospy.get_param("~fov", 50)
         self.host = rospy.get_param('/carla/host', '127.0.0.1')
-        self.port = rospy.get_param('/carla/port', '2000')
-        self.timeout = rospy.get_param("/carla/timeout", 2)
+        self.port = rospy.get_param('/carla/port', 2000)
+        self.timeout = rospy.get_param("/carla/timeout", 10)
         self.world = None
         self.pose = None
         self.camera_actor = None
