@@ -4,3 +4,4 @@ cmakelang
 pylint
 pexpect
 simple-pid
+networkx
