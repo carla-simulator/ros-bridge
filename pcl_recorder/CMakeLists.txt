@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.1)
 project(pcl_recorder)
-
-add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS pcl_conversions pcl_ros roscpp
                                         sensor_msgs roslaunch)
@@ -15,6 +13,11 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME}_node src/PclRecorder.cpp src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+
+target_compile_features(
+  ${PROJECT_NAME}_node
+  PRIVATE cxx_inheriting_constructors cxx_lambdas cxx_auto_type
+          cxx_variadic_templates cxx_variable_templates)
 
 install(
   TARGETS ${PROJECT_NAME}_node

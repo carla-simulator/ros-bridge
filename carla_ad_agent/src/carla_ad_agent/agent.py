@@ -9,14 +9,20 @@
 Base class for agent
 """
 
+from carla_waypoint_types.srv import GetWaypoint
+from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus,\
+    CarlaTrafficLightStatusList, CarlaWorldInfo
+from misc import is_within_distance_ahead, compute_magnitude_angle  # pylint: disable=relative-import
+from tf.transformations import euler_from_quaternion
+import rospy
+from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
+from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
+from misc import is_within_distance_ahead, compute_magnitude_angle
+from tf.transformations import euler_from_quaternion
+import rospy
 from enum import Enum
 import math
-import rospy  # pylint: disable=import-error
-from tf.transformations import euler_from_quaternion  # pylint: disable=import-error
-from misc import is_within_distance_ahead, compute_magnitude_angle
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
-from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
-from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 
 
 class AgentState(Enum):

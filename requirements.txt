@@ -1,4 +1,7 @@
 pep8
 autopep8
-cmake_format
+cmake_format==0.6.11
 pylint
+pexpect
+simple-pid
+networkx
