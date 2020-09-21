@@ -6,7 +6,7 @@
 Executes scenario runner
 """
 import os
-from application_runner import ApplicationRunner
+from application_runner import ApplicationRunner  # pylint: disable=relative-import
 
 
 class ScenarioRunnerRunner(ApplicationRunner):
@@ -14,7 +14,7 @@ class ScenarioRunnerRunner(ApplicationRunner):
     Executes scenario runner
     """
 
-    def __init__(self, path, host, port, wait_for_ego, status_updated_fct, log_fct):
+    def __init__(self, path, host, port, wait_for_ego, status_updated_fct, log_fct):  # pylint: disable=too-many-arguments
         self._path = path
         self._host = host
         self._port = port

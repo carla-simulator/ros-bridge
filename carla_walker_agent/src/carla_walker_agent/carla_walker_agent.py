@@ -8,12 +8,12 @@
 """
 Agent for Walker
 """
-import rospy
 import math
+import rospy
 from nav_msgs.msg import Path, Odometry
 from std_msgs.msg import Float64
-from carla_msgs.msg import CarlaWalkerControl
 from geometry_msgs.msg import Pose, Vector3
+from carla_msgs.msg import CarlaWalkerControl
 
 
 class CarlaWalkerAgent(object):
@@ -71,7 +71,8 @@ class CarlaWalkerAgent(object):
         """
         callback on new route
         """
-        rospy.loginfo("New plan with {} waypoints received. Assigning plan...".format(len(path.poses)))
+        rospy.loginfo("New plan with {} waypoints received. Assigning plan...".format(
+            len(path.poses)))
         self.control_publisher.publish(CarlaWalkerControl())  # stop
         self._waypoints = []
         for elem in path.poses:

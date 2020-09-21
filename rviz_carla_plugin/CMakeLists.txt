@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.1)
 project(rviz_carla_plugin)
 
 set(CXX_STANDARD_REQUIRED ON)
@@ -25,6 +25,8 @@ qt5_add_resources(SRC_FILES rviz_carla_plugin.qrc)
 add_library(${PROJECT_NAME} ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
 
 install(
   TARGETS ${PROJECT_NAME}
