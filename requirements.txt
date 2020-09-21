@@ -1,6 +1,6 @@
 pep8
 autopep8
-cmake_format
+cmakelang
 pylint
 pexpect
 simple-pid
