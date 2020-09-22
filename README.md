@@ -74,6 +74,12 @@ This will install carla-ros-bridge in /opt/carla-ros-bridge
 For more information about configuring a ROS environment see
 <http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment>
 
+#### Using ROS2
+
+In development
+
+To test the ROS2 implementation, the rmw_fasrtps_cpp RMW implementation should be used. (default with ROS2 standard installation).
+
 ## Start the ROS bridge
 
 First run the simulator (see carla documentation: <http://carla.readthedocs.io/en/latest/>)

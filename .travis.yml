@@ -48,6 +48,7 @@ jobs:
         apt:
           packages:
           - python3-pip
+          - python3-pygame
     - name: "Docker Kinetic"
       stage: docker
       services: docker
