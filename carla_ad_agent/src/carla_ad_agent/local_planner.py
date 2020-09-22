@@ -14,8 +14,8 @@ from collections import deque
 import rospy
 from geometry_msgs.msg import PointStamped
 from carla_msgs.msg import CarlaEgoVehicleControl
-from vehicle_pid_controller import VehiclePIDController # pylint: disable=relative-import
-from misc import distance_vehicle # pylint: disable=relative-import
+from vehicle_pid_controller import VehiclePIDController  # pylint: disable=relative-import
+from misc import distance_vehicle  # pylint: disable=relative-import
 
 
 class LocalPlanner(object):

@@ -80,9 +80,11 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode = False
             carla_world.apply_settings(self.carla_settings)
 
-        rospy.loginfo("synchronous_mode: {}".format(self.parameters["synchronous_mode"]))
+        rospy.loginfo("synchronous_mode: {}".format(
+            self.parameters["synchronous_mode"]))
         self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-        rospy.loginfo("fixed_delta_seconds: {}".format(self.parameters["fixed_delta_seconds"]))
+        rospy.loginfo("fixed_delta_seconds: {}".format(
+            self.parameters["fixed_delta_seconds"]))
         self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
         carla_world.apply_settings(self.carla_settings)
 
@@ -109,7 +111,8 @@ class CarlaRosBridge(object):
                 rospy.Subscriber("/carla/control", CarlaControl,
                                  lambda control: self.carla_control_queue.put(control.command))
 
-            self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
+            self.synchronous_mode_update_thread = Thread(
+                target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
         else:
             self.timestamp_last_run = 0.0
@@ -117,11 +120,13 @@ class CarlaRosBridge(object):
             self.update_actors_queue = queue.Queue(maxsize=1)
 
             # start thread to update actors
-            self.update_actor_thread = Thread(target=self._update_actors_thread)
+            self.update_actor_thread = Thread(
+                target=self._update_actors_thread)
             self.update_actor_thread.start()
 
             # create initially existing actors
-            self.update_actors_queue.put(set([x.id for x in self.carla_world.get_snapshot()]))
+            self.update_actors_queue.put(
+                set([x.id for x in self.carla_world.get_snapshot()]))
 
             # wait for first actors creation to be finished
             self.update_actors_queue.join()
@@ -227,9 +232,10 @@ class CarlaRosBridge(object):
                 # fill list of available ego vehicles
                 self._expected_ego_vehicle_control_command_ids = []
                 with self._expected_ego_vehicle_control_command_ids_lock:
-                    for actor_id, actor in self.actors.iteritems():
+                    for actor_id, actor in self.actors.items():
                         if isinstance(actor, EgoVehicle):
-                            self._expected_ego_vehicle_control_command_ids.append(actor_id)
+                            self._expected_ego_vehicle_control_command_ids.append(
+                                actor_id)
 
             frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
@@ -272,13 +278,15 @@ class CarlaRosBridge(object):
                     self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
                     self.comm.update_clock(carla_snapshot.timestamp)
                     self.status_publisher.set_frame(carla_snapshot.frame)
-                    self._update(carla_snapshot.frame, carla_snapshot.timestamp.elapsed_seconds)
+                    self._update(carla_snapshot.frame,
+                                 carla_snapshot.timestamp.elapsed_seconds)
                     self.comm.send_msgs()
                 self.update_lock.release()
 
             # if possible push current snapshot to update-actors-thread
             try:
-                self.update_actors_queue.put_nowait(set([x.id for x in carla_snapshot]))
+                self.update_actors_queue.put_nowait(
+                    set([x.id for x in carla_snapshot]))
             except queue.Full:
                 pass
 
@@ -362,7 +370,8 @@ class CarlaRosBridge(object):
 
             ros_actor_list.actors.append(ros_actor)
 
-        self.comm.publish_message("/carla/actor_list", ros_actor_list, is_latched=True)
+        self.comm.publish_message(
+            "/carla/actor_list", ros_actor_list, is_latched=True)
 
     def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
         """
@@ -408,11 +417,14 @@ class CarlaRosBridge(object):
                     actor = Camera(
                         carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Lidar(carla_actor, parent, self.comm,
+                              self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.radar"):
-                actor = Radar(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Radar(carla_actor, parent, self.comm,
+                              self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
-                actor = Gnss(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Gnss(carla_actor, parent, self.comm,
+                             self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
                 actor = ImuSensor(
                     carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
@@ -426,7 +438,8 @@ class CarlaRosBridge(object):
                 actor = LaneInvasionSensor(
                     carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
             else:
-                actor = Sensor(carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+                actor = Sensor(carla_actor, parent, self.comm,
+                               self.carla_settings.synchronous_mode)
         elif carla_actor.type_id.startswith("spectator"):
             actor = Spectator(carla_actor, parent, self.comm)
         elif carla_actor.type_id.startswith("walker"):
@@ -497,7 +510,8 @@ class CarlaRosBridge(object):
             return
         with self._expected_ego_vehicle_control_command_ids_lock:
             if ego_vehicle_id in self._expected_ego_vehicle_control_command_ids:
-                self._expected_ego_vehicle_control_command_ids.remove(ego_vehicle_id)
+                self._expected_ego_vehicle_control_command_ids.remove(
+                    ego_vehicle_id)
             else:
                 rospy.logwarn(
                     "Unexpected vehicle control command received from {}".format(ego_vehicle_id))
@@ -541,7 +555,8 @@ def main():
 
         if "town" in parameters:
             if parameters["town"].endswith(".xodr"):
-                rospy.loginfo("Loading opendrive world from file '{}'".format(parameters["town"]))
+                rospy.loginfo(
+                    "Loading opendrive world from file '{}'".format(parameters["town"]))
                 with open(parameters["town"]) as od_file:
                     data = od_file.read()
                 carla_world = carla_client.generate_opendrive_world(str(data))
