@@ -288,6 +288,10 @@ class CarlaEgoVehicle(object):
                     bp.set_attribute('noise_alt_bias', str(sensor_spec['noise_alt_bias']))
                     bp.set_attribute('noise_lat_bias', str(sensor_spec['noise_lat_bias']))
                     bp.set_attribute('noise_lon_bias', str(sensor_spec['noise_lon_bias']))
+                    try:
+                        bp.set_attribute('sensor_tick', str(sensor_spec['sensor_tick']))
+                    except KeyError:
+                        pass
                 elif sensor_spec['type'].startswith('sensor.other.imu'):
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
@@ -307,6 +311,10 @@ class CarlaEgoVehicle(object):
                     bp.set_attribute('noise_gyro_bias_x', str(sensor_spec['noise_gyro_bias_x']))
                     bp.set_attribute('noise_gyro_bias_y', str(sensor_spec['noise_gyro_bias_y']))
                     bp.set_attribute('noise_gyro_bias_z', str(sensor_spec['noise_gyro_bias_z']))
+                    try:
+                        bp.set_attribute('sensor_tick', str(sensor_spec['sensor_tick']))
+                    except KeyError:
+                        pass
                 elif sensor_spec['type'].startswith('sensor.other.radar'):
                     sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
                                                      z=sensor_spec['z'])
@@ -318,6 +326,10 @@ class CarlaEgoVehicle(object):
                     bp.set_attribute('vertical_fov', str(sensor_spec['vertical_fov']))
                     bp.set_attribute('points_per_second', str(sensor_spec['points_per_second']))
                     bp.set_attribute('range', str(sensor_spec['range']))
+                    try:
+                        bp.set_attribute('sensor_tick', str(sensor_spec['sensor_tick']))
+                    except KeyError:
+                        pass
             except KeyError as e:
                 rospy.logfatal(
                     "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))
