@@ -213,8 +213,8 @@ class EgoVehicle(Vehicle):
 
             rospy.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
-            self.carla_actor.set_velocity(linear_velocity)
-            self.carla_actor.set_angular_velocity(angular_velocity)
+            self.carla_actor.set_target_velocity(linear_velocity)
+            self.carla_actor.set_target_angular_velocity(angular_velocity)
 
     def control_command_override(self, enable):
         """
