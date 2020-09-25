@@ -16,25 +16,27 @@ position. If no /initialpose is set at startup, a random spawnpoint is used.
 
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
-import sys
 import json
 import math
 import os
 import random
+import traceback
 from abc import abstractmethod
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose  # pylint: disable=import-error
-from carla_msgs.msg import CarlaStatus, CarlaWorldInfo  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, euler_from_quaternion, quaternion_from_euler
+from carla_msgs.msg import CarlaWorldInfo  # pylint: disable=import-error
+from ros_compatibility import (
+    CompatibleNode,
+    destroy_subscription,
+    euler_from_quaternion,
+    quaternion_from_euler,
+)
 
 import carla
 
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
-if ROS_VERSION == 1:
-    import rospy  # pylint: disable=import-error
-
-elif ROS_VERSION == 2:
+if ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
     from ament_index_python.packages import get_package_share_directory  # pylint: disable=import-error
 
@@ -99,6 +101,14 @@ class CarlaEgoVehicle(CompatibleNode):
 
         self.loginfo("listening to server {}:{}".format(self.host, self.port))
         self.loginfo("using vehicle filter: {}".format(self.actor_filter))
+
+        self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        self.startup_subscription = self.create_subscriber(
+            CarlaWorldInfo,
+            '/carla/world_info',
+            self.run,
+            1
+        )
 
     # pylint: disable=inconsistent-return-statements
     def spawn_ego_vehicle(self):
@@ -374,73 +384,38 @@ class CarlaEgoVehicle(CompatibleNode):
         self.player = None
         super(CarlaEgoVehicle, self).destroy()
 
-    def run(self):
+    def run(self, _msg):
         """
-        main loop
+        Called after the Carla world was loaded; spawns the ego vehicle.
         """
-        if ROS_VERSION == 1:
-            # wait for ros-bridge to set up CARLA world
-            rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
-            try:
-                rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-            except rospy.ROSException:
-                rospy.logerr("Timeout while waiting for world info!")
-                sys.exit(1)
-
         self.loginfo("CARLA world available. Spawn ego vehicle...")
+        # The subscription should only call this function once
+        destroy_subscription(self.startup_subscription)
 
-        client = carla.Client(self.host, self.port)
-        client.set_timeout(self.timeout)
-        self.world = client.get_world()
-        self.restart()
-        self.loginfo("Ego spawned.")
         try:
-            self.spin()
+            client = carla.Client(self.host, self.port)
+            client.set_timeout(self.timeout)
+            self.world = client.get_world()
+            self.restart()
         except Exception:  # pylint: disable=broad-except
+            self.logerr(f"Could not run node: {traceback.format_exc()}")
             self.shutdown()
+            return
 
-
-def run_ego_vehicle(msg):  # pylint: disable=unused-argument
-    """
-    Callback function:
-    Called when bridge started - indicated by published /carla/status topic
-    and runs CarlaEgoVehicle afterwards
-    """
-    ego_vehicle = CarlaEgoVehicle()
-    try:
-        ego_vehicle.run()
-    finally:
-        if ego_vehicle is not None:
-            ego_vehicle.destroy()
+        self.loginfo("Ego spawned.")
 
 
 def main():
     """
     main function
     """
-
-    if ROS_VERSION == 1:
-        run_ego_vehicle(None)
-
-    elif ROS_VERSION == 2:
-        # Setup init_ego node.
-        rclpy.init(args=None)
+    executor = None
+    if ROS_VERSION == 2:
+        rclpy.init()
         executor = rclpy.executors.MultiThreadedExecutor()
-        init_node = rclpy.create_node("init_ego")
-        init_node.create_subscription(CarlaWorldInfo,
-                                      '/carla/world_info',
-                                      run_ego_vehicle,
-                                      1)
-        executor.add_node(init_node)
-        init_node.get_logger().info("Waiting for carla_bridge to start...")
 
-        try:
-            executor.spin()
-        except KeyboardInterrupt:
-            pass
-
-        init_node.destroy_node()
-        rclpy.shutdown()
+    ego_vehicle = CarlaEgoVehicle()
+    ego_vehicle.spin(executor)
 
 
 if __name__ == '__main__':
