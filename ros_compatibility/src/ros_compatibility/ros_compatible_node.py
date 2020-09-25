@@ -219,7 +219,7 @@ elif ROS_VERSION == 2:
                                             callback_group=callback_group)
 
         def spin(self, executor=None):
-            rclpy.spin(self)
+            rclpy.spin(self, executor)
 
         def shutdown(self):
             rclpy.shutdown()
