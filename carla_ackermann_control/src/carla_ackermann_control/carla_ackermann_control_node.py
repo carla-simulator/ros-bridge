@@ -13,6 +13,7 @@ import os
 import sys
 import datetime
 import numpy
+from typing import Sequence
 
 from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
@@ -33,6 +34,8 @@ if ROS_VERSION == 1:
     from dynamic_reconfigure.server import Server
 if ROS_VERSION == 2:
     import rclpy
+    from rclpy.parameter import Parameter
+    from rcl_interfaces.msg import SetParametersResult
 
 
 class CarlaAckermannControl(CompatibleNode):
@@ -50,11 +53,64 @@ class CarlaAckermannControl(CompatibleNode):
             "carla_ackermann_control", rospy_init=True
         )
 
+        # PID controller
+        # the controller has to run with the simulation time, not with real-time
+        #
+        # To prevent "float division by zero" within PID controller initialize it with
+        # a previous point in time (the error happens because the time doesn't
+        # change between initialization and first call, therefore dt is 0)
+        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
+            lambda: self.now_sec() - 0.1)
+
+        # we might want to use a PID controller to reach the final target speed
+        self.speed_controller = PID(Kp=self.get_param("speed_Kp"),
+                                    Ki=self.get_param("speed_Ki"),
+                                    Kd=self.get_param("speed_Kd"),
+                                    sample_time=0.05,
+                                    output_limits=(-1., 1.))
+        self.accel_controller = PID(Kp=self.get_param("accel_Kp"),
+                                    Ki=self.get_param("accel_Ki"),
+                                    Kd=self.get_param("accel_Kd"),
+                                    sample_time=0.05,
+                                    output_limits=(-1, 1))
+
+        # use the correct time for further calculations
+        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
+            lambda: self.now_sec())
+
+        if ROS_VERSION == 1:
+            self.reconfigure_server = Server(
+                EgoVehicleControlParameterConfig,
+                namespace="",
+                callback=self.reconfigure_pid_parameters,
+            )
+        if ROS_VERSION == 2:
+            self.add_on_set_parameters_callback(self.reconfigure_pid_parameters)
+            # TODO(hillekia@schaeffler.com): Enable stricter handling of node
+            # parameters, so they must be explicitly listed. This can be done by
+            # disabling the `automatically_declare_parameters_from_overrides`
+            # and `allow_undeclared_parameters` flags of `Node` and will prevent
+            # mistakes in the future.
+            #
+            # self.declare_parameters(
+            #     namespace="",
+            #     parameters=[
+            #         ("speed_Kp",),
+            #         ("speed_Ki",),
+            #         ("speed_Kd",),
+            #         ("accel_Kp",),
+            #         ("accel_Ki",),
+            #         ("accel_Kd",),
+            #         ("min_accel",),
+            #         ("role_name",),
+            #     ]
+            # )
+
         self.control_loop_rate = 1.0 / 10  # 10Hz
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
-        self.role_name = self.get_param('~role_name', 'ego_vehicle')
+        self.role_name = self.get_param('role_name')
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -90,37 +146,6 @@ class CarlaAckermannControl(CompatibleNode):
         self.info.output.steer = 0.
         self.info.output.reverse = False
         self.info.output.hand_brake = True
-
-        # PID controller
-        # the controller has to run with the simulation time, not with real-time
-        #
-        # To prevent "float division by zero" within PID controller initialize it with
-        # a previous point in time (the error happens because the time doesn't
-        # change between initialization and first call, therefore dt is 0)
-        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: self.now_sec() - 0.1)
-
-        # we might want to use a PID controller to reach the final target speed
-        self.speed_controller = PID(Kp=0.0,
-                                    Ki=0.0,
-                                    Kd=0.0,
-                                    sample_time=0.05,
-                                    output_limits=(-1., 1.))
-        self.accel_controller = PID(Kp=0.0,
-                                    Ki=0.0,
-                                    Kd=0.0,
-                                    sample_time=0.05,
-                                    output_limits=(-1, 1))
-
-        # use the correct time for further calculations
-        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: self.now_sec())
-
-        if ROS_VERSION == 1:
-            self.reconfigure_server = Server(
-                EgoVehicleControlParameterConfig,
-                callback=self.reconfigure_pid_parameters,
-            )
 
         # ackermann drive commands
         self.control_subscriber = self.create_subscriber(
@@ -182,6 +207,51 @@ class CarlaAckermannControl(CompatibleNode):
             )
             return ego_vehicle_control_parameter
 
+    if ROS_VERSION == 2:
+
+        def reconfigure_pid_parameters(  # pylint: disable=function-redefined
+            self, params: Sequence[Parameter]
+        ) -> SetParametersResult:
+            """Check and update the node's parameters."""
+            param_values = {p.name: p.value for p in params}
+
+            pid_param_names = {
+                "speed_Kp",
+                "speed_Ki",
+                "speed_Kd",
+                "accel_Kp",
+                "accel_Ki",
+                "accel_Kd",
+            }
+            common_names = pid_param_names.intersection(param_values.keys())
+            if not common_names:
+                # No work do to
+                return SetParametersResult(successful=True)
+
+            if any(p.value is None for p in params):
+                return SetParametersResult(
+                    successful=False, reason="Parameter must have a value assigned"
+                )
+
+            self.speed_controller.tunings = (
+                param_values.get("speed_Kp", self.speed_controller.Kp),
+                param_values.get("speed_Ki", self.speed_controller.Ki),
+                param_values.get("speed_Kd", self.speed_controller.Kd),
+            )
+            self.accel_controller.tunings = (
+                param_values.get("accel_Kp", self.accel_controller.Kp),
+                param_values.get("accel_Ki", self.accel_controller.Ki),
+                param_values.get("accel_Kd", self.accel_controller.Kd),
+            )
+
+            self.loginfo(
+                "Reconfigure Request:  speed ({}, {}, {}), accel ({}, {}, {})".format(
+                    *self.speed_controller.tunings, *self.accel_controller.tunings
+                )
+            )
+
+            return SetParametersResult(successful=True)
+
     def vehicle_status_updated(self, vehicle_status):
         """
         Stores the ackermann drive message for the next controller calculation
@@ -214,7 +284,7 @@ class CarlaAckermannControl(CompatibleNode):
             self.vehicle_info)
         self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
             self.vehicle_info)
-        self.info.restrictions.min_accel = self.get_param('/carla/ackermann_control/min_accel', 1.)
+        self.info.restrictions.min_accel = self.get_param('min_accel')
         # clipping the pedal in both directions to the same range using the usual lower
         # border: the max_accel to ensure the the pedal target is in symmetry to zero
         self.info.restrictions.max_pedal = min(
