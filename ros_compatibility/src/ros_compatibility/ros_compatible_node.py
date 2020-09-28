@@ -37,11 +37,17 @@ if ROS_VERSION == 1:
 
     def quaternion_multiply(q1, q2):
         return trans.quaternion_multiply(q1, q2)
+    
+    def get_time(node):
+        return rospy.Time.now()
 
     class ROSException(rospy.ROSException):
         pass
 
     class ROSInterruptException(rospy.ROSInterruptException):
+        pass
+
+    class ServiceException(rospy.ServiceException):
         pass
 
     class QoSProfile():
@@ -97,11 +103,28 @@ if ROS_VERSION == 1:
                 qos_profile = self.qos_profile
             return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
+        def wait_for_one_message(self, topic, topic_type, timeout = None):
+            return rospy.wait_for_message(topic, topic_type, timeout)
+
+        def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
+            return rospy.Service(srv_name, srv_type, callback)
+
+        def create_service_client(service_name, service):
+            rospy.wait_for_service(service_name)
+            client = rospy.ServiceProxy(service_name, service)
+            return client
+
+        def call_service(curr_node, client, req):
+            return client(req)
+
         def spin(self, executor=None):
             rospy.spin()
 
         def shutdown(self):
             rospy.signal_shutdown("")
+
+        def on_shutdown(self, handler):
+            rospy.on_shutdown(handler)
 
 elif ROS_VERSION == 2:
     from rclpy import Parameter
@@ -155,10 +178,23 @@ elif ROS_VERSION == 2:
         quat = qmult(q1, q2)
         return [quat[1], quat[2], quat[3], quat[0]]
 
+    def get_time(node):
+        return node.get_clock().now()
+
+    class WaitForMessageHelper(object):
+        def __init__(self):
+            self.msg = None
+        def callback(self, msg):
+            if self.msg is None:
+                self.msg = msg
+
     class ROSException(Exception):
         pass
 
     class ROSInterruptException(ROSInterruptException):
+        pass
+
+    class ServiceException(Exception):
         pass
 
     class CompatibleNode(Node):
@@ -218,11 +254,57 @@ elif ROS_VERSION == 2:
             return self.create_subscription(msg_type, topic, callback, qos_profile,
                                             callback_group=callback_group)
 
+        def wait_for_one_message(self, topic, topic_type, timeout = None):
+            s = None
+            spin_timeout = 0.5
+            loop_reps = -1
+            if timeout is not None:
+                loop_reps = timeout // spin_timeout + 1
+            wfm = WaitForMessageHelper()
+            try:
+                s = self.create_subscriber(topic_type, topic, wfm.callback)
+                while ros_ok() and wfm.msg is None:
+                    rclpy.spin_once(self, timeout_sec = spin_timeout)
+                    loop_reps = loop_reps - 1
+                    if loop_reps == 0:
+                        raise ROSException
+            finally:
+                if s is not None:
+                    self.destroy_subscription(s)  
+            return wfm.msg
+
+        def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
+            return self.create_service(srv_type, srv_name, callback)
+
+        def create_service_client(self, service_name, service, callback_group=None):
+            client = self.create_client(service, service_name, callback_group=callback_group)
+            while not client.wait_for_service(timeout_sec=1.0):
+                self.get_logger().info('service not available, waiting again...')
+            return client
+
+        def call_service(self, client, req):
+            resp = client.call_async(req)
+            rclpy.spin_until_future_complete(self, resp)
+            try:
+                result = resp.result()
+            except Exception as e:
+                node.get_logger().info('Service call failed %r' % (e,))
+            else:       
+                return result
+
+
         def spin(self, executor=None):
             rclpy.spin(self)
 
+        def spin_once(self, executor=None):
+            rclpy.spin_once(self)
+
         def shutdown(self):
             rclpy.shutdown()
+
+        def on_shutdown(self, handler):
+            rclpy.get_default_context().on_shutdown(handler)
+
 
 else:
     raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
