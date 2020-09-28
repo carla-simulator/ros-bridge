@@ -1,22 +1,34 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>carla_ad_demo</name>
   <version>0.0.1</version>
   <description>The carla_ad_demo package</description>
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
-  <buildtool_depend>catkin</buildtool_depend>
+
+  
   <exec_depend>carla_ros_bridge</exec_depend>
   <exec_depend>carla_ego_vehicle</exec_depend>
   <exec_depend>carla_waypoint_publisher</exec_depend>
   <exec_depend>carla_ad_agent</exec_depend>
   <exec_depend>carla_manual_control</exec_depend>
-  <exec_depend>rviz_carla_plugin</exec_depend>
+  <!-- <exec_depend>rviz_carla_plugin</exec_depend> -->
   <exec_depend>carla_twist_to_control</exec_depend>
-  <exec_depend>carla_spectator_camera</exec_depend>
-  <exec_depend>carla_ros_scenario_runner</exec_depend>
+  <!-- <exec_depend>carla_spectator_camera</exec_depend> -->
+  <!-- <exec_depend>carla_ros_scenario_runner</exec_depend> -->
   <exec_depend>rostopic</exec_depend>
-  <exec_depend>rviz</exec_depend>
+  
+
+  <!-- ROS 2 DEPENDENCIES-->
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_python</buildtool_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
+
+  <!-- ROS 1 DEPENDENCIES-->
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
+
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
   </export>
 </package>
