@@ -10,24 +10,23 @@ BasicAgent implements a basic agent that navigates scenes to reach a given
 target destination. This agent respects traffic lights and other vehicles.
 """
 
-from carla_waypoint_types.srv import GetActorWaypoint
-from local_planner import LocalPlanner  # pylint: disable=relative-import
-from agent import Agent, AgentState  # pylint: disable=relative-import
-from carla_msgs.msg import CarlaActorList
-from derived_object_msgs.msg import ObjectArray
-from geometry_msgs.msg import Pose
-from nav_msgs.msg import Odometry
-import rospy
+from carla_ad_agent.local_planner import LocalPlanner  # pylint: disable=relative-import
+from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
 from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
-from local_planner import LocalPlanner
-from agent import Agent, AgentState
 from carla_msgs.msg import CarlaActorList  # pylint: disable=import-error
 from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
 from geometry_msgs.msg import Pose  # pylint: disable=import-error
 from nav_msgs.msg import Odometry  # pylint: disable=import-error
-import rospy  # pylint: disable=import-error
 import math
+from ros_compatibility import ( 
+            ros_ok, 
+            ServiceException, 
+            ROSInterruptException)
 
+import os
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+if ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
 
 class BasicAgent(Agent):
     """
@@ -35,11 +34,11 @@ class BasicAgent(Agent):
     target destination. This agent respects traffic lights and other vehicles.
     """
 
-    def __init__(self, role_name, ego_vehicle_id, avoid_risk=True):
+    def __init__(self, role_name, ego_vehicle_id, node, avoid_risk=True):
         """
         """
-        super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk)
-
+        super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk, node)
+        self.node = node
         self._avoid_risk = avoid_risk
         self._current_speed = 0.0  # Km/h
         self._current_pose = Pose()
@@ -49,22 +48,29 @@ class BasicAgent(Agent):
             'K_P': 0.9,
             'K_D': 0.0,
             'K_I': 0.1}
-        self._local_planner = LocalPlanner(opt_dict={'lateral_control_dict': args_lateral_dict})
+        self._local_planner = LocalPlanner(node=self.node, opt_dict={'lateral_control_dict': args_lateral_dict})
+
+        if ROS_VERSION == 1:
+            cb_group = None
+        elif ROS_VERSION == 2:
+            cb_group = ReentrantCallbackGroup()
+
 
         if self._avoid_risk:
             self._vehicle_id_list = []
             self._lights_id_list = []
-            self._actors_subscriber = rospy.Subscriber(
-                "/carla/actor_list", CarlaActorList, self.actors_updated)
+            self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
+                    self.actors_updated, callback_group=cb_group)
             self._objects = []
-            self._objects_subscriber = rospy.Subscriber(
-                "/carla/{}/objects".format(role_name), ObjectArray, self.objects_updated)
-            self._get_actor_waypoint_client = rospy.ServiceProxy(
+            
+            self._objects_subscriber = self.node.create_subscriber(ObjectArray,
+                "/carla/{}/objects".format(role_name), self.objects_updated)
+            self._get_actor_waypoint_client = self.node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
-                GetActorWaypoint)
-
-        self._odometry_subscriber = rospy.Subscriber(
-            "/carla/{}/odometry".format(role_name), Odometry, self.odometry_updated)
+                GetActorWaypoint, callback_group=cb_group)
+                
+        self._odometry_subscriber = self.node.create_subscriber(Odometry,
+                "/carla/{}/odometry".format(role_name), self.odometry_updated)
 
     def get_actor_waypoint(self, actor_id):
         """
@@ -72,11 +78,13 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
-            response = self._get_actor_waypoint_client(actor_id)
+            request = GetActorWaypoint.Request()
+            request.id = actor_id
+            response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
-        except (rospy.ServiceException, rospy.ROSInterruptException) as e:
-            if not rospy.is_shutdown:
-                rospy.logwarn("Service call failed: {}".format(e))
+        except (ServiceException, ROSInterruptException, TypeError) as e:
+            if ros_ok():
+                self.node.logwarn("Service call failed: {}".format(e))
 
     def odometry_updated(self, odo):
         """
