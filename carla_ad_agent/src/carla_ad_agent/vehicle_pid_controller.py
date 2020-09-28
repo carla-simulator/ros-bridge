@@ -11,8 +11,8 @@
 from collections import deque
 import math
 import numpy as np
-import rospy  # pylint: disable=import-error
-from tf.transformations import euler_from_quaternion  # pylint: disable=import-error
+import rclpy
+from ros_compatibility import euler_from_quaternion, get_time  # pylint: disable=import-error
 from geometry_msgs.msg import Point  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 
@@ -23,7 +23,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
     to perform the low level control a vehicle from client side
     """
 
-    def __init__(self, args_lateral=None, args_longitudinal=None):
+    def __init__(self, node, args_lateral=None, args_longitudinal=None):
         """
         :param vehicle: actor to apply to local planner logic onto
         :param args_lateral: dictionary of arguments to set the lateral PID controller using
@@ -42,9 +42,10 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         if not args_longitudinal:
             args_longitudinal = {'K_P': 1.0, 'K_D': 0.0, 'K_I': 0.0}
 
+        self.node = node
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)
-        self._last_control_time = rospy.get_time()
+        self._last_control_time = float(get_time(self.node).nanoseconds/10**9)
 
     def run_step(self, target_speed, current_speed, current_pose, waypoint):
         """
@@ -55,7 +56,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         :param waypoint: target location encoded as a waypoint
         :return: distance (in meters) to the waypoint
         """
-        current_time = rospy.get_time()
+        current_time = float(get_time(self.node).nanoseconds/10**9)
         dt = current_time-self._last_control_time
         if dt == 0.0:
             dt = 0.000001
