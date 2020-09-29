@@ -195,15 +195,16 @@ class CarlaEgoVehicle(CompatibleNode):
 
         if self.player_created:
             # Read sensors from file
-            if not os.path.exists(self.sensor_definition_file):
+            try:
+                with open(self.sensor_definition_file) as f:
+                    json_sensors = json.load(f)["sensors"]
+            except (OSError, json.JSONDecodeError, KeyError) as e:
                 raise RuntimeError(
-                    "Could not read sensor-definition from {}".format(self.sensor_definition_file))
-            json_sensors = None
-            with open(self.sensor_definition_file) as handle:
-                json_sensors = json.loads(handle.read())
+                    f"Could not read sensor-definition from '{self.sensor_definition_file}'"
+                ) from e
 
             # Set up the sensors
-            self.sensor_actors = self.setup_sensors(json_sensors["sensors"])
+            self.sensor_actors = self.setup_sensors(json_sensors)
 
             self.player_created = False
 
