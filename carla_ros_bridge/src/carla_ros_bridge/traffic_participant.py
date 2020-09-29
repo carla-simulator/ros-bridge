@@ -99,7 +99,7 @@ class TrafficParticipant(Actor):
         if self.get_classification() != Object.CLASSIFICATION_UNKNOWN:
             obj.object_classified = True
             obj.classification = self.get_classification()
-            obj.classification_certainty = 1.0
+            obj.classification_certainty = 255
             obj.classification_age = self.classification_age
 
         return obj
