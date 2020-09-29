@@ -72,7 +72,6 @@ class Radar(Sensor):
                                 detection.depth * np.sin(-detection.azimuth) * np.cos(detection.altitude),
                                 detection.depth * np.sin(detection.altitude),
                                 detection.depth, detection.velocity, detection.azimuth, detection.altitude])
-        
         radar_msg_pc = create_cloud(radar_msg.header, fields, points)
 
         self.publish_message(self.get_topic_prefix() + "/radar", radar_msg)
