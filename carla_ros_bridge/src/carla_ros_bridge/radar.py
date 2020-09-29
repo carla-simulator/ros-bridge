@@ -75,5 +75,5 @@ class Radar(Sensor):
         radar_msg_pc = create_cloud(radar_msg.header, fields, points)
 
         self.publish_message(self.get_topic_prefix() + "/radar", radar_msg)
-        self.publish_message(self.get_topic_prefix() + "/radar/PointCloud2", radar_msg_pc)
+        self.publish_message(self.get_topic_prefix() + "/radar_points", radar_msg_pc)
 
