@@ -22,19 +22,19 @@ import sys
 import threading
 import os
 
-from ros_compatibility import ( euler_from_quaternion,
-                                quaternion_from_euler, 
-                                CompatibleNode,
-                                QoSProfile,
-                                get_time,
-                                ROSException,
-                                ros_timestamp)
+from ros_compatibility import (euler_from_quaternion,
+                               quaternion_from_euler,
+                               CompatibleNode,
+                               QoSProfile,
+                               get_time,
+                               ROSException,
+                               ros_timestamp)
 from nav_msgs.msg import Path  # pylint: disable=import-error
 from geometry_msgs.msg import PoseStamped  # pylint: disable=import-error
 from carla_msgs.msg import CarlaWorldInfo  # pylint: disable=import-error
 # from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint  # pylint: disable=import-error
 # from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint  # pylint: disable=import-error
-from carla_waypoint_types.srv import  GetWaypoint  # pylint: disable=import-error
+from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
 
 import carla
@@ -44,8 +44,12 @@ from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 2:
+if ROS_VERSION == 1:
+    from carla_waypoint_types.srv import GetWaypointResponse  # pylint: disable=import-error
+    from carla_waypoint_types.srv import GetActorWaypointResponse
+elif ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
+
 
 class CarlaToRosWaypointConverter(CompatibleNode):
 
@@ -71,15 +75,15 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.role_name = self.get_param("role_name", 'ego_vehicle')
         self.waypoint_publisher = self.new_publisher(
             Path, '/carla/{}/waypoints'.format(self.role_name), QoSProfile(depth=1, durability=True))
-    
+
         # initialize ros services
         self.getWaypointService = self.new_service(
-            GetWaypoint, 
+            GetWaypoint,
             '/carla_waypoint_publisher/{}/get_waypoint'.format(self.role_name),
             self.get_waypoint)
         self.getActorWaypointService = self.new_service(
-            GetActorWaypoint, 
-            '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(self.role_name), 
+            GetActorWaypoint,
+            '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(self.role_name),
             self.get_actor_waypoint)
 
         # set initial goal
@@ -103,7 +107,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         if self.on_tick:
             self.world.remove_on_tick(self.on_tick)
 
-    def get_waypoint(self, req, response):
+    def get_waypoint(self, req, response=None):
         """
         Get the waypoint for a location
         """
@@ -114,7 +118,8 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         carla_waypoint = self.map.get_waypoint(carla_position)
 
-        # response = GetWaypointResponse()
+        if ROS_VERSION == 1:
+            response = GetWaypointResponse()
         response.waypoint.pose.position.x = carla_waypoint.transform.location.x
         response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
         response.waypoint.pose.position.z = carla_waypoint.transform.location.z
@@ -125,14 +130,15 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         #self.logwarn("Get waypoint {}".format(response.waypoint.pose.position))
         return response
 
-    def get_actor_waypoint(self, req, response):
+    def get_actor_waypoint(self, req, response=None):
         """
         Convenience method to get the waypoint for an actor
         """
-        self.loginfo("get_actor_waypoint(): Get waypoint of actor {}".format(req.id))
+        # self.loginfo("get_actor_waypoint(): Get waypoint of actor {}".format(req.id))
         actor = self.world.get_actors().find(req.id)
 
-        # response = GetActorWaypointResponse()
+        if ROS_VERSION == 1:
+            response = GetActorWaypointResponse()
         if actor:
             carla_waypoint = self.map.get_waypoint(actor.get_location())
             response.waypoint.pose.position.x = carla_waypoint.transform.location.x
@@ -245,8 +251,8 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         """
         msg = Path()
         msg.header.frame_id = "map"
-        time_stamp = get_time(self).seconds_nanoseconds()
-        msg.header.stamp = ros_timestamp(time_stamp[0], time_stamp[1])
+        time_stamp = get_time(self)
+        msg.header.stamp = ros_timestamp(time_stamp, from_sec=True)
         if self.current_route is not None:
             for wp in self.current_route:
                 pose = PoseStamped()
@@ -265,12 +271,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.waypoint_publisher.publish(msg)
         self.loginfo("Published {} waypoints.".format(len(msg.poses)))
 
-
     def connect_to_carla(self):
 
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo)#, timeout=10.0)
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo)  # , timeout=10.0)
         except ROSException:
             self.logerr("Error while waiting for world info!")
             sys.exit(1)
@@ -279,7 +284,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         port = self.get_param("carla/port", 2000)
         timeout = self.get_param("carla/timeout", 10)
         self.loginfo("CARLA world available. Trying to connect to {host}:{port}".format(
-        host=host, port=port))
+            host=host, port=port))
 
         carla_client = carla.Client(host=host, port=port)
         carla_client.set_timeout(timeout)
@@ -300,7 +305,7 @@ def main(args=None):
         waypointConverter = CarlaToRosWaypointConverter()
         waypointConverter.spin()
         del waypointConverter
-    
+
     finally:
         # self.loginfo("Done")
         print("Done")

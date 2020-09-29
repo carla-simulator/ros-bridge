@@ -10,23 +10,36 @@ BasicAgent implements a basic agent that navigates scenes to reach a given
 target destination. This agent respects traffic lights and other vehicles.
 """
 
-from carla_ad_agent.local_planner import LocalPlanner  # pylint: disable=relative-import
-from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
 from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
 from carla_msgs.msg import CarlaActorList  # pylint: disable=import-error
 from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
 from geometry_msgs.msg import Pose  # pylint: disable=import-error
 from nav_msgs.msg import Odometry  # pylint: disable=import-error
 import math
-from ros_compatibility import ( 
-            ros_ok, 
-            ServiceException, 
-            ROSInterruptException)
+from ros_compatibility import (
+    ros_ok,
+    ros_ok,
+    ros_ok,
+    ros_ok,
+    ros_ok,
+    ServiceException,
+    ServiceException,
+    ServiceException,
+    ServiceException,
+    ServiceException,
+    ROSInterruptException)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
-if ROS_VERSION == 2:
+if ROS_VERSION == 1:
+    from carla_waypoint_types.srv import GetActorWaypointRequest
+    from local_planner import LocalPlanner  # pylint: disable=relative-import
+    from agent import Agent, AgentState  # pylint: disable=relative-import
+elif ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
+    from carla_ad_agent.local_planner import LocalPlanner  # pylint: disable=relative-import
+    from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
+
 
 class BasicAgent(Agent):
     """
@@ -48,29 +61,29 @@ class BasicAgent(Agent):
             'K_P': 0.9,
             'K_D': 0.0,
             'K_I': 0.1}
-        self._local_planner = LocalPlanner(node=self.node, opt_dict={'lateral_control_dict': args_lateral_dict})
+        self._local_planner = LocalPlanner(node=self.node, opt_dict={
+                                           'lateral_control_dict': args_lateral_dict})
 
         if ROS_VERSION == 1:
             cb_group = None
         elif ROS_VERSION == 2:
             cb_group = ReentrantCallbackGroup()
 
-
         if self._avoid_risk:
             self._vehicle_id_list = []
             self._lights_id_list = []
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
-                    self.actors_updated, callback_group=cb_group)
+                                                                  self.actors_updated, callback_group=cb_group)
             self._objects = []
-            
+
             self._objects_subscriber = self.node.create_subscriber(ObjectArray,
-                "/carla/{}/objects".format(role_name), self.objects_updated)
+                                                                   "/carla/{}/objects".format(role_name), self.objects_updated)
             self._get_actor_waypoint_client = self.node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
                 GetActorWaypoint, callback_group=cb_group)
-                
+
         self._odometry_subscriber = self.node.create_subscriber(Odometry,
-                "/carla/{}/odometry".format(role_name), self.odometry_updated)
+                                                                "/carla/{}/odometry".format(role_name), self.odometry_updated)
 
     def get_actor_waypoint(self, actor_id):
         """
@@ -78,8 +91,12 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
-            request = GetActorWaypoint.Request()
-            request.id = actor_id
+            if ROS_VERSION == 1:
+                request = GetActorWaypointRequest()
+                request.id = actor_id
+            elif ROS_VERSION == 2:
+                request = GetActorWaypoint.Request()
+                request.id = actor_id
             response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
         except (ServiceException, ROSInterruptException, TypeError) as e:

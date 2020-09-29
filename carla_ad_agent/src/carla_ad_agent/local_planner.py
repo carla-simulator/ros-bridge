@@ -13,9 +13,17 @@ low-level waypoint following based on PID controllers.
 from collections import deque
 from geometry_msgs.msg import PointStamped  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
-from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
-from carla_ad_agent.misc import distance_vehicle
 from ros_compatibility import QoSProfile
+
+import os
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+
+if ROS_VERSION == 1:
+    from vehicle_pid_controller import VehiclePIDController
+    from misc import distance_vehicle
+elif ROS_VERSION == 2:
+    from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
+    from carla_ad_agent.misc import distance_vehicle
 
 
 class LocalPlanner(object):
