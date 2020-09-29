@@ -11,9 +11,10 @@ Classes to handle Carla Radar
 """
 import numpy as np
 from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection
-from sensor_msgs.msg import PointField
+from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs.point_cloud2 import create_cloud
 from carla_ros_bridge.sensor import Sensor
+
 
 class Radar(Sensor):
 
@@ -72,6 +73,7 @@ class Radar(Sensor):
                                 detection.depth * np.sin(-detection.azimuth) * np.cos(detection.altitude),
                                 detection.depth * np.sin(detection.altitude),
                                 detection.depth, detection.velocity, detection.azimuth, detection.altitude])
+        
         radar_msg_pc  = create_cloud(radar_msg.header, fields, points)
 
         self.publish_message(self.get_topic_prefix() + "/radar", radar_msg)
