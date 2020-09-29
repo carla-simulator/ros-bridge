@@ -13,17 +13,19 @@ import time
 from nav_msgs.msg import Path  # pylint: disable=import-error
 from std_msgs.msg import Float64  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl  # pylint: disable=import-error
-from carla_ad_agent.basic_agent import BasicAgent
 from ros_compatibility import CompatibleNode, ROSInterruptException, ros_ok, QoSProfile, ROSException
-import threading
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
     import rospy
+    # TODO: shouldn't be necessary
+    from basic_agent import BasicAgent
 elif ROS_VERSION == 2:
     import rclpy
+    from carla_ad_agent.basic_agent import BasicAgent
+
 
 class CarlaAdAgent(CompatibleNode):
     """
@@ -35,7 +37,7 @@ class CarlaAdAgent(CompatibleNode):
         Constructor
         """
         super(CarlaAdAgent, self).__init__('carla_ad_agent')
-        
+
         role_name = self.get_param("role_name", "ego_vehicle")
         avoid_risk = self.get_param("avoid_risk", True)
 
@@ -45,7 +47,6 @@ class CarlaAdAgent(CompatibleNode):
         self._agent = None
         self.on_shutdown(self._on_shutdown)
 
-
         # wait for ego vehicle
         vehicle_info = None
         try:
@@ -53,19 +54,19 @@ class CarlaAdAgent(CompatibleNode):
             vehicle_info = self.wait_for_one_message(
                 "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo)
             self.loginfo("Vehicle info recieved.")
-        except ROSException: 
+        except ROSException:
             self.logerr("Timeout while waiting for vehicle info!")
             sys.exit(1)
 
-        self._route_subscriber =self.create_subscriber(
+        self._route_subscriber = self.create_subscriber(
             Path, "/carla/{}/waypoints".format(role_name), self.path_updated)
 
         self._target_speed_subscriber = self.create_subscriber(
             Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated)
 
         self.vehicle_control_publisher = self.new_publisher(
-            CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name), 
-                QoSProfile(depth=1, durability=False))
+            CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name),
+            QoSProfile(depth=1, durability=False))
         self._agent = BasicAgent(role_name, vehicle_info.id,  # pylint: disable=no-member
                                  self, avoid_risk)
 
@@ -120,7 +121,7 @@ class CarlaAdAgent(CompatibleNode):
                 self._route_assigned = False
 
         return control
-    
+
     def spin_loop(self):
         while ros_ok:
             self.spin_once()
@@ -138,7 +139,8 @@ class CarlaAdAgent(CompatibleNode):
             r = rospy.Rate(loop_frequency)
 
         while ros_ok():
-            self.spin_once()
+            if ROS_VERSION == 2:
+                rclpy.spin_once(self)
             if self._global_plan:
                 control = self.run_step()
                 if control:
@@ -149,11 +151,10 @@ class CarlaAdAgent(CompatibleNode):
                     if ROS_VERSION == 1:
                         r.sleep()
                     elif ROS_VERSION == 2:
-                        #TODO: use rclpy.Rate, not working yet
+                        # TODO: use rclpy.Rate, not working yet
                         time.sleep(1 / loop_frequency)
                 except ROSInterruptException:
                     pass
-            
 
 
 def main(args=None):

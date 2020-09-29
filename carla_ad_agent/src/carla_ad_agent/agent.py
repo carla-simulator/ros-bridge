@@ -9,18 +9,26 @@
 Base class for agent
 """
 
-from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
 from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
 from enum import Enum
 import math
 
-from ros_compatibility import ( 
-            euler_from_quaternion, 
-            ros_ok, 
-            ServiceException, 
-            ROSInterruptException)
+from ros_compatibility import (
+    euler_from_quaternion,
+    ros_ok,
+    ServiceException,
+    ROSInterruptException)
+
+import os
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+
+if ROS_VERSION == 1:
+    from carla_waypoint_types.srv import GetWaypointRequest
+    from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
+elif ROS_VERSION == 2:
+    from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
 
 
 class AgentState(Enum):
@@ -55,10 +63,10 @@ class Agent(object):
 
             self._traffic_lights = []
             self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
-                "/carla/traffic_lights", self.traffic_lights_updated)
+                                                                           "/carla/traffic_lights", self.traffic_lights_updated)
 
             node.create_subscriber(CarlaWorldInfo,
-                "/carla/world_info", self.world_info_updated)
+                                   "/carla/world_info", self.world_info_updated)
 
     def traffic_lights_updated(self, traffic_lights):
         """
@@ -115,8 +123,14 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        ego_vehicle_location = GetWaypoint.Request()
-        ego_vehicle_location.location = self._vehicle_location
+        if self._vehicle_location is not None and ROS_VERSION == 2:
+            ego_vehicle_location = GetWaypoint.Request()
+            ego_vehicle_location.location = self._vehicle_location
+        elif self._vehicle_location is not None and ROS_VERSION == 1:
+            ego_vehicle_location = GetWaypointRequest()
+            ego_vehicle_location.location = self._vehicle_location
+        else:
+            ego_vehicle_location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
             if ros_ok():
@@ -128,7 +142,7 @@ class Agent(object):
             if object_waypoint.road_id != ego_vehicle_waypoint.road_id or \
                     object_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
                 continue
-            if is_within_distance_ahead(object_waypoint.pose.position, ego_vehicle_location,
+            if is_within_distance_ahead(object_waypoint.pose.position, ego_vehicle_location.location,
                                         math.degrees(self._vehicle_yaw),
                                         self._proximity_threshold):
                 traffic_light_state = CarlaTrafficLightStatus.RED
@@ -166,8 +180,11 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        if self._vehicle_location is not None:
+        if self._vehicle_location is not None and ROS_VERSION == 2:
             ego_vehicle_location = GetWaypoint.Request()
+            ego_vehicle_location.location = self._vehicle_location
+        elif self._vehicle_location is not None and ROS_VERSION == 1:
+            ego_vehicle_location = GetWaypointRequest()
             ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
@@ -182,8 +199,12 @@ class Agent(object):
             return (False, None)
 
         if self._local_planner.target_route_point is not None:
-            request = GetWaypoint.Request()
-            request.location = self._local_planner.target_route_point.position
+            if ROS_VERSION == 2:
+                request = GetWaypoint.Request()
+                request.location = self._local_planner.target_route_point.position
+            elif ROS_VERSION == 1:
+                request = GetWaypointRequest()
+                request.location = self._local_planner.target_route_point.position
             target_waypoint = self.get_waypoint(request)
             if not target_waypoint:
                 if ros_ok():
@@ -246,8 +267,11 @@ class Agent(object):
                  - vehicle is the blocker object itself
         """
 
-        if self._vehicle_location is not None:
+        if self._vehicle_location is not None and ROS_VERSION == 2:
             ego_vehicle_location = GetWaypoint.Request()
+            ego_vehicle_location.location = self._vehicle_location
+        elif self._vehicle_location is not None and ROS_VERSION == 1:
+            ego_vehicle_location = GetWaypointRequest()
             ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
@@ -272,13 +296,18 @@ class Agent(object):
             if not target_vehicle_location:
                 self.node.logwarn("Location of vehicle {} not found".format(target_vehicle_id))
                 continue
-            request = GetWaypoint.Request()
-            request.location = target_vehicle_location.position
+
             # if the object is not in our lane it's not an obstacle
+            if ROS_VERSION == 2:
+                request = GetWaypoint.Request()
+                request.location = target_vehicle_location.position
+            elif ROS_VERSION == 1:
+                request = GetWaypointRequest()
+                request.location = target_vehicle_location.position
             target_vehicle_waypoint = self.get_waypoint(request)
             if not target_vehicle_waypoint:
                 if ros_ok():
-                   self.node.logwarn("Could not get waypoint for target vehicle.")
+                    self.node.logwarn("Could not get waypoint for target vehicle.")
                 return (False, None)
             if target_vehicle_waypoint.road_id != ego_vehicle_waypoint.road_id or \
                     target_vehicle_waypoint.lane_id != ego_vehicle_waypoint.lane_id:

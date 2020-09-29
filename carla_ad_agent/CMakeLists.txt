@@ -8,19 +8,16 @@ if(${ROS_VERSION} EQUAL 1)
 
   find_package(catkin REQUIRED COMPONENTS rospy roslaunch)
 
-
   catkin_python_setup()
 
   catkin_package(CATKIN_DEPENDS rospy)
 
   roslaunch_add_file_check(launch)
 
-  
   include_directories(${catkin_INCLUDE_DIRS})
 
-  install(
-    PROGRAMS src/carla_ad_agent/carla_ad_agent.py
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  install(PROGRAMS src/carla_ad_agent/carla_ad_agent.py
+          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)

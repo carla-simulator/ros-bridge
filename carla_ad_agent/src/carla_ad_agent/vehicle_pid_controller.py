@@ -11,7 +11,6 @@
 from collections import deque
 import math
 import numpy as np
-import rclpy
 from ros_compatibility import euler_from_quaternion, get_time  # pylint: disable=import-error
 from geometry_msgs.msg import Point  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
@@ -45,7 +44,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         self.node = node
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)
-        self._last_control_time = float(get_time(self.node).nanoseconds/10**9)
+        self._last_control_time = get_time(self.node)
 
     def run_step(self, target_speed, current_speed, current_pose, waypoint):
         """
@@ -56,7 +55,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         :param waypoint: target location encoded as a waypoint
         :return: distance (in meters) to the waypoint
         """
-        current_time = float(get_time(self.node).nanoseconds/10**9)
+        current_time = get_time(self.node)
         dt = current_time-self._last_control_time
         if dt == 0.0:
             dt = 0.000001
