@@ -100,9 +100,7 @@ class EgoVehicle(Vehicle):
         vehicle_status = CarlaEgoVehicleStatus(
             header=self.get_msg_header("map"))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
-        vehicle_status.acceleration.linear = transforms.carla_vector_to_ros_vector_rotated(
-            self.carla_actor.get_acceleration(),
-            self.carla_actor.get_transform().rotation)
+        vehicle_status.acceleration.linear = self.get_current_ros_accel().linear
         vehicle_status.orientation = self.get_current_ros_pose().orientation
         vehicle_status.control.throttle = self.carla_actor.get_control().throttle
         vehicle_status.control.steer = self.carla_actor.get_control().steer
