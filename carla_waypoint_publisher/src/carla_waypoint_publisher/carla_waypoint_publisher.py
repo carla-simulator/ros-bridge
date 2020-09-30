@@ -28,12 +28,11 @@ from ros_compatibility import (euler_from_quaternion,
                                QoSProfile,
                                get_time,
                                ROSException,
-                               ros_timestamp)
+                               ros_timestamp,
+                               latch_on)
 from nav_msgs.msg import Path  # pylint: disable=import-error
 from geometry_msgs.msg import PoseStamped  # pylint: disable=import-error
 from carla_msgs.msg import CarlaWorldInfo  # pylint: disable=import-error
-# from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint  # pylint: disable=import-error
-# from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint  # pylint: disable=import-error
 from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
 
@@ -275,7 +274,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo)  # , timeout=10.0)
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))  # , timeout=10.0)
         except ROSException:
             self.logerr("Error while waiting for world info!")
             sys.exit(1)

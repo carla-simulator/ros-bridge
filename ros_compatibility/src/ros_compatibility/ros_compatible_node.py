@@ -103,7 +103,7 @@ if ROS_VERSION == 1:
                 qos_profile = self.qos_profile
             return rospy.Subscriber(topic, msg_type, callback, queue_size=qos_profile.depth)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None):
+        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
             return rospy.wait_for_message(topic, topic_type, timeout)
 
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
@@ -263,7 +263,7 @@ elif ROS_VERSION == 2:
             return self.create_subscription(msg_type, topic, callback, qos_profile,
                                             callback_group=callback_group)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None):
+        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
             s = None
             spin_timeout = 0.5
             loop_reps = -1
@@ -271,7 +271,7 @@ elif ROS_VERSION == 2:
                 loop_reps = timeout // spin_timeout + 1
             wfm = WaitForMessageHelper()
             try:
-                s = self.create_subscriber(topic_type, topic, wfm.callback)
+                s = self.create_subscriber(topic_type, topic, wfm.callback, qos_profile=qos_profile)
                 while ros_ok() and wfm.msg is None:
                     rclpy.spin_once(self, timeout_sec=spin_timeout)
                     loop_reps = loop_reps - 1
