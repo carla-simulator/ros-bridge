@@ -128,10 +128,9 @@ class Agent(object):
         if self._vehicle_location is not None:
             if ROS_VERSION == 2:
                 ego_vehicle_location = GetWaypoint.Request()
-                ego_vehicle_location.location = self._vehicle_location
             elif ROS_VERSION == 1:
                 ego_vehicle_location = GetWaypointRequest()
-                ego_vehicle_location.location = self._vehicle_location
+            ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
@@ -186,10 +185,9 @@ class Agent(object):
         if self._vehicle_location is not None:
             if ROS_VERSION == 2:
                 ego_vehicle_location = GetWaypoint.Request()
-                ego_vehicle_location.location = self._vehicle_location
             elif ROS_VERSION == 1:
                 ego_vehicle_location = GetWaypointRequest()
-                ego_vehicle_location.location = self._vehicle_location
+            ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
@@ -274,10 +272,9 @@ class Agent(object):
         if self._vehicle_location is not None:
             if ROS_VERSION == 2:
                 ego_vehicle_location = GetWaypoint.Request()
-                ego_vehicle_location.location = self._vehicle_location
             elif ROS_VERSION == 1:
                 ego_vehicle_location = GetWaypointRequest()
-                ego_vehicle_location.location = self._vehicle_location
+            ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
 
