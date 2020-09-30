@@ -18,14 +18,6 @@ from nav_msgs.msg import Odometry  # pylint: disable=import-error
 import math
 from ros_compatibility import (
     ros_ok,
-    ros_ok,
-    ros_ok,
-    ros_ok,
-    ros_ok,
-    ServiceException,
-    ServiceException,
-    ServiceException,
-    ServiceException,
     ServiceException,
     ROSInterruptException)
 

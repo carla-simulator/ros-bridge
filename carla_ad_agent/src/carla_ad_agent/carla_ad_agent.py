@@ -20,7 +20,7 @@ ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
     import rospy
-    # TODO: shouldn't be necessary
+    # TODO: different ways to import the carla_ad_agent submodules (e.g. carla_ad_agent.basic_agent) between ros1 and ros2 shouldn't be necessary
     from basic_agent import BasicAgent
 elif ROS_VERSION == 2:
     import rclpy
@@ -122,10 +122,6 @@ class CarlaAdAgent(CompatibleNode):
                 self._route_assigned = False
 
         return control
-
-    def spin_loop(self):
-        while ros_ok:
-            self.spin_once()
 
     def run(self):
         """

@@ -119,7 +119,7 @@ class LocalPlanner(object):
             control.hand_brake = False
             control.manual_gear_shift = False
 
-            self.node.logwarn("Route finished.")
+            self.node.loginfo("Route finished.")
             return control, True
 
         #   Buffering the waypoints

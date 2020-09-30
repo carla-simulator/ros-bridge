@@ -26,7 +26,6 @@ from ros_compatibility import (euler_from_quaternion,
                                quaternion_from_euler,
                                CompatibleNode,
                                QoSProfile,
-                               get_time,
                                ROSException,
                                ros_timestamp,
                                latch_on)
@@ -250,7 +249,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         """
         msg = Path()
         msg.header.frame_id = "map"
-        time_stamp = get_time(self)
+        time_stamp = self.get_time()
         msg.header.stamp = ros_timestamp(time_stamp, from_sec=True)
         if self.current_route is not None:
             for wp in self.current_route:
@@ -275,7 +274,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
             self.wait_for_one_message("/carla/world_info", CarlaWorldInfo,
-                                      qos_profile=QoSProfile(depth=1, durability=latch_on))  # , timeout=10.0)
+                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=10.0)
         except ROSException:
             self.logerr("Error while waiting for world info!")
             sys.exit(1)
