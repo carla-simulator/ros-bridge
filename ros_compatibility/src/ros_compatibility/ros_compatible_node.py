@@ -38,9 +38,6 @@ if ROS_VERSION == 1:
     def quaternion_multiply(q1, q2):
         return trans.quaternion_multiply(q1, q2)
 
-    def get_time(node):
-        return rospy.get_time()
-
     class ROSException(rospy.ROSException):
         pass
 
@@ -126,6 +123,9 @@ if ROS_VERSION == 1:
         def spin(self, executor=None):
             rospy.spin()
 
+        def get_time(self):
+            return rospy.get_time()
+
         def shutdown(self):
             rospy.signal_shutdown("")
 
@@ -183,11 +183,6 @@ elif ROS_VERSION == 2:
         q2 = [q2[3], q2[0], q2[1], q2[2]]
         quat = qmult(q1, q2)
         return [quat[1], quat[2], quat[3], quat[0]]
-
-    def get_time(node):
-        t = node.get_clock().now()
-        t = t.seconds_nanoseconds()
-        return float(t[0] + (t[1] / 10**9))
 
     class WaitForMessageHelper(object):
         def __init__(self):
@@ -303,6 +298,11 @@ elif ROS_VERSION == 2:
 
         def spin(self, executor=None):
             rclpy.spin(self)
+
+        def get_time(self):
+            t = self.get_clock().now()
+            t = t.seconds_nanoseconds()
+            return float(t[0] + (t[1] / 10**9))
 
         def shutdown(self):
             rclpy.shutdown()

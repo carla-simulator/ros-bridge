@@ -125,12 +125,13 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        if self._vehicle_location is not None and ROS_VERSION == 2:
-            ego_vehicle_location = GetWaypoint.Request()
-            ego_vehicle_location.location = self._vehicle_location
-        elif self._vehicle_location is not None and ROS_VERSION == 1:
-            ego_vehicle_location = GetWaypointRequest()
-            ego_vehicle_location.location = self._vehicle_location
+        if self._vehicle_location is not None:
+            if ROS_VERSION == 2:
+                ego_vehicle_location = GetWaypoint.Request()
+                ego_vehicle_location.location = self._vehicle_location
+            elif ROS_VERSION == 1:
+                ego_vehicle_location = GetWaypointRequest()
+                ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
@@ -182,12 +183,13 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        if self._vehicle_location is not None and ROS_VERSION == 2:
-            ego_vehicle_location = GetWaypoint.Request()
-            ego_vehicle_location.location = self._vehicle_location
-        elif self._vehicle_location is not None and ROS_VERSION == 1:
-            ego_vehicle_location = GetWaypointRequest()
-            ego_vehicle_location.location = self._vehicle_location
+        if self._vehicle_location is not None:
+            if ROS_VERSION == 2:
+                ego_vehicle_location = GetWaypoint.Request()
+                ego_vehicle_location.location = self._vehicle_location
+            elif ROS_VERSION == 1:
+                ego_vehicle_location = GetWaypointRequest()
+                ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
@@ -269,12 +271,13 @@ class Agent(object):
                  - vehicle is the blocker object itself
         """
 
-        if self._vehicle_location is not None and ROS_VERSION == 2:
-            ego_vehicle_location = GetWaypoint.Request()
-            ego_vehicle_location.location = self._vehicle_location
-        elif self._vehicle_location is not None and ROS_VERSION == 1:
-            ego_vehicle_location = GetWaypointRequest()
-            ego_vehicle_location.location = self._vehicle_location
+        if self._vehicle_location is not None:
+            if ROS_VERSION == 2:
+                ego_vehicle_location = GetWaypoint.Request()
+                ego_vehicle_location.location = self._vehicle_location
+            elif ROS_VERSION == 1:
+                ego_vehicle_location = GetWaypointRequest()
+                ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
 

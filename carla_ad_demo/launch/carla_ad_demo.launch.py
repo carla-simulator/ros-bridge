@@ -56,6 +56,7 @@ def generate_launch_description():
             name='avoid_risk',
             default_value='True'
         ),
+        # TODO: adapt this to ROS2
         # launch_ros.actions.Node(
         #     package='rostopic',
         #     node_executable='rostopic',
