@@ -19,7 +19,9 @@ from ros_compatibility import (
     euler_from_quaternion,
     ros_ok,
     ServiceException,
-    ROSInterruptException)
+    ROSInterruptException,
+    QoSProfile,
+    latch_on)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -66,7 +68,7 @@ class Agent(object):
                                                                            "/carla/traffic_lights", self.traffic_lights_updated)
 
             node.create_subscriber(CarlaWorldInfo,
-                                   "/carla/world_info", self.world_info_updated)
+                                   "/carla/world_info", self.world_info_updated, qos_profile=QoSProfile(depth=1, durability=latch_on))
 
     def traffic_lights_updated(self, traffic_lights):
         """

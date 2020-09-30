@@ -13,7 +13,7 @@ import time
 from nav_msgs.msg import Path  # pylint: disable=import-error
 from std_msgs.msg import Float64  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, ROSInterruptException, ros_ok, QoSProfile, ROSException
+from ros_compatibility import CompatibleNode, ROSInterruptException, ros_ok, QoSProfile, ROSException, latch_on
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -52,7 +52,8 @@ class CarlaAdAgent(CompatibleNode):
         try:
             self.loginfo("Wait for vehicle info ...")
             vehicle_info = self.wait_for_one_message(
-                "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo)
+                "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo,
+                qos_profile=QoSProfile(depth=1, durability=latch_on))
             self.loginfo("Vehicle info recieved.")
         except ROSException:
             self.logerr("Timeout while waiting for vehicle info!")
