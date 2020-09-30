@@ -40,7 +40,7 @@ SHELL ["/bin/bash", "-c" , "-l"]
 RUN echo "source /opt/ros/$ROS_VERSION/setup.bash" >> /etc/profile
 
 RUN sudo apt-get update && sudo apt-get install ros-eloquent-ros-environment
-RUN rosdep install --from-paths src -r -y
+#RUN rosdep install --from-paths src -r -y
 RUN colcon info carla_msgs
 # .bashrc does not seem to do the source
 RUN colcon mixin add skip file:///carla_ws/src/ros-bridge/mixin/index.yaml
