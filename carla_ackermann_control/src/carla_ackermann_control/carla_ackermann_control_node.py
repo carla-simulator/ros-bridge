@@ -13,7 +13,6 @@ import os
 import sys
 import datetime
 import numpy
-from typing import Sequence
 
 from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
@@ -21,8 +20,8 @@ from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 
-from ros_compatibility import CompatibleNode
-from . import carla_control_physics as phys
+from ros_compatibility import CompatibleNode, QoSProfile
+from carla_ackermann_control import carla_control_physics as phys
 
 from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
 
@@ -36,6 +35,7 @@ if ROS_VERSION == 2:
     import rclpy
     from rclpy.parameter import Parameter
     from rcl_interfaces.msg import SetParametersResult
+    from typing import Sequence
 
 
 class CarlaAckermannControl(CompatibleNode):
@@ -63,14 +63,14 @@ class CarlaAckermannControl(CompatibleNode):
             lambda: self.now_sec() - 0.1)
 
         # we might want to use a PID controller to reach the final target speed
-        self.speed_controller = PID(Kp=self.get_param("speed_Kp"),
-                                    Ki=self.get_param("speed_Ki"),
-                                    Kd=self.get_param("speed_Kd"),
+        self.speed_controller = PID(Kp=self.get_param("speed_Kp", alternative_value=0.05),
+                                    Ki=self.get_param("speed_Ki", alternative_value=0.),
+                                    Kd=self.get_param("speed_Kd", alternative_value=0.5),
                                     sample_time=0.05,
                                     output_limits=(-1., 1.))
-        self.accel_controller = PID(Kp=self.get_param("accel_Kp"),
-                                    Ki=self.get_param("accel_Ki"),
-                                    Kd=self.get_param("accel_Kd"),
+        self.accel_controller = PID(Kp=self.get_param("accel_Kp", alternative_value=0.05),
+                                    Ki=self.get_param("accel_Ki", alternative_value=0.),
+                                    Kd=self.get_param("accel_Kd", alternative_value=0.05),
                                     sample_time=0.05,
                                     output_limits=(-1, 1))
 
@@ -85,7 +85,7 @@ class CarlaAckermannControl(CompatibleNode):
                 callback=self.reconfigure_pid_parameters,
             )
         if ROS_VERSION == 2:
-            self.add_on_set_parameters_callback(self.reconfigure_pid_parameters)
+            self.set_parameters_callback(self.reconfigure_pid_parameters)
             # TODO(hillekia@schaeffler.com): Enable stricter handling of node
             # parameters, so they must be explicitly listed. This can be done by
             # disabling the `automatically_declare_parameters_from_overrides`
@@ -110,7 +110,7 @@ class CarlaAckermannControl(CompatibleNode):
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
-        self.role_name = self.get_param('role_name')
+        self.role_name = self.get_param('role_name', 'ego_vehicle')
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -172,13 +172,13 @@ class CarlaAckermannControl(CompatibleNode):
         self.carla_control_publisher = self.new_publisher(
             CarlaEgoVehicleControl,
             "/carla/" + self.role_name + "/vehicle_control_cmd",
-            qos_profile=1)
+            qos_profile=QoSProfile(depth=1))
 
         # report controller info
         self.control_info_publisher = self.new_publisher(
             EgoVehicleControlInfo,
             "/carla/" + self.role_name + "/ackermann_control/control_info",
-            qos_profile=1)
+            qos_profile=QoSProfile(depth=1))
 
     if ROS_VERSION == 1:
 
@@ -209,9 +209,7 @@ class CarlaAckermannControl(CompatibleNode):
 
     if ROS_VERSION == 2:
 
-        def reconfigure_pid_parameters(  # pylint: disable=function-redefined
-            self, params: Sequence[Parameter]
-        ) -> SetParametersResult:
+        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined           
             """Check and update the node's parameters."""
             param_values = {p.name: p.value for p in params}
 
@@ -246,7 +244,8 @@ class CarlaAckermannControl(CompatibleNode):
 
             self.loginfo(
                 "Reconfigure Request:  speed ({}, {}, {}), accel ({}, {}, {})".format(
-                    *self.speed_controller.tunings, *self.accel_controller.tunings
+                    self.speed_controller.tunings[0], self.speed_controller.tunings[1], self.speed_controller.tunings[2], 
+                    self.accel_controller.tunings[0], self.accel_controller.tunings[1], self.accel_controller.tunings[2]
                 )
             )
 
@@ -284,7 +283,7 @@ class CarlaAckermannControl(CompatibleNode):
             self.vehicle_info)
         self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
             self.vehicle_info)
-        self.info.restrictions.min_accel = self.get_param('min_accel')
+        self.info.restrictions.min_accel = self.get_param('min_accel', 1.)
         # clipping the pedal in both directions to the same range using the usual lower
         # border: the max_accel to ensure the the pedal target is in symmetry to zero
         self.info.restrictions.max_pedal = min(
@@ -573,7 +572,7 @@ class CarlaAckermannControl(CompatibleNode):
         :return:
         """
 
-        def loop():
+        def loop(timer_event=None):
             self.update_current_values()
             self.vehicle_control_cycle()
             self.send_ego_vehicle_control_info_msg()

@@ -1,9 +1,9 @@
 <!-- -->
 <launch>
-  <arg name="role_name" default="ego_vehicle" />
-  <rosparam file="$(find carla_ackermann_control)/config/settings.ros1.yaml" command="load" />
+  <arg name="role_name" default="ego_vehicle" /> 
 
   <node pkg="carla_ackermann_control" type="carla_ackermann_control_node.py" name="carla_ackermann_control_$(arg role_name)" output="screen">
     <param name="role_name" value="$(arg role_name)" />
+    <rosparam file="$(find carla_ackermann_control)/config/settings.ros1.yaml" command="load" />
   </node>
 </launch>

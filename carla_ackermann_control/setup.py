@@ -39,7 +39,7 @@ elif ROS_VERSION == 2:
         tests_require=['pytest'],
         entry_points={
             'console_scripts': [
-                f'{package_name}_node = {package_name}.{package_name}_node:main'
+                '{}_node = {}.{}_node:main'.format(package_name, package_name, package_name)
             ],
         },
         package_dir={'': 'src'},
