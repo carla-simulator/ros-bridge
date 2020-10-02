@@ -209,7 +209,7 @@ class CarlaAckermannControl(CompatibleNode):
 
     if ROS_VERSION == 2:
 
-        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined           
+        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
             """Check and update the node's parameters."""
             param_values = {p.name: p.value for p in params}
 
@@ -244,7 +244,7 @@ class CarlaAckermannControl(CompatibleNode):
 
             self.loginfo(
                 "Reconfigure Request:  speed ({}, {}, {}), accel ({}, {}, {})".format(
-                    self.speed_controller.tunings[0], self.speed_controller.tunings[1], self.speed_controller.tunings[2], 
+                    self.speed_controller.tunings[0], self.speed_controller.tunings[1], self.speed_controller.tunings[2],
                     self.accel_controller.tunings[0], self.accel_controller.tunings[1], self.accel_controller.tunings[2]
                 )
             )
