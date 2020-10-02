@@ -11,11 +11,19 @@ low-level waypoint following based on PID controllers.
 """
 
 from collections import deque
-import rospy
-from geometry_msgs.msg import PointStamped
-from carla_msgs.msg import CarlaEgoVehicleControl
-from vehicle_pid_controller import VehiclePIDController  # pylint: disable=relative-import
-from misc import distance_vehicle  # pylint: disable=relative-import
+from geometry_msgs.msg import PointStamped  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
+from ros_compatibility import QoSProfile
+
+import os
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+
+if ROS_VERSION == 1:
+    from vehicle_pid_controller import VehiclePIDController
+    from misc import distance_vehicle
+elif ROS_VERSION == 2:
+    from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
+    from carla_ad_agent.misc import distance_vehicle
 
 
 class LocalPlanner(object):
@@ -32,7 +40,7 @@ class LocalPlanner(object):
     # total distance)
     MIN_DISTANCE_PERCENTAGE = 0.9
 
-    def __init__(self, opt_dict=None):
+    def __init__(self, node, opt_dict=None):
         """
         :param vehicle: actor to apply to local planner logic onto
         :param opt_dict: dictionary of arguments with the following semantics:
@@ -53,9 +61,10 @@ class LocalPlanner(object):
         self._waypoints_queue = deque(maxlen=20000)
         self._buffer_size = 5
         self._waypoint_buffer = deque(maxlen=self._buffer_size)
+        self.node = node
 
-        self._target_point_publisher = rospy.Publisher(
-            "/next_target", PointStamped, queue_size=1)
+        self._target_point_publisher = self.node.new_publisher(
+            PointStamped, "/next_target", QoSProfile(depth=1, durability=False))
 
         # initializing controller
         self._init_controller(opt_dict)
@@ -84,7 +93,7 @@ class LocalPlanner(object):
             if 'longitudinal_control_dict' in opt_dict:
                 args_longitudinal_dict = opt_dict['longitudinal_control_dict']
 
-        self._vehicle_controller = VehiclePIDController(args_lateral=args_lateral_dict,
+        self._vehicle_controller = VehiclePIDController(self.node, args_lateral=args_lateral_dict,
                                                         args_longitudinal=args_longitudinal_dict)
 
     def set_global_plan(self, current_plan):
@@ -110,7 +119,7 @@ class LocalPlanner(object):
             control.hand_brake = False
             control.manual_gear_shift = False
 
-            rospy.loginfo("Route finished.")
+            self.node.loginfo("Route finished.")
             return control, True
 
         #   Buffering the waypoints

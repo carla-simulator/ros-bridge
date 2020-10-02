@@ -56,11 +56,12 @@ def generate_launch_description():
             name='avoid_risk',
             default_value='True'
         ),
-        launch_ros.actions.Node(
-            package='rostopic',
-            node_executable='rostopic',
-            name='publish_goal'
-        ),
+        # TODO: adapt this to ROS2
+        # launch_ros.actions.Node(
+        #     package='rostopic',
+        #     node_executable='rostopic',
+        #     name='publish_goal'
+        # ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
