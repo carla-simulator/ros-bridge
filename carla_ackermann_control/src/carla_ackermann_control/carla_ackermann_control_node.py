@@ -60,7 +60,7 @@ class CarlaAckermannControl(CompatibleNode):
         # a previous point in time (the error happens because the time doesn't
         # change between initialization and first call, therefore dt is 0)
         sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: self.now_sec() - 0.1)
+            lambda: self.get_time() - 0.1)
 
         # we might want to use a PID controller to reach the final target speed
         self.speed_controller = PID(Kp=self.get_param("speed_Kp", alternative_value=0.05),
@@ -76,7 +76,7 @@ class CarlaAckermannControl(CompatibleNode):
 
         # use the correct time for further calculations
         sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: self.now_sec())
+            lambda: self.get_time())
 
         if ROS_VERSION == 1:
             self.reconfigure_server = Server(
@@ -125,7 +125,7 @@ class CarlaAckermannControl(CompatibleNode):
         self.info.target.jerk = 0.
 
         # current values
-        self.info.current.time_sec = self.now_sec()
+        self.info.current.time_sec = self.get_time()
         self.info.current.speed = 0.
         self.info.current.speed_abs = 0.
         self.info.current.accel = 0.
@@ -552,7 +552,7 @@ class CarlaAckermannControl(CompatibleNode):
 
         :return:
         """
-        current_time_sec = self.now_sec()
+        current_time_sec = self.get_time()
         delta_time = current_time_sec - self.info.current.time_sec
         current_speed = self.vehicle_status.velocity
         if delta_time > 0:
