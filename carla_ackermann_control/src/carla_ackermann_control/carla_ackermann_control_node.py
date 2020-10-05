@@ -85,7 +85,8 @@ class CarlaAckermannControl(CompatibleNode):
                 callback=self.reconfigure_pid_parameters,
             )
         if ROS_VERSION == 2:
-            self.set_parameters_callback(self.reconfigure_pid_parameters)
+            # self.add_on_set_parameters_callback(self.reconfigure_pid_parameters) # works with ros2 foxy
+            self.set_parameters_callback(self.reconfigure_pid_parameters) # for ros2 eloquent, deprecated in ros2 foxy
             # TODO(hillekia@schaeffler.com): Enable stricter handling of node
             # parameters, so they must be explicitly listed. This can be done by
             # disabling the `automatically_declare_parameters_from_overrides`
@@ -208,7 +209,10 @@ class CarlaAckermannControl(CompatibleNode):
             return ego_vehicle_control_parameter
 
     if ROS_VERSION == 2:
-
+        # annotations not supported in Python 2 (ROS1)
+        # def reconfigure_pid_parameters(  # pylint: disable=function-redefined	        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined           
+        #     self, params: Sequence[Parameter]	
+        # ) -> SetParametersResult:
         def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
             """Check and update the node's parameters."""
             param_values = {p.name: p.value for p in params}
