@@ -10,6 +10,15 @@ ROS Node to convert [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html
     #install python simple-pid
     pip install --user simple-pid
 
+### Using with ROS2
+There is currently no package release of _ackeramnn_msgs_ for ROS2 eloquent. A simple solution is to clone the source from github into your ros workspace. The following commands can be used:
+
+    # In your ros workspace do:
+    git clone https://github.com/ros-drivers/ackermann_msgs.git
+    git fetch
+    git checkout ros2
+
+
 ### Configuration
 
 Initial parameters can be set via [configuration file](config/settings.yaml).
