@@ -1,8 +1,8 @@
-import os
-import sys
+from pathlib import Path
 
 import launch
 import launch_ros.actions
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
@@ -14,9 +14,10 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='carla_ackermann_control',
             node_executable='carla_ackermann_control_node',
-            name=launch.substitutions.LaunchConfiguration('role_name'),
+            node_name='carla_ackermann_control',
             output='screen',
             parameters=[
+                Path(get_package_share_directory('carla_ackermann_control'), "settings.yaml"),
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
                 }

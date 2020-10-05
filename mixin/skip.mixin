@@ -1,7 +1,7 @@
 {
   "build": {
     "skip": {
-      "packages-skip": ["carla_ackermann_control",
+      "packages-skip": [
                         "carla_infrastructure",
                         "carla_ros_scenario_runner",
                         "carla_ros_scenario_runner_types",
