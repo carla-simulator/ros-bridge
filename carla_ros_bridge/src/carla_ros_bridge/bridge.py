@@ -32,7 +32,7 @@ from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.lidar import Lidar
+from carla_ros_bridge.lidar import Lidar, SemanticLidar
 from carla_ros_bridge.radar import Radar
 from carla_ros_bridge.gnss import Gnss
 from carla_ros_bridge.imu import ImuSensor
@@ -416,6 +416,13 @@ class CarlaRosBridge(object):
                 else:
                     actor = Camera(
                         carla_actor, parent, self.comm, self.carla_settings.synchronous_mode)
+            elif carla_actor.type_id.startswith("sensor.lidar"):
+                if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
+                    actor = Lidar(carla_actor, parent, self.comm,
+                                  self.carla_settings.synchronous_mode)
+                elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
+                    actor = SemanticLidar(carla_actor, parent, self.comm,
+                                          self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 actor = Lidar(carla_actor, parent, self.comm,
                               self.carla_settings.synchronous_mode)
