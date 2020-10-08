@@ -90,7 +90,7 @@ class SemanticLidar(Sensor):
                                     parent=parent,
                                     communication=communication,
                                     synchronous_mode=synchronous_mode,
-                                    prefix='lidar/semantic' + carla_actor.attributes.get('role_name'))
+                                    prefix='lidar/semantic/' + carla_actor.attributes.get('role_name'))
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
