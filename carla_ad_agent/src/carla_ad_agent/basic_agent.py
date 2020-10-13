@@ -19,7 +19,9 @@ import math
 from ros_compatibility import (
     ros_ok,
     ServiceException,
-    ROSInterruptException)
+    ROSInterruptException,
+    QoSProfile,
+    latch_on)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -65,7 +67,7 @@ class BasicAgent(Agent):
             self._vehicle_id_list = []
             self._lights_id_list = []
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
-                                                                  self.actors_updated, callback_group=cb_group)
+                                                                  self.actors_updated, qos_profile=QoSProfile(depth=1, durability=latch_on), callback_group=cb_group)
             self._objects = []
 
             self._objects_subscriber = self.node.create_subscriber(ObjectArray,
