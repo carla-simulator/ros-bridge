@@ -60,10 +60,12 @@ class CarlaAdAgent(CompatibleNode):
             sys.exit(1)
 
         self._route_subscriber = self.create_subscriber(
-            Path, "/carla/{}/waypoints".format(role_name), self.path_updated)
+            Path, "/carla/{}/waypoints".format(role_name), self.path_updated,
+            QoSProfile(depth=1, durability=True))
 
         self._target_speed_subscriber = self.create_subscriber(
-            Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated)
+            Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated,
+            QoSProfile(depth=1, durability=True))
 
         self.vehicle_control_publisher = self.new_publisher(
             CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name),
