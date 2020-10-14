@@ -32,6 +32,7 @@ The environment variables are forwarded to scenario_runner, therefore set them t
 
     export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
 
+### Using ROS1
 To run the ROS node:
 
     roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_runner_path:=<path_to_scenario_runner>
@@ -39,6 +40,16 @@ To run the ROS node:
 To run a scenario from commandline:
 
     rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
+
+### Using ROS2
+To run the ROS node:
+
+    ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py scenario_runner_path:=<path_to_scenario_runner>
+
+To run a scenario from commandline:
+
+    ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
+
 
 
 ## Available services
