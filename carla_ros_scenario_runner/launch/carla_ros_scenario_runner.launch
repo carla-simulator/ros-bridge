@@ -6,7 +6,7 @@
   <arg name="scenario_runner_path"/>
   <arg name="wait_for_ego" default="True"/>
 
-  <node pkg="carla_ros_scenario_runner" type="carla_ros_scenario_runner.py" name="carla_ros_scenario_runner" output="screen" required="true">
+  <node pkg="carla_ros_scenario_runner" type="carla_ros_scenario_runner_node.py" name="carla_ros_scenario_runner" output="screen" required="true">
     <param name="host" value="$(arg host)"/>
     <param name='port' value='$(arg port)'/>
     <param name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
