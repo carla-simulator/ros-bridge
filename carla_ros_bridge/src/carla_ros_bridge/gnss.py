@@ -38,6 +38,7 @@ class Gnss(Sensor):
                                    prefix="gnss/" + carla_actor.attributes.get('role_name'),
                                    sensor_name=sensor_name)
         self.gnss_publisher = node.new_publisher(NavSatFix, self.get_topic_prefix() + "/fix")
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):
