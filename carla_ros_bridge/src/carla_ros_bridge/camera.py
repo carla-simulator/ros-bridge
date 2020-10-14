@@ -17,7 +17,7 @@ import numpy
 import rospy
 import tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import CameraInfo, Image
 
 import carla
 from carla_ros_bridge.sensor import Sensor
@@ -33,7 +33,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -41,8 +41,8 @@ class Camera(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
@@ -50,7 +50,7 @@ class Camera(Sensor):
             prefix = 'camera'
         super(Camera, self).__init__(carla_actor=carla_actor,
                                      parent=parent,
-                                     communication=communication,
+                                     node=node,
                                      synchronous_mode=synchronous_mode,
                                      prefix=prefix)
 
@@ -61,6 +61,17 @@ class Camera(Sensor):
                               self.carla_actor.type_id, self.carla_actor.attributes))
         else:
             self._build_camera_info()
+
+        self.camera_info_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                     '/camera_info',
+                                                     CameraInfo,
+                                                     queue_size=10)
+        self.camera_publisher = rospy.Publisher(self.get_topic_prefix() + '/' +
+                                                self.get_image_topic_name(),
+                                                Image,
+                                                queue_size=10)
+
+        self.listen()
 
     def _build_camera_info(self):
         """
@@ -107,9 +118,8 @@ class Camera(Sensor):
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
-        self.publish_message(
-            self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
+        self.camera_info_publisher.publish(cam_info)
+        self.camera_publisher.publish(img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """
@@ -167,7 +177,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -175,14 +185,14 @@ class RgbCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(RgbCamera, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        communication=communication,
+                                        node=node,
                                         synchronous_mode=synchronous_mode,
                                         prefix='camera/rgb/' +
                                         carla_actor.attributes.get('role_name'))
@@ -222,7 +232,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -230,14 +240,14 @@ class DepthCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(DepthCamera, self).__init__(carla_actor=carla_actor,
                                           parent=parent,
-                                          communication=communication,
+                                          node=node,
                                           synchronous_mode=synchronous_mode,
                                           prefix='camera/depth/' +
                                           carla_actor.attributes.get('role_name'))
@@ -299,7 +309,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -307,15 +317,15 @@ class SemanticSegmentationCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(
             SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
                                                        parent=parent,
-                                                       communication=communication,
+                                                       node=node,
                                                        synchronous_mode=synchronous_mode,
                                                        prefix='camera/semantic_segmentation/' +
                                                        carla_actor.attributes.get('role_name'))

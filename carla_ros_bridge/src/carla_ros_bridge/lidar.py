@@ -10,10 +10,12 @@
 Classes to handle Carla lidars
 """
 
+import rospy
+
 import numpy
 
 from sensor_msgs.point_cloud2 import create_cloud
-from sensor_msgs.msg import PointField
+from sensor_msgs.msg import PointCloud2, PointField
 
 from carla_ros_bridge.sensor import Sensor
 
@@ -24,7 +26,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -32,14 +34,20 @@ class Lidar(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
         super(Lidar, self).__init__(carla_actor=carla_actor,
                                     parent=parent,
-                                    communication=communication,
+                                    node=node,
                                     synchronous_mode=synchronous_mode,
                                     prefix='lidar/' + carla_actor.attributes.get('role_name'))
+
+        self.lidar_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                               "/point_cloud",
+                                               PointCloud2,
+                                               queue_size=10)
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -65,8 +73,7 @@ class Lidar(Sensor):
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
         point_cloud_msg = create_cloud(header, fields, lidar_data)
-        self.publish_message(
-            self.get_topic_prefix() + "/point_cloud", point_cloud_msg)
+        self.lidar_publisher.publish(point_cloud_msg)
 
 
 class SemanticLidar(Sensor):
@@ -75,7 +82,7 @@ class SemanticLidar(Sensor):
     Actor implementation details for semantic lidars
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -83,14 +90,20 @@ class SemanticLidar(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
         super(SemanticLidar, self).__init__(carla_actor=carla_actor,
                                     parent=parent,
-                                    communication=communication,
+                                    node=node,
                                     synchronous_mode=synchronous_mode,
                                     prefix='lidar/semantic/' + carla_actor.attributes.get('role_name'))
+
+        self.semantic_lidar_publisher = rospy.Publisher(
+            self.get_topic_prefix() + "/point_cloud",
+            PointCloud2,
+            queue_size=10)
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -124,5 +137,4 @@ class SemanticLidar(Sensor):
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data['y'] *= -1
         point_cloud_msg = create_cloud(header, fields, lidar_data)
-        self.publish_message(
-            self.get_topic_prefix() + "/point_cloud", point_cloud_msg)
+        self.semantic_lidar_publisher.publish(point_cloud_msg)
