@@ -101,8 +101,6 @@ class ApplicationRunner(object):
         if not argument_list:
             raise KeyError("No arguments given!")
         executable = argument_list[0]
-        # if not os.path.isfile(executable):
-        #     raise KeyError("The executable {} does not exist".format(executable))
         log_fct("Executing: {}".format(" ".join(argument_list)))
         process = pexpect.spawn(" ".join(argument_list), env=env, cwd=cwd)
         #process.logfile_read = sys.stdout
