@@ -20,8 +20,8 @@ if ROS_VERSION == 1:
     def ros_shutdown():
         pass
 
-    def destroy_subscription(subsription):
-        subsription.unregister()
+    def destroy_subscription(subscription):
+        subscription.unregister()
 
     def euler_matrix(roll, pitch, yaw):
         return trans.euler_matrix(roll, pitch, yaw)
@@ -167,8 +167,8 @@ elif ROS_VERSION == 2:
     def ros_shutdown():
         rclpy.shutdown()
 
-    def destroy_subscription(subsription):
-        subsription.destroy()
+    def destroy_subscription(subscription):
+        subscription.destroy()
 
     def euler_matrix(roll, pitch, yaw):
         return euler2mat(roll, pitch, yaw)
@@ -309,7 +309,7 @@ elif ROS_VERSION == 2:
                 return result
 
         def spin(self, executor=None):
-            rclpy.spin(self)
+            rclpy.spin(self, executor)
 
         def get_time(self):
             t = self.get_clock().now()
