@@ -200,10 +200,6 @@ class CarlaEgoVehicle(CompatibleNode):
                 with open(self.sensor_definition_file) as f:
                     json_sensors = json.load(f)["sensors"]
             except (OSError, json.JSONDecodeError, KeyError) as e:
-                # python3 synthax, not compatible with ros1 melodic
-                # raise RuntimeError(
-                #     f"Could not read sensor-definition from '{self.sensor_definition_file}'"
-                # ) from e
                 raise RuntimeError(
                         "Could not read sensor-definition from '{}' error is: {}".format(self.sensor_definition_file, e))
 
@@ -403,8 +399,6 @@ class CarlaEgoVehicle(CompatibleNode):
             self.world = client.get_world()
             self.restart()
         except Exception:  # pylint: disable=broad-except
-            # python3 synthax, not compatible with ros1 melodic
-            # self.logerr(f"Could not run node: {traceback.format_exc()}")
             self.logerr("Could not run node: {}".format(traceback.format_exc()))
             self.shutdown()
             return
