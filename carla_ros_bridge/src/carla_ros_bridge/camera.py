@@ -56,8 +56,10 @@ class Camera(Sensor):
                                      synchronous_mode=synchronous_mode,
                                      prefix=prefix, sensor_name=sensor_name)
 
+        self.node = node
+
         if self.__class__.__name__ == "Camera":
-            self.logwarn("Created Unsupported Camera Actor"
+            self.node.logwarn("Created Unsupported Camera Actor"
                          "(id={}, parent_id={}, type={}, attributes={})".format(
                              self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
                              self.carla_actor.attributes))
@@ -111,7 +113,7 @@ class Camera(Sensor):
         """
         if ((carla_image.height != self._camera_info.height) or
                 (carla_image.width != self._camera_info.width)):
-            self.logerr("Camera{} received image not matching configuration".format(
+            self.node.logerr("Camera{} received image not matching configuration".format(
                 self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_image=carla_image)
