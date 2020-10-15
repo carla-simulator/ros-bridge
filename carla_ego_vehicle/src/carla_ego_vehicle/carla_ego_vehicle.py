@@ -30,6 +30,7 @@ from ros_compatibility import (
     destroy_subscription,
     euler_from_quaternion,
     quaternion_from_euler,
+    QoSProfile
 )
 
 import carla
@@ -107,7 +108,7 @@ class CarlaEgoVehicle(CompatibleNode):
             CarlaWorldInfo,
             '/carla/world_info',
             self.run,
-            1
+            QoSProfile(depth=1, durability=False)
         )
 
     # pylint: disable=inconsistent-return-statements
@@ -199,9 +200,12 @@ class CarlaEgoVehicle(CompatibleNode):
                 with open(self.sensor_definition_file) as f:
                     json_sensors = json.load(f)["sensors"]
             except (OSError, json.JSONDecodeError, KeyError) as e:
+                # python3 synthax, not compatible with ros1 melodic
+                # raise RuntimeError(
+                #     f"Could not read sensor-definition from '{self.sensor_definition_file}'"
+                # ) from e
                 raise RuntimeError(
-                    f"Could not read sensor-definition from '{self.sensor_definition_file}'"
-                ) from e
+                        "Could not read sensor-definition from '{}' error is: {}".format(self.sensor_definition_file, e))
 
             # Set up the sensors
             self.sensor_actors = self.setup_sensors(json_sensors)
@@ -399,7 +403,9 @@ class CarlaEgoVehicle(CompatibleNode):
             self.world = client.get_world()
             self.restart()
         except Exception:  # pylint: disable=broad-except
-            self.logerr(f"Could not run node: {traceback.format_exc()}")
+            # python3 synthax, not compatible with ros1 melodic
+            # self.logerr(f"Could not run node: {traceback.format_exc()}")
+            self.logerr("Could not run node: {}".format(traceback.format_exc()))
             self.shutdown()
             return
 
