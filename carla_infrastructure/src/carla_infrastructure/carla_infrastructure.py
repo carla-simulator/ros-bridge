@@ -13,28 +13,33 @@ from __future__ import print_function
 
 import os
 import json
-import rospy
 from carla_msgs.msg import CarlaWorldInfo
 
 import carla
+
+from ros_compatibility import CompatibleNode, QoSProfile, ROSException, ROSInterruptException
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+
+if ROS_VERSION == 2:
+    import rclpy
 
 # ==============================================================================
 # -- CarlaInfrastructure ------------------------------------------------------------
 # ==============================================================================
 
 
-class CarlaInfrastructure(object):
+class CarlaInfrastructure(CompatibleNode):
 
     """
     Handles the spawning of the infrastructure sensors
     """
 
     def __init__(self):
-        rospy.init_node('infrastructure', anonymous=True)
-        self.host = rospy.get_param('/carla/host', '127.0.0.1')
-        self.port = rospy.get_param('/carla/port', 2000)
-        self.timeout = rospy.get_param('/carla/timeout', 10)
-        self.sensor_definition_file = rospy.get_param('~infrastructure_sensor_definition_file')
+        super(CarlaInfrastructure, self).__init__('infrastructure')
+        self.host = self.get_param('carla/host', '127.0.0.1')
+        self.port = self.get_param('carla/port', 2000)
+        self.timeout = self.get_param('carla/timeout', 10)
+        self.sensor_definition_file = self.get_param('infrastructure_sensor_definition_file')
         self.world = None
         self.sensor_actors = []
 
@@ -45,6 +50,9 @@ class CarlaInfrastructure(object):
         :return:
         """
         # Read sensors from file
+        if self.sensor_definition_file is None:
+            raise RuntimeError(
+                "The parameter sensor_definition_file doesn't exist")
         if not os.path.exists(self.sensor_definition_file):
             raise RuntimeError(
                 "Could not read sensor-definition from {}".format(self.sensor_definition_file))
@@ -170,7 +178,7 @@ class CarlaInfrastructure(object):
                     bp.set_attribute('points_per_second', str(sensor_spec['points_per_second']))
                     bp.set_attribute('range', str(sensor_spec['range']))
             except KeyError as e:
-                rospy.logfatal(
+                self.logfatal(
                     "Sensor will not be spawned, because sensor spec is invalid: '{}'".format(e))
                 continue
 
@@ -195,20 +203,21 @@ class CarlaInfrastructure(object):
         main loop
         """
         # wait for ros-bridge to set up CARLA world
-        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException as e:
-            rospy.logerr("Timeout while waiting for world info!")
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
+                                      qos_profile=QoSProfile(depth=1, durability=True))
+        except ROSException as e:
+            self.logerr("Timeout while waiting for world info!")
             raise e
-        rospy.loginfo("CARLA world available. Spawn infrastructure...")
+        self.loginfo("CARLA world available. Spawn infrastructure...")
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
         self.world = client.get_world()
         self.restart()
         try:
-            rospy.spin()
-        except rospy.ROSInterruptException:
+            self.spin()
+        except ROSInterruptException:
             pass
 
 # ==============================================================================
@@ -220,6 +229,8 @@ def main():
     """
     main function
     """
+    if ROS_VERSION == 2:
+        rclpy.init(args=None)
     infrastructure = CarlaInfrastructure()
     try:
         infrastructure.run()
