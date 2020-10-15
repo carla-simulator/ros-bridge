@@ -15,7 +15,7 @@ from abc import abstractmethod
 import carla_common.transforms as trans
 from carla_ros_bridge.actor import Actor
 
-from ros_compatibility import CompatibleNode, ros_ok
+from ros_compatibility import ros_ok
 
 try:
     import queue
@@ -29,7 +29,7 @@ if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 
-class Sensor(Actor, CompatibleNode):
+class Sensor(Actor):
     """
     Actor implementation details for sensors
     """
@@ -70,8 +70,7 @@ class Sensor(Actor, CompatibleNode):
         if sensor_name is None:
             sensor_name = "Sensor"
 
-        CompatibleNode.__init__(self, sensor_name, rospy_init=False)
-
+        self.node = node
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
         self.next_data_expected_time = None
@@ -79,7 +78,7 @@ class Sensor(Actor, CompatibleNode):
         self.is_event_sensor = is_event_sensor
         try:
             self.sensor_tick_time = float(carla_actor.attributes["sensor_tick"])
-            self.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
+            self.node.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
         except (KeyError, ValueError):
             self.sensor_tick_time = None
 
@@ -95,7 +94,7 @@ class Sensor(Actor, CompatibleNode):
 
         :return:
         """
-        self.logdebug("Destroy Sensor(id={})".format(self.get_id()))
+        self.node.logdebug("Destroy Sensor(id={})".format(self.get_id()))
         if self.carla_actor.is_listening:
             self.carla_actor.stop()
         super(Sensor, self).destroy()
@@ -136,11 +135,11 @@ class Sensor(Actor, CompatibleNode):
             try:
                 carla_sensor_data = self.queue.get(block=False)
                 if carla_sensor_data.frame != frame:
-                    self.logwarn("{}({}): Received event for frame {}"
+                    self.node.logwarn("{}({}): Received event for frame {}"
                                  " (expected {}). Process it anyways.".format(
                                      self.__class__.__name__, self.get_id(),
                                      carla_sensor_data.frame, frame))
-                self.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
+                self.node.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
                                                           frame))
                 self.publish_transform(
                     self.get_ros_transform(
@@ -158,7 +157,7 @@ class Sensor(Actor, CompatibleNode):
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
                     if carla_sensor_data.frame == frame:
-                        self.logdebug("{}({}): process {}".format(self.__class__.__name__,
+                        self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
                                                                   self.get_id(), frame))
                         self.publish_transform(
                             self.get_ros_transform(
@@ -167,7 +166,7 @@ class Sensor(Actor, CompatibleNode):
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:
-                        self.logwarn("{}({}): skipping old frame {}, expected {}".format(
+                        self.node.logwarn("{}({}): skipping old frame {}, expected {}".format(
                             self.__class__.__name__,
                             self.get_id(),
                             carla_sensor_data.frame,
@@ -175,7 +174,7 @@ class Sensor(Actor, CompatibleNode):
                 except queue.Empty:
                     # if not rospy.is_shutdown():
                     if ros_ok():
-                        self.logwarn("{}({}): Expected Frame {} not received".format(
+                        self.node.logwarn("{}({}): Expected Frame {} not received".format(
                             self.__class__.__name__, self.get_id(), frame))
                     return
 
