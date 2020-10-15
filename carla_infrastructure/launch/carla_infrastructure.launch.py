@@ -27,15 +27,16 @@ def generate_launch_description():
             node_executable='carla_infrastructure',
             name='carla_infrastructure',
             output='screen',
+            emulate_tty='True',
             parameters=[
                 {
-                    '/carla/host': launch.substitutions.LaunchConfiguration('host')
+                    'carla/host': launch.substitutions.LaunchConfiguration('host')
                 },
                 {
-                    '/carla/port': launch.substitutions.LaunchConfiguration('port')
+                    'carla/port': launch.substitutions.LaunchConfiguration('port')
                 },
                 {
-                    '/carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
+                    'carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
                 },
                 {
                     'infrastructure_sensor_definition_file': launch.substitutions.LaunchConfiguration('infrastructure_sensor_definition_file')
