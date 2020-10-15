@@ -14,8 +14,9 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_package(CATKIN_DEPENDS rospy)
 
-  catkin_install_python(PROGRAMS src/carla_infrastructure/carla_infrastructure.py
-                  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  catkin_install_python(
+    PROGRAMS src/carla_infrastructure/carla_infrastructure.py DESTINATION
+    ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
@@ -34,4 +35,3 @@ elseif(${ROS_VERSION} EQUAL 2)
   ament_package()
 
 endif()
-              

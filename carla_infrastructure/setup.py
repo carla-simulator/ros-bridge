@@ -44,4 +44,4 @@ elif ROS_VERSION == 2:
                 'carla_infrastructure = src.carla_infrastructure.carla_infrastructure:main'
             ],
         },
-    ) 
+    )

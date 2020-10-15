@@ -205,8 +205,8 @@ class CarlaInfrastructure(CompatibleNode):
         # wait for ros-bridge to set up CARLA world
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0, 
-                            qos_profile=QoSProfile(depth=1, durability=True))
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
+                                      qos_profile=QoSProfile(depth=1, durability=True))
         except ROSException as e:
             self.logerr("Timeout while waiting for world info!")
             raise e
