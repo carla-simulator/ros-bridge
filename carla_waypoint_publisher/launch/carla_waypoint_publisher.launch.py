@@ -28,6 +28,7 @@ def generate_launch_description():
             node_executable='carla_waypoint_publisher',
             name='carla_waypoint_publisher',
             output='screen',
+            emulate_tty='True',
             parameters=[
                 {
                     '/carla/host': launch.substitutions.LaunchConfiguration('host')

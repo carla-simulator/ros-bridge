@@ -13,7 +13,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='2'
+            default_value='2.0'
         ),
         launch.actions.DeclareLaunchArgument(
             name='mode',
@@ -24,6 +24,7 @@ def generate_launch_description():
             node_executable='carla_walker_agent',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
+            emulate_tty='True',
             parameters=[
                 {
                     'target_speed': launch.substitutions.LaunchConfiguration('target_speed')

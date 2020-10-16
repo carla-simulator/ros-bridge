@@ -136,11 +136,11 @@ class Sensor(Actor):
                 carla_sensor_data = self.queue.get(block=False)
                 if carla_sensor_data.frame != frame:
                     self.node.logwarn("{}({}): Received event for frame {}"
-                                 " (expected {}). Process it anyways.".format(
-                                     self.__class__.__name__, self.get_id(),
-                                     carla_sensor_data.frame, frame))
+                                      " (expected {}). Process it anyways.".format(
+                                          self.__class__.__name__, self.get_id(),
+                                          carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
-                                                          frame))
+                                                               frame))
                 self.publish_transform(
                     self.get_ros_transform(
                         trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
@@ -158,7 +158,7 @@ class Sensor(Actor):
                     carla_sensor_data = self.queue.get(timeout=1.0)
                     if carla_sensor_data.frame == frame:
                         self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
-                                                                  self.get_id(), frame))
+                                                                       self.get_id(), frame))
                         self.publish_transform(
                             self.get_ros_transform(
                                 trans.carla_transform_to_ros_transform(
