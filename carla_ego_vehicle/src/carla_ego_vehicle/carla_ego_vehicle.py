@@ -201,7 +201,7 @@ class CarlaEgoVehicle(CompatibleNode):
                     json_sensors = json.load(f)["sensors"]
             except (OSError, json.JSONDecodeError, KeyError) as e:
                 raise RuntimeError(
-                        "Could not read sensor-definition from '{}' error is: {}".format(self.sensor_definition_file, e))
+                    "Could not read sensor-definition from '{}' error is: {}".format(self.sensor_definition_file, e))
 
             # Set up the sensors
             self.sensor_actors = self.setup_sensors(json_sensors)

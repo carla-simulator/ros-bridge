@@ -60,9 +60,9 @@ class Camera(Sensor):
 
         if self.__class__.__name__ == "Camera":
             self.node.logwarn("Created Unsupported Camera Actor"
-                         "(id={}, parent_id={}, type={}, attributes={})".format(
-                             self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
-                             self.carla_actor.attributes))
+                              "(id={}, parent_id={}, type={}, attributes={})".format(
+                                  self.get_id(), self.get_parent_id(), self.carla_actor.type_id,
+                                  self.carla_actor.attributes))
         else:
             self._build_camera_info()
 
