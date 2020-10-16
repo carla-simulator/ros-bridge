@@ -56,7 +56,7 @@
             "upper_fov": 2.0,
             "lower_fov": -26.8,
             "rotation_frequency": 20,
-            "sensor_tick": 0.0
+            "sensor_tick": 0.05
         }
     ]
 }
