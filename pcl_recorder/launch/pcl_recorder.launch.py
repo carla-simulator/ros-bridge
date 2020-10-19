@@ -20,11 +20,11 @@ def generate_launch_description():
             name='role_name',
             default_value='ego_vehicle'
         ),
-        launch_ros.actions.Node(
-            package='rostopic',
-            node_executable='rostopic',
-            name='enable_autopilot_rostopic'
-        ),
+        # launch_ros.actions.Node(
+        #     package='rostopic',
+        #     node_executable='rostopic',
+        #     name='enable_autopilot_rostopic'
+        # ),
         launch_ros.actions.Node(
             package='pcl_recorder',
             node_executable='pcl_recorder_node',
