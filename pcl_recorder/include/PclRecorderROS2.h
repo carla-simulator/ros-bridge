@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Intel Corporation
+ * Copyright (c) 2019-2020 Intel Corporation
  *
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
@@ -11,7 +11,6 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_eigen/tf2_eigen.h>
-#include "std_msgs/msg/string.hpp"
 #include <rclcpp/time_source.hpp>
 
 class PclRecorderROS2 : public rclcpp::Node

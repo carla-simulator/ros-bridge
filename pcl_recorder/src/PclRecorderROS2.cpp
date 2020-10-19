@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Intel Corporation
+ * Copyright (c) 2019-2020 Intel Corporation
  *
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
@@ -8,7 +8,6 @@
 #include <string>
 #include <pcl/io/pcd_io.h>
 #include <sstream>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <pcl/common/transforms.h>
 
 PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
