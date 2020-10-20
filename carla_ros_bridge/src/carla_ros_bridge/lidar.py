@@ -136,5 +136,5 @@ class SemanticLidar(Sensor):
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data['y'] *= -1
-        point_cloud_msg = create_cloud(header, fields, lidar_data)
+        point_cloud_msg = create_cloud(header, fields, lidar_data.tolist())
         self.semantic_lidar_publisher.publish(point_cloud_msg)
