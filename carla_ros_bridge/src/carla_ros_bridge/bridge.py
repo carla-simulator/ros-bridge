@@ -586,7 +586,7 @@ def main():
     parameters['timeout'] = carla_bridge.get_param('timeout', 2)
     parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', False)
     parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
-        'synchronous_mode_wait_for_vehicle_control_command', True)
+        'synchronous_mode_wait_for_vehicle_control_command', False)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
                                                                0.05)
     parameters['town'] = carla_bridge.get_param('town', 'Town01')
