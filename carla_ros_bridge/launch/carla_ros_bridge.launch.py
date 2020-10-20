@@ -46,6 +46,7 @@ def generate_launch_description():
             node_executable='bridge',
             name='carla_ros_bridge',
             output='screen',
+            emulate_tty='True',
             on_exit=launch.actions.Shutdown(),
             parameters=[
                 {
