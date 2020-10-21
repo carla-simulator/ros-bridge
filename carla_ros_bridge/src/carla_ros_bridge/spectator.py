@@ -19,7 +19,7 @@ class Spectator(Actor):
     Actor implementation details for spectators
     """
 
-    def __init__(self, carla_actor, parent, communication):
+    def __init__(self, carla_actor, parent, node):
         """
         Constructor
 
@@ -27,10 +27,10 @@ class Spectator(Actor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
         super(Spectator, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
                                         prefix='spectator',
-                                        communication=communication)
+                                        node=node)
