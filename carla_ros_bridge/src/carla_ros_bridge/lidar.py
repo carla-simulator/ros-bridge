@@ -97,7 +97,7 @@ class SemanticLidar(Sensor):
                                     parent=parent,
                                     node=node,
                                     synchronous_mode=synchronous_mode,
-                                    prefix='lidar/semantic/' + carla_actor.attributes.get('role_name'))
+                                    prefix='semantic_lidar/' + carla_actor.attributes.get('role_name'))
 
         self.semantic_lidar_publisher = rospy.Publisher(
             self.get_topic_prefix() + "/point_cloud",
