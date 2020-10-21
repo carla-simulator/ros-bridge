@@ -143,6 +143,15 @@ class TestClock(unittest.TestCase):
             "/carla/ego_vehicle/lidar/lidar1/point_cloud", PointCloud2, timeout=TIMEOUT)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/lidar/lidar1")
 
+    def test_semantic_lidar(self):
+        """
+        Tests semantic_lidar sensor node
+        """
+        rospy.init_node('test_node', anonymous=True)
+        msg = rospy.wait_for_message(
+            "/carla/ego_vehicle/lidar/semantic/lidar1/point_cloud", PointCloud2, timeout=TIMEOUT)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/lidar/semantic/lidar1")
+
     def test_radar(self):
         """
         Tests Radar sensor node
