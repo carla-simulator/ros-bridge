@@ -111,7 +111,7 @@ class SemanticLidar(Sensor):
         Function to transform a received semantic lidar measurement into a ROS point cloud message
 
         :param carla_lidar_measurement: carla semantic lidar measurement object
-        :type carla_lidar_measurement: carla.SemanticLidarMeasurement 
+        :type carla_lidar_measurement: carla.SemanticLidarMeasurement
         """
         header = self.get_msg_header()
         fields = [
