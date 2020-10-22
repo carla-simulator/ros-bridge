@@ -23,7 +23,7 @@ from derived_object_msgs.msg import ObjectArray
 from visualization_msgs.msg import Marker
 from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo,
                             CarlaActorList, CarlaTrafficLightStatusList,
-                            CarlaTrafficLightInfoList, CarlaRadarMeasurement)
+                            CarlaTrafficLightInfoList, CarlaRadarMeasurement, CarlaDVSEventArray)
 
 PKG = 'test_roslaunch'
 TIMEOUT = 20
@@ -133,6 +133,28 @@ class TestClock(unittest.TestCase):
         self.assertEqual(msg.height, 600)
         self.assertEqual(msg.width, 800)
         self.assertEqual(msg.encoding, "bgra8")
+
+    def test_dvs_camera_info(self):
+        """
+        Tests dvs camera info
+        """
+        rospy.init_node('test_node', anonymous=True)
+        msg = rospy.wait_for_message(
+            "/carla/ego_vehicle/camera/dvs/front/camera_info", CameraInfo, timeout=TIMEOUT)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/camera/dvs/front")
+        self.assertEqual(msg.height, 600)
+        self.assertEqual(msg.width, 800)
+
+    def test_dvs_camera_events(self):
+        """
+        Tests dvs camera events 
+        """
+        rospy.init_node('test_node', anonymous=True)
+        msg = rospy.wait_for_message(
+            "/carla/ego_vehicle/camera/dvs/front/events", CarlaDVSEventArray, timeout=TIMEOUT)
+        self.assertEqual(msg.header.frame_id, "ego_vehicle/camera/dvs/front")
+        self.assertEqual(msg.height, 600)
+        self.assertEqual(msg.width, 800)
 
     def test_lidar(self):
         """
