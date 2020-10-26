@@ -210,8 +210,6 @@ class CarlaEgoVehicle(object):
                 bp = bp_library.find(sensor_type)
                 bp.set_attribute('role_name', sensor_id)
                 for attribute, value in sensor_spec.items():
-                    if attribute == "width": attribute = "image_size_x"
-                    if attribute == "height": attribute = "image_size_y"
                     bp.set_attribute(str(attribute), str(value))
 
             except KeyError as e:
