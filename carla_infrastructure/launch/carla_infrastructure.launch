@@ -3,7 +3,7 @@
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
   <arg name='timeout' default='10'/>
-  <arg name="infrastructure_sensor_definition_file" default="$(find carla_infrastructure)/config/sensors.json"/>
+  <arg name="infrastructure_sensor_definition_file"/>
 
   <param name="/carla/host" value="$(arg host)" />
   <param name="/carla/port" value="$(arg port)" />
