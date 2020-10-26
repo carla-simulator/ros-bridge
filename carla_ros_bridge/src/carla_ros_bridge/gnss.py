@@ -10,6 +10,8 @@
 Classes to handle Carla gnsss
 """
 
+import rospy
+
 from sensor_msgs.msg import NavSatFix
 
 from carla_ros_bridge.sensor import Sensor
@@ -21,7 +23,7 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -29,16 +31,21 @@ class Gnss(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(Gnss, self).__init__(carla_actor=carla_actor,
                                    parent=parent,
-                                   communication=communication,
+                                   node=node,
                                    synchronous_mode=synchronous_mode,
                                    prefix="gnss/" + carla_actor.attributes.get('role_name'))
+
+        self.gnss_publisher = rospy.Publisher(self.get_topic_prefix() + '/fix',
+                                              NavSatFix,
+                                              queue_size=10)
+        self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):
@@ -53,5 +60,4 @@ class Gnss(Sensor):
         navsatfix_msg.latitude = carla_gnss_measurement.latitude
         navsatfix_msg.longitude = carla_gnss_measurement.longitude
         navsatfix_msg.altitude = carla_gnss_measurement.altitude
-        self.publish_message(
-            self.get_topic_prefix() + "/fix", navsatfix_msg)
+        self.gnss_publisher.publish(navsatfix_msg)

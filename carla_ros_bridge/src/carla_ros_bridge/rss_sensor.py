@@ -22,7 +22,7 @@ class RssSensor(Actor):
     utilization it's not handled as a sensor here.
     """
 
-    def __init__(self, carla_actor, parent, communication, _):
+    def __init__(self, carla_actor, parent, node, _):
         """
         Constructor
 
@@ -30,11 +30,11 @@ class RssSensor(Actor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
 
         super(RssSensor, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        communication=communication,
+                                        node=node,
                                         prefix="rss")
