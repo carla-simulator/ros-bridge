@@ -19,15 +19,15 @@ class PseudoActor(object):
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
 
-    def __init__(self, parent, communication, prefix=None):
+    def __init__(self, parent, node, prefix=None):
         """
         Constructor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.PseudoActor
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
         self.parent = parent
         if self.parent:
@@ -35,7 +35,7 @@ class PseudoActor(object):
         else:
             self.parent_id = None
 
-        self.communication = communication
+        self.node = node
 
         # Concatenate the onw prefix to the the parent topic name if not empty.
         self.prefix = ""
@@ -52,13 +52,6 @@ class PseudoActor(object):
         :return:
         """
         self.parent = None
-        self.communication = None
-
-    def publish_message(self, topic, msg, is_latched=False):
-        """
-        hand message over to communication layer
-        """
-        return self.communication.publish_message(topic, msg, is_latched)
 
     def get_msg_header(self, frame_id=None, timestamp=None):
         """
@@ -74,7 +67,7 @@ class PseudoActor(object):
         if timestamp:
             header.stamp = rospy.Time.from_sec(timestamp)
         else:
-            header.stamp = self.communication.get_current_ros_time()
+            header.stamp = self.node.ros_timestamp
         return header
 
     def get_parent_id(self):

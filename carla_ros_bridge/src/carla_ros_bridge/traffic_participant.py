@@ -10,6 +10,8 @@
 Classes to handle Carla traffic participants
 """
 
+import rospy
+
 from derived_object_msgs.msg import Object
 from nav_msgs.msg import Odometry
 from shape_msgs.msg import SolidPrimitive
@@ -23,7 +25,7 @@ class TrafficParticipant(Actor):
     actor implementation details for traffic participant
     """
 
-    def __init__(self, carla_actor, parent, communication, prefix):
+    def __init__(self, carla_actor, parent, node, prefix):
         """
         Constructor
 
@@ -31,16 +33,21 @@ class TrafficParticipant(Actor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
         self.classification_age = 0
         super(TrafficParticipant, self).__init__(carla_actor=carla_actor,
                                                  parent=parent,
-                                                 communication=communication,
+                                                 node=node,
                                                  prefix=prefix)
+
+        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                  "/odometry",
+                                                  Odometry,
+                                                  queue_size=10)
 
     def update(self, frame, timestamp):
         """
@@ -69,7 +76,7 @@ class TrafficParticipant(Actor):
         odometry.child_frame_id = self.get_prefix()
         odometry.pose.pose = self.get_current_ros_pose()
         odometry.twist.twist = self.get_current_ros_twist_rotated()
-        self.publish_message(self.get_topic_prefix() + "/odometry", odometry)
+        self.odometry_publisher.publish(odometry)
 
     def get_object_info(self):
         """
