@@ -147,7 +147,7 @@ class TestClock(unittest.TestCase):
 
     def test_dvs_camera_events(self):
         """
-        Tests dvs camera events 
+        Tests dvs camera events
         """
         rospy.init_node('test_node', anonymous=True)
         msg = rospy.wait_for_message(
