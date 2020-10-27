@@ -27,7 +27,7 @@ elif ROS_VERSION == 2:
              ['resource/' + package_name]),
             ('share/' + package_name, ['package.xml']),
             ('share/' + package_name + '/config',
-             ['config/sensors.json']),
+             ['config/sensors.json', 'config/FollowLeadingVehicle.xosc', 'config/carla_ad_demo_ros2.rviz']),
             (os.path.join('share', package_name), glob('launch/*.launch.py'))
         ],
         install_requires=['setuptools'],
