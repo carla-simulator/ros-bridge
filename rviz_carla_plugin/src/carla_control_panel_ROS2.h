@@ -7,13 +7,20 @@
 #pragma once
 
 #include <OgreCamera.h>
-#include <carla_msgs/CarlaEgoVehicleStatus.h>
-#include <carla_msgs/CarlaStatus.h>
-#include <carla_ros_scenario_runner_types/CarlaScenarioList.h>
-#include <carla_ros_scenario_runner_types/CarlaScenarioRunnerStatus.h>
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <rviz/panel.h>
+#include <carla_msgs/msg/carla_ego_vehicle_status.hpp>
+#include <carla_msgs/msg/carla_status.hpp>
+#include <carla_msgs/msg/carla_control.hpp>
+#include <carla_ros_scenario_runner_types/msg/carla_scenario_list.hpp>
+#include <carla_ros_scenario_runner_types/msg/carla_scenario_runner_status.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include "rclcpp/rclcpp.hpp"
+#include <rviz_common/panel.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <carla_ros_scenario_runner_types/srv/execute_scenario.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
+#include <rviz_common/frame_position_tracking_view_controller.hpp>
 
 class QLineEdit;
 class QPushButton;
@@ -31,7 +38,7 @@ namespace rviz_carla_plugin {
 class DriveWidget;
 class IndicatorWidget;
 
-class CarlaControlPanel : public rviz::Panel, public Ogre::Camera::Listener
+class CarlaControlPanel : public rviz_common::Panel, public Ogre::Camera::Listener
 {
   Q_OBJECT
 public:
@@ -58,12 +65,14 @@ protected:
   void setSimulationButtonStatus(bool active);
   void setScenarioRunnerStatus(bool active);
 
-  void scenarioRunnerStatusChanged(const carla_ros_scenario_runner_types::CarlaScenarioRunnerStatus::ConstPtr &msg);
-  void carlaStatusChanged(const carla_msgs::CarlaStatus::ConstPtr &msg);
-  void egoVehicleStatusChanged(const carla_msgs::CarlaEgoVehicleStatus::ConstPtr &msg);
-  void egoVehicleOdometryChanged(const nav_msgs::Odometry::ConstPtr &msg);
-  void carlaScenariosChanged(const carla_ros_scenario_runner_types::CarlaScenarioList::ConstPtr &msg);
-  carla_msgs::CarlaStatus::ConstPtr mCarlaStatus{nullptr};
+  void scenarioRunnerStatusChanged(const carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::SharedPtr msg);
+  void carlaStatusChanged(const carla_msgs::msg::CarlaStatus::SharedPtr msg);
+  void egoVehicleStatusChanged(const carla_msgs::msg::CarlaEgoVehicleStatus::SharedPtr msg);
+  void egoVehicleOdometryChanged(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void carlaScenariosChanged(const carla_ros_scenario_runner_types::msg::CarlaScenarioList::SharedPtr msg);
+  carla_msgs::msg::CarlaStatus::SharedPtr mCarlaStatus{nullptr};
+
+  rclcpp::Node::SharedPtr _node;
 
   DriveWidget *mDriveWidget;
   QPushButton *mTriggerScenarioButton;
@@ -78,25 +87,24 @@ protected:
   QCheckBox *mOverrideVehicleControl;
   QComboBox *mScenarioSelection;
   IndicatorWidget *mIndicatorWidget;
-  ros::Publisher mTwistPublisher;
-  ros::Publisher mCarlaControlPublisher;
-  ros::Publisher mEgoVehicleControlManualOverridePublisher;
-  ros::Subscriber mCarlaStatusSubscriber;
-  ros::Subscriber mEgoVehicleStatusSubscriber;
-  ros::Subscriber mEgoVehicleOdometrySubscriber;
-  ros::ServiceClient mExecuteScenarioClient;
-  ros::Subscriber mScenarioSubscriber;
-  ros::Subscriber mScenarioRunnerStatusSubscriber;
-  ros::Publisher mCameraPosePublisher;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr mTwistPublisher;
+  rclcpp::Publisher<carla_msgs::msg::CarlaControl>::SharedPtr mCarlaControlPublisher;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr mEgoVehicleControlManualOverridePublisher;
+  rclcpp::Subscription<carla_msgs::msg::CarlaStatus>::SharedPtr mCarlaStatusSubscriber;
+  rclcpp::Subscription<carla_msgs::msg::CarlaEgoVehicleStatus>::SharedPtr mEgoVehicleStatusSubscriber;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr mEgoVehicleOdometrySubscriber;
+  rclcpp::Client<carla_ros_scenario_runner_types::srv::ExecuteScenario>::SharedPtr mExecuteScenarioClient;
+  rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>::SharedPtr mScenarioSubscriber;
+  rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus>::SharedPtr mScenarioRunnerStatusSubscriber;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr mCameraPosePublisher;
 
-  carla_ros_scenario_runner_types::CarlaScenarioList::ConstPtr mCarlaScenarios;
+  carla_ros_scenario_runner_types::msg::CarlaScenarioList::SharedPtr mCarlaScenarios;
 
-  ros::NodeHandle mNodeHandle;
 
   float mLinearVelocity{0.0};
   float mAngularVelocity{0.0};
   bool mVehicleControlManualOverride{false};
-  rviz::FramePositionTrackingViewController *mViewController{nullptr};
+  rviz_common::FramePositionTrackingViewController *mViewController{nullptr};
   Ogre::Vector3 mCameraCurrentPosition;
   Ogre::Quaternion mCameraCurrentOrientation;
 };
