@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Add DVS camera sensor
 *   Fix rgb camera attributes
 *   Add intensity value to point cloud message
 *   Fixed wrong TF for ego_vehicle

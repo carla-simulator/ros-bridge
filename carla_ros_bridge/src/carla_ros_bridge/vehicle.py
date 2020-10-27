@@ -22,7 +22,7 @@ class Vehicle(TrafficParticipant):
     Actor implementation details for vehicles
     """
 
-    def __init__(self, carla_actor, parent, communication, prefix=None):
+    def __init__(self, carla_actor, parent, node, prefix=None):
         """
         Constructor
 
@@ -30,8 +30,8 @@ class Vehicle(TrafficParticipant):
         :type carla_actor: carla.Vehicle
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
@@ -53,7 +53,7 @@ class Vehicle(TrafficParticipant):
 
         super(Vehicle, self).__init__(carla_actor=carla_actor,
                                       parent=parent,
-                                      communication=communication,
+                                      node=node,
                                       prefix=prefix)
 
     def get_marker_color(self):  # pylint: disable=no-self-use

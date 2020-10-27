@@ -9,6 +9,8 @@
 a sensor that reports the state of all traffic lights
 """
 
+import rospy
+
 from carla_msgs.msg import CarlaTrafficLightStatusList,\
     CarlaTrafficLightInfoList
 from carla_ros_bridge.traffic import TrafficLight
@@ -20,23 +22,34 @@ class TrafficLightsSensor(PseudoActor):
     a sensor that reports the state of all traffic lights
     """
 
-    def __init__(self, parent, communication, actor_list):
+    def __init__(self, parent, node, actor_list):
         """
         Constructor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param actor_list: current list of actors
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
         super(TrafficLightsSensor, self).__init__(parent=parent,
-                                                  communication=communication,
+                                                  node=node,
                                                   prefix="")
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
+
+        self.traffic_lights_info_publisher = rospy.Publisher(
+            self.get_topic_prefix() + "traffic_lights_info",
+            CarlaTrafficLightInfoList,
+            queue_size=10,
+            latch=True)
+        self.traffic_lights_status_publisher = rospy.Publisher(
+            self.get_topic_prefix() + "traffic_lights",
+            CarlaTrafficLightStatusList,
+            queue_size=10,
+            latch=True)
 
     def destroy(self):
         """
@@ -63,10 +76,8 @@ class TrafficLightsSensor(PseudoActor):
             traffic_light_info_list = CarlaTrafficLightInfoList()
             for traffic_light in traffic_light_actors:
                 traffic_light_info_list.traffic_lights.append(traffic_light.get_info())
-            self.publish_message(self.get_topic_prefix() + "traffic_lights_info",
-                                 traffic_light_info_list, is_latched=True)
+            self.traffic_lights_info_publisher.publish(traffic_light_info_list)
 
         if traffic_light_status != self.traffic_light_status:
             self.traffic_light_status = traffic_light_status
-            self.publish_message(self.get_topic_prefix() + "traffic_lights",
-                                 traffic_light_status, is_latched=True)
+            self.traffic_lights_status_publisher.publish(traffic_light_status)
