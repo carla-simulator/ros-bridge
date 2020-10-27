@@ -40,15 +40,16 @@ def generate_launch_description():
             node_executable='carla_spectator_camera',
             name='carla_spectator_camera',
             output='screen',
+            emulate_tty='True',
             parameters=[
                 {
-                    '/carla/host': launch.substitutions.LaunchConfiguration('host')
+                    'carla/host': launch.substitutions.LaunchConfiguration('host')
                 },
                 {
-                    '/carla/port': launch.substitutions.LaunchConfiguration('port')
+                    'carla/port': launch.substitutions.LaunchConfiguration('port')
                 },
                 {
-                    '/carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
+                    'carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
                 },
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
