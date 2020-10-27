@@ -67,7 +67,6 @@ class Radar(Sensor):
         """
         radar_msg = CarlaRadarMeasurement()
         radar_msg.header = self.get_msg_header(timestamp=carla_radar_measurement.timestamp)
-        
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
             PointField('y', 4, PointField.FLOAT32, 1),
             PointField('z', 8, PointField.FLOAT32, 1),
@@ -88,6 +87,7 @@ class Radar(Sensor):
                                 detection.depth * np.sin(-detection.azimuth) * np.cos(detection.altitude),
                                 detection.depth * np.sin(detection.altitude),
                                 detection.depth, detection.velocity, detection.azimuth, detection.altitude])
+
         radar_msg_pc = create_cloud(radar_msg.header, fields, points)
         self.radar_publisher.publish(radar_msg)
         self.radar_pc_publisher.publish(radar_msg_pc)
