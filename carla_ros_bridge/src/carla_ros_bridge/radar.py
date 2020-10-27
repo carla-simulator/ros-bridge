@@ -74,7 +74,6 @@ class Radar(Sensor):
             PointField('Velocity', 16, PointField.FLOAT32, 1),
             PointField('AzimuthAngle', 20, PointField.FLOAT32, 1),
             PointField('ElevationAngle', 28, PointField.FLOAT32, 1)]
-        
         points = []
         for detection in carla_radar_measurement:
             radar_detection = CarlaRadarDetection()
@@ -87,7 +86,6 @@ class Radar(Sensor):
                                 detection.depth * np.sin(-detection.azimuth) * np.cos(detection.altitude),
                                 detection.depth * np.sin(detection.altitude),
                                 detection.depth, detection.velocity, detection.azimuth, detection.altitude])
-
         radar_msg_pc = create_cloud(radar_msg.header, fields, points)
         self.radar_publisher.publish(radar_msg)
         self.radar_pc_publisher.publish(radar_msg_pc)
