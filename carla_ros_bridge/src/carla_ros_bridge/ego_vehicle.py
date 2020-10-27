@@ -80,7 +80,7 @@ class EgoVehicle(Vehicle):
         self.control_override_subscriber = self.node.create_subscriber(
             Bool,
             self.get_topic_prefix() + "/vehicle_control_manual_override",
-            self.control_command_override)
+            self.control_command_override, QoSProfile(depth=1, durability=True))
 
         self.enable_autopilot_subscriber = self.node.create_subscriber(
             Bool,
