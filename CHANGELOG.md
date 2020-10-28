@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Remove sensors.json from carla_ad_demo. Use example from carla_ego_vehicle instead
 *   Add radar PointCloud2 publisher
 *   Add DVS camera sensor
 *   Fix rgb camera attributes
