@@ -42,7 +42,7 @@
     <arg name='port' value='$(arg port)'/>
     <arg name='timeout' value='$(arg timeout)'/>
     <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
-    <arg name="sensor_definition_file" default="$(find carla_ad_demo)/config/sensors.json"/>
+    <arg name="sensor_definition_file" default="$(find carla_ego_vehicle)/config/sensors.json"/>
     <arg name='role_name' value='$(arg role_name)'/>
     <arg name="spawn_point" value="$(arg spawn_point)"/>
   </include>

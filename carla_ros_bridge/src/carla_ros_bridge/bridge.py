@@ -24,10 +24,6 @@ from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
 
-from tf2_msgs.msg import TFMessage
-from visualization_msgs.msg import Marker  # pylint: disable=import-error
-
-from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription, ros_shutdown, ros_timestamp, QoSProfile, latch_on
 import carla
 
 
@@ -459,11 +455,22 @@ class CarlaRosBridge(CompatibleNode):
                 elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
                     actor = SemanticSegmentationCamera(carla_actor, parent, self,
                                                        self.carla_settings.synchronous_mode)
+                elif carla_actor.type_id.startswith("sensor.camera.dvs"):
+                    actor = DVSCamera(carla_actor, parent, self,
+                                      self.carla_settings.synchronous_mode)
                 else:
                     actor = Camera(carla_actor, parent, self,
                                    self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
+                if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
+                    actor = Lidar(carla_actor, parent, self,
+                                  self.carla_settings.synchronous_mode)
+                elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
+                    actor = SemanticLidar(carla_actor, parent, self,
+                                          self.carla_settings.synchronous_mode)
+            elif carla_actor.type_id.startswith("sensor.lidar"):
+                actor = Lidar(carla_actor, parent, self,
+                              self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.radar"):
                 actor = Radar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
