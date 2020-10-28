@@ -35,7 +35,7 @@ import carla
 # ==============================================================================
 
 
-class CarlaSpectatorCamera(object):
+class CarlaSpectatorCamera(CompatibleNode):
     """
     Spawns a camera, attached to an ego vehicle.
 
@@ -47,19 +47,19 @@ class CarlaSpectatorCamera(object):
         """
         Constructor
         """
-        self._node = CompatibleNode('spectator_camera')
-        self.role_name = self._node.get_param("role_name", "ego_vehicle")
-        self.camera_resolution_x = self._node.get_param("resolution_x", 800)
-        self.camera_resolution_y = self._node.get_param("resolution_y", 600)
-        self.camera_fov = self._node.get_param("fov", 50)
-        self.host = self._node.get_param('carla/host', '127.0.0.1')
-        self.port = self._node.get_param('carla/port', 2000)
-        self.timeout = self._node.get_param("carla/timeout", 10)
+        super(CarlaSpectatorCamera, self).__init__('spectator_camera')
+        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.camera_resolution_x = self.get_param("resolution_x", 800)
+        self.camera_resolution_y = self.get_param("resolution_y", 600)
+        self.camera_fov = self.get_param("fov", 50)
+        self.host = self.get_param('carla/host', '127.0.0.1')
+        self.port = self.get_param('carla/port', 2000)
+        self.timeout = self.get_param("carla/timeout", 10)
         self.world = None
         self.pose = None
         self.camera_actor = None
         self.ego_vehicle = None
-        self._node.create_subscriber(PoseStamped,
+        self.create_subscriber(PoseStamped,
                                      "/carla/{}/spectator_pose".format(self.role_name), self.pose_received)
 
     def pose_received(self, pose):
@@ -67,7 +67,7 @@ class CarlaSpectatorCamera(object):
         Move the camera
         """
         if self.pose != pose:
-            self._node.logdebug("Camera pose changed. Updating carla camera")
+            self.logdebug("Camera pose changed. Updating carla camera")
             self.pose = pose
             transform = self.get_camera_transform()
             if transform and self.camera_actor:
@@ -78,10 +78,10 @@ class CarlaSpectatorCamera(object):
         Calculate the CARLA camera transform
         """
         if not self.pose:
-            self._node.loginfo("no pose!")
+            self.loginfo("no pose!")
             return None
         if self.pose.header.frame_id != self.role_name:
-            self._node.logwarn("Unsupported frame received. Supported {}, received {}".format(
+            self.logwarn("Unsupported frame received. Supported {}, received {}".format(
                 self.role_name, self.pose.header.frame_id))
             return None
         sensor_location = carla.Location(x=self.pose.pose.position.x,
@@ -108,7 +108,7 @@ class CarlaSpectatorCamera(object):
         try:
             bp = bp_library.find("sensor.camera.rgb")
             bp.set_attribute('role_name', "spectator_view")
-            self._node.loginfo("Creating camera with resolution {}x{}, fov {}".format(
+            self.loginfo("Creating camera with resolution {}x{}, fov {}".format(
                 self.camera_resolution_x,
                 self.camera_resolution_y,
                 self.camera_fov))
@@ -116,7 +116,7 @@ class CarlaSpectatorCamera(object):
             bp.set_attribute('image_size_y', str(self.camera_resolution_y))
             bp.set_attribute('fov', str(self.camera_fov))
         except KeyError as e:
-            self._node.logfatal("Camera could not be spawned: '{}'".format(e))
+            self.logfatal("Camera could not be spawned: '{}'".format(e))
         transform = self.get_camera_transform()
         if not transform:
             transform = carla.Transform()
@@ -145,7 +145,7 @@ class CarlaSpectatorCamera(object):
 
         if ego_vehicle_changed:
             self.destroy()
-            self._node.loginfo("Ego vehicle changed.")
+            self.loginfo("Ego vehicle changed.")
             self.ego_vehicle = hero
             if self.ego_vehicle:
                 self.create_camera(self.ego_vehicle)
@@ -163,14 +163,14 @@ class CarlaSpectatorCamera(object):
         main loop
         """
         # wait for ros-bridge to set up CARLA world
-        self._node.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self._node.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
                                             qos_profile=QoSProfile(depth=10, durability=True))
         except ROSException:
-            self._node.logerr("Error while waiting for world info!")
+            self.logerr("Error while waiting for world info!")
             sys.exit(1)
-        self._node.loginfo("CARLA world available. Waiting for ego vehicle...")
+        self.loginfo("CARLA world available. Waiting for ego vehicle...")
 
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
@@ -178,8 +178,8 @@ class CarlaSpectatorCamera(object):
 
         period = 0.1
         try:
-            self._node.new_timer(period, lambda timer_event=None: self.find_ego_vehicle_actor())
-            self._node.spin()
+            self.new_timer(period, lambda timer_event=None: self.find_ego_vehicle_actor())
+            self.spin()
         except ROSInterruptException:
             pass
 
