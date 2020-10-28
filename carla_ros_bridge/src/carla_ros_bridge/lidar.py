@@ -180,6 +180,8 @@ class SemanticLidar(Sensor):
         self.semantic_lidar_publisher.publish(point_cloud_msg)
 
 # http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
+
+
 def _get_struct_fmt(is_bigendian, fields, field_names=None):
     fmt = '>' if is_bigendian else '<'
 

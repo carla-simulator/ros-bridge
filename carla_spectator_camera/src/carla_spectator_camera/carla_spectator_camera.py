@@ -11,6 +11,7 @@ The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
 # pylint: disable=import-error
+import carla
 import sys
 import math
 from geometry_msgs.msg import PoseStamped
@@ -28,7 +29,6 @@ ROS_VERSION = int(os.environ['ROS_VERSION'])
 if ROS_VERSION == 2:
     import rclpy
 
-import carla
 
 # ==============================================================================
 # -- CarlaSpectatorCamera ------------------------------------------------------------
@@ -60,7 +60,7 @@ class CarlaSpectatorCamera(CompatibleNode):
         self.camera_actor = None
         self.ego_vehicle = None
         self.create_subscriber(PoseStamped,
-                                     "/carla/{}/spectator_pose".format(self.role_name), self.pose_received)
+                               "/carla/{}/spectator_pose".format(self.role_name), self.pose_received)
 
     def pose_received(self, pose):
         """
@@ -166,7 +166,7 @@ class CarlaSpectatorCamera(CompatibleNode):
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
             self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
-                                            qos_profile=QoSProfile(depth=10, durability=True))
+                                      qos_profile=QoSProfile(depth=10, durability=True))
         except ROSException:
             self.logerr("Error while waiting for world info!")
             sys.exit(1)
