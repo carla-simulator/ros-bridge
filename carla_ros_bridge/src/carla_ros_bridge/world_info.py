@@ -22,23 +22,28 @@ class WorldInfo(PseudoActor):
     Publish the map
     """
 
-    def __init__(self, carla_world, communication):
+    def __init__(self, carla_world, node):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
 
         super(WorldInfo, self).__init__(parent=None,
-                                        communication=communication,
+                                        node=node,
                                         prefix="world_info")
 
         self.carla_map = carla_world.get_map()
 
         self.map_published = False
+
+        self.world_info_publisher = rospy.Publisher(self.get_topic_prefix(),
+                                                    CarlaWorldInfo,
+                                                    queue_size=10,
+                                                    latch=True)
 
     def destroy(self):
         """
@@ -63,5 +68,5 @@ class WorldInfo(PseudoActor):
             open_drive_msg = CarlaWorldInfo()
             open_drive_msg.map_name = self.carla_map.name
             open_drive_msg.opendrive = self.carla_map.to_opendrive()
-            self.publish_message(self.get_topic_prefix(), open_drive_msg, is_latched=True)
+            self.world_info_publisher.publish(open_drive_msg)
             self.map_published = True

@@ -9,6 +9,8 @@
 handle a object sensor
 """
 
+import rospy
+
 from derived_object_msgs.msg import ObjectArray
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.walker import Walker
@@ -21,15 +23,15 @@ class ObjectSensor(PseudoActor):
     Pseudo object sensor
     """
 
-    def __init__(self, parent, communication, actor_list, filtered_id):
+    def __init__(self, parent, node, actor_list, filtered_id):
         """
         Constructor
         :param carla_world: carla world object
         :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param actor_list: current list of actors
         :type actor_list: map(carla-actor-id -> python-actor-object)
         :param filtered_id: id to filter from actor_list
@@ -37,10 +39,13 @@ class ObjectSensor(PseudoActor):
         """
 
         super(ObjectSensor, self).__init__(parent=parent,
-                                           communication=communication,
+                                           node=node,
                                            prefix='objects')
         self.actor_list = actor_list
         self.filtered_id = filtered_id
+        self.object_publisher = rospy.Publisher(self.get_topic_prefix(),
+                                                ObjectArray,
+                                                queue_size=10)
 
     def destroy(self):
         """
@@ -66,4 +71,4 @@ class ObjectSensor(PseudoActor):
                     ros_objects.objects.append(actor.get_object_info())
                 elif isinstance(actor, Walker):
                     ros_objects.objects.append(actor.get_object_info())
-        self.publish_message(self.get_topic_prefix(), ros_objects)
+        self.object_publisher.publish(ros_objects)

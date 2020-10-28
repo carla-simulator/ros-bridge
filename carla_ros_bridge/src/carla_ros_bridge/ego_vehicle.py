@@ -34,7 +34,7 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    def __init__(self, carla_actor, parent, communication, vehicle_control_applied_callback):
+    def __init__(self, carla_actor, parent, node, vehicle_control_applied_callback):
         """
         Constructor
 
@@ -42,17 +42,27 @@ class EgoVehicle(Vehicle):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         """
         super(EgoVehicle, self).__init__(carla_actor=carla_actor,
                                          parent=parent,
-                                         communication=communication,
+                                         node=node,
                                          prefix=carla_actor.attributes.get('role_name'))
 
         self.vehicle_info_published = False
         self.vehicle_control_override = False
         self._vehicle_control_applied_callback = vehicle_control_applied_callback
+
+        self.vehicle_status_publisher = rospy.Publisher(
+            self.get_topic_prefix() + "/vehicle_status",
+            CarlaEgoVehicleStatus,
+            queue_size=10)
+        self.vehicle_info_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                      "/vehicle_info",
+                                                      CarlaEgoVehicleInfo,
+                                                      queue_size=10,
+                                                      latch=True)
 
         self.control_subscriber = rospy.Subscriber(
             self.get_topic_prefix() + "/vehicle_control_cmd",
@@ -100,9 +110,7 @@ class EgoVehicle(Vehicle):
         vehicle_status = CarlaEgoVehicleStatus(
             header=self.get_msg_header("map"))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
-        vehicle_status.acceleration.linear = transforms.carla_vector_to_ros_vector_rotated(
-            self.carla_actor.get_acceleration(),
-            self.carla_actor.get_transform().rotation)
+        vehicle_status.acceleration.linear = self.get_current_ros_accel().linear
         vehicle_status.orientation = self.get_current_ros_pose().orientation
         vehicle_status.control.throttle = self.carla_actor.get_control().throttle
         vehicle_status.control.steer = self.carla_actor.get_control().steer
@@ -111,7 +119,7 @@ class EgoVehicle(Vehicle):
         vehicle_status.control.reverse = self.carla_actor.get_control().reverse
         vehicle_status.control.gear = self.carla_actor.get_control().gear
         vehicle_status.control.manual_gear_shift = self.carla_actor.get_control().manual_gear_shift
-        self.publish_message(self.get_topic_prefix() + "/vehicle_status", vehicle_status)
+        self.vehicle_status_publisher.publish(vehicle_status)
 
         # only send vehicle once (in latched-mode)
         if not self.vehicle_info_published:
@@ -155,7 +163,7 @@ class EgoVehicle(Vehicle):
             vehicle_info.center_of_mass.y = vehicle_physics.center_of_mass.y
             vehicle_info.center_of_mass.z = vehicle_physics.center_of_mass.z
 
-            self.publish_message(self.get_topic_prefix() + "/vehicle_info", vehicle_info, True)
+            self.vehicle_info_publisher.publish(vehicle_info)
 
     def update(self, frame, timestamp):
         """
@@ -213,8 +221,8 @@ class EgoVehicle(Vehicle):
 
             rospy.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
-            self.carla_actor.set_velocity(linear_velocity)
-            self.carla_actor.set_angular_velocity(angular_velocity)
+            self.carla_actor.set_target_velocity(linear_velocity)
+            self.carla_actor.set_target_angular_velocity(angular_velocity)
 
     def control_command_override(self, enable):
         """
