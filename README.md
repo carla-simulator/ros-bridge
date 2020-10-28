@@ -204,7 +204,6 @@ Currently the following sensors are supported:
 
 | Topic                                                          | Type                                                                                   |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaRadarMeasurement.msg) |
 | `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar_points` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
 ##### IMU

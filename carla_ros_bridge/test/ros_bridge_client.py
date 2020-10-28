@@ -23,7 +23,7 @@ from derived_object_msgs.msg import ObjectArray
 from visualization_msgs.msg import Marker
 from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo,
                             CarlaActorList, CarlaTrafficLightStatusList,
-                            CarlaTrafficLightInfoList, CarlaRadarMeasurement)
+                            CarlaTrafficLightInfoList)
 
 PKG = 'test_roslaunch'
 TIMEOUT = 20
@@ -190,11 +190,8 @@ class TestClock(unittest.TestCase):
         """
         rospy.init_node('test_node', anonymous=True)
         msg = rospy.wait_for_message(
-            "/carla/ego_vehicle/radar/front/radar", CarlaRadarMeasurement, timeout=TIMEOUT)
-        msg_points = rospy.wait_for_message(
             "/carla/ego_vehicle/radar/front/radar_points", PointCloud2, timeout=TIMEOUT)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/radar/front")
-        self.assertEqual(msg_points.header.frame_id, "ego_vehicle/radar/front")
 
     def test_ego_vehicle_objects(self):
         """
