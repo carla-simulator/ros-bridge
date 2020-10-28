@@ -94,10 +94,10 @@ class SemanticLidar(Sensor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
         super(SemanticLidar, self).__init__(carla_actor=carla_actor,
-                                    parent=parent,
-                                    node=node,
-                                    synchronous_mode=synchronous_mode,
-                                    prefix='semantic_lidar/' + carla_actor.attributes.get('role_name'))
+                                            parent=parent,
+                                            node=node,
+                                            synchronous_mode=synchronous_mode,
+                                            prefix='semantic_lidar/' + carla_actor.attributes.get('role_name'))
 
         self.semantic_lidar_publisher = rospy.Publisher(
             self.get_topic_prefix() + "/point_cloud",

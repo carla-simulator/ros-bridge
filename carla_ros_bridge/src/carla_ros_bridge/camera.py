@@ -389,10 +389,10 @@ class DVSCamera(Camera):
         :type prefix: string
         """
         super(DVSCamera, self).__init__(carla_actor=carla_actor,
-                                     parent=parent,
-                                     node=node,
-                                     synchronous_mode=synchronous_mode,
-                                     prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
+                                        parent=parent,
+                                        node=node,
+                                        synchronous_mode=synchronous_mode,
+                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
 
         self._dvs_events = None
         self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +
