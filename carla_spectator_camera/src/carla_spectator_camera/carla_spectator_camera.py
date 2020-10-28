@@ -13,11 +13,20 @@ to /carla/<ROLENAME>/spectator_position.
 # pylint: disable=import-error
 import sys
 import math
-import rospy
-from tf.transformations import euler_from_quaternion
-import tf
 from geometry_msgs.msg import PoseStamped
 from carla_msgs.msg import CarlaWorldInfo
+
+from ros_compatibility import (
+    CompatibleNode,
+    euler_from_quaternion,
+    QoSProfile,
+    ROSException,
+    ROSInterruptException
+)
+import os
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+if ROS_VERSION == 2:
+    import rclpy
 
 import carla
 
@@ -26,7 +35,7 @@ import carla
 # ==============================================================================
 
 
-class CarlaSpectatorCamera(object):
+class CarlaSpectatorCamera(CompatibleNode):
     """
     Spawns a camera, attached to an ego vehicle.
 
@@ -38,28 +47,27 @@ class CarlaSpectatorCamera(object):
         """
         Constructor
         """
-        rospy.init_node('spectator_camera', anonymous=True)
-        self.listener = tf.TransformListener()
-        self.role_name = rospy.get_param("/role_name", "ego_vehicle")
-        self.camera_resolution_x = rospy.get_param("~resolution_x", 800)
-        self.camera_resolution_y = rospy.get_param("~resolution_y", 600)
-        self.camera_fov = rospy.get_param("~fov", 50)
-        self.host = rospy.get_param('/carla/host', '127.0.0.1')
-        self.port = rospy.get_param('/carla/port', 2000)
-        self.timeout = rospy.get_param("/carla/timeout", 10)
+        super(CarlaSpectatorCamera, self).__init__('spectator_camera')
+        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.camera_resolution_x = self.get_param("resolution_x", 800)
+        self.camera_resolution_y = self.get_param("resolution_y", 600)
+        self.camera_fov = self.get_param("fov", 50)
+        self.host = self.get_param('carla/host', '127.0.0.1')
+        self.port = self.get_param('carla/port', 2000)
+        self.timeout = self.get_param("carla/timeout", 10)
         self.world = None
         self.pose = None
         self.camera_actor = None
         self.ego_vehicle = None
-        rospy.Subscriber("/carla/{}/spectator_pose".format(self.role_name),
-                         PoseStamped, self.pose_received)
+        self.create_subscriber(PoseStamped,
+                                     "/carla/{}/spectator_pose".format(self.role_name), self.pose_received)
 
     def pose_received(self, pose):
         """
         Move the camera
         """
         if self.pose != pose:
-            rospy.logdebug("Camera pose changed. Updating carla camera")
+            self.logdebug("Camera pose changed. Updating carla camera")
             self.pose = pose
             transform = self.get_camera_transform()
             if transform and self.camera_actor:
@@ -70,10 +78,10 @@ class CarlaSpectatorCamera(object):
         Calculate the CARLA camera transform
         """
         if not self.pose:
-            rospy.loginfo("no pose!")
+            self.loginfo("no pose!")
             return None
         if self.pose.header.frame_id != self.role_name:
-            rospy.logwarn("Unsupported frame received. Supported {}, received {}".format(
+            self.logwarn("Unsupported frame received. Supported {}, received {}".format(
                 self.role_name, self.pose.header.frame_id))
             return None
         sensor_location = carla.Location(x=self.pose.pose.position.x,
@@ -100,7 +108,7 @@ class CarlaSpectatorCamera(object):
         try:
             bp = bp_library.find("sensor.camera.rgb")
             bp.set_attribute('role_name', "spectator_view")
-            rospy.loginfo("Creating camera with resolution {}x{}, fov {}".format(
+            self.loginfo("Creating camera with resolution {}x{}, fov {}".format(
                 self.camera_resolution_x,
                 self.camera_resolution_y,
                 self.camera_fov))
@@ -108,7 +116,7 @@ class CarlaSpectatorCamera(object):
             bp.set_attribute('image_size_y', str(self.camera_resolution_y))
             bp.set_attribute('fov', str(self.camera_fov))
         except KeyError as e:
-            rospy.logfatal("Camera could not be spawned: '{}'".format(e))
+            self.logfatal("Camera could not be spawned: '{}'".format(e))
         transform = self.get_camera_transform()
         if not transform:
             transform = carla.Transform()
@@ -137,7 +145,7 @@ class CarlaSpectatorCamera(object):
 
         if ego_vehicle_changed:
             self.destroy()
-            rospy.loginfo("Ego vehicle changed.")
+            self.loginfo("Ego vehicle changed.")
             self.ego_vehicle = hero
             if self.ego_vehicle:
                 self.create_camera(self.ego_vehicle)
@@ -155,24 +163,24 @@ class CarlaSpectatorCamera(object):
         main loop
         """
         # wait for ros-bridge to set up CARLA world
-        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
+        self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException:
-            rospy.logerr("Error while waiting for world info!")
+            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo, timeout=10.0,
+                                            qos_profile=QoSProfile(depth=10, durability=True))
+        except ROSException:
+            self.logerr("Error while waiting for world info!")
             sys.exit(1)
-        rospy.loginfo("CARLA world available. Waiting for ego vehicle...")
+        self.loginfo("CARLA world available. Waiting for ego vehicle...")
 
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
         self.world = client.get_world()
 
+        period = 0.1
         try:
-            r = rospy.Rate(10)  # 10hz
-            while not rospy.is_shutdown():
-                self.find_ego_vehicle_actor()
-                r.sleep()
-        except rospy.ROSInterruptException:
+            self.new_timer(period, lambda timer_event=None: self.find_ego_vehicle_actor())
+            self.spin()
+        except ROSInterruptException:
             pass
 
 # ==============================================================================
@@ -184,6 +192,9 @@ def main():
     """
     main function
     """
+    if ROS_VERSION == 2:
+        rclpy.init()
+
     carla_spectator_camera = CarlaSpectatorCamera()
     try:
         carla_spectator_camera.run()

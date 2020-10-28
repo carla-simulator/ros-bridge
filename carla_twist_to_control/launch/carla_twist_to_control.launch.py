@@ -16,6 +16,7 @@ def generate_launch_description():
             node_executable='carla_twist_to_control',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
+            emulate_tty='True',
             parameters=[
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')

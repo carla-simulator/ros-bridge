@@ -5,6 +5,10 @@ import launch
 import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
+# string with message to publish on topic /carla/available/scenarios
+ros_topic_msg_string = "{{ 'scenarios': [{{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}] }}".format(
+    os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc'))
+
 
 def generate_launch_description():
     ld = launch.LaunchDescription([
@@ -68,23 +72,24 @@ def generate_launch_description():
             package='carla_twist_to_control',
             node_executable='carla_twist_to_control',
             name='carla_twist_to_control',
+            remappings=[
+                (
+                    ["/carla/",
+                        launch.substitutions.LaunchConfiguration('role_name'), "/vehicle_control_cmd"],
+                    ["/carla/",
+                        launch.substitutions.LaunchConfiguration('role_name'), "/vehicle_control_cmd_manual"]
+                )
+            ],
             parameters=[
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
                 }
             ]
         ),
-        launch_ros.actions.Node(
-            package='rostopic',
-            node_executable='rostopic',
-            name='publish_scenarios'
-        ),
-        launch_ros.actions.Node(
-            package='rviz',
-            node_executable='rviz',
-            name='rviz',
-            output='screen',
-            on_exit=launch.actions.Shutdown()
+        launch.actions.ExecuteProcess(
+            cmd=["ros2", "topic", "pub", "/carla/available_scenarios",
+                 "carla_ros_scenario_runner_types/CarlaScenarioList", ros_topic_msg_string],
+            name='topic_pub_vailable_scenarios',
         ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
@@ -154,6 +159,15 @@ def generate_launch_description():
                 'scenario_runner_path': launch.substitutions.LaunchConfiguration('scenario_runner_path'),
                 'wait_for_ego': 'True'
             }.items()
+        ),
+        launch_ros.actions.Node(
+            package='rviz2',
+            node_executable='rviz2',
+            name='rviz2',
+            output='screen',
+            arguments=[
+                '-d', os.path.join(get_package_share_directory('carla_ad_demo'), 'config/carla_ad_demo_ros2.rviz')],
+            on_exit=launch.actions.Shutdown()
         )
     ])
     return ld
