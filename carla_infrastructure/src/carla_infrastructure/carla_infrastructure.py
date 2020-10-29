@@ -81,10 +81,10 @@ class CarlaInfrastructure(CompatibleNode):
                 if sensor_name in sensor_names:
                     rospy.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
-                            sensor_spec['id']))
+                            sensor_id))
                     raise NameError(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
-                            sensor_spec['id']))
+                            sensor_id))
                 sensor_names.append(sensor_name)
 
                 sensor_location = carla.Location(x=sensor_spec.pop("x"),
