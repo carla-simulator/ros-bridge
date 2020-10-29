@@ -116,7 +116,7 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
                 'vehicle_filter': launch.substitutions.LaunchConfiguration('vehicle_filter'),
-                'sensor_definition_file': get_package_share_directory('carla_ad_demo') + '/config/sensors.json',
+                'sensor_definition_file': get_package_share_directory('carla_ego_vehicle') + '/config/sensors.json',
                 'role_name': launch.substitutions.LaunchConfiguration('role_name')
             }.items()
         ),

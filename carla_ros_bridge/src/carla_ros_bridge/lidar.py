@@ -139,10 +139,9 @@ class SemanticLidar(Sensor):
                                             synchronous_mode=synchronous_mode,
                                             prefix='semantic_lidar/' + carla_actor.attributes.get('role_name'))
 
-        self.semantic_lidar_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "/point_cloud",
+        self.semantic_lidar_publisher = node.new_publisher(
             PointCloud2,
-            queue_size=10)
+            self.get_topic_prefix() + "/point_cloud")
         self.listen()
 
     # pylint: disable=arguments-differ

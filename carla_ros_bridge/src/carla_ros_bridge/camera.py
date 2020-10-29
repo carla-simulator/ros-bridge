@@ -390,10 +390,9 @@ class DVSCamera(Camera):
                                         prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
 
         self._dvs_events = None
-        self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                    '/events',
-                                                    PointCloud2,
-                                                    queue_size=10)
+        self.dvs_camera_publisher = node.new_publisher(
+                PointCloud2,
+                self.get_topic_prefix() + '/events')
 
         self.listen()
 
