@@ -362,3 +362,95 @@ class SemanticSegmentationCamera(Camera):
         :rtype string
         """
         return "image_segmentation"
+
+
+class DVSCamera(Camera):
+
+    """
+    Sensor implementation details for dvs cameras
+    """
+
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+        """
+        Constructor
+
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
+        :param parent: the parent of this
+        :type parent: carla_ros_bridge.Parent
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
+        :param prefix: the topic prefix to be used for this actor
+        :type prefix: string
+        """
+        super(DVSCamera, self).__init__(carla_actor=carla_actor,
+                                        parent=parent,
+                                        node=node,
+                                        synchronous_mode=synchronous_mode,
+                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
+
+        self._dvs_events = None
+        self.dvs_camera_publisher = node.new_publisher(
+            PointCloud2,
+            self.get_topic_prefix() + '/events')
+
+        self.listen()
+
+    # pylint: disable=arguments-differ
+    def sensor_data_updated(self, carla_dvs_event_array):
+        """
+        Function to transform the received DVS event array into a ROS message
+
+        :param carla_dvs_event_array: dvs event array object
+        :type carla_image: carla.DVSEventArray
+        """
+        super(DVSCamera, self).sensor_data_updated(carla_dvs_event_array)
+
+        header = self.get_msg_header(timestamp=carla_dvs_event_array.timestamp)
+        fields = [
+            PointField('x', 0, PointField.UINT16, 1),
+            PointField('y', 2, PointField.UINT16, 1),
+            PointField('t', 4, PointField.FLOAT64, 1),
+            PointField('pol', 12, PointField.INT8, 1),
+        ]
+
+        dvs_events_msg = create_cloud(header, fields, self._dvs_events.tolist())
+        self.dvs_camera_publisher.publish(dvs_events_msg)
+
+    # pylint: disable=arguments-differ
+    def get_carla_image_data_array(self, carla_dvs_event_array):
+        """
+        Function (override) to convert the carla dvs event array to a numpy data array
+        as input for the cv_bridge.cv2_to_imgmsg() function
+
+        The carla.DVSEventArray is converted into a 3-channel int8 color image format (bgr).
+
+        :param carla_dvs_event_array: dvs event array object
+        :type carla_dvs_event_array: carla.DVSEventArray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
+        """
+        self._dvs_events = numpy.frombuffer(carla_dvs_event_array.raw_data,
+                                            dtype=numpy.dtype([
+                                                ('x', numpy.uint16),
+                                                ('y', numpy.uint16),
+                                                ('t', numpy.int64),
+                                                ('pol', numpy.bool)
+                                            ]))
+        carla_image_data_array = numpy.zeros(
+            (carla_dvs_event_array.height, carla_dvs_event_array.width, 3),
+            dtype=numpy.uint8)
+        # Blue is positive, red is negative
+        carla_image_data_array[self._dvs_events[:]['y'], self._dvs_events[:]['x'],
+                               self._dvs_events[:]['pol'] * 2] = 255
+
+        return carla_image_data_array, 'bgr8'
+
+    def get_image_topic_name(self):
+        """
+        Function (override) to provide the actual image topic name
+
+        :return image topic name
+        :rtype string
+        """
+        return "image_events"

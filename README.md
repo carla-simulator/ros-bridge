@@ -8,7 +8,7 @@ This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 ## Features
 
-- Provide Sensor Data (Lidar, Cameras (depth, segmentation, rgb), GNSS, Radar, IMU)
+- Provide Sensor Data (Lidar, Semantic lidar, Cameras (depth, segmentation, rgb, dvs), GNSS, Radar, IMU)
 - Provide Object Data (Transforms (via [tf](http://wiki.ros.org/tf)), Traffic light status, Visualization markers, Collision, Lane invasion)
 - Control AD Agents (Steer/Throttle/Brake)
 - Control CARLA (Support synchronous mode, Play/pause simulation, Set simulation parameters)
@@ -165,12 +165,34 @@ The ego vehicle sensors are provided via topics with prefix /carla/ego_vehicle/&
 
 Currently the following sensors are supported:
 
-##### Camera
+##### RGB camera
 
 | Topic                                                          | Type                                                                                   |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `/carla/<ROLE NAME>/camera/rgb/<SENSOR ROLE NAME>/image_color` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
 | `/carla/<ROLE NAME>/camera/rgb/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### Depth camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/depth/<SENSOR ROLE NAME>/image_depth` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/depth/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### Semantic segmentation camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/semantic_segmentation/<SENSOR ROLE NAME>/image_segmentation` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/semantic_segmentation/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### DVS camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/events` | [sensor_msgs.PointCloud2](http://docs.ros.org/en/api/sensor_msgs/html/msg/PointCloud2.html)           |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/image_events` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
 
 ##### Lidar
 
@@ -178,11 +200,17 @@ Currently the following sensors are supported:
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `/carla/<ROLE NAME>/lidar/<SENSOR ROLE NAME>/point_cloud` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
+##### Semantic lidar
+
+| Topic                                                     | Type                                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/semantic_lidar/<SENSOR ROLE NAME>/point_cloud` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
+
 ##### Radar
 
-| Topic                                               | Type                                                                                                                                          |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaRadarMeasurement.msg) |
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar_points` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
 ##### IMU
 

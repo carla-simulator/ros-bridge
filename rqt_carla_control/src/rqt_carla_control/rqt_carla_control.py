@@ -8,6 +8,12 @@
 """
 RQT Plugin to control CARLA
 """
+from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
+from python_qt_binding.QtGui import QPixmap, QIcon  # pylint: disable=no-name-in-module, import-error
+from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
+from python_qt_binding import loadUi  # pylint: disable=import-error
+from qt_gui.plugin import Plugin  # pylint: disable=import-error
+from ros_compatibility import CompatibleNode, QoSProfile
 import os
 
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -17,14 +23,6 @@ elif ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
     from ament_index_python.packages import get_package_share_directory
     import threading
-from ros_compatibility import CompatibleNode, QoSProfile
-
-from qt_gui.plugin import Plugin  # pylint: disable=import-error
-from python_qt_binding import loadUi  # pylint: disable=import-error
-from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
-from python_qt_binding.QtGui import QPixmap, QIcon  # pylint: disable=no-name-in-module, import-error
-
-from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
 
 
 class CarlaControlPlugin(Plugin):

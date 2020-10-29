@@ -8,8 +8,11 @@
 """
 Classes to handle Carla sensors
 """
-
+from __future__ import print_function
+import ctypes
 import os
+import struct
+import sys
 from abc import abstractmethod
 
 import carla_common.transforms as trans
@@ -27,6 +30,11 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION not in (1, 2):
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+from sensor_msgs.msg import PointCloud2, PointField
+_DATATYPES = {}
+_DATATYPES[PointField.FLOAT32] = ('f', 4)
+_DATATYPES[PointField.UINT32] = ('I', 4)
 
 
 class Sensor(Actor):
@@ -186,3 +194,60 @@ class Sensor(Actor):
                 self._update_synchronous_sensor(frame, timestamp)
 
         Actor.update(self, frame, timestamp)
+
+
+# http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
+
+def _get_struct_fmt(is_bigendian, fields, field_names=None):
+    fmt = '>' if is_bigendian else '<'
+
+    offset = 0
+    for field in (f for f in sorted(fields, key=lambda f: f.offset)
+                  if field_names is None or f.name in field_names):
+        if offset < field.offset:
+            fmt += 'x' * (field.offset - offset)
+            offset = field.offset
+        if field.datatype not in _DATATYPES:
+            print('Skipping unknown PointField datatype [%d]' % field.datatype, file=sys.stderr)
+        else:
+            datatype_fmt, datatype_length = _DATATYPES[field.datatype]
+            fmt += field.count * datatype_fmt
+            offset += field.count * datatype_length
+
+    return fmt
+
+
+def create_cloud(header, fields, points):
+    """
+    Create a L{sensor_msgs.msg.PointCloud2} message.
+    @param header: The point cloud header.
+    @type  header: L{std_msgs.msg.Header}
+    @param fields: The point cloud fields.
+    @type  fields: iterable of L{sensor_msgs.msg.PointField}
+    @param points: The point cloud points.
+    @type  points: list of iterables, i.e. one iterable for each point, with the
+                   elements of each iterable being the values of the fields for 
+                   that point (in the same order as the fields parameter)
+    @return: The point cloud.
+    @rtype:  L{sensor_msgs.msg.PointCloud2}
+    """
+
+    cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
+
+    buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
+
+    point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
+    offset = 0
+    for p in points:
+        pack_into(buff, offset, *p)
+        offset += point_step
+
+    return PointCloud2(header=header,
+                       height=1,
+                       width=len(points),
+                       is_dense=False,
+                       is_bigendian=False,
+                       fields=fields,
+                       point_step=cloud_struct.size,
+                       row_step=cloud_struct.size * len(points),
+                       data=buff.raw)

@@ -25,9 +25,8 @@ from threading import Thread, Lock, Event
 import pkg_resources
 
 from tf2_msgs.msg import TFMessage
-from visualization_msgs.msg import Marker  # pylint: disable=import-error
+from visualization_msgs.msg import Marker
 
-from ros_compatibility import CompatibleNode, ros_ok, destroy_subscription, ros_shutdown, ros_timestamp, QoSProfile, latch_on
 import carla
 
 
@@ -40,6 +39,7 @@ from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.lidar import Lidar
+from carla_ros_bridge.lidar import SemanticLidar
 from carla_ros_bridge.radar import Radar
 from carla_ros_bridge.gnss import Gnss
 from carla_ros_bridge.imu import ImuSensor
@@ -54,6 +54,14 @@ from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters  # pylint: disable=import-error
 
+from ros_compatibility import (
+    CompatibleNode,
+    ros_ok,
+    destroy_subscription,
+    ros_shutdown,
+    ros_timestamp,
+    QoSProfile,
+    latch_on)
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -459,11 +467,19 @@ class CarlaRosBridge(CompatibleNode):
                 elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
                     actor = SemanticSegmentationCamera(carla_actor, parent, self,
                                                        self.carla_settings.synchronous_mode)
+                elif carla_actor.type_id.startswith("sensor.camera.dvs"):
+                    actor = DVSCamera(carla_actor, parent, self,
+                                      self.carla_settings.synchronous_mode)
                 else:
                     actor = Camera(carla_actor, parent, self,
                                    self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
-                actor = Lidar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
+                if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
+                    actor = Lidar(carla_actor, parent, self,
+                                  self.carla_settings.synchronous_mode)
+                elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
+                    actor = SemanticLidar(carla_actor, parent, self,
+                                          self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.radar"):
                 actor = Radar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):

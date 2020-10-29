@@ -10,9 +10,11 @@
 Classes to handle Carla Radar
 """
 
-from carla_msgs.msg import CarlaRadarMeasurement, CarlaRadarDetection  # pylint: disable=import-error
+from sensor_msgs.msg import PointCloud2, PointField
 
-from carla_ros_bridge.sensor import Sensor
+import numpy as np
+
+from carla_ros_bridge.sensor import Sensor, create_cloud
 
 
 class Radar(Sensor):
@@ -38,7 +40,7 @@ class Radar(Sensor):
                                     prefix="radar/" + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
         self.radar_publisher = node.new_publisher(
-            CarlaRadarMeasurement, self.get_topic_prefix() + "/radar")
+            PointCloud2, self.get_topic_prefix() + "/radar")
         self.listen()
 
     # pylint: disable=arguments-differ
@@ -49,13 +51,21 @@ class Radar(Sensor):
         :param carla_radar_measurement: carla Radar measurement object
         :type carla_radar_measurement: carla.RadarMeasurement
         """
-        radar_msg = CarlaRadarMeasurement()
-        radar_msg.header = self.get_msg_header(timestamp=carla_radar_measurement.timestamp)
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='Range', offset=12, datatype=PointField.FLOAT32, count=1),
+            PointField(name='Velocity', offset=16, datatype=PointField.FLOAT32, count=1),
+            PointField(name='AzimuthAngle', offset=20, datatype=PointField.FLOAT32, count=1),
+            PointField(name='ElevationAngle', offset=28, datatype=PointField.FLOAT32, count=1)]
+        points = []
         for detection in carla_radar_measurement:
-            radar_detection = CarlaRadarDetection()
-            radar_detection.altitude = detection.altitude
-            radar_detection.azimuth = detection.azimuth
-            radar_detection.depth = detection.depth
-            radar_detection.velocity = detection.velocity
-            radar_msg.detections.append(radar_detection)
+            points.append([detection.depth * np.cos(-detection.azimuth) * np.cos(detection.altitude),
+                           detection.depth * np.sin(-detection.azimuth) *
+                           np.cos(detection.altitude),
+                           detection.depth * np.sin(detection.altitude),
+                           detection.depth, detection.velocity, detection.azimuth, detection.altitude])
+        radar_msg = create_cloud(self.get_msg_header(
+            timestamp=carla_radar_measurement.timestamp), fields, points)
         self.radar_publisher.publish(radar_msg)
