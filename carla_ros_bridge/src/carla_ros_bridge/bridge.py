@@ -39,6 +39,7 @@ from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.lidar import Lidar
+from carla_ros_bridge.lidar import SemanticLidar
 from carla_ros_bridge.radar import Radar
 from carla_ros_bridge.gnss import Gnss
 from carla_ros_bridge.imu import ImuSensor
@@ -54,13 +55,13 @@ from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters  # pylint: disable=import-error
 
 from ros_compatibility import (
-                                CompatibleNode,
-                                ros_ok,
-                                destroy_subscription,
-                                ros_shutdown,
-                                ros_timestamp,
-                                QoSProfile,
-                                latch_on)
+    CompatibleNode,
+    ros_ok,
+    destroy_subscription,
+    ros_shutdown,
+    ros_timestamp,
+    QoSProfile,
+    latch_on)
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

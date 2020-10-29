@@ -52,7 +52,10 @@ elseif(${ROS_VERSION} EQUAL 2)
   find_package(tf2_ros REQUIRED)
   find_package(pcl_conversions REQUIRED)
 
-  find_package(Boost COMPONENTS system REQUIRED)
+  find_package(
+    Boost
+    COMPONENTS system
+    REQUIRED)
   find_package(PCL REQUIRED COMPONENTS common io)
 
   include_directories(include ${PCL_INCLUDE_DIRS})

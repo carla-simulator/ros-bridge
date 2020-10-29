@@ -391,8 +391,8 @@ class DVSCamera(Camera):
 
         self._dvs_events = None
         self.dvs_camera_publisher = node.new_publisher(
-                PointCloud2,
-                self.get_topic_prefix() + '/events')
+            PointCloud2,
+            self.get_topic_prefix() + '/events')
 
         self.listen()
 
