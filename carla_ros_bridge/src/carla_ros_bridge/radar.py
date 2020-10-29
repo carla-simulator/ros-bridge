@@ -12,7 +12,16 @@ Classes to handle Carla Radar
 
 from sensor_msgs.msg import PointCloud2, PointField
 
+import sys
+import ctypes
+import os
+import struct
+import numpy as np
+
 # from sensor_msgs.point_cloud2 import create_cloud
+
+_DATATYPES = {}
+_DATATYPES[PointField.FLOAT32] = ('f', 4)
 
 from carla_ros_bridge.sensor import Sensor
 
@@ -40,7 +49,7 @@ class Radar(Sensor):
                                     prefix="radar/" + carla_actor.attributes.get('role_name'),
                                     sensor_name=sensor_name)
         self.radar_publisher = node.new_publisher(
-            CarlaRadarMeasurement, self.get_topic_prefix() + "/radar")
+            PointCloud2, self.get_topic_prefix() + "/radar")
         self.listen()
 
     # pylint: disable=arguments-differ
@@ -69,6 +78,26 @@ class Radar(Sensor):
             timestamp=carla_radar_measurement.timestamp), fields, points)
         self.radar_publisher.publish(radar_msg)
 
+
+# http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
+
+def _get_struct_fmt(is_bigendian, fields, field_names=None):
+    fmt = '>' if is_bigendian else '<'
+
+    offset = 0
+    for field in (f for f in sorted(fields, key=lambda f: f.offset)
+                  if field_names is None or f.name in field_names):
+        if offset < field.offset:
+            fmt += 'x' * (field.offset - offset)
+            offset = field.offset
+        if field.datatype not in _DATATYPES:
+            print('Skipping unknown PointField datatype [%d]' % field.datatype)
+        else:
+            datatype_fmt, datatype_length = _DATATYPES[field.datatype]
+            fmt += field.count * datatype_fmt
+            offset += field.count * datatype_length
+
+    return fmt
 
 # https://github.com/ros/common_msgs/blob/noetic-devel/sensor_msgs/src/sensor_msgs/point_cloud2.p
 

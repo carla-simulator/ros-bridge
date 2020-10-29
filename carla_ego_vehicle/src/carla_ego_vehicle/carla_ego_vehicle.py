@@ -218,8 +218,11 @@ class CarlaEgoVehicle(CompatibleNode):
         bp_library = self.world.get_blueprint_library()
         sensor_names = []
         for sensor_spec in sensors:
+            print(sensor_spec)
             try:
-                sensor_name = str(sensor_spec['type']) + "/" + str(sensor_spec['id'])
+                sensor_type = str(sensor_spec.pop("type"))
+                sensor_id = str(sensor_spec.pop("id"))
+                sensor_name = sensor_type + "/" + sensor_id
                 if sensor_name in sensor_names:
                     self.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
