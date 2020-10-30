@@ -17,7 +17,8 @@ import numpy
 import rospy
 import tf
 from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.point_cloud2 import create_cloud
+from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
 
 import carla
 from carla_ros_bridge.sensor import Sensor
@@ -33,7 +34,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -41,8 +42,8 @@ class Camera(Sensor):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
@@ -50,7 +51,7 @@ class Camera(Sensor):
             prefix = 'camera'
         super(Camera, self).__init__(carla_actor=carla_actor,
                                      parent=parent,
-                                     communication=communication,
+                                     node=node,
                                      synchronous_mode=synchronous_mode,
                                      prefix=prefix)
 
@@ -61,6 +62,16 @@ class Camera(Sensor):
                               self.carla_actor.type_id, self.carla_actor.attributes))
         else:
             self._build_camera_info()
+
+        self.camera_info_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                     '/camera_info',
+                                                     CameraInfo,
+                                                     queue_size=10)
+
+        self.camera_image_publisher = rospy.Publisher(self.get_topic_prefix() + '/' +
+                                                      self.get_image_topic_name(),
+                                                      Image,
+                                                      queue_size=10)
 
     def _build_camera_info(self):
         """
@@ -86,30 +97,18 @@ class Camera(Sensor):
         self._camera_info = camera_info
 
     # pylint: disable=arguments-differ
-    def sensor_data_updated(self, carla_image):
+    def sensor_data_updated(self, carla_camera_data):
         """
-        Function (override) to transform the received carla image data
+        Function (override) to transform the received carla camera data
         into a ROS image message
-
-        :param carla_image: carla image object
-        :type carla_image: carla.Image
         """
-        if ((carla_image.height != self._camera_info.height) or
-                (carla_image.width != self._camera_info.width)):
-            rospy.logerr(
-                "Camera{} received image not matching configuration".format(self.get_prefix()))
-        image_data_array, encoding = self.get_carla_image_data_array(
-            carla_image=carla_image)
-        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
-        # the camera data is in respect to the camera's own frame
-        img_msg.header = self.get_msg_header()
+        img_msg = self.get_ros_image(carla_camera_data)
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
 
-        self.publish_message(self.get_topic_prefix() + '/camera_info', cam_info)
-        self.publish_message(
-            self.get_topic_prefix() + '/' + self.get_image_topic_name(), img_msg)
+        self.camera_info_publisher.publish(cam_info)
+        self.camera_image_publisher.publish(img_msg)
 
     def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
         """
@@ -135,14 +134,28 @@ class Camera(Sensor):
             quat)
         return tf_msg
 
-    @abstractmethod
-    def get_carla_image_data_array(self, carla_image):
+    def get_ros_image(self, carla_camera_data):
         """
-        Virtual function to convert the carla image to a numpy data array
+        Function to transform the received carla camera data into a ROS image message
+        """
+        if ((carla_camera_data.height != self._camera_info.height) or
+                (carla_camera_data.width != self._camera_info.width)):
+            rospy.logerr(
+                "Camera{} received image not matching configuration".format(self.get_prefix()))
+        image_data_array, encoding = self.get_carla_image_data_array(
+            carla_camera_data)
+        img_msg = Camera.cv_bridge.cv2_to_imgmsg(image_data_array, encoding=encoding)
+        # the camera data is in respect to the camera's own frame
+        img_msg.header = self.get_msg_header(timestamp=carla_camera_data.timestamp)
+
+        return img_msg
+
+    @abstractmethod
+    def get_carla_image_data_array(self, carla_camera_data):
+        """
+        Virtual function to convert the carla camera data to a numpy data array
         as input for the cv_bridge.cv2_to_imgmsg() function
 
-        :param carla_image: carla image object
-        :type carla_image: carla.Image
         :return tuple (numpy data array containing the image information, encoding)
         :rtype tuple(numpy.ndarray, string)
         """
@@ -167,7 +180,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -175,17 +188,19 @@ class RgbCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(RgbCamera, self).__init__(carla_actor=carla_actor,
                                         parent=parent,
-                                        communication=communication,
+                                        node=node,
                                         synchronous_mode=synchronous_mode,
                                         prefix='camera/rgb/' +
                                         carla_actor.attributes.get('role_name'))
+
+        self.listen()
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -222,7 +237,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -230,17 +245,19 @@ class DepthCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(DepthCamera, self).__init__(carla_actor=carla_actor,
                                           parent=parent,
-                                          communication=communication,
+                                          node=node,
                                           synchronous_mode=synchronous_mode,
                                           prefix='camera/depth/' +
                                           carla_actor.attributes.get('role_name'))
+
+        self.listen()
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -299,7 +316,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, communication, synchronous_mode):
+    def __init__(self, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
@@ -307,18 +324,20 @@ class SemanticSegmentationCamera(Camera):
         :type carla_actor: carla.Actor
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(
             SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
                                                        parent=parent,
-                                                       communication=communication,
+                                                       node=node,
                                                        synchronous_mode=synchronous_mode,
                                                        prefix='camera/semantic_segmentation/' +
                                                        carla_actor.attributes.get('role_name'))
+
+        self.listen()
 
     def get_carla_image_data_array(self, carla_image):
         """
@@ -348,3 +367,96 @@ class SemanticSegmentationCamera(Camera):
         :rtype string
         """
         return "image_segmentation"
+
+
+class DVSCamera(Camera):
+
+    """
+    Sensor implementation details for dvs cameras
+    """
+
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+        """
+        Constructor
+
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
+        :param parent: the parent of this
+        :type parent: carla_ros_bridge.Parent
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
+        :param prefix: the topic prefix to be used for this actor
+        :type prefix: string
+        """
+        super(DVSCamera, self).__init__(carla_actor=carla_actor,
+                                        parent=parent,
+                                        node=node,
+                                        synchronous_mode=synchronous_mode,
+                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
+
+        self._dvs_events = None
+        self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                    '/events',
+                                                    PointCloud2,
+                                                    queue_size=10)
+
+        self.listen()
+
+    # pylint: disable=arguments-differ
+    def sensor_data_updated(self, carla_dvs_event_array):
+        """
+        Function to transform the received DVS event array into a ROS message
+
+        :param carla_dvs_event_array: dvs event array object
+        :type carla_image: carla.DVSEventArray
+        """
+        super(DVSCamera, self).sensor_data_updated(carla_dvs_event_array)
+
+        header = self.get_msg_header(timestamp=carla_dvs_event_array.timestamp)
+        fields = [
+            PointField('x', 0, PointField.UINT16, 1),
+            PointField('y', 2, PointField.UINT16, 1),
+            PointField('t', 4, PointField.FLOAT64, 1),
+            PointField('pol', 12, PointField.INT8, 1),
+        ]
+
+        dvs_events_msg = create_cloud(header, fields, self._dvs_events.tolist())
+        self.dvs_camera_publisher.publish(dvs_events_msg)
+
+    # pylint: disable=arguments-differ
+    def get_carla_image_data_array(self, carla_dvs_event_array):
+        """
+        Function (override) to convert the carla dvs event array to a numpy data array
+        as input for the cv_bridge.cv2_to_imgmsg() function
+
+        The carla.DVSEventArray is converted into a 3-channel int8 color image format (bgr).
+
+        :param carla_dvs_event_array: dvs event array object
+        :type carla_dvs_event_array: carla.DVSEventArray
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
+        """
+        self._dvs_events = numpy.frombuffer(carla_dvs_event_array.raw_data,
+                                            dtype=numpy.dtype([
+                                                ('x', numpy.uint16),
+                                                ('y', numpy.uint16),
+                                                ('t', numpy.int64),
+                                                ('pol', numpy.bool)
+                                            ]))
+        carla_image_data_array = numpy.zeros(
+            (carla_dvs_event_array.height, carla_dvs_event_array.width, 3),
+            dtype=numpy.uint8)
+        # Blue is positive, red is negative
+        carla_image_data_array[self._dvs_events[:]['y'], self._dvs_events[:]['x'],
+                               self._dvs_events[:]['pol'] * 2] = 255
+
+        return carla_image_data_array, 'bgr8'
+
+    def get_image_topic_name(self):
+        """
+        Function (override) to provide the actual image topic name
+
+        :return image topic name
+        :rtype string
+        """
+        return "image_events"

@@ -103,6 +103,25 @@ class CarlaAckermannControl(object):
         sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
             lambda: rospy.get_rostime().to_sec())
 
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/speed_Kp",
+            rospy.get_param("/carla/ackermann_control/speed_Kp", 0.05))
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/speed_Ki",
+            rospy.get_param("/carla/ackermann_control/speed_Ki", 0.00))
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/speed_Kd",
+            rospy.get_param("/carla/ackermann_control/speed_Kd", 0.50))
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/accel_Kp",
+            rospy.get_param("/carla/ackermann_control/accel_Kp", 0.05))
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/accel_Ki",
+            rospy.get_param("/carla/ackermann_control/accel_Ki", 0.00))
+        rospy.set_param(
+            "/carla/" + self.role_name + "/ackermann_control/accel_Kd",
+            rospy.get_param("/carla/ackermann_control/accel_Kd", 0.05))
+
         self.reconfigure_server = Server(
             EgoVehicleControlParameterConfig,
             namespace="/carla/" + self.role_name + "/ackermann_control",

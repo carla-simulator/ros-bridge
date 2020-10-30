@@ -1,5 +1,9 @@
 ## Latest changed
 
+*   Remove CarlaRadarMeasurement message publishing (radar data is published as PointCloud2 only)
+*   Remove sensors.json from carla_ad_demo. Use example from carla_ego_vehicle instead
+*   Add radar PointCloud2 publisher
+*   Add DVS camera sensor
 *   Fix rgb camera attributes
 *   Add intensity value to point cloud message
 *   Fixed wrong TF for ego_vehicle
