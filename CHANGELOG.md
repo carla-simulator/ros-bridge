@@ -1,5 +1,7 @@
 ## Latest changed
 
+*   Have all sensor types in sensors.json
+*   Update ad-demo rviz config to visualize more sensor types
 *   Remove CarlaRadarMeasurement message publishing (radar data is published as PointCloud2 only)
 *   Remove sensors.json from carla_ad_demo. Use example from carla_ego_vehicle instead
 *   Add radar PointCloud2 publisher
