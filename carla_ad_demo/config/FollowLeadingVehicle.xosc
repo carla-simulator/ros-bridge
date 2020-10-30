@@ -2,7 +2,7 @@
 <OpenSCENARIO>
   <FileHeader revMajor="1" revMinor="0" date="2019-06-25T00:00:00" description="CARLA:FollowLeadingVehicle" author=""/>
   <ParameterDeclarations>
-    <ParameterDeclaration name="$leadingSpeed" parameterType="double" value="2.0"/>
+    <ParameterDeclaration name="leadingSpeed" parameterType="double" value="2.0"/>
   </ParameterDeclarations>
   <CatalogLocations>
   </CatalogLocations>
