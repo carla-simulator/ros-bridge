@@ -61,7 +61,7 @@ This will install carla-ros-bridge in /opt/carla-ros-bridge
     git submodule update --init
     cd ../catkin_ws/src
     ln -s ../../ros-bridge
-    source /opt/ros/<kinetic or melodic>/setup.bash
+    source /opt/ros/<kinetic or melodic or noetic>/setup.bash
     cd ..
 
     #install required ros-dependencies
@@ -87,7 +87,7 @@ Wait a few seconds
 
 ##### For Users
 
-    source /opt/carla-ros-bridge/<melodic or kinetic>/setup.bash
+    source /opt/carla-ros-bridge/<kinetic or melodic or noetic>/setup.bash
 
 ##### For Developers
 
@@ -210,7 +210,7 @@ Currently the following sensors are supported:
 
 | Topic                    | Type                                                                              |
 | ------------------------ | --------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/imu` | [sensor_msgs.Imu](https://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html) |
+| `/carla/<ROLE NAME>/imu` | [sensor_msgs.Imu](https://docs.ros.org/api/sensor_msgs/html/msg/Imu.html) |
 
 ##### GNSS
 
@@ -323,7 +323,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ### TF
 
-The tf data is published for all traffic participants and sensors. 
+The tf data is published for all traffic participants and sensors.
 
 #### TF for traffic participants
 
