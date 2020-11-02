@@ -26,16 +26,16 @@ from scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relat
 try:
     import carla  # pylint: disable=unused-import
 except ImportError:
-    print "ERROR: CARLA Python Egg not available. Please add \
+    print("ERROR: CARLA Python Egg not available. Please add \
         <CARLA_DIR>/PythonAPI/carla/dist/carla-<CARLA_VERSION>-\
-        py<PYTHON_VERSION>-linux-x86_64.egg to your PYTHONPATH."
+        py<PYTHON_VERSION>-linux-x86_64.egg to your PYTHONPATH.")
     sys.exit(1)
 
 try:
     from agents.navigation.local_planner import LocalPlanner  # pylint: disable=unused-import
 except ImportError:
-    print "ERROR: CARLA Python Agents not available. \
-        Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH."
+    print("ERROR: CARLA Python Agents not available. \
+        Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH.")
     sys.exit(1)
 
 
