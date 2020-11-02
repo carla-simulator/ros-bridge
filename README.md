@@ -4,7 +4,7 @@ This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-**The `master` branch is compatible with CARLA `master` branch**
+**This version requires CARLA 0.9.10**
 
 ## Features
 
