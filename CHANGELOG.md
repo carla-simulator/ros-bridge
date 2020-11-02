@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Support noetic and python 3
 *   Have all sensor types in sensors.json
 *   Update ad-demo rviz config to visualize more sensor types
 *   Remove CarlaRadarMeasurement message publishing (radar data is published as PointCloud2 only)
