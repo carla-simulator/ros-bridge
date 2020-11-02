@@ -44,6 +44,7 @@ from carla_ros_bridge.collision_sensor import CollisionSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
 from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
 from carla_ros_bridge.object_sensor import ObjectSensor
+from carla_ros_bridge.bounding_box_sensor import BoundingBoxSensor
 from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
@@ -160,6 +161,10 @@ class CarlaRosBridge(object):
                                                node=self,
                                                actor_list=self.actors,
                                                filtered_id=None))
+
+        # add global bounding box sensor
+        self.pseudo_actors.append(BoundingBoxSensor(parent=None, node=self))
+
         self.debug_helper = DebugHelper(carla_world.debug)
 
         # add traffic light pseudo sensor
