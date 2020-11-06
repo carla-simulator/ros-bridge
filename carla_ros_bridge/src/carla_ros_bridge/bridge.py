@@ -27,6 +27,8 @@ from visualization_msgs.msg import Marker
 
 import carla
 
+import carla_common.transforms as trans
+
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.sensor import Sensor
 
@@ -48,7 +50,9 @@ from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
+from carla_msgs.srv import SpawnObject, SpawnObjectResponse
 
 
 class CarlaRosBridge(object):
@@ -110,6 +114,10 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode,
             self.carla_settings.fixed_delta_seconds)
 
+        self.spawn_object_service = rospy.Service('/carla/spawn_object',
+                                                  SpawnObject,
+                                                  self.spawn_object)
+
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
         # Before tick(), the list is filled and the loop waits until the list is empty.
@@ -166,6 +174,57 @@ class CarlaRosBridge(object):
         self.pseudo_actors.append(TrafficLightsSensor(parent=None,
                                                       node=self,
                                                       actor_list=self.actors))
+
+
+    def _spawn_actor(self, req):
+        blueprint = self.carla_world.get_blueprint_library().find(req.type)
+        blueprint.set_attribute('role_name', req.id)
+        for attribute in req.attributes:
+            blueprint.set_attribute(attribute.key, attribute.value)
+
+        transform = trans.ros_pose_to_carla_transform(req.transform)
+
+        attach_to = None
+        if req.attach_to != 0:
+            attach_to = self.carla_world.get_actor(req.attach_to)
+            if attach_to is None:
+                raise IndexError("Parent object {} not found".format(req.attach_to))
+
+        carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
+        return carla_actor.id
+
+    def _spawn_pseudo_sensor(self, req):
+        if req.attach_to != 0:
+            if req.attach_to not in self.actors:
+                raise IndexError("Parent object {} not found".format(req.attach_to))
+            parent = self.actors[req.attach_to]
+        else:
+            parent = None
+
+        if req.type == "sensor.pseudo.object_sensor":
+            filtered_id = parent.carla_actor.id if parent is not None else None 
+            pseudo_sensor = ObjectSensor(parent=parent, node=self, actor_list=self.actors, filtered_id=filtered_id)
+
+        with self.update_lock:
+            self.pseudo_actors.append(pseudo_sensor)
+
+        rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
+            pseudo_sensor.__class__.__name__,
+            pseudo_sensor.get_parent_id(),
+            pseudo_sensor.get_prefix()))
+
+    def spawn_object(self, req):
+        try:
+            if req.type.startswith("sensor.pseudo"):
+                self._spawn_pseudo_sensor(req)
+                return SpawnObjectResponse(0, "")
+
+            else:
+                actor_id = self._spawn_actor(req)
+                return SpawnObjectResponse(actor_id, "")
+
+        except Exception as e:
+            return SpawnObjectResponse(-1, str(e))
 
     def destroy(self):
         """
@@ -395,7 +454,6 @@ class CarlaRosBridge(object):
                 parent = self._create_actor(carla_actor.parent)
 
         actor = None
-        pseudo_actors = []
         if carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
                 actor = TrafficLight(carla_actor, parent, node=self)
@@ -406,10 +464,6 @@ class CarlaRosBridge(object):
                     in self.parameters['ego_vehicle']['role_name']:
                 actor = EgoVehicle(
                     carla_actor, parent, self, self._ego_vehicle_control_applied_callback)
-                pseudo_actors.append(ObjectSensor(parent=actor,
-                                                  node=self,
-                                                  actor_list=self.actors,
-                                                  filtered_id=carla_actor.id))
             else:
                 actor = Vehicle(carla_actor, parent, self)
         elif carla_actor.type_id.startswith("sensor"):
@@ -474,14 +528,6 @@ class CarlaRosBridge(object):
                           actor.get_prefix(), carla_actor.attributes))
         with self.update_lock:
             self.actors[carla_actor.id] = actor
-
-        for pseudo_actor in pseudo_actors:
-            rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
-                pseudo_actor.__class__.__name__,
-                pseudo_actor.get_parent_id(),
-                pseudo_actor.get_prefix()))
-            with self.update_lock:
-                self.pseudo_actors.append(pseudo_actor)
 
         return actor
 

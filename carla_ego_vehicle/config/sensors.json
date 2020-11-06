@@ -195,6 +195,10 @@
             "type": "sensor.other.lane_invasion",
             "id": "laneinvasion1",
             "x": 0.0, "y": 0.0, "z": 0.0
+        },
+        {
+            "type": "sensor.pseudo.object_sensor",
+            "id": "objectsensor1"
         }
     ]
 }
