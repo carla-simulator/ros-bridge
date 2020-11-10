@@ -14,7 +14,12 @@ from __future__ import print_function
 import os
 import json
 import rospy
+
+import carla_common.transforms as trans
+
+from diagnostic_msgs.msg import KeyValue
 from carla_msgs.msg import CarlaWorldInfo
+from carla_msgs.srv import SpawnObject, SpawnObjectRequest
 
 import carla
 
@@ -37,6 +42,9 @@ class CarlaInfrastructure(object):
         self.sensor_definition_file = rospy.get_param('~infrastructure_sensor_definition_file')
         self.world = None
         self.sensor_actors = []
+
+        rospy.wait_for_service('/carla/spawn_object')
+        self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
 
     def restart(self):
         """
@@ -79,19 +87,28 @@ class CarlaInfrastructure(object):
                             sensor_spec['id']))
                 sensor_names.append(sensor_name)
 
-                sensor_location = carla.Location(x=sensor_spec.pop("x"),
-                                                 y=sensor_spec.pop("y"),
-                                                 z=sensor_spec.pop("z"))
+                sensor_location = carla.Location(x=sensor_spec.pop("x", 0.0),
+                                                 y=sensor_spec.pop("y", 0.0),
+                                                 z=sensor_spec.pop("z", 0.0))
                 sensor_rotation = carla.Rotation(
                     pitch=sensor_spec.pop('pitch', 0.0),
                     roll=sensor_spec.pop('roll', 0.0),
                     yaw=sensor_spec.pop('yaw', 0.0))
                 sensor_transform = carla.Transform(sensor_location, sensor_rotation)
 
-                bp = bp_library.find(sensor_type)
-                bp.set_attribute('role_name', sensor_id)
+                spawn_object_request = SpawnObjectRequest()
+                spawn_object_request.type = sensor_type
+                spawn_object_request.id = sensor_id
+                spawn_object_request.attach_to = 0
+                spawn_object_request.transform = trans.carla_transform_to_ros_pose(
+                    sensor_transform)
                 for attribute, value in sensor_spec.items():
-                    bp.set_attribute(str(attribute), str(value))
+                    spawn_object_request.attributes.append(
+                        KeyValue(str(attribute), str(value)))
+
+                response = self.spawn_object_service(spawn_object_request)
+                if response.id == -1:
+                    raise Exception(response.error_string)
 
             except KeyError as e:
                 rospy.logfatal(
@@ -99,14 +116,14 @@ class CarlaInfrastructure(object):
                     .format(e))
                 raise e
 
-            except IndexError as e:
+            except Exception as e:
                 rospy.logfatal(
                     "Sensor {} will not be spawned, {}".format(sensor_name, e))
                 raise e
 
-            # create sensor
-            sensor = self.world.spawn_actor(bp, sensor_transform)
-            actors.append(sensor)
+            if response.id > 0:
+                sensor = self.world.get_actor(response.id)
+                actors.append(sensor)
         return actors
 
     def destroy(self):
