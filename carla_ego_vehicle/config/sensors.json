@@ -197,7 +197,7 @@
             "x": 0.0, "y": 0.0, "z": 0.0
         },
         {
-            "type": "sensor.pseudo.object_sensor",
+            "type": "sensor.pseudo.objects",
             "id": "objectsensor1"
         }
     ]

@@ -22,9 +22,11 @@ class TrafficLightsSensor(PseudoActor):
     a sensor that reports the state of all traffic lights
     """
 
-    def __init__(self, parent, node, actor_list):
+    def __init__(self, name, parent, node, actor_list):
         """
         Constructor
+        :param name: name identiying the sensor
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
@@ -35,18 +37,18 @@ class TrafficLightsSensor(PseudoActor):
 
         super(TrafficLightsSensor, self).__init__(parent=parent,
                                                   node=node,
-                                                  prefix="")
+                                                  prefix="traffic_light/" + name)
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
         self.traffic_lights_info_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "traffic_lights_info",
+            self.get_topic_prefix() + "/traffic_lights_info",
             CarlaTrafficLightInfoList,
             queue_size=10,
             latch=True)
         self.traffic_lights_status_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "traffic_lights",
+            self.get_topic_prefix() + "/traffic_lights",
             CarlaTrafficLightStatusList,
             queue_size=10,
             latch=True)

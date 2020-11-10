@@ -23,9 +23,11 @@ class ObjectSensor(PseudoActor):
     Pseudo object sensor
     """
 
-    def __init__(self, parent, node, actor_list, filtered_id):
+    def __init__(self, name, parent, node, actor_list, filtered_id):
         """
         Constructor
+        :param name: name identiying the sensor
+        :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
         :param parent: the parent of this
@@ -40,10 +42,11 @@ class ObjectSensor(PseudoActor):
 
         super(ObjectSensor, self).__init__(parent=parent,
                                            node=node,
-                                           prefix='objects')
+                                           prefix='objects/' + name)
         self.actor_list = actor_list
         self.filtered_id = filtered_id
-        self.object_publisher = rospy.Publisher(self.get_topic_prefix(),
+        self.object_publisher = rospy.Publisher(self.get_topic_prefix() +
+                                                "/objects",
                                                 ObjectArray,
                                                 queue_size=10)
 

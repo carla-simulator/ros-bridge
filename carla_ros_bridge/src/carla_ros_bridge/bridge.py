@@ -163,17 +163,8 @@ class CarlaRosBridge(object):
         self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world,
                                             node=self))
 
-        # add global object sensor
-        self.pseudo_actors.append(ObjectSensor(parent=None,
-                                               node=self,
-                                               actor_list=self.actors,
-                                               filtered_id=None))
+        # add debug helper
         self.debug_helper = DebugHelper(carla_world.debug)
-
-        # add traffic light pseudo sensor
-        self.pseudo_actors.append(TrafficLightsSensor(parent=None,
-                                                      node=self,
-                                                      actor_list=self.actors))
 
 
     def _spawn_actor(self, req):
@@ -188,29 +179,45 @@ class CarlaRosBridge(object):
         if req.attach_to != 0:
             attach_to = self.carla_world.get_actor(req.attach_to)
             if attach_to is None:
-                raise IndexError("Parent object {} not found".format(req.attach_to))
+                raise IndexError("Parent object {} not found".format(
+                    req.attach_to))
 
-        carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
+        carla_actor = self.carla_world.spawn_actor(blueprint, transform,
+                                                   attach_to)
         return carla_actor.id
 
     def _spawn_pseudo_sensor(self, req):
         if req.attach_to != 0:
             if req.attach_to not in self.actors:
-                raise IndexError("Parent object {} not found".format(req.attach_to))
+                raise IndexError("Parent object {} not found".format(
+                    req.attach_to))
             parent = self.actors[req.attach_to]
         else:
             parent = None
 
-        if req.type == "sensor.pseudo.object_sensor":
-            filtered_id = parent.carla_actor.id if parent is not None else None 
-            pseudo_sensor = ObjectSensor(parent=parent, node=self, actor_list=self.actors, filtered_id=filtered_id)
+        if req.type == "sensor.pseudo.objects":
+            filtered_id = parent.carla_actor.id if parent is not None else None
+            pseudo_sensor = ObjectSensor(
+                name=req.id,
+                parent=parent,
+                node=self,
+                actor_list=self.actors,
+                filtered_id=filtered_id,
+            )
+
+        elif req.type == "sensor.pseudo.traffic_lights":
+            pseudo_sensor = TrafficLightsSensor(
+                name=req.id,
+                parent=parent,
+                node=self,
+                actor_list=self.actors,
+            )
 
         with self.update_lock:
             self.pseudo_actors.append(pseudo_sensor)
 
         rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
-            pseudo_sensor.__class__.__name__,
-            pseudo_sensor.get_parent_id(),
+            pseudo_sensor.__class__.__name__, pseudo_sensor.get_parent_id(),
             pseudo_sensor.get_prefix()))
 
     def spawn_object(self, req):
