@@ -50,10 +50,13 @@ from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_ros_bridge.odom_sensor import OdometrySensor
+from carla_ros_bridge.speedometer_sensor import SpeedometerSensor
 from carla_ros_bridge.tf_sensor import TFSensor
 from carla_ros_bridge.marker_sensor import MarkerSensor
+from carla_ros_bridge.actor_list_sensor import ActorListSensor
+from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
 
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
+from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, SpawnObjectResponse
 
 
@@ -104,10 +107,6 @@ class CarlaRosBridge(object):
         # Communication topics
         self.clock_publisher = rospy.Publisher('clock', Clock, queue_size=10)
         self.tf_publisher = rospy.Publisher('tf', TFMessage, queue_size=100)
-        self.actor_list_publisher = rospy.Publisher('/carla/actor_list',
-                                                    CarlaActorList,
-                                                    queue_size=10,
-                                                    latch=True)
 
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
@@ -395,36 +394,6 @@ class CarlaRosBridge(object):
                         updated_pseudo_actors.append(pseudo_actor)
                 self.pseudo_actors = updated_pseudo_actors
 
-        # publish actor list on change
-        if new_actors or deleted_actors:
-            self.publish_actor_list()
-
-    def publish_actor_list(self):
-        """
-        publish list of carla actors
-        :return:
-        """
-        ros_actor_list = CarlaActorList()
-
-        for actor_id in self.actors:
-            actor = self.actors[actor_id].carla_actor
-            ros_actor = CarlaActorInfo()
-            ros_actor.id = actor.id
-            ros_actor.type = actor.type_id
-            try:
-                ros_actor.rolename = str(actor.attributes.get('role_name'))
-            except ValueError:
-                pass
-
-            if actor.parent:
-                ros_actor.parent_id = actor.parent.id
-            else:
-                ros_actor.parent_id = 0
-
-            ros_actor_list.actors.append(ros_actor)
-
-        self.actor_list_publisher.publish(ros_actor_list)
-
     def _create_pseudo_actor(self, type_id, name, parent):
         if type_id == "sensor.pseudo.tf":
             pseudo_sensor = TFSensor(name=name, parent=parent, node=self)
@@ -432,11 +401,22 @@ class CarlaRosBridge(object):
         elif type_id == "sensor.pseudo.odom":
             pseudo_sensor = OdometrySensor(name=name, parent=parent, node=self)
 
+        elif type_id == "sensor.pseudo.speedometer":
+            pseudo_sensor = SpeedometerSensor(name=name,
+                                              parent=parent,
+                                              node=self)
+
         elif type_id == "sensor.pseudo.markers":
             pseudo_sensor = MarkerSensor(name=name,
                                          parent=parent,
                                          node=self,
                                          actor_list=self.actors)
+
+        elif type_id == "sensor.pseudo.actor_list":
+            pseudo_sensor = ActorListSensor(name=name,
+                                            parent=parent,
+                                            node=self,
+                                            actor_list=self.actors)
 
         elif type_id == "sensor.pseudo.objects":
             filtered_id = parent.carla_actor.id if parent is not None else None
@@ -455,6 +435,13 @@ class CarlaRosBridge(object):
                 node=self,
                 actor_list=self.actors,
             )
+
+        elif type_id == "sensor.pseudo.opendrive_map":
+            pseudo_sensor = OpenDriveSensor(
+                name=name,
+                parent=parent,
+                node=self,
+                carla_map=self.carla_world.get_map())
 
         with self.update_lock:
             self.pseudo_actors.append(pseudo_sensor)
