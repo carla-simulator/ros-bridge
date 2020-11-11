@@ -13,7 +13,7 @@ import rospy
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
-from tf2_msgs.msg import TFMessage
+import tf
 
 
 class TFSensor(PseudoActor):
@@ -37,12 +37,16 @@ class TFSensor(PseudoActor):
 
         super(TFSensor, self).__init__(parent=parent, node=node, prefix=None)
 
-        self.tf_publisher = rospy.Publisher('tf', TFMessage, queue_size=100)
+        self.tf_broadcaster = tf.TransformBroadcaster()
 
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
         """
-        tf_to_publish = [self.parent.get_ros_transform()]
-        tf_msg = TFMessage(tf_to_publish)
-        self.tf_publisher.publish(tf_msg)
+        pose = self.parent.get_current_ros_pose()
+        position = pose.position
+        orientation = pose.orientation
+        self.tf_broadcaster.sendTransform(
+            (position.x, position.y, position.z),
+            (orientation.x, orientation.y, orientation.z, orientation.w),
+            rospy.Time.now(), self.parent.get_prefix(), "map")

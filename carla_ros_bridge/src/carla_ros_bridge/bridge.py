@@ -23,7 +23,6 @@ import rospy
 
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
-from visualization_msgs.msg import Marker
 
 import carla
 
@@ -52,6 +51,7 @@ from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
 from carla_ros_bridge.odom_sensor import OdometrySensor
 from carla_ros_bridge.tf_sensor import TFSensor
+from carla_ros_bridge.marker_sensor import MarkerSensor
 
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, SpawnObjectResponse
@@ -104,9 +104,6 @@ class CarlaRosBridge(object):
         # Communication topics
         self.clock_publisher = rospy.Publisher('clock', Clock, queue_size=10)
         self.tf_publisher = rospy.Publisher('tf', TFMessage, queue_size=100)
-        self.marker_publisher = rospy.Publisher('/carla/marker',
-                                                Marker,
-                                                queue_size=10)
         self.actor_list_publisher = rospy.Publisher('/carla/actor_list',
                                                     CarlaActorList,
                                                     queue_size=10,
@@ -434,6 +431,12 @@ class CarlaRosBridge(object):
 
         elif type_id == "sensor.pseudo.odom":
             pseudo_sensor = OdometrySensor(name=name, parent=parent, node=self)
+
+        elif type_id == "sensor.pseudo.markers":
+            pseudo_sensor = MarkerSensor(name=name,
+                                         parent=parent,
+                                         node=self,
+                                         actor_list=self.actors)
 
         elif type_id == "sensor.pseudo.objects":
             filtered_id = parent.carla_actor.id if parent is not None else None
