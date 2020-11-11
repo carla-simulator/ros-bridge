@@ -13,7 +13,6 @@ Classes to handle Carla traffic participants
 import rospy
 
 from derived_object_msgs.msg import Object
-from nav_msgs.msg import Odometry
 from shape_msgs.msg import SolidPrimitive
 
 from carla_ros_bridge.actor import Actor
@@ -44,11 +43,6 @@ class TrafficParticipant(Actor):
                                                  node=node,
                                                  prefix=prefix)
 
-        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                  "/odometry",
-                                                  Odometry,
-                                                  queue_size=10)
-
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
@@ -63,20 +57,8 @@ class TrafficParticipant(Actor):
         self.classification_age += 1
         self.publish_transform(self.get_ros_transform(None, None, str(self.get_id())))
         self.publish_marker()
-        self.send_odometry()
 
         super(TrafficParticipant, self).update(frame, timestamp)
-
-    def send_odometry(self):
-        """
-        Sends odometry
-        :return:
-        """
-        odometry = Odometry(header=self.get_msg_header("map"))
-        odometry.child_frame_id = self.get_prefix()
-        odometry.pose.pose = self.get_current_ros_pose()
-        odometry.twist.twist = self.get_current_ros_twist_rotated()
-        self.odometry_publisher.publish(odometry)
 
     def get_object_info(self):
         """

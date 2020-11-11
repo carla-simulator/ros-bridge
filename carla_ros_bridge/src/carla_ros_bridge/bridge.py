@@ -50,6 +50,7 @@ from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+from carla_ros_bridge.odom_sensor import OdometrySensor
 
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, SpawnObjectResponse
@@ -427,7 +428,10 @@ class CarlaRosBridge(object):
         self.actor_list_publisher.publish(ros_actor_list)
 
     def _create_pseudo_actor(self, type_id, name, parent):
-        if type_id == "sensor.pseudo.objects":
+        if type_id == "sensor.pseudo.odom":
+            pseudo_sensor = OdometrySensor(name=name, parent=parent, node=self)
+
+        elif type_id == "sensor.pseudo.objects":
             filtered_id = parent.carla_actor.id if parent is not None else None
             pseudo_sensor = ObjectSensor(
                 name=name,
