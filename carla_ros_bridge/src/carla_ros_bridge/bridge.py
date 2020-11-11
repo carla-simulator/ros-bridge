@@ -186,7 +186,7 @@ class CarlaRosBridge(object):
                                                    attach_to)
         return carla_actor.id
 
-    def _spawn_pseudo_sensor(self, req):
+    def _spawn_pseudo_actor(self, req):
         if req.attach_to != 0:
             if req.attach_to not in self.actors:
                 raise IndexError("Parent object {} not found".format(
@@ -195,35 +195,12 @@ class CarlaRosBridge(object):
         else:
             parent = None
 
-        if req.type == "sensor.pseudo.objects":
-            filtered_id = parent.carla_actor.id if parent is not None else None
-            pseudo_sensor = ObjectSensor(
-                name=req.id,
-                parent=parent,
-                node=self,
-                actor_list=self.actors,
-                filtered_id=filtered_id,
-            )
-
-        elif req.type == "sensor.pseudo.traffic_lights":
-            pseudo_sensor = TrafficLightsSensor(
-                name=req.id,
-                parent=parent,
-                node=self,
-                actor_list=self.actors,
-            )
-
-        with self.update_lock:
-            self.pseudo_actors.append(pseudo_sensor)
-
-        rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
-            pseudo_sensor.__class__.__name__, pseudo_sensor.get_parent_id(),
-            pseudo_sensor.get_prefix()))
+        self._create_pseudo_actor(req.type, req.id, parent)
 
     def spawn_object(self, req):
         try:
-            if req.type.startswith("sensor.pseudo"):
-                self._spawn_pseudo_sensor(req)
+            if "pseudo" in req.type:
+                self._spawn_pseudo_actor(req)
                 return SpawnObjectResponse(0, "")
 
             else:
@@ -448,6 +425,32 @@ class CarlaRosBridge(object):
             ros_actor_list.actors.append(ros_actor)
 
         self.actor_list_publisher.publish(ros_actor_list)
+
+    def _create_pseudo_actor(self, type_id, name, parent):
+        if type_id == "sensor.pseudo.objects":
+            filtered_id = parent.carla_actor.id if parent is not None else None
+            pseudo_sensor = ObjectSensor(
+                name=name,
+                parent=parent,
+                node=self,
+                actor_list=self.actors,
+                filtered_id=filtered_id,
+            )
+
+        elif type_id == "sensor.pseudo.traffic_lights":
+            pseudo_sensor = TrafficLightsSensor(
+                name=name,
+                parent=parent,
+                node=self,
+                actor_list=self.actors,
+            )
+
+        with self.update_lock:
+            self.pseudo_actors.append(pseudo_sensor)
+
+        rospy.loginfo("Created {}(parent_id={}, prefix={})".format(
+            pseudo_sensor.__class__.__name__, pseudo_sensor.get_parent_id(),
+            pseudo_sensor.get_prefix()))
 
     def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
         """
