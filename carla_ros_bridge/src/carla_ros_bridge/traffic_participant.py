@@ -55,7 +55,6 @@ class TrafficParticipant(Actor):
         :return:
         """
         self.classification_age += 1
-        self.publish_transform(self.get_ros_transform(None, None, str(self.get_id())))
         self.publish_marker()
 
         super(TrafficParticipant, self).update(frame, timestamp)
