@@ -8,7 +8,6 @@
 os: linux
 
 stages:
-  - check
   - test
   - docker
 
@@ -22,12 +21,6 @@ addons:
 
 jobs:
   include:
-    - name: "Check code formatting"
-      stage: check
-      before_install: skip
-      install: pip install --user -r requirements.txt
-      script:
-        - make check_format
     - name: "Xenial Kinetic"
       stage: test
       dist: xenial
