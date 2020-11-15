@@ -121,6 +121,7 @@ class CarlaEgoVehicle(object):
         if blueprint.has_attribute('color'):
             color = secure_random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
+
         # Spawn the vehicle.
         if not rospy.get_param('~spawn_ego_vehicle'):
             actors = self.world.get_actors().filter(self.actor_filter)
@@ -129,6 +130,8 @@ class CarlaEgoVehicle(object):
                     self.player = actor
                     break
         else:
+            spawn_point = None
+
             if self.actor_spawnpoint:
                 spawn_point = carla.Transform()
                 spawn_point.location.x = self.actor_spawnpoint.position.x
@@ -150,9 +153,6 @@ class CarlaEgoVehicle(object):
                                                                          spawn_point.rotation.yaw))
                 if self.player is not None:
                     self.player.set_transform(spawn_point)
-                while self.player is None:
-                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
-                    self.player_created = True
 
             else:
                 if self.player is not None:
@@ -161,12 +161,22 @@ class CarlaEgoVehicle(object):
                     spawn_point.rotation.roll = 0.0
                     spawn_point.rotation.pitch = 0.0
                     self.player.set_transform(spawn_point)
-                while self.player is None:
-                    spawn_points = self.world.get_map().get_spawn_points()
-                    spawn_point = secure_random.choice(
-                        spawn_points) if spawn_points else carla.Transform()
-                    self.player = self.world.try_spawn_actor(blueprint, spawn_point)
-                    self.player_created = True
+
+            spawn_object_request = SpawnObjectRequest()
+            spawn_object_request.type = blueprint.id
+            spawn_object_request.id = self.role_name
+            spawn_object_request.attach_to = 0
+
+            while self.player is None:
+                    if not self.actor_spawnpoint:
+                        spawn_points = self.world.get_map().get_spawn_points()
+                        spawn_point = secure_random.choice(spawn_points) if spawn_points else carla.Transform()
+
+                    spawn_object_request.transform = trans.carla_transform_to_ros_pose(spawn_point)
+                    response = self.spawn_object_service(spawn_object_request)
+                    if response.id != -1:
+                        self.player = self.world.get_actor(response.id)
+                        self.player_created = True
 
         if self.player_created:
             # Read sensors from file
