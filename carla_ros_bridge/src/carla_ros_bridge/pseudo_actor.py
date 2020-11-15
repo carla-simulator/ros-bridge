@@ -11,7 +11,7 @@ Base Class to handle Pseudo Actors (that are not existing in Carla world)
 
 from std_msgs.msg import Header
 import rospy
-
+import numpy as np
 
 class PseudoActor(object):
 
@@ -19,9 +19,12 @@ class PseudoActor(object):
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
 
-    def __init__(self, parent, node, prefix=None):
+    def __init__(self, uid, parent, node, prefix=None):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
         :param parent: the parent of this
         :type parent: carla_ros_bridge.PseudoActor
         :param prefix: the topic prefix to be used for this actor
@@ -29,6 +32,10 @@ class PseudoActor(object):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
+        self.uid = uid
+        if self.uid > np.iinfo(np.uint32).max:
+            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
+
         self.parent = parent
         if self.parent:
             self.parent_id = parent.get_id()

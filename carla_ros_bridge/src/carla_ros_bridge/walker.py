@@ -23,10 +23,12 @@ class Walker(TrafficParticipant):
     Actor implementation details for pedestrians
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, carla_actor, parent, node):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla walker actor object
         :type carla_actor: carla.Walker
         :param parent: the parent of this
@@ -41,7 +43,8 @@ class Walker(TrafficParticipant):
         else:
             prefix = "walker/{:03}".format(carla_actor.id)
 
-        super(Walker, self).__init__(carla_actor=carla_actor,
+        super(Walker, self).__init__(uid=uid,
+                                     carla_actor=carla_actor,
                                      parent=parent,
                                      node=node,
                                      prefix=prefix)

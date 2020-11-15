@@ -23,9 +23,12 @@ class SpeedometerSensor(PseudoActor):
     Pseudo speedometer sensor
     """
 
-    def __init__(self, name, parent, node):
+    def __init__(self, uid, name, parent, node):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
         :param name: name identiying the sensor
         :type name: string
         :param carla_world: carla world object
@@ -36,7 +39,8 @@ class SpeedometerSensor(PseudoActor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
 
-        super(SpeedometerSensor, self).__init__(parent=parent,
+        super(SpeedometerSensor, self).__init__(uid,
+                                                parent=parent,
                                                 node=node,
                                                 prefix='speedometer/' + name)
 

@@ -23,9 +23,12 @@ class OpenDriveSensor(PseudoActor):
     Pseudo opendrive sensor
     """
 
-    def __init__(self, name, parent, node, carla_map):
+    def __init__(self, uid, name, parent, node, carla_map):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
         :param name: name identiying the sensor
         :type name: string
         :param carla_world: carla world object
@@ -37,7 +40,8 @@ class OpenDriveSensor(PseudoActor):
         :param carla_map: carla map object
         :type carla_map: carla.Map
         """
-        super(OpenDriveSensor, self).__init__(parent=parent,
+        super(OpenDriveSensor, self).__init__(uid,
+                                              parent=parent,
                                               node=node,
                                               prefix='opendrive/' + name)
 

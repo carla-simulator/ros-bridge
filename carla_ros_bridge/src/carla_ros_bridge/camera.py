@@ -34,10 +34,12 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -49,7 +51,8 @@ class Camera(Sensor):
         """
         if not prefix:
             prefix = 'camera'
-        super(Camera, self).__init__(carla_actor=carla_actor,
+        super(Camera, self).__init__(uid=uid,
+                                     carla_actor=carla_actor,
                                      parent=parent,
                                      node=node,
                                      synchronous_mode=synchronous_mode,
@@ -180,10 +183,12 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -193,7 +198,8 @@ class RgbCamera(Camera):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(RgbCamera, self).__init__(carla_actor=carla_actor,
+        super(RgbCamera, self).__init__(uid=uid,
+                                        carla_actor=carla_actor,
                                         parent=parent,
                                         node=node,
                                         synchronous_mode=synchronous_mode,
@@ -237,10 +243,12 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -250,7 +258,8 @@ class DepthCamera(Camera):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(DepthCamera, self).__init__(carla_actor=carla_actor,
+        super(DepthCamera, self).__init__(uid=uid,
+                                          carla_actor=carla_actor,
                                           parent=parent,
                                           node=node,
                                           synchronous_mode=synchronous_mode,
@@ -316,10 +325,12 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -330,7 +341,8 @@ class SemanticSegmentationCamera(Camera):
         :type synchronous_mode: bool
         """
         super(
-            SemanticSegmentationCamera, self).__init__(carla_actor=carla_actor,
+            SemanticSegmentationCamera, self).__init__(uid=uid,
+                                                       carla_actor=carla_actor,
                                                        parent=parent,
                                                        node=node,
                                                        synchronous_mode=synchronous_mode,
@@ -375,10 +387,12 @@ class DVSCamera(Camera):
     Sensor implementation details for dvs cameras
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -388,7 +402,8 @@ class DVSCamera(Camera):
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        super(DVSCamera, self).__init__(carla_actor=carla_actor,
+        super(DVSCamera, self).__init__(uid=uid,
+                                        carla_actor=carla_actor,
                                         parent=parent,
                                         node=node,
                                         synchronous_mode=synchronous_mode,

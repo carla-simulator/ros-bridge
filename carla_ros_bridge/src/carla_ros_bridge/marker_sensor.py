@@ -23,9 +23,12 @@ class MarkerSensor(PseudoActor):
     Pseudo marker sensor
     """
 
-    def __init__(self, name, parent, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
         :param name: name identiying the sensor
         :type name: string
         :param carla_world: carla world object
@@ -38,7 +41,8 @@ class MarkerSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(MarkerSensor, self).__init__(parent=parent,
+        super(MarkerSensor, self).__init__(uid,
+                                           parent=parent,
                                            node=node,
                                            prefix='markers/' + name)
         self.actor_list = actor_list

@@ -22,10 +22,12 @@ class Traffic(Actor):
     Actor implementation details for traffic objects
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, carla_actor, parent, node):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -33,7 +35,8 @@ class Traffic(Actor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(Traffic, self).__init__(carla_actor=carla_actor,
+        super(Traffic, self).__init__(uid=uid,
+                                      carla_actor=carla_actor,
                                       parent=parent,
                                       node=node,
                                       prefix='traffic')
@@ -45,10 +48,12 @@ class TrafficLight(Actor):
     Traffic implementation details for traffic lights
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, carla_actor, parent, node):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.TrafficLight
         :param parent: the parent of this
@@ -56,7 +61,8 @@ class TrafficLight(Actor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(TrafficLight, self).__init__(carla_actor=carla_actor,
+        super(TrafficLight, self).__init__(uid=uid,
+                                           carla_actor=carla_actor,
                                            parent=parent,
                                            node=node,
                                            prefix='traffic.traffic_light')

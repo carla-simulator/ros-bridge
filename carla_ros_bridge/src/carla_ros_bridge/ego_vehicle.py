@@ -34,10 +34,12 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    def __init__(self, carla_actor, parent, node, vehicle_control_applied_callback):
+    def __init__(self, uid, carla_actor, parent, node, vehicle_control_applied_callback):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -45,7 +47,8 @@ class EgoVehicle(Vehicle):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(EgoVehicle, self).__init__(carla_actor=carla_actor,
+        super(EgoVehicle, self).__init__(uid=uid,
+                                         carla_actor=carla_actor,
                                          parent=parent,
                                          node=node,
                                          prefix=carla_actor.attributes.get('role_name'))

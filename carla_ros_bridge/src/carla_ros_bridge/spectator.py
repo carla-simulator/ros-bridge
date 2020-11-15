@@ -19,10 +19,12 @@ class Spectator(Actor):
     Actor implementation details for spectators
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, carla_actor, parent, node):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -30,7 +32,8 @@ class Spectator(Actor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(Spectator, self).__init__(carla_actor=carla_actor,
+        super(Spectator, self).__init__(uid=uid,
+                                        carla_actor=carla_actor,
                                         parent=parent,
                                         prefix='spectator',
                                         node=node)

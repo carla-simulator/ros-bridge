@@ -27,10 +27,12 @@ class TrafficParticipant(Actor):
     actor implementation details for traffic participant
     """
 
-    def __init__(self, carla_actor, parent, node, prefix):
+    def __init__(self, uid, carla_actor, parent, node, prefix):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -41,7 +43,8 @@ class TrafficParticipant(Actor):
         :type prefix: string
         """
         self.classification_age = 0
-        super(TrafficParticipant, self).__init__(carla_actor=carla_actor,
+        super(TrafficParticipant, self).__init__(uid=uid,
+                                                 carla_actor=carla_actor,
                                                  parent=parent,
                                                  node=node,
                                                  prefix=prefix)

@@ -32,7 +32,8 @@ class WorldInfo(PseudoActor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
 
-        super(WorldInfo, self).__init__(parent=None,
+        super(WorldInfo, self).__init__(uid=None,
+                                        parent=None,
                                         node=node,
                                         prefix="world_info")
 

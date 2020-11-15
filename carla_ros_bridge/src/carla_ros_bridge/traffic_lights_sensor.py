@@ -22,9 +22,12 @@ class TrafficLightsSensor(PseudoActor):
     a sensor that reports the state of all traffic lights
     """
 
-    def __init__(self, name, parent, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
         :param name: name identiying the sensor
         :type name: string
         :param parent: the parent of this
@@ -35,9 +38,11 @@ class TrafficLightsSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(TrafficLightsSensor, self).__init__(parent=parent,
+        super(TrafficLightsSensor, self).__init__(uid,
+                                                  parent=parent,
                                                   node=node,
                                                   prefix="traffic_light/" + name)
+
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []

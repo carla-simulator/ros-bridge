@@ -11,6 +11,7 @@ handle a actor list sensor
 
 import rospy
 
+from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo
 
@@ -21,9 +22,11 @@ class ActorListSensor(PseudoActor):
     Pseudo actor list sensor
     """
 
-    def __init__(self, name, parent, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
+        :param uid: unique identifier for this object.
+        :type uid: int
         :param name: name identiying the sensor
         :type name: string
         :param carla_world: carla world object
@@ -36,9 +39,10 @@ class ActorListSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(ActorListSensor, self).__init__(parent=parent,
-                                           node=node,
-                                           prefix='actor_list/' + name)
+        super(ActorListSensor, self).__init__(uid,
+                                              parent=parent,
+                                              node=node,
+                                              prefix='actor_list/' + name)
         self.actor_list = actor_list
         self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix() +
                                                     "actor_list",
@@ -60,6 +64,9 @@ class ActorListSensor(PseudoActor):
         ros_actor_list = CarlaActorList()
 
         for actor_id in self.actor_list.keys():
+            if not isinstance(self.actor_list[actor_id], Actor):
+                continue
+
             actor = self.actor_list[actor_id].carla_actor
             ros_actor = CarlaActorInfo()
             ros_actor.id = actor.id

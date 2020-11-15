@@ -21,10 +21,12 @@ class ImuSensor(Sensor):
     Actor implementation details for imu sensor
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor : carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -34,7 +36,8 @@ class ImuSensor(Sensor):
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(ImuSensor, self).__init__(carla_actor=carla_actor,
+        super(ImuSensor, self).__init__(uid=uid,
+                                        carla_actor=carla_actor,
                                         parent=parent,
                                         node=node,
                                         synchronous_mode=synchronous_mode,

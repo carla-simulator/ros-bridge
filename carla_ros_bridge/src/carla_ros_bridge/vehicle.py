@@ -22,10 +22,12 @@ class Vehicle(TrafficParticipant):
     Actor implementation details for vehicles
     """
 
-    def __init__(self, carla_actor, parent, node, prefix=None):
+    def __init__(self, uid, carla_actor, parent, node, prefix=None):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla vehicle actor object
         :type carla_actor: carla.Vehicle
         :param parent: the parent of this
@@ -51,7 +53,8 @@ class Vehicle(TrafficParticipant):
             elif carla_actor.attributes['object_type'] == 'other':
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
 
-        super(Vehicle, self).__init__(carla_actor=carla_actor,
+        super(Vehicle, self).__init__(uid=uid,
+                                      carla_actor=carla_actor,
                                       parent=parent,
                                       node=node,
                                       prefix=prefix)

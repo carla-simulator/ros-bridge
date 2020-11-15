@@ -26,10 +26,12 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -37,7 +39,8 @@ class Lidar(Sensor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(Lidar, self).__init__(carla_actor=carla_actor,
+        super(Lidar, self).__init__(uid=uid,
+                                    carla_actor=carla_actor,
                                     parent=parent,
                                     node=node,
                                     synchronous_mode=synchronous_mode,
@@ -82,10 +85,12 @@ class SemanticLidar(Sensor):
     Actor implementation details for semantic lidars
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
         """
         Constructor
 
+        :param uid: unique identifier for this object
+        :type uid: int
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param parent: the parent of this
@@ -93,7 +98,8 @@ class SemanticLidar(Sensor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
-        super(SemanticLidar, self).__init__(carla_actor=carla_actor,
+        super(SemanticLidar, self).__init__(uid=uid,
+                                            carla_actor=carla_actor,
                                             parent=parent,
                                             node=node,
                                             synchronous_mode=synchronous_mode,
