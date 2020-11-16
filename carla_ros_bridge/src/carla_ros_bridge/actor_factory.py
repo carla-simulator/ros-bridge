@@ -13,6 +13,7 @@ try:
 except ImportError:
     import Queue as queue
 
+import time
 from threading import Thread, Lock
 import itertools
 
@@ -45,6 +46,9 @@ from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
 
 
 class ActorFactory(object):
+
+    TIME_BETWEEN_UPDATES = 0.1
+
     def __init__(self, node, world, sync_mode=False):
         self.node = node
         self.world = world
@@ -70,10 +74,11 @@ class ActorFactory(object):
         execution loop for async mode actor discovery
         """
         while not self.node.shutdown.is_set():
-            if self.node.on_carla_tick.wait(1):
-                with self.spawn_lock:
-                    self.update()
-                    self.node.on_carla_tick.clear()
+            time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
+
+            with self.spawn_lock:
+                self.world.wait_for_tick()
+                self.update()
 
     def update(self):
         """
@@ -84,13 +89,13 @@ class ActorFactory(object):
         current_actors = set([x.id for x in self.world.get_actors()])
 
         new_actors = current_actors - previous_actors
-        for carla_actor in self.world.get_actors(list(new_actors)):
+        for actor_id in new_actors:
+            carla_actor = self.world.get_actor(actor_id)
             self._create_carla_actor(carla_actor)
 
-        for actor_id, actor in self.actors.items():
-            if isinstance(actor, Actor):
-                if self.world.get_actor(actor_id) is None:
-                    self.destroy(actor_id)
+        deleted_actors = previous_actors -current_actors
+        for actor_id in deleted_actors:
+            self.destroy(actor_id)
 
     def clear(self):
         ids = self.actors.keys()

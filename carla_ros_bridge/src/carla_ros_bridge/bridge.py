@@ -28,6 +28,7 @@ import carla
 
 import carla_common.transforms as trans
 
+from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.actor_factory import ActorFactory
 
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
@@ -35,7 +36,7 @@ from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.world_info import WorldInfo
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
-from carla_msgs.srv import SpawnObject, SpawnObjectResponse
+from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse
 
 
 class CarlaRosBridge(object):
@@ -95,9 +96,10 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode,
             self.carla_settings.fixed_delta_seconds)
 
-        self.spawn_object_service = rospy.Service('/carla/spawn_object',
-                                                  SpawnObject,
+        self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
                                                   self.spawn_object)
+        self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
+                                                    self.destroy_object)
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -119,7 +121,6 @@ class CarlaRosBridge(object):
         else:
             self.timestamp_last_run = 0.0
 
-            self.on_carla_tick = Event()
             self.actor_factory.start()
 
             # register callback to update actors
@@ -164,6 +165,20 @@ class CarlaRosBridge(object):
 
             except Exception as e:
                 return SpawnObjectResponse(-1, str(e))
+
+    def destroy_object(self, req):
+        with self.actor_factory.spawn_lock:
+
+            if req.id not in self.actor_factory.actors:
+                return DestroyObjectResponse(False)
+
+            actor = self.actor_factory.actors[req.id]
+            if isinstance(actor, Actor):
+                actor.carla_actor.destroy()
+ 
+            self.actor_factory.destroy(req.id)
+
+            return DestroyObjectResponse(True)
 
     def on_weather_changed(self, weather_parameters):
         """
@@ -273,8 +288,6 @@ class CarlaRosBridge(object):
                     self._update(carla_snapshot.frame,
                                  carla_snapshot.timestamp.elapsed_seconds)
                 self.actor_factory.lock.release()
-
-            self.on_carla_tick.set()
 
     def run(self):
         """

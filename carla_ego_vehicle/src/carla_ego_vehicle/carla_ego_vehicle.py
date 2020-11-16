@@ -34,7 +34,7 @@ import carla
 
 import carla_common.transforms as trans
 
-from carla_msgs.srv import SpawnObject, SpawnObjectRequest
+from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
 
 secure_random = random.SystemRandom()
 
@@ -94,6 +94,7 @@ class CarlaEgoVehicle(object):
 
         rospy.wait_for_service('/carla/spawn_object')
         self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
+        self.destroy_object_service = rospy.ServiceProxy("/carla/destroy_object", DestroyObject)
 
     def on_initialpose(self, initial_pose):
         """
@@ -250,9 +251,7 @@ class CarlaEgoVehicle(object):
                     "Sensor {} will not be spawned, {}".format(sensor_name, e))
                 raise e
 
-            if response.id > 0:
-                sensor = self.world.get_actor(response.id)
-                actors.append(sensor)
+            actors.append(response.id)
         return actors
 
     @abstractmethod
@@ -266,14 +265,15 @@ class CarlaEgoVehicle(object):
         """
         destroy the current ego vehicle and its sensors
         """
-        for i, _ in enumerate(self.sensor_actors):
-            if self.sensor_actors[i] is not None:
-                self.sensor_actors[i].destroy()
-                self.sensor_actors[i] = None
+        for actor_id in self.sensor_actors:
+            destroy_object_request = DestroyObjectRequest(actor_id)
+            self.destroy_object_service(destroy_object_request)
+
         self.sensor_actors = []
 
         if self.player and self.player.is_alive:
-            self.player.destroy()
+            destroy_object_request = DestroyObjectRequest(self.player.id)
+            self.destroy_object_service(destroy_object_request)
         self.player = None
 
     def run(self):
@@ -289,7 +289,7 @@ class CarlaEgoVehicle(object):
             sys.exit(1)
 
         rospy.loginfo("CARLA world available. Spawn ego vehicle...")
-
+        rospy.on_shutdown(self.destroy)
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
         self.world = client.get_world()
