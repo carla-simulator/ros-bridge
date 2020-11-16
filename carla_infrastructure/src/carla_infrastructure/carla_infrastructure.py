@@ -130,8 +130,15 @@ class CarlaInfrastructure(object):
         destroy the current ego vehicle and its sensors
         """
         for actor_id in self.sensor_actors:
-            destroy_object_request = DestroyObjectRequest(actor_id)
-            self.destroy_object_service(destroy_object_request)
+            carla_actor = self.world.get_actor(actor_id)
+            if carla_actor is not None:
+                carla_actor.destroy()
+            else:
+                destroy_object_request = DestroyObjectRequest(actor_id)
+                try:
+                    self.destroy_object_service(destroy_object_request)
+                except rospy.ServiceException as e:
+                    rospy.logwarn_once(str(e))
 
         self.sensor_actors = []
 
