@@ -169,15 +169,16 @@ class CarlaEgoVehicle(object):
             spawn_object_request.attach_to = 0
 
             while self.player is None:
-                    if not self.actor_spawnpoint:
-                        spawn_points = self.world.get_map().get_spawn_points()
-                        spawn_point = secure_random.choice(spawn_points) if spawn_points else carla.Transform()
+                if not self.actor_spawnpoint:
+                    spawn_points = self.world.get_map().get_spawn_points()
+                    spawn_point = secure_random.choice(
+                        spawn_points) if spawn_points else carla.Transform()
 
-                    spawn_object_request.transform = trans.carla_transform_to_ros_pose(spawn_point)
-                    response = self.spawn_object_service(spawn_object_request)
-                    if response.id != -1:
-                        self.player = self.world.get_actor(response.id)
-                        self.player_created = True
+                spawn_object_request.transform = trans.carla_transform_to_ros_pose(spawn_point)
+                response = self.spawn_object_service(spawn_object_request)
+                if response.id != -1:
+                    self.player = self.world.get_actor(response.id)
+                    self.player_created = True
 
         if self.player_created:
             # Read sensors from file

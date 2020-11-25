@@ -66,6 +66,14 @@ class TrafficLightsSensor(PseudoActor):
         self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.traffic_lights"
+
     def update(self, frame, timestamp):
         """
         Get the state of all known traffic lights

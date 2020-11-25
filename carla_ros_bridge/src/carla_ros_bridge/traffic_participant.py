@@ -123,7 +123,7 @@ class TrafficParticipant(Actor):
         visualization_msgs.msg.Marker
         """
         # marker = Marker(
-            # header=self.get_msg_header(frame_id=str(self.get_id())))
+        # header=self.get_msg_header(frame_id=str(self.get_id())))
         marker = Marker(
             header=self.get_msg_header(frame_id="map"))
         marker.color = self.get_marker_color()
@@ -132,7 +132,7 @@ class TrafficParticipant(Actor):
         marker.type = Marker.CUBE
 
         # marker.pose = trans.carla_location_to_pose(
-            # self.carla_actor.bounding_box.location)
+        # self.carla_actor.bounding_box.location)
         marker.pose = trans.carla_transform_to_ros_pose(
             self.carla_actor.get_transform())
         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0

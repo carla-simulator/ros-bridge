@@ -52,6 +52,14 @@ class OpenDriveSensor(PseudoActor):
                                              queue_size=10,
                                              latch=True)
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.opendrive_map"
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.
