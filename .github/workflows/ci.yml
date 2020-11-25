@@ -1,0 +1,58 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Check
+      run: make check_format
+
+  ros:
+    runs-on: ubuntu-latest
+    container: ros:${{ matrix.ros-version }}-robot
+    strategy:
+      matrix:
+        ros-version: [melodic, noetic]
+    env:
+      SCENARIO_RUNNER_PATH: ""
+      DEBIAN_FRONTEND: "noninteractive"
+    steps:
+    - uses: actions/checkout@v2
+    # TODO cleaner solution but currently not working because git version is below 2.18
+    #   with:
+    #     submodules: true
+    - name: Setup
+      run: |
+        sudo apt-get update && sudo apt-get install wget unzip -y
+        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/master.zip
+        unzip master.zip -d carla_msgs && rm master.zip
+        packaging/install_dependencies.sh
+    - name: Init Workspace
+      run: |
+        mkdir -p $GITHUB_WORKSPACE/../catkin_ws/src
+        cd $GITHUB_WORKSPACE/../catkin_ws/src
+        ln -s $GITHUB_WORKSPACE
+        cd ..
+        catkin init
+    - name: Build, Test, Lint
+      shell: bash
+      run: |
+        source /opt/ros/${{ matrix.ros-version }}/setup.bash
+        cd $GITHUB_WORKSPACE/../catkin_ws &&
+        catkin build --summarize --no-status --force-color
+        catkin run_tests --no-status --force-color && catkin_test_results
+        catkin config --install && source devel/setup.bash
+        cd $GITHUB_WORKSPACE
+      #  make pylint
+      # TODO enable pylint

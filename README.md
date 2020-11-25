@@ -1,5 +1,10 @@
 # ROS bridge for CARLA simulator
 
+[![Actions Status](https://github.com/carla-simulator/ros-bridge/workflows/CI/badge.svg)](https://github.com/carla-simulator/ros-bridge)
+[![Build Status](https://travis-ci.com/carla-simulator/ros-bridge.svg?branch=master)](https://travis-ci.com/carla-simulator/ros-bridge)
+[![GitHub](https://img.shields.io/github/license/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/blob/master/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/releases/latest)
+
 This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
@@ -31,7 +36,6 @@ Beside the bridging functionality, there are many more features provided in sepa
 | [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
 For a quick overview, after following the [Setup section](#setup), please run the [CARLA AD Demo](carla_ad_demo/README.md). It provides a ready-to-use demonstrator of many of the features.
-
 
 ## Setup
 
