@@ -45,6 +45,14 @@ class TFSensor(PseudoActor):
 
         self.tf_broadcaster = tf.TransformBroadcaster()
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.tf"
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.

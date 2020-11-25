@@ -59,6 +59,14 @@ class WorldInfo(PseudoActor):
         self.carla_map = None
         super(WorldInfo, self).destroy()
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.world_info"
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.

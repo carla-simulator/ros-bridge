@@ -49,6 +49,14 @@ class SpeedometerSensor(PseudoActor):
                                                      Float32,
                                                      queue_size=10)
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.speedometer"
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.

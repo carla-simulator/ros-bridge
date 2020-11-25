@@ -28,6 +28,7 @@ from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.lidar import Lidar, SemanticLidar
 from carla_ros_bridge.radar import Radar
 from carla_ros_bridge.gnss import Gnss
+from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.imu import ImuSensor
 from carla_ros_bridge.ego_vehicle import EgoVehicle
 from carla_ros_bridge.collision_sensor import CollisionSensor
@@ -93,7 +94,7 @@ class ActorFactory(object):
             carla_actor = self.world.get_actor(actor_id)
             self._create_carla_actor(carla_actor)
 
-        deleted_actors = previous_actors -current_actors
+        deleted_actors = previous_actors - current_actors
         for actor_id in deleted_actors:
             self.destroy(actor_id)
 
@@ -158,32 +159,39 @@ class ActorFactory(object):
 
             rospy.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))
 
+    def get_pseudo_sensor_types(self):
+        pseudo_sensors = []
+        for cls in PseudoActor.__subclasses__():
+            if cls.__name__ != "Actor":
+                pseudo_sensors.append(cls.get_blueprint_name())
+        return pseudo_sensors
+
     def _create_object(self, uid, type_id, name, parent, carla_actor=None):
 
-        if type_id == "sensor.pseudo.tf":
+        if type_id == TFSensor.get_blueprint_name():
             actor = TFSensor(uid=uid, name=name, parent=parent, node=self.node)
 
-        elif type_id == "sensor.pseudo.odom":
+        elif type_id == OdometrySensor.get_blueprint_name():
             actor = OdometrySensor(uid=uid, name=name, parent=parent, node=self.node)
 
-        elif type_id == "sensor.pseudo.speedometer":
+        elif type_id == SpeedometerSensor.get_blueprint_name():
             actor = SpeedometerSensor(uid=uid, name=name, parent=parent, node=self.node)
 
-        elif type_id == "sensor.pseudo.markers":
+        elif type_id == MarkerSensor.get_blueprint_name():
             actor = MarkerSensor(uid=uid,
                                  name=name,
                                  parent=parent,
                                  node=self.node,
                                  actor_list=self.actors)
 
-        elif type_id == "sensor.pseudo.actor_list":
+        elif type_id == ActorListSensor.get_blueprint_name():
             actor = ActorListSensor(uid=uid,
                                     name=name,
                                     parent=parent,
                                     node=self.node,
                                     actor_list=self.actors)
 
-        elif type_id == "sensor.pseudo.objects":
+        elif type_id == ObjectSensor.get_blueprint_name():
             actor = ObjectSensor(
                 uid=uid,
                 name=name,
@@ -192,7 +200,7 @@ class ActorFactory(object):
                 actor_list=self.actors,
             )
 
-        elif type_id == "sensor.pseudo.traffic_lights":
+        elif type_id == TrafficLightsSensor.get_blueprint_name():
             actor = TrafficLightsSensor(
                 uid=uid,
                 name=name,
@@ -201,7 +209,7 @@ class ActorFactory(object):
                 actor_list=self.actors,
             )
 
-        elif type_id == "sensor.pseudo.opendrive_map":
+        elif type_id == OpenDriveSensor.get_blueprint_name():
             actor = OpenDriveSensor(uid=uid,
                                     name=name,
                                     parent=parent,

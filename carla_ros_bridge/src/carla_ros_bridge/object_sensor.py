@@ -59,6 +59,14 @@ class ObjectSensor(PseudoActor):
         self.actor_list = None
         super(ObjectSensor, self).destroy()
 
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.objects"
+
     def update(self, frame, timestamp):
         """
         Function (override) to update this object.

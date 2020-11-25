@@ -36,7 +36,7 @@ from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.world_info import WorldInfo
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
-from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse
+from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
 
 
 class CarlaRosBridge(object):
@@ -101,6 +101,9 @@ class CarlaRosBridge(object):
                                                   self.spawn_object)
         self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
                                                     self.destroy_object)
+
+        self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
+                                                    self.get_blueprints)
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -174,7 +177,7 @@ class CarlaRosBridge(object):
         actor = self.actor_factory.actors[uid]
         if isinstance(actor, Actor):
             actor.carla_actor.destroy()
- 
+
         self.actor_factory.destroy(uid)
         return True
 
@@ -185,6 +188,19 @@ class CarlaRosBridge(object):
                 self._registered_actors.remove(req.id)
 
             return DestroyObjectResponse(result)
+
+    def get_blueprints(self, req):
+        response = GetBlueprintsResponse()
+        if req.filter:
+            bp_filter = req.filter
+        else:
+            bp_filter = "*"
+
+        response.blueprints = [
+            bp.id for bp in self.carla_world.get_blueprint_library().filter(bp_filter)]
+        response.blueprints.extend(self.actor_factory.get_pseudo_sensor_types())
+        response.blueprints.sort()
+        return response
 
     def on_weather_changed(self, weather_parameters):
         """

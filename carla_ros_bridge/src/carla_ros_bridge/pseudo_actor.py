@@ -13,6 +13,7 @@ from std_msgs.msg import Header
 import rospy
 import numpy as np
 
+
 class PseudoActor(object):
 
     """
@@ -59,6 +60,15 @@ class PseudoActor(object):
         :return:
         """
         self.parent = None
+
+    @classmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        raise NotImplementedError(
+            "The pseudo actor is missing a blueprint name")
 
     def get_msg_header(self, frame_id=None, timestamp=None):
         """
