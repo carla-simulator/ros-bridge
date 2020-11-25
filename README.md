@@ -37,7 +37,6 @@ Beside the bridging functionality, there are many more features provided in sepa
 
 For a quick overview, after following the [Setup section](#setup), please run the [CARLA AD Demo](carla_ad_demo/README.md). It provides a ready-to-use demonstrator of many of the features.
 
-
 ## Setup
 
 ### For Users
