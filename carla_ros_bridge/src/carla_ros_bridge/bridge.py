@@ -96,6 +96,7 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode,
             self.carla_settings.fixed_delta_seconds)
 
+        self._registered_actors = []
         self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
                                                   self.spawn_object)
         self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
@@ -157,28 +158,33 @@ class CarlaRosBridge(object):
             try:
                 if "pseudo" in req.type:
                     id_ = self._spawn_pseudo_actor(req)
-                    return SpawnObjectResponse(id_, "")
-
                 else:
                     id_ = self._spawn_actor(req)
-                    return SpawnObjectResponse(id_, "")
+
+                self._registered_actors.append(id_)
+                return SpawnObjectResponse(id_, "")
 
             except Exception as e:
                 return SpawnObjectResponse(-1, str(e))
 
+    def _destroy_actor(self, uid):
+        if uid not in self.actor_factory.actors:
+            return False
+
+        actor = self.actor_factory.actors[uid]
+        if isinstance(actor, Actor):
+            actor.carla_actor.destroy()
+ 
+        self.actor_factory.destroy(uid)
+        return True
+
     def destroy_object(self, req):
         with self.actor_factory.spawn_lock:
+            result = self._destroy_actor(req.id)
+            if result and req.id in self._registered_actors:
+                self._registered_actors.remove(req.id)
 
-            if req.id not in self.actor_factory.actors:
-                return DestroyObjectResponse(False)
-
-            actor = self.actor_factory.actors[req.id]
-            if isinstance(actor, Actor):
-                actor.carla_actor.destroy()
- 
-            self.actor_factory.destroy(req.id)
-
-            return DestroyObjectResponse(True)
+            return DestroyObjectResponse(result)
 
     def on_weather_changed(self, weather_parameters):
         """
@@ -382,6 +388,11 @@ class CarlaRosBridge(object):
             if self.on_tick_id:
                 self.carla_world.remove_on_tick(self.on_tick_id)
             self.actor_factory.thread.join()
+
+        with self.actor_factory.spawn_lock:
+            # remove actors in reverse order to destroy parent actors first.
+            for uid in self._registered_actors[::-1]:
+                self._destroy_actor(uid)
         self.actor_factory.clear()
 
         rospy.loginfo("Exiting Bridge")
