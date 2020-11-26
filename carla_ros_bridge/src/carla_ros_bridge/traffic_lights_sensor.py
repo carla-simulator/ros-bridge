@@ -41,7 +41,7 @@ class TrafficLightsSensor(PseudoActor):
         super(TrafficLightsSensor, self).__init__(uid,
                                                   parent=parent,
                                                   node=node,
-                                                  prefix="traffic_light/" + name)
+                                                  prefix="traffic_lights/" + name)
 
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()

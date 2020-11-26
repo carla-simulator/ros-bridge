@@ -13,6 +13,7 @@ Classes to handle Carla vehicles
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 
+import carla_common.transforms as trans
 from carla_ros_bridge.traffic_participant import TrafficParticipant
 
 
@@ -71,6 +72,19 @@ class Vehicle(TrafficParticipant):
         color.g = 0
         color.b = 0
         return color
+    
+    def get_marker_pose(self):
+        """
+        Function to return the pose for vehicles.
+
+        :return: the pose of the vehicle
+        :rtype: geometry_msgs.msg.Pose
+        """
+        # Moving pivot point from the bottom (CARLA) to the center (ROS) of the bounding box.
+        extent = self.carla_actor.bounding_box.extent
+        marker_transform = self.carla_actor.get_transform()
+        marker_transform.location -= marker_transform.get_up_vector() * extent.z
+        return trans.carla_transform_to_ros_pose(marker_transform)
 
     def get_classification(self):
         """

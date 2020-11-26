@@ -45,7 +45,7 @@ class ActorListSensor(PseudoActor):
                                               prefix='actor_list/' + name)
         self.actor_list = actor_list
         self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                    "actor_list",
+                                                    "/actor_list",
                                                     CarlaActorList,
                                                     queue_size=10)
 

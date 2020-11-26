@@ -106,7 +106,7 @@ class TrafficParticipant(Actor):
         """
         Function (override) to return the color for marker messages.
 
-        :return: the color used by a walkers marker
+        :return: default color used by traffic participants
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
@@ -115,6 +115,15 @@ class TrafficParticipant(Actor):
         color.b = 255
         return color
 
+    def get_marker_pose(self):
+        """
+        Function to return the pose for traffic participants.
+
+        :return: the pose of the traffic participant.
+        :rtype: geometry_msgs.msg.Pose
+        """
+        return trans.carla_transform_to_ros_pose(self.carla_actor.get_transform())
+
     def get_marker(self):
         """
         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
@@ -122,19 +131,13 @@ class TrafficParticipant(Actor):
         :return:
         visualization_msgs.msg.Marker
         """
-        # marker = Marker(
-        # header=self.get_msg_header(frame_id=str(self.get_id())))
-        marker = Marker(
-            header=self.get_msg_header(frame_id="map"))
+        marker = Marker(header=self.get_msg_header(frame_id="map"))
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()
         marker.type = Marker.CUBE
 
-        # marker.pose = trans.carla_location_to_pose(
-        # self.carla_actor.bounding_box.location)
-        marker.pose = trans.carla_transform_to_ros_pose(
-            self.carla_actor.get_transform())
+        marker.pose = self.get_marker_pose()
         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
