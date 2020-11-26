@@ -61,7 +61,7 @@ class PseudoActor(object):
         """
         self.parent = None
 
-    @classmethod
+    @staticmethod
     def get_blueprint_name():
         """
         Get the blueprint identifier for the pseudo sensor

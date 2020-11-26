@@ -44,6 +44,7 @@ from carla_ros_bridge.tf_sensor import TFSensor
 from carla_ros_bridge.marker_sensor import MarkerSensor
 from carla_ros_bridge.actor_list_sensor import ActorListSensor
 from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
+from carla_ros_bridge.actor_control import ActorControl
 
 
 class ActorFactory(object):
@@ -215,6 +216,9 @@ class ActorFactory(object):
                                     parent=parent,
                                     node=self.node,
                                     carla_map=self.world.get_map())
+
+        elif type_id == ActorControl.get_blueprint_name():
+            actor = ActorControl(uid=uid, name=name, parent=parent, node=self.node)
 
         elif carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
