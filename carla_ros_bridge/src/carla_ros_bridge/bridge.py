@@ -34,6 +34,7 @@ from carla_ros_bridge.actor_factory import ActorFactory
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
 from carla_ros_bridge.debug_helper import DebugHelper
 from carla_ros_bridge.world_info import WorldInfo
+from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
@@ -168,6 +169,7 @@ class CarlaRosBridge(object):
                 return SpawnObjectResponse(id_, "")
 
             except Exception as e:
+                rospy.logwarn("Error spawning object '{}: {}".format(req.type, e))
                 return SpawnObjectResponse(-1, str(e))
 
     def _destroy_actor(self, uid):

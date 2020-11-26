@@ -16,7 +16,7 @@ import rospy
 
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
-from geometry_msgs.msg import Twist, Transform
+from geometry_msgs.msg import Transform
 
 from carla import VehicleControl
 from carla import Vector3D
@@ -84,10 +84,6 @@ class EgoVehicle(Vehicle):
         self.enable_autopilot_subscriber = rospy.Subscriber(
             self.get_topic_prefix() + "/enable_autopilot",
             Bool, self.enable_autopilot_updated)
-
-        self.twist_control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/twist_cmd",
-            Twist, self.twist_command_updated)
 
     def get_marker_color(self):
         """
@@ -193,35 +189,11 @@ class EgoVehicle(Vehicle):
         self.control_subscriber = None
         self.enable_autopilot_subscriber.unregister()
         self.enable_autopilot_subscriber = None
-        self.twist_control_subscriber.unregister()
-        self.twist_control_subscriber = None
         self.control_override_subscriber.unregister()
         self.control_override_subscriber = None
         self.manual_control_subscriber.unregister()
         self.manual_control_subscriber = None
         super(EgoVehicle, self).destroy()
-
-    def twist_command_updated(self, twist):
-        """
-        Set angular/linear velocity (this does not respect vehicle dynamics)
-        """
-        if not self.vehicle_control_override:
-            angular_velocity = Vector3D()
-            angular_velocity.z = math.degrees(twist.angular.z)
-
-            rotation_matrix = transforms.carla_rotation_to_numpy_rotation_matrix(
-                self.carla_actor.get_transform().rotation)
-            linear_vector = numpy.array([twist.linear.x, twist.linear.y, twist.linear.z])
-            rotated_linear_vector = rotation_matrix.dot(linear_vector)
-            linear_velocity = Vector3D()
-            linear_velocity.x = rotated_linear_vector[0]
-            linear_velocity.y = -rotated_linear_vector[1]
-            linear_velocity.z = rotated_linear_vector[2]
-
-            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
-                linear_velocity, angular_velocity))
-            self.carla_actor.set_target_velocity(linear_velocity)
-            self.carla_actor.set_target_angular_velocity(angular_velocity)
 
     def control_command_override(self, enable):
         """

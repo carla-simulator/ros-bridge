@@ -303,8 +303,8 @@ class CarlaEgoVehicle(object):
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
         self.world = client.get_world()
-        self.restart()
         try:
+            self.restart()
             rospy.spin()
         except rospy.ROSInterruptException:
             pass
