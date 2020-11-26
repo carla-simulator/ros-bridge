@@ -336,6 +336,11 @@ def carla_location_to_pose(carla_location):
     return ros_pose
 
 
+def RPY_to_ros_quaternion(roll, pitch, yaw):
+    quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+    return Quaternion(*quat)
+
+
 def ros_point_to_carla_location(ros_point):
     return carla.Location(ros_point.x, -ros_point.y, ros_point.z)
 

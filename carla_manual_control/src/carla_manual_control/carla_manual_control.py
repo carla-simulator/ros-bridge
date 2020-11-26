@@ -376,7 +376,7 @@ class HUD(object):
             _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
             yaw = -math.degrees(yaw)
             x = position[0]
-            y = -position[1]
+            y = position[1]
             z = position[2]
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             x = 0

@@ -26,6 +26,7 @@ import tf
 from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
+import carla_common.transforms as trans
 from carla_msgs.msg import CarlaWorldInfo
 from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint
 from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint
@@ -141,19 +142,7 @@ class CarlaToRosWaypointConverter(object):
         :return:
         """
         rospy.loginfo("Received goal, trigger rerouting...")
-        carla_goal = carla.Transform()
-        carla_goal.location.x = goal.pose.position.x
-        carla_goal.location.y = -goal.pose.position.y
-        carla_goal.location.z = goal.pose.position.z + 2  # 2m above ground
-        quaternion = (
-            goal.pose.orientation.x,
-            goal.pose.orientation.y,
-            goal.pose.orientation.z,
-            goal.pose.orientation.w
-        )
-        _, _, yaw = euler_from_quaternion(quaternion)
-        carla_goal.rotation.yaw = -math.degrees(yaw)
-
+        carla_goal = trans.ros_pose_to_carla_transform(goal.pose)
         self.goal = carla_goal
         self.reroute()
 
@@ -235,16 +224,7 @@ class CarlaToRosWaypointConverter(object):
         if self.current_route is not None:
             for wp in self.current_route:
                 pose = PoseStamped()
-                pose.pose.position.x = wp[0].transform.location.x
-                pose.pose.position.y = -wp[0].transform.location.y
-                pose.pose.position.z = wp[0].transform.location.z
-
-                quaternion = tf.transformations.quaternion_from_euler(
-                    0, 0, -math.radians(wp[0].transform.rotation.yaw))
-                pose.pose.orientation.x = quaternion[0]
-                pose.pose.orientation.y = quaternion[1]
-                pose.pose.orientation.z = quaternion[2]
-                pose.pose.orientation.w = quaternion[3]
+                pose.pose = trans.carla_transform_to_ros_pose(wp[0].transform)
                 msg.poses.append(pose)
 
         self.waypoint_publisher.publish(msg)

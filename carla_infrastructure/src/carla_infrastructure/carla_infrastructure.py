@@ -18,6 +18,8 @@ import rospy
 import carla_common.transforms as trans
 
 from diagnostic_msgs.msg import KeyValue
+from geometry_msgs.msg import Point, Pose
+
 from carla_msgs.msg import CarlaWorldInfo
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
 
@@ -88,21 +90,19 @@ class CarlaInfrastructure(object):
                             sensor_spec['id']))
                 sensor_names.append(sensor_name)
 
-                sensor_location = carla.Location(x=sensor_spec.pop("x", 0.0),
-                                                 y=sensor_spec.pop("y", 0.0),
-                                                 z=sensor_spec.pop("z", 0.0))
-                sensor_rotation = carla.Rotation(
-                    pitch=sensor_spec.pop('pitch', 0.0),
-                    roll=sensor_spec.pop('roll', 0.0),
-                    yaw=sensor_spec.pop('yaw', 0.0))
-                sensor_transform = carla.Transform(sensor_location, sensor_rotation)
+                sensor_location = Point(x=sensor_spec.pop("x", 0.0),
+                                        y=sensor_spec.pop("y", 0.0),
+                                        z=sensor_spec.pop("z", 0.0))
+                sensor_rotation = trans.RPY_to_ros_quaternion(
+                    roll=math.radians(sensor_spec.pop('roll', 0.0)),
+                    pitch=math.radians(sensor_spec.pop('pitch', 0.0)),
+                    yaw=math.radians(sensor_spec.pop('yaw', 0.0)))
 
                 spawn_object_request = SpawnObjectRequest()
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
                 spawn_object_request.attach_to = 0
-                spawn_object_request.transform = trans.carla_transform_to_ros_pose(
-                    sensor_transform)
+                spawn_object_request.transform = Pose(sensor_location, sensor_rotation)
                 for attribute, value in sensor_spec.items():
                     spawn_object_request.attributes.append(
                         KeyValue(str(attribute), str(value)))
