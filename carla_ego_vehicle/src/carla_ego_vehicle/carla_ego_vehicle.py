@@ -27,7 +27,7 @@ import json
 import rospy
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from diagnostic_msgs.msg import KeyValue
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from geometry_msgs.msg import Point, PoseWithCovarianceStamped, Pose
 from carla_msgs.msg import CarlaWorldInfo
 
 import carla
@@ -73,8 +73,8 @@ class CarlaEgoVehicle(object):
                 raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_param))
             pose = Pose()
             pose.position.x = float(spawn_point[0])
-            pose.position.y = -float(spawn_point[1])
-            pose.position.z = float(spawn_point[2])
+            pose.position.y = float(spawn_point[1])
+            pose.position.z = float(spawn_point[2]) + 2
             quat = quaternion_from_euler(
                 math.radians(float(spawn_point[3])),
                 math.radians(float(spawn_point[4])),
@@ -134,24 +134,7 @@ class CarlaEgoVehicle(object):
             spawn_point = None
 
             if self.actor_spawnpoint:
-                spawn_point = carla.Transform()
-                spawn_point.location.x = self.actor_spawnpoint.position.x
-                spawn_point.location.y = -self.actor_spawnpoint.position.y
-                spawn_point.location.z = self.actor_spawnpoint.position.z + \
-                    2  # spawn 2m above ground
-                quaternion = (
-                    self.actor_spawnpoint.orientation.x,
-                    self.actor_spawnpoint.orientation.y,
-                    self.actor_spawnpoint.orientation.z,
-                    self.actor_spawnpoint.orientation.w
-                )
-                _, _, yaw = euler_from_quaternion(quaternion)
-                spawn_point.rotation.yaw = -math.degrees(yaw)
-                rospy.loginfo("Spawn {} at x={} y={} z={} yaw={}".format(self.role_name,
-                                                                         spawn_point.location.x,
-                                                                         spawn_point.location.y,
-                                                                         spawn_point.location.z,
-                                                                         spawn_point.rotation.yaw))
+                spawn_point = trans.ros_pose_to_carla_transform(self.actor_spawnpoint)
                 if self.player is not None:
                     self.player.set_transform(spawn_point)
 
@@ -218,21 +201,19 @@ class CarlaEgoVehicle(object):
                             sensor_spec['id']))
                 sensor_names.append(sensor_name)
 
-                sensor_location = carla.Location(x=sensor_spec.pop("x", 0.0),
-                                                 y=sensor_spec.pop("y", 0.0),
-                                                 z=sensor_spec.pop("z", 0.0))
-                sensor_rotation = carla.Rotation(
-                    pitch=sensor_spec.pop('pitch', 0.0),
-                    roll=sensor_spec.pop('roll', 0.0),
-                    yaw=sensor_spec.pop('yaw', 0.0))
-                sensor_transform = carla.Transform(sensor_location, sensor_rotation)
+                sensor_location = Point(x=sensor_spec.pop("x", 0.0),
+                                        y=sensor_spec.pop("y", 0.0),
+                                        z=sensor_spec.pop("z", 0.0))
+                sensor_rotation = trans.RPY_to_ros_quaternion(
+                    roll=math.radians(sensor_spec.pop('roll', 0.0)),
+                    pitch=math.radians(sensor_spec.pop('pitch', 0.0)),
+                    yaw=math.radians(sensor_spec.pop('yaw', 0.0)))
 
                 spawn_object_request = SpawnObjectRequest()
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
                 spawn_object_request.attach_to = self.player.id
-                spawn_object_request.transform = trans.carla_transform_to_ros_pose(
-                    sensor_transform)
+                spawn_object_request.transform = Pose(sensor_location, sensor_rotation)
                 for attribute, value in sensor_spec.items():
                     spawn_object_request.attributes.append(
                         KeyValue(str(attribute), str(value)))
