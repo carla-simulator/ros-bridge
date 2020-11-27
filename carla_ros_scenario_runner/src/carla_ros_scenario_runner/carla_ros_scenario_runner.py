@@ -120,8 +120,14 @@ class CarlaRosScenarioRunner(object):
             scenario = CarlaScenario()
             scenario.name = json_scenario.get('name', '')
             scenario.scenario_file = json_scenario.get('scenario_file', '')
+            scenario.scenario = json_scenario.get('scenario', '')
+            scenario.additional_scenario = json_scenario.get('additional_scenario', '')
+            scenario.config_file = json_scenario.get('config_file', '')
             msg.scenarios.append(scenario)
         self._scenario_publisher.publish(msg)
+
+    def join_available_scenarios_dir(self, path):
+        return os.path.join(self._available_scenarios_dir, path)
 
     def execute_scenario(self, req):
         """
@@ -131,13 +137,26 @@ class CarlaRosScenarioRunner(object):
 
         response = ExecuteScenarioResponse()
         response.result = True
-        openscenario = os.path.join(self._available_scenarios_dir, req.scenario.scenario_file)
-        if not os.path.isfile(openscenario):
-            rospy.logwarn("Requested OpenSCENARIO file not existing {}".format(openscenario))
-            response.result = False
-        else:
-            req.scenario.scenario_file = openscenario
+
+        if req.scenario.scenario_file:
+            openscenario = self.join_available_scenarios_dir(req.scenario.scenario_file)
+            if not os.path.isfile(openscenario):
+                rospy.logwarn("Requested OpenSCENARIO file not existing {}".format(openscenario))
+                response.result = False
+            else:
+                req.scenario.scenario_file = openscenario
+                self._request_queue.put(req.scenario)
+        elif req.scenario.scenario:
+            if req.scenario.additional_scenario:
+                req.scenario.additional_scenario = self.join_available_scenarios_dir(
+                    req.scenario.additional_scenario)
+            if req.scenario.config_file:
+                req.scenario.config_file = self.join_available_scenarios_dir(
+                    req.scenario.config_file)
             self._request_queue.put(req.scenario)
+        else:
+            response.result = False
+
         return response
 
     def run(self):
@@ -157,7 +176,7 @@ class CarlaRosScenarioRunner(object):
 
                 # execute scenario
                 scenario_executed = self._scenario_runner.execute_scenario(
-                    current_req.scenario_file)
+                    current_req)
                 if not scenario_executed:
                     rospy.logwarn("Unable to execute scenario.")
                 current_req = None

@@ -1,6 +1,6 @@
 # ROS Scenario Runner
 
-This is a wrapper to execute OpenScenarios with the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) via ROS.
+This is a wrapper to execute scenarios with the CARLA [scenario runner](https://github.com/carla-simulator/scenario_runner) via ROS.
 
 It is best used from within the [rviz_carla_plugin](../rviz_carla_plugin).
 
@@ -30,16 +30,19 @@ Additionally, please execute:
 
 The environment variables are forwarded to scenario_runner, therefore set them to:
 
-    export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
+    export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/:<path_to_scenario_runner>
 
 To run the ROS node:
 
     roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_runner_path:=<path_to_scenario_runner>
 
-To run a scenario from commandline:
+To run an open scenario from commandline:
 
     rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
 
+To run a python scenario from commandline:
+
+    rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario': '<scenario_name>', 'additional_scenario': '<path_to_python_scenario_class>', 'config_file': '<path_to_scenario_configuration> } }"
 
 ## Available services
 

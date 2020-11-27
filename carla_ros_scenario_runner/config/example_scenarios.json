@@ -1,0 +1,12 @@
+[
+  {
+    "name": "FollowLeadingVehicle (OpenSCENARIO)",
+    "scenario_file": "FollowLeadingVehicle.xosc"
+  },
+  {
+    "name": "FollowLeadingVehicleSample_1 (Python)",
+    "scenario": "FollowLeadingVehicleSample_1",
+    "additional_scenario": "follow_leading_vehicle_sample.py",
+    "config_file": "FollowLeadingVehicleSample.xml"
+  }
+]

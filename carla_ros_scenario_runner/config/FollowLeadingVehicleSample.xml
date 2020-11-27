@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<scenarios>
+    <scenario name="FollowLeadingVehicleSample_1" type="FollowLeadingVehicleSample" town="Town01">
+        <ego_vehicle x="107" y="133" z="0.5" yaw="0" model="vehicle.lincoln.mkz2017" rolename="ego_vehicle" />
+        <weather cloudiness="0" precipitation="0" precipitation_deposits="0" wind_intensity="0" sun_azimuth_angle="0" sun_altitude_angle="75" />
+    </scenario>
+</scenarios>
