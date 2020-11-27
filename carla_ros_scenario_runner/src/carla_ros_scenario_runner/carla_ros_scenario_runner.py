@@ -10,15 +10,18 @@ Execute scenarios via ros service
 
 Internally, the CARLA scenario runner is executed
 """
-import sys
+import json
 import os
+import sys
 try:
     import queue
 except ImportError:
     import Queue as queue
 import rospy
 from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
-from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
+from carla_ros_scenario_runner_types.msg import (CarlaScenario,
+                                                 CarlaScenarioList,
+                                                 CarlaScenarioRunnerStatus)
 from application_runner import ApplicationStatus  # pylint: disable=relative-import
 from scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
 
@@ -44,13 +47,26 @@ class CarlaRosScenarioRunner(object):
     Execute scenarios via ros service
     """
 
-    def __init__(self, host, port, scenario_runner_path, wait_for_ego):
+    def __init__(self,
+                 role_name,
+                 host,
+                 port,
+                 scenario_runner_path,
+                 available_scenarios_dir,
+                 available_scenarios_json,
+                 wait_for_ego):
         """
         Constructor
         """
         self._status_publisher = rospy.Publisher(
             "/scenario_runner/status", CarlaScenarioRunnerStatus, queue_size=1, latch=True)
         self.scenario_runner_status_updated(ApplicationStatus.STOPPED)
+
+        self._scenario_publisher = rospy.Publisher(
+            "/carla/available_scenarios", CarlaScenarioList, queue_size=1, latch=True)
+        self.add_available_scenarios(available_scenarios_dir, available_scenarios_json)
+        self._available_scenarios_dir = available_scenarios_dir
+
         self._scenario_runner = ScenarioRunnerRunner(
             scenario_runner_path,
             host,
@@ -88,6 +104,25 @@ class CarlaRosScenarioRunner(object):
         status.status = val
         self._status_publisher.publish(status)
 
+    def add_available_scenarios(self, directory, json_file):
+        """
+        Add available scenarios
+        """
+        if not os.path.exists(json_file):
+            rospy.logerr('Failed to load available_scenarios_json from: {}'.format(json_file))
+            return
+        rospy.loginfo("Adding available scenarios...")
+        msg = CarlaScenarioList()
+        json_scenarios = None
+        with open(json_file) as handle:
+            json_scenarios = json.loads(handle.read())
+        for json_scenario in json_scenarios:
+            scenario = CarlaScenario()
+            scenario.name = json_scenario.get('name', '')
+            scenario.scenario_file = json_scenario.get('scenario_file', '')
+            msg.scenarios.append(scenario)
+        self._scenario_publisher.publish(msg)
+
     def execute_scenario(self, req):
         """
         Execute a scenario
@@ -96,11 +131,12 @@ class CarlaRosScenarioRunner(object):
 
         response = ExecuteScenarioResponse()
         response.result = True
-        if not os.path.isfile(req.scenario.scenario_file):
-            rospy.logwarn("Requested scenario file not existing {}".format(
-                req.scenario.scenario_file))
+        openscenario = os.path.join(self._available_scenarios_dir, req.scenario.scenario_file)
+        if not os.path.isfile(openscenario):
+            rospy.logwarn("Requested OpenSCENARIO file not existing {}".format(openscenario))
             response.result = False
         else:
+            req.scenario.scenario_file = openscenario
             self._request_queue.put(req.scenario)
         return response
 
@@ -144,12 +180,23 @@ def main():
     :return:
     """
     rospy.init_node('carla_ros_scenario_runner', anonymous=True)
+    role_name = rospy.get_param("~role_name", "ego_vehicle")
     scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
+    available_scenarios_dir = rospy.get_param("~available_scenarios_dir", "")
+    available_scenarios_json = rospy.get_param("~available_scenarios_json", "")
     wait_for_ego = rospy.get_param("~wait_for_ego", "True")
     host = rospy.get_param("~host", "localhost")
     port = rospy.get_param("~port", 2000)
+
     scenario_runner = CarlaRosScenarioRunner(
-        host, port, scenario_runner_path, wait_for_ego)
+        role_name,
+        host,
+        port,
+        scenario_runner_path,
+        available_scenarios_dir,
+        available_scenarios_json,
+        wait_for_ego)
+
     try:
         scenario_runner.run()
     finally:

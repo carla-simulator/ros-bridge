@@ -1,0 +1,6 @@
+[
+  {
+    "name": "FollowLeadingVehicle (OpenSCENARIO)",
+    "scenario_file": "srunner/examples/FollowLeadingVehicle.xosc"
+  }
+]
