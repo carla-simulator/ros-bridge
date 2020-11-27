@@ -24,15 +24,26 @@ class ScenarioRunnerRunner(ApplicationRunner):
             log_fct,
             "ScenarioManager: Running scenario OpenScenario")
 
-    def execute_scenario(self, scenario_file):
+    def execute_scenario(self, req):
         """
         Executes scenario
         """
         cmdline = ["/usr/bin/python", "{}/scenario_runner.py".format(self._path),
-                   "--openscenario", "{}".format(scenario_file),
                    "--timeout", "1000000",
                    "--host", self._host,
                    "--port", str(self._port)]
+        if req.scenario_file:
+            cmdline.append("--openscenario")
+            cmdline.append(req.scenario_file)
+        elif req.scenario:
+            cmdline.append("--scenario")
+            cmdline.append(req.scenario)
+            if req.additional_scenario:
+                cmdline.append("--additionalScenario")
+                cmdline.append(req.additional_scenario)
+            if req.config_file:
+                cmdline.append("--configFile")
+                cmdline.append(req.config_file)
         if self._wait_for_ego:
             cmdline.append("--waitForEgo")
         return self.execute(cmdline, env=os.environ)

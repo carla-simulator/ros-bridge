@@ -4,8 +4,8 @@
   <arg name="port" default="2000"/>
   <arg name="role_name" default="ego_vehicle"/>
   <arg name="scenario_runner_path"/>
-  <arg name='available_scenarios_dir'/>
-  <arg name='available_scenarios_json'/>
+  <arg name='available_scenarios_dir' default="$(find carla_ros_scenario_runner)/config"/>
+  <arg name='available_scenarios_json' default="$(find carla_ros_scenario_runner)/config/example_scenarios.json"/>
   <arg name="wait_for_ego" default="True"/>
   
   <node pkg="carla_ros_scenario_runner" type="carla_ros_scenario_runner.py" name="carla_ros_scenario_runner" output="screen" required="true">

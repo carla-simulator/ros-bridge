@@ -5,4 +5,8 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 string name
-string scenario_file
+string scenario_file  # openscenario
+
+string scenario
+string additional_scenario
+string config_file
