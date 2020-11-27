@@ -71,20 +71,13 @@
   </node>
 
   <!-- Scenario Runner and an example scenario-->
-  <node pkg="rostopic" type="rostopic" name="publish_scenarios"
-    args="pub /carla/available_scenarios carla_ros_scenario_runner_types/CarlaScenarioList '{ 'scenarios':  
-      [
-        {
-          'name': 'FollowLeadingVehicle',
-          'scenario_file': '$(find carla_ad_demo)/config/FollowLeadingVehicle.xosc'
-        }
-      ]
-    }' -l"/>
   <include file="$(find carla_ros_scenario_runner)/launch/carla_ros_scenario_runner.launch">
     <arg name='host' value='$(arg host)'/>
     <arg name='port' value='$(arg port)'/>
     <arg name="role_name" value="$(arg role_name)"/>
     <arg name="scenario_runner_path" value="$(arg scenario_runner_path)"/>
+    <arg name='available_scenarios_dir' default='$(env SCENARIO_RUNNER_PATH)'/>
+    <arg name='available_scenarios_json' default='$(find carla_ad_demo)/config/example_scenarios.json'/>
     <arg name="wait_for_ego" value="True"/>
   </include>
 
