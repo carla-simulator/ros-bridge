@@ -44,6 +44,8 @@ class CarlaStatusPublisher(object):
         status_msg.synchronous_mode = self.synchronous_mode
         status_msg.synchronous_mode_running = self.synchronous_mode_running
         status_msg.fixed_delta_seconds = self.fixed_delta_seconds
+        if status_msg.fixed_delta_seconds is None:
+            status_msg.fixed_delta_seconds = 0.0
         self.carla_status_publisher.publish(status_msg)
 
     def set_synchronous_mode_running(self, running):
