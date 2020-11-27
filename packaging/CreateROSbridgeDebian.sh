@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #This script builds debian package for CARLA ROS Bridge
-#Tested with Ubuntu 14.04, 16.04, 18.04 and 19.10
+#Tested with Ubuntu 14.04, 16.04, 18.04, 19.10 and 20.04
 
 sudo apt-get install build-essential dh-make
 
@@ -11,9 +11,10 @@ export DEBFULLNAME
 
 #carla-ros-bridge github repository
 ROS_BRIDGE_GIT=https://github.com/carla-simulator/ros-bridge.git
+RELEASE_VERSION=$(git describe --tags --abbrev=0)
 
 mkdir -p carla-ros-debian/carla-ros-bridge/catkin_ws/src
-mkdir -p carla-ros-debian/carla-ros-bridge-$(rosversion -d)-0.9.8/carla-ros-bridge/
+mkdir -p carla-ros-debian/carla-ros-bridge-$(rosversion -d)-"$RELEASE_VERSION"/carla-ros-bridge/
 
 cd carla-ros-debian/carla-ros-bridge
 
@@ -28,20 +29,20 @@ source /opt/ros/$(rosversion -d)/setup.bash
 
 #installing required dependency packages to build catkin_make
 sudo apt install ros-$(rosversion -d)-derived-object-msgs \
-ros-$(rosversion -d)-ackermann-msgs ros-$(rosversion -d)-carla-msgs ros-$(rosversion -d)-pcl-conversions \
-ros-$(rosversion -d)-rviz ros-$(rosversion -d)-rqt ros-$(rosversion -d)-pcl-ros
+    ros-$(rosversion -d)-ackermann-msgs ros-$(rosversion -d)-carla-msgs ros-$(rosversion -d)-pcl-conversions \
+    ros-$(rosversion -d)-rviz ros-$(rosversion -d)-rqt ros-$(rosversion -d)-pcl-ros
 
 catkin_make install
 
-cp -r install ../../carla-ros-bridge-$(rosversion -d)-0.9.8/carla-ros-bridge/
+cp -r install ../../carla-ros-bridge-$(rosversion -d)-"$RELEASE_VERSION"/carla-ros-bridge/
 
-cd ../../carla-ros-bridge-$(rosversion -d)-0.9.8/
+cd ../../carla-ros-bridge-$(rosversion -d)-"$RELEASE_VERSION"/
 mv carla-ros-bridge/install carla-ros-bridge/$(rosversion -d)
 
 rm Makefile
 
 #Making debian package to install Carla-ros-bridge in /opt folder
-cat >> Makefile <<EOF
+cat >>Makefile <<EOF
 binary:
 	# we are not going to build anything
 install:
@@ -49,7 +50,7 @@ install:
 	cp -r carla-ros-bridge/$(rosversion -d) \$(DESTDIR)/opt/carla-ros-bridge/
 EOF
 
-dh_make -e carla.simulator@gmail.com --indep --createorig -y  #to create necessary file structure for debian packaging
+dh_make -e carla.simulator@gmail.com --indep --createorig -y #to create necessary file structure for debian packaging
 
 cd debian/
 
@@ -60,13 +61,13 @@ rm ./*.EX
 rm control
 
 #Adding package dependencies(Package will install them itself) and description
-cat >> control <<EOF
+cat >>control <<EOF
 Source: carla-ros-bridge-$(rosversion -d)
 Section: misc
 Priority: optional
 Maintainer: Carla Simulator Team <carla.simulator@gmail.com>
 Build-Depends: debhelper (>= 9)
-Standards-Version:0.9.7
+Standards-Version:$RELEASE_VERSION
 Homepage: https://github.com/carla-simulator/ros-bridge
 
 Package: carla-ros-bridge-$(rosversion -d)
@@ -105,14 +106,12 @@ EOF
 rm copyright
 cp ../../../carla-ros-bridge/ros-bridge/LICENSE ./copyright
 
-
 #Updating debian/Changelog
-awk '{sub(/UNRELEASED/,"stable")}1' changelog > tmp && mv tmp changelog
-awk '{sub(/unstable/,"stable")}1' changelog > tmp && mv tmp changelog
+awk '{sub(/UNRELEASED/,"stable")}1' changelog >tmp && mv tmp changelog
+awk '{sub(/unstable/,"stable")}1' changelog >tmp && mv tmp changelog
 
 cd ..
 
 dpkg-buildpackage -uc -us -b #building debian package
 
 #install debian package using "sudo dpkg -i ../carla_ros-bridge-<rosversion>_amd64.deb"
-

@@ -25,21 +25,19 @@ class Actor(PseudoActor):
     Generic base class for all carla actors
     """
 
-    def __init__(self, carla_actor, parent, communication, prefix=None):
+    def __init__(self, carla_actor, parent, node, prefix=None):
         """
         Constructor
         :param carla_actor: carla vehicle actor object
         :type carla_actor: carla.Vehicle
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param communication: communication-handle
-        :type communication: carla_ros_bridge.communication
+        :param node: node-handle
+        :type node: carla_ros_bridge.CarlaRosBridge
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        super(Actor, self).__init__(parent=parent,
-                                    prefix=prefix,
-                                    communication=communication)
+        super(Actor, self).__init__(parent=parent, prefix=prefix, node=node)
         self.carla_actor = carla_actor
 
         if carla_actor.id > np.iinfo(np.uint32).max:
@@ -136,7 +134,7 @@ class Actor(PseudoActor):
 
         :return:
         """
-        self.publish_message('tf', ros_transform_msg)
+        self.node.publish_tf_message(ros_transform_msg)
 
     def get_marker_color(self):  # pylint: disable=no-self-use
         """
@@ -163,7 +161,6 @@ class Actor(PseudoActor):
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()
-        marker.text = "id = {}".format(marker.id)
         return marker
 
     def publish_marker(self):
@@ -180,4 +177,4 @@ class Actor(PseudoActor):
         marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
         marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
         marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
-        self.publish_message('/carla/marker', marker)
+        self.node.marker_publisher.publish(marker)

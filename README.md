@@ -1,14 +1,19 @@
 # ROS bridge for CARLA simulator
 
+[![Actions Status](https://github.com/carla-simulator/ros-bridge/workflows/CI/badge.svg)](https://github.com/carla-simulator/ros-bridge)
+[![Build Status](https://travis-ci.com/carla-simulator/ros-bridge.svg?branch=master)](https://travis-ci.com/carla-simulator/ros-bridge)
+[![GitHub](https://img.shields.io/github/license/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/blob/master/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/releases/latest)
+
 This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 
-![rviz setup](./docs/images/rviz_carla_default.png "rviz")
+![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-**This version requires CARLA 0.9.9.5**
+**This version requires CARLA 0.9.10**
 
 ## Features
 
-- Provide Sensor Data (Lidar, Cameras (depth, segmentation, rgb), GNSS, Radar, IMU)
+- Provide Sensor Data (Lidar, Semantic lidar, Cameras (depth, segmentation, rgb, dvs), GNSS, Radar, IMU)
 - Provide Object Data (Transforms (via [tf](http://wiki.ros.org/tf)), Traffic light status, Visualization markers, Collision, Lane invasion)
 - Control AD Agents (Steer/Throttle/Brake)
 - Control CARLA (Support synchronous mode, Play/pause simulation, Set simulation parameters)
@@ -31,7 +36,6 @@ Beside the bridging functionality, there are many more features provided in sepa
 | [RQT Carla Plugin](rqt_carla_plugin/README.md) | A [RQT](http://wiki.ros.org/rqt) plugin to control CARLA. |
 
 For a quick overview, after following the [Setup section](#setup), please run the [CARLA AD Demo](carla_ad_demo/README.md). It provides a ready-to-use demonstrator of many of the features.
-
 
 ## Setup
 
@@ -61,7 +65,7 @@ This will install carla-ros-bridge in /opt/carla-ros-bridge
     git submodule update --init
     cd ../catkin_ws/src
     ln -s ../../ros-bridge
-    source /opt/ros/<kinetic or melodic>/setup.bash
+    source /opt/ros/<kinetic or melodic or noetic>/setup.bash
     cd ..
 
     #install required ros-dependencies
@@ -87,7 +91,7 @@ Wait a few seconds
 
 ##### For Users
 
-    source /opt/carla-ros-bridge/<melodic or kinetic>/setup.bash
+    source /opt/carla-ros-bridge/<kinetic or melodic or noetic>/setup.bash
 
 ##### For Developers
 
@@ -159,12 +163,34 @@ The ego vehicle sensors are provided via topics with prefix /carla/ego_vehicle/&
 
 Currently the following sensors are supported:
 
-##### Camera
+##### RGB camera
 
 | Topic                                                          | Type                                                                                   |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `/carla/<ROLE NAME>/camera/rgb/<SENSOR ROLE NAME>/image_color` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
 | `/carla/<ROLE NAME>/camera/rgb/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### Depth camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/depth/<SENSOR ROLE NAME>/image_depth` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/depth/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### Semantic segmentation camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/semantic_segmentation/<SENSOR ROLE NAME>/image_segmentation` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/semantic_segmentation/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
+
+##### DVS camera
+
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/events` | [sensor_msgs.PointCloud2](http://docs.ros.org/en/api/sensor_msgs/html/msg/PointCloud2.html)           |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/image_events` | [sensor_msgs.Image](http://docs.ros.org/api/sensor_msgs/html/msg/Image.html)           |
+| `/carla/<ROLE NAME>/camera/dvs/<SENSOR ROLE NAME>/camera_info` | [sensor_msgs.CameraInfo](http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html) |
 
 ##### Lidar
 
@@ -172,17 +198,23 @@ Currently the following sensors are supported:
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `/carla/<ROLE NAME>/lidar/<SENSOR ROLE NAME>/point_cloud` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
+##### Semantic lidar
+
+| Topic                                                     | Type                                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/semantic_lidar/<SENSOR ROLE NAME>/point_cloud` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
+
 ##### Radar
 
-| Topic                                               | Type                                                                                                                                          |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar` | [carla_msgs.CarlaRadarMeasurement](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaRadarMeasurement.msg) |
+| Topic                                                          | Type                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `/carla/<ROLE NAME>/radar/<SENSOR ROLE NAME>/radar_points` | [sensor_msgs.PointCloud2](http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html) |
 
 ##### IMU
 
 | Topic                    | Type                                                                              |
 | ------------------------ | --------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/imu` | [sensor_msgs.Imu](https://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html) |
+| `/carla/<ROLE NAME>/imu` | [sensor_msgs.Imu](https://docs.ros.org/api/sensor_msgs/html/msg/Imu.html) |
 
 ##### GNSS
 
@@ -295,7 +327,7 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 
 ### TF
 
-The tf data is published for all traffic participants and sensors. 
+The tf data is published for all traffic participants and sensors.
 
 #### TF for traffic participants
 
