@@ -27,27 +27,27 @@ class TrafficParticipant(Actor):
     actor implementation details for traffic participant
     """
 
-    def __init__(self, uid, carla_actor, parent, node, prefix):
+    def __init__(self, uid, name,parent, node, carla_actor):
         """
         Constructor
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         """
         self.classification_age = 0
         super(TrafficParticipant, self).__init__(uid=uid,
-                                                 carla_actor=carla_actor,
+                                                 name=name,
                                                  parent=parent,
                                                  node=node,
-                                                 prefix=prefix)
+                                                 carla_actor=carla_actor)
 
     def update(self, frame, timestamp):
         """

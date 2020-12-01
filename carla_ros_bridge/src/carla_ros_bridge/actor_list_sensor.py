@@ -25,9 +25,9 @@ class ActorListSensor(PseudoActor):
     def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
-        :param uid: unique identifier for this object.
+        :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying the sensor
+        :param name: name identiying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -39,13 +39,12 @@ class ActorListSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(ActorListSensor, self).__init__(uid,
+        super(ActorListSensor, self).__init__(uid=uid,
+                                              name=name,
                                               parent=parent,
-                                              node=node,
-                                              prefix='actor_list/' + name)
+                                              node=node)
         self.actor_list = actor_list
-        self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                    "/actor_list",
+        self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix(),
                                                     CarlaActorList,
                                                     queue_size=10)
 

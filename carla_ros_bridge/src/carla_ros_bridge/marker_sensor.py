@@ -29,7 +29,7 @@ class MarkerSensor(PseudoActor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying the sensor
+        :param name: name identiying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -41,14 +41,13 @@ class MarkerSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(MarkerSensor, self).__init__(uid,
+        super(MarkerSensor, self).__init__(uid=uid,
+                                           name=name,
                                            parent=parent,
-                                           node=node,
-                                           prefix='markers/' + name)
+                                           node=node)
         self.actor_list = actor_list
 
-        self.marker_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                "/marker_array",
+        self.marker_publisher = rospy.Publisher(self.get_topic_prefix(),
                                                 MarkerArray,
                                                 queue_size=10)
 

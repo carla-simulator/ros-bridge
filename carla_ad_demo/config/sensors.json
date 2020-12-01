@@ -2,12 +2,12 @@
     "sensors": [
         {
             "type": "sensor.camera.rgb",
-            "id": "front",
+            "id": "rgb_front",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0
         },
         {
             "type": "sensor.camera.rgb",
-            "id": "view",
+            "id": "rgb_view",
             "x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0
         },
         {
@@ -29,23 +29,23 @@
         },
         {
             "type": "sensor.pseudo.odom",
-            "id": "odom1"
+            "id": "odometry"
         },
         {
             "type": "sensor.pseudo.actor_list",
-            "id": "actor_list1"
+            "id": "actor_list"
         },
         {
             "type": "sensor.pseudo.objects",
-            "id": "objectsensor1"
+            "id": "objects"
         },
         {
             "type": "sensor.pseudo.traffic_lights",
-            "id": "traffic_lights1"
+            "id": "traffic_lights"
         },
         {
             "type": "sensor.pseudo.markers",
-            "id": "markers1"
+            "id": "markers"
         }
     ]
 }

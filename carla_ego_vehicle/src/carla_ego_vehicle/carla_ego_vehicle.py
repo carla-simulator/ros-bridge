@@ -191,15 +191,14 @@ class CarlaEgoVehicle(object):
                 sensor_type = str(sensor_spec.pop("type"))
                 sensor_id = str(sensor_spec.pop("id"))
 
-                sensor_name = sensor_type + "/" + sensor_id
-                if sensor_name in sensor_names:
+                if sensor_id in sensor_names:
                     rospy.logfatal(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
                     raise NameError(
                         "Sensor rolename '{}' is only allowed to be used once.".format(
                             sensor_spec['id']))
-                sensor_names.append(sensor_name)
+                sensor_names.append(sensor_id)
 
                 sensor_location = Point(x=sensor_spec.pop("x", 0.0),
                                         y=sensor_spec.pop("y", 0.0),
@@ -230,7 +229,7 @@ class CarlaEgoVehicle(object):
 
             except Exception as e:
                 rospy.logfatal(
-                    "Sensor {} will not be spawned, {}".format(sensor_name, e))
+                    "Sensor {} will not be spawned, {}".format(sensor_id, e))
                 raise e
 
             actors.append(response.id)

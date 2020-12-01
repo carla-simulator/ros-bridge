@@ -39,13 +39,12 @@ class SpeedometerSensor(PseudoActor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
 
-        super(SpeedometerSensor, self).__init__(uid,
+        super(SpeedometerSensor, self).__init__(uid=uid,
+                                                name=name,
                                                 parent=parent,
-                                                node=node,
-                                                prefix='speedometer/' + name)
+                                                node=node)
 
-        self.speedometer_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                     "/speedometer",
+        self.speedometer_publisher = rospy.Publisher(self.get_topic_prefix(),
                                                      Float32,
                                                      queue_size=10)
 

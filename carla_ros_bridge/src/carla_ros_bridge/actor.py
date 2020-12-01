@@ -23,22 +23,22 @@ class Actor(PseudoActor):
     Generic base class for all carla actors
     """
 
-    def __init__(self, uid, carla_actor, parent, node, prefix=None):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         """
-        super(Actor, self).__init__(uid=uid, parent=parent, prefix=prefix, node=node)
+        super(Actor, self).__init__(uid=uid, name=name, parent=parent, node=node)
         self.carla_actor = carla_actor
         self.carla_actor_id = carla_actor.id
 

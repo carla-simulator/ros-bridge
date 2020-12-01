@@ -33,9 +33,9 @@ class WorldInfo(PseudoActor):
         """
 
         super(WorldInfo, self).__init__(uid=None,
+                                        name="world_info",
                                         parent=None,
-                                        node=node,
-                                        prefix="world_info")
+                                        node=node)
 
         self.carla_map = carla_world.get_map()
 

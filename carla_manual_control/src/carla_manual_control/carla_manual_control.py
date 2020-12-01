@@ -86,7 +86,7 @@ class World(object):
         self.hud = hud
         self.role_name = role_name
         self.image_subscriber = rospy.Subscriber(
-            "/carla/{}/camera/rgb/view/image_color".format(self.role_name),
+            "/carla/{}/rgb_view/image".format(self.role_name),
             Image, self.on_view_image)
         self.collision_subscriber = rospy.Subscriber(
             "/carla/{}/collision".format(self.role_name), CarlaCollisionEvent, self.on_collision)

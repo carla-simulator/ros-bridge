@@ -2,7 +2,7 @@
     "sensors": [
         {
             "type": "sensor.camera.rgb",
-            "id": "front",
+            "id": "rgb_front",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "image_size_x": 800,
             "image_size_y": 600,
@@ -48,7 +48,7 @@
         },
         {
             "type": "sensor.camera.rgb",
-            "id": "view",
+            "id": "rgb_view",
             "x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0,
             "image_size_x": 800,
             "image_size_y": 600,
@@ -94,7 +94,7 @@
         },
         {
             "type": "sensor.lidar.ray_cast",
-            "id": "lidar1",
+            "id": "lidar",
             "x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "range": 50,
             "channels": 32,
@@ -107,7 +107,7 @@
         },
         {
             "type": "sensor.lidar.ray_cast_semantic",
-            "id": "lidar1",
+            "id": "semantic_lidar",
             "x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "range": 50,
             "channels": 32,
@@ -119,7 +119,7 @@
         },
         {
             "type": "sensor.other.radar",
-            "id": "front",
+            "id": "radar_front",
             "x": 2.0, "y": 0.0, "z": 1.5, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "horizontal_fov": 30.0,
             "vertical_fov": 10.0,
@@ -128,7 +128,7 @@
         },
         {
             "type": "sensor.camera.semantic_segmentation",
-            "id": "front",
+            "id": "semantic_segmentation_front",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "fov": 90.0,
             "image_size_x": 400,
@@ -143,7 +143,7 @@
         },
         {
             "type": "sensor.camera.depth",
-            "id": "front",
+            "id": "depth_front",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "fov": 90.0,
             "image_size_x": 400,
@@ -158,7 +158,7 @@
         },
         {
             "type": "sensor.camera.dvs",
-            "id": "front",
+            "id": "dvs_front",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "fov": 90.0,
             "image_size_x": 400,
@@ -173,14 +173,14 @@
         },
         {
             "type": "sensor.other.gnss",
-            "id": "gnss1",
+            "id": "gnss",
             "x": 1.0, "y": 0.0, "z": 2.0,
             "noise_alt_stddev": 0.0, "noise_lat_stddev": 0.0, "noise_lon_stddev": 0.0,
             "noise_alt_bias": 0.0, "noise_lat_bias": 0.0, "noise_lon_bias": 0.0
         },
         {
             "type": "sensor.other.imu",
-            "id": "imu1",
+            "id": "imu",
             "x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0,
             "noise_accel_stddev_x": 0.0, "noise_accel_stddev_y": 0.0, "noise_accel_stddev_z": 0.0,
             "noise_gyro_stddev_x": 0.0, "noise_gyro_stddev_y": 0.0, "noise_gyro_stddev_z": 0.0,
@@ -188,21 +188,37 @@
         },
         {
             "type": "sensor.other.collision",
-            "id": "collision1",
+            "id": "collision",
             "x": 0.0, "y": 0.0, "z": 0.0
         },
         {
             "type": "sensor.other.lane_invasion",
-            "id": "laneinvasion1",
+            "id": "lane_invasion",
             "x": 0.0, "y": 0.0, "z": 0.0
         },
         {
-            "type": "sensor.pseudo.objects",
-            "id": "objectsensor1"
+            "type": "sensor.pseudo.tf",
+            "id": "tf"
         },
         {
-            "type": "sensor.pseudo.tf",
-            "id": "tf1"
+            "type": "sensor.pseudo.objects",
+            "id": "objects"
+        },
+        {
+            "type": "actor.pseudo.control",
+            "id": "control"
+        },
+        {
+            "type": "sensor.pseudo.odom",
+            "id": "odometry"
+        },
+        {
+            "type": "sensor.pseudo.speedometer",
+            "id": "speedometer"
+        },
+        {
+            "type": "sensor.pseudo.markers",
+            "id": "markers"
         }
     ]
 }

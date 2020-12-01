@@ -28,7 +28,7 @@ class ActorControl(PseudoActor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identifying the sensor
+        :param name: name identifying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -36,10 +36,10 @@ class ActorControl(PseudoActor):
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
-
         """
 
-        super(ActorControl, self).__init__(uid,
+        super(ActorControl, self).__init__(uid=uid,
+                                           name=name,
                                            parent=parent,
                                            node=node)
 
@@ -73,7 +73,7 @@ class ActorControl(PseudoActor):
         Get the blueprint identifier for the pseudo actor
         :return: name
         """
-        return "pseudo.actor.control"
+        return "actor.pseudo.control"
 
     def on_pose(self, pose):
         if self.parent and self.parent.carla_actor.is_alive:

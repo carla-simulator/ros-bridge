@@ -23,24 +23,21 @@ class Vehicle(TrafficParticipant):
     Actor implementation details for vehicles
     """
 
-    def __init__(self, uid, carla_actor, parent, node, prefix=None):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla vehicle actor object
+        :type carla_actor: carla.Vehicle
         """
-        if not prefix:
-            prefix = "vehicle/{:03}".format(carla_actor.id)
-
         self.classification = Object.CLASSIFICATION_CAR
         if 'object_type' in carla_actor.attributes:
             if carla_actor.attributes['object_type'] == 'car':
@@ -55,10 +52,10 @@ class Vehicle(TrafficParticipant):
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
 
         super(Vehicle, self).__init__(uid=uid,
-                                      carla_actor=carla_actor,
+                                      name=name,
                                       parent=parent,
                                       node=node,
-                                      prefix=prefix)
+                                      carla_actor=carla_actor)
 
     def get_marker_color(self):  # pylint: disable=no-self-use
         """

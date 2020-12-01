@@ -52,7 +52,7 @@ class Agent(object):
 
             self._traffic_lights = []
             self._traffic_light_status_subscriber = rospy.Subscriber(
-                "/carla/{}/traffic_lights/traffic_lights1/traffic_lights".format(role_name),
+                "/carla/{}/traffic_lights/status".format(role_name),
                 CarlaTrafficLightStatusList, self.traffic_lights_updated)
 
             self._world_info_subscriber = rospy.Subscriber(

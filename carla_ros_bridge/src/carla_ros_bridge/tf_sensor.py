@@ -38,10 +38,10 @@ class TFSensor(PseudoActor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
 
-        super(TFSensor, self).__init__(uid,
+        super(TFSensor, self).__init__(uid=uid,
+                                       name=name,
                                        parent=parent,
-                                       node=node,
-                                       prefix=None)
+                                       node=node)
 
         self.tf_broadcaster = tf.TransformBroadcaster()
 

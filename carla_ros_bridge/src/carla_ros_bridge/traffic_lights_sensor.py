@@ -38,22 +38,22 @@ class TrafficLightsSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(TrafficLightsSensor, self).__init__(uid,
+        super(TrafficLightsSensor, self).__init__(uid=uid,
+                                                  name=name,
                                                   parent=parent,
-                                                  node=node,
-                                                  prefix="traffic_lights/" + name)
+                                                  node=node)
 
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
         self.traffic_lights_info_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "/traffic_lights_info",
+            self.get_topic_prefix() + "/info",
             CarlaTrafficLightInfoList,
             queue_size=10,
             latch=True)
         self.traffic_lights_status_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "/traffic_lights",
+            self.get_topic_prefix() + "/status",
             CarlaTrafficLightStatusList,
             queue_size=10,
             latch=True)
