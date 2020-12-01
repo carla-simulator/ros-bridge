@@ -116,8 +116,10 @@ class ActorFactory(object):
         if parent is not None:
             parent_id = parent.uid
 
-        return self.create(carla_actor.type_id, carla_actor.attributes.get("rolename", ""),
-                           parent_id, carla_actor)
+        name = carla_actor.attributes.get("rolename", "")
+        if not name:
+            name  = str(carla_actor.id)
+        return self.create(carla_actor.type_id, name, parent_id, carla_actor)
 
     def create(self, type_id, name, attach_to, carla_actor=None):
         with self.lock:
@@ -222,53 +224,53 @@ class ActorFactory(object):
 
         elif carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
-                actor = TrafficLight(uid, carla_actor, parent, node=self.node)
+                actor = TrafficLight(uid, name, parent, self.node, carla_actor)
             else:
-                actor = Traffic(uid, carla_actor, parent, node=self.node)
+                actor = Traffic(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("vehicle"):
             if carla_actor.attributes.get('role_name')\
                     in self.node.parameters['ego_vehicle']['role_name']:
-                actor = EgoVehicle(uid, carla_actor, parent, self.node,
+                actor = EgoVehicle(uid, name, parent, self.node, carla_actor,
                                    self.node._ego_vehicle_control_applied_callback)
             else:
-                actor = Vehicle(uid, carla_actor, parent, self.node)
+                actor = Vehicle(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("sensor"):
             if carla_actor.type_id.startswith("sensor.camera"):
                 if carla_actor.type_id.startswith("sensor.camera.rgb"):
-                    actor = RgbCamera(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = RgbCamera(uid, name, parent, self.node, carla_actor, self.sync_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.depth"):
-                    actor = DepthCamera(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = DepthCamera(uid, name, parent, self.node, carla_actor, self.sync_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-                    actor = SemanticSegmentationCamera(uid, carla_actor, parent, self.node,
+                    actor = SemanticSegmentationCamera(uid, name, parent, self.node, carla_actor,
                                                        self.sync_mode)
                 elif carla_actor.type_id.startswith("sensor.camera.dvs"):
-                    actor = DVSCamera(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = DVSCamera(uid, name, parent, self.node, carla_actor, self.sync_mode)
                 else:
-                    actor = Camera(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = Camera(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
-                    actor = Lidar(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = Lidar(uid, name, parent, self.node, carla_actor, self.sync_mode)
                 elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
-                    actor = SemanticLidar(uid, carla_actor, parent, self.node, self.sync_mode)
+                    actor = SemanticLidar(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.radar"):
-                actor = Radar(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = Radar(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.gnss"):
-                actor = Gnss(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = Gnss(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.imu"):
-                actor = ImuSensor(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = ImuSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.collision"):
-                actor = CollisionSensor(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = CollisionSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.rss"):
-                actor = RssSensor(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = RssSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-                actor = LaneInvasionSensor(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = LaneInvasionSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
             else:
-                actor = Sensor(uid, carla_actor, parent, self.node, self.sync_mode)
+                actor = Sensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
         elif carla_actor.type_id.startswith("spectator"):
-            actor = Spectator(uid, carla_actor, parent, self.node)
+            actor = Spectator(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("walker"):
-            actor = Walker(uid, carla_actor, parent, self.node)
+            actor = Walker(uid, name, parent, self.node, carla_actor)
         else:
-            actor = Actor(uid, carla_actor, parent, self.node)
+            actor = Actor(uid, name, parent, self.node, carla_actor)
 
         return actor

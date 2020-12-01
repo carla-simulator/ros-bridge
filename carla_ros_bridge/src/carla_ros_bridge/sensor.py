@@ -29,9 +29,10 @@ class Sensor(Actor):
 
     def __init__(self,  # pylint: disable=too-many-arguments
                  uid,
-                 carla_actor,
+                 name,
                  parent,
                  node,
+                 carla_actor,
                  synchronous_mode,
                  is_event_sensor=False,  # only relevant in synchronous_mode:
                  # if a sensor only delivers data on special events,
@@ -43,24 +44,24 @@ class Sensor(Actor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        if prefix is None:
-            prefix = 'sensor'
         super(Sensor, self).__init__(uid=uid,
-                                     carla_actor=carla_actor,
+                                     name=name,
                                      parent=parent,
                                      node=node,
-                                     prefix=prefix)
+                                     carla_actor=carla_actor)
 
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()

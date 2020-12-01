@@ -29,7 +29,7 @@ class OpenDriveSensor(PseudoActor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying the sensor
+        :param name: name identiying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -40,14 +40,13 @@ class OpenDriveSensor(PseudoActor):
         :param carla_map: carla map object
         :type carla_map: carla.Map
         """
-        super(OpenDriveSensor, self).__init__(uid,
+        super(OpenDriveSensor, self).__init__(uid=uid,
+                                              name=name,
                                               parent=parent,
-                                              node=node,
-                                              prefix='opendrive/' + name)
-
+                                              node=node)
         self.carla_map = carla_map
         self._map_published = False
-        self.map_publisher = rospy.Publisher(self.get_topic_prefix() + "/map",
+        self.map_publisher = rospy.Publisher(self.get_topic_prefix(),
                                              String,
                                              queue_size=10,
                                              latch=True)

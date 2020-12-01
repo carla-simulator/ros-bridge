@@ -29,7 +29,7 @@ class ObjectSensor(PseudoActor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying the sensor
+        :param name: name identiying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -41,13 +41,12 @@ class ObjectSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(ObjectSensor, self).__init__(uid,
+        super(ObjectSensor, self).__init__(uid=uid,
+                                           name=name,
                                            parent=parent,
-                                           node=node,
-                                           prefix='objects/' + name)
+                                           node=node)
         self.actor_list = actor_list
-        self.object_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                "/objects",
+        self.object_publisher = rospy.Publisher(self.get_topic_prefix(),
                                                 ObjectArray,
                                                 queue_size=10)
 

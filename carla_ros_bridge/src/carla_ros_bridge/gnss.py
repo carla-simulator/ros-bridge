@@ -23,29 +23,31 @@ class Gnss(Sensor):
     Actor implementation details for gnss sensor
     """
 
-    def __init__(self, uid, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, name, parent, node, carla_actor, synchronous_mode):
         """
         Constructor
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
         super(Gnss, self).__init__(uid=uid,
-                                   carla_actor=carla_actor,
+                                   name=name,
                                    parent=parent,
                                    node=node,
-                                   synchronous_mode=synchronous_mode,
-                                   prefix="gnss/" + carla_actor.attributes.get('role_name'))
+                                   carla_actor=carla_actor,
+                                   synchronous_mode=synchronous_mode)
 
-        self.gnss_publisher = rospy.Publisher(self.get_topic_prefix() + '/fix',
+        self.gnss_publisher = rospy.Publisher(self.get_topic_prefix(),
                                               NavSatFix,
                                               queue_size=10)
         self.listen()

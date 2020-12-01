@@ -53,6 +53,26 @@
             "upper_fov": 2.0,
             "lower_fov": -26.8,
             "rotation_frequency": 20
+        },
+        {
+            "type": "sensor.pseudo.traffic_lights",
+            "id": "traffic_lights"
+        },
+        {
+            "type": "sensor.pseudo.actor_list",
+            "id": "actor_list"
+        },
+        {
+            "type": "sensor.pseudo.markers",
+            "id": "markers"
+        },
+        {
+            "type": "sensor.pseudo.objects",
+            "id": "objects"
+        },
+        {
+            "type": "sensor.pseudo.opendrive_map",
+            "id": "map"
         }
     ]
 }

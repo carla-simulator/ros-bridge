@@ -28,7 +28,7 @@ class OdometrySensor(PseudoActor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying the sensor
+        :param name: name identiying this object
         :type name: string
         :param carla_world: carla world object
         :type carla_world: carla.World
@@ -38,13 +38,12 @@ class OdometrySensor(PseudoActor):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
 
-        super(OdometrySensor, self).__init__(uid,
+        super(OdometrySensor, self).__init__(uid=uid,
+                                             name=name,
                                              parent=parent,
-                                             node=node,
-                                             prefix='odometry/' + name)
+                                             node=node)
 
-        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                  "/odometry",
+        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix(),
                                                   Odometry,
                                                   queue_size=10)
 
