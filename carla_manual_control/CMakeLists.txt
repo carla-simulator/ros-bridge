@@ -9,7 +9,6 @@ if(CATKIN_ENABLE_TESTING)
   roslaunch_add_file_check(launch)
 endif()
 
-
 catkin_package(CATKIN_DEPENDS rospy)
 
 catkin_install_python(PROGRAMS src/carla_manual_control/carla_manual_control.py
