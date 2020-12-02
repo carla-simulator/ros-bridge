@@ -38,6 +38,13 @@
     <arg name="spawn_point" value="$(arg spawn_point)"/>
   </include>
 
+  <include file="$(find carla_infrastructure)/launch/carla_infrastructure.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name='timeout' value='$(arg timeout)'/>
+    <arg name="infrastructure_sensor_definition_file" default="$(find carla_infrastructure)/config/sensors.json"/>
+  </include>
+
   <include file="$(find carla_manual_control)/launch/carla_manual_control.launch">
     <arg name='role_name' value='$(arg role_name)'/>
   </include>

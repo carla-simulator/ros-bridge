@@ -45,6 +45,14 @@
     <arg name='role_name' value='$(arg role_name)'/>
   </include>
 
+  <!-- infrastructure sensors -->
+  <include file="$(find carla_infrastructure)/launch/carla_infrastructure.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name='timeout' value='$(arg timeout)'/>
+    <arg name="infrastructure_sensor_definition_file" default="$(find carla_infrastructure)/config/sensors.json"/>
+  </include>
+
   <!-- Provide a route and access to the CARLA waypoint API (required by carla_ad_agent) -->
   <include file="$(find carla_waypoint_publisher)/launch/carla_waypoint_publisher.launch">
     <arg name='host' value='$(arg host)'/>

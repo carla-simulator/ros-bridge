@@ -47,8 +47,7 @@ class BasicAgent(Agent):
             self._vehicle_id_list = []
             self._lights_id_list = []
             self._actors_subscriber = rospy.Subscriber(
-                "/carla/{}/actor_list".format(role_name), CarlaActorList,
-                self.actors_updated)
+                "/carla/actor_list", CarlaActorList, self.actors_updated)
             self._objects = []
             self._objects_subscriber = rospy.Subscriber(
                 "/carla/{}/objects".format(role_name), ObjectArray,

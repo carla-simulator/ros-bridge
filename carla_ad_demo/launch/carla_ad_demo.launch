@@ -47,6 +47,14 @@
     <arg name="spawn_point" value="$(arg spawn_point)"/>
   </include>
 
+  <!-- infrastructure sensors -->
+  <include file="$(find carla_infrastructure)/launch/carla_infrastructure.launch">
+    <arg name='host' value='$(arg host)'/>
+    <arg name='port' value='$(arg port)'/>
+    <arg name='timeout' value='$(arg timeout)'/>
+    <arg name="infrastructure_sensor_definition_file" default="$(find carla_infrastructure)/config/sensors.json"/>
+  </include>
+
   <!-- The agent to control the ego vehicle -->
   <include file="$(find carla_ad_agent)/launch/carla_ad_agent.launch">
     <arg name="target_speed" value="$(arg target_speed)" />
