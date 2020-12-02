@@ -1,0 +1,38 @@
+Source: carla-ros-bridge
+Section: misc
+Priority: optional
+Maintainer: Carla Simulator Team <carla.simulator@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 4.1.2
+Homepage: https://github.com/carla-simulator/ros-bridge
+
+Package: carla-ros-bridge
+Architecture: amd64
+Depends: ros-{ROS_DIST}-roslaunch,
+	ros-{ROS_DIST}-catkin,
+	ros-{ROS_DIST}-rospy,
+	ros-{ROS_DIST}-nav-msgs,
+	ros-{ROS_DIST}-ackermann-msgs,
+	ros-{ROS_DIST}-std-msgs,
+	ros-{ROS_DIST}-dynamic-reconfigure,
+	ros-{ROS_DIST}-topic-tools,
+	ros-{ROS_DIST}-sensor-msgs,
+	ros-{ROS_DIST}-message-runtime,
+	ros-{ROS_DIST}-geometry-msgs,
+	ros-{ROS_DIST}-message-generation,
+	ros-{ROS_DIST}-visualization-msgs,
+	ros-{ROS_DIST}-tf,
+	ros-{ROS_DIST}-tf2,
+	ros-{ROS_DIST}-rviz,
+	ros-{ROS_DIST}-cv-bridge,
+	ros-{ROS_DIST}-rosbag-storage,
+	ros-{ROS_DIST}-derived-object-msgs,
+	ros-{ROS_DIST}-shape-msgs,
+	ros-{ROS_DIST}-tf2-msgs,
+	ros-{ROS_DIST}-rosgraph-msgs,
+	ros-{ROS_DIST}-roscpp,
+	ros-{ROS_DIST}-pcl-conversions,
+	ros-{ROS_DIST}-pcl-ros,
+	ros-{ROS_DIST}-rostopic,
+	ros-{ROS_DIST}-rqt-gui-py
+Description: The carla_ros_bridge package aims at providing a simple ROS bridge for CARLA simulator.

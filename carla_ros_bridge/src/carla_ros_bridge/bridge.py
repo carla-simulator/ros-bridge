@@ -80,7 +80,7 @@ class CarlaRosBridge(CompatibleNode):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.9"
+    CARLA_VERSION = "0.9.10"
 
     def __init__(self, rospy_init=True, executor=None):
         """
@@ -619,14 +619,17 @@ def main():
 
         # check carla version
         dist = pkg_resources.get_distribution("carla")
-        if LooseVersion(dist.version) < LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            raise RuntimeError("CARLA Server version {} required. Found: {}".format(
-                CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
+        if LooseVersion(dist.version) != LooseVersion(CarlaRosBridge.CARLA_VERSION):
+            carla_bridge.logfatal("CARLA python module version {} required. Found: {}".format(
+                CarlaRosBridge.CARLA_VERSION, dist.version))
+            sys.exit(1)
 
-        if LooseVersion(carla_client.get_server_version()) < \
-                LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            raise RuntimeError("CARLA Server version {} required. Found: {}".format(
-                CarlaRosBridge.CARLA_VERSION, carla_client.get_server_version()))
+        if LooseVersion(carla_client.get_server_version()) != \
+           LooseVersion(carla_client.get_client_version()):
+            carla_bridge.logwarn(
+                "Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API. Client API version: {}. Simulator API version: {}"
+                .format(carla_client.get_client_version(),
+                        carla_client.get_server_version()))
 
         carla_world = carla_client.get_world()
 

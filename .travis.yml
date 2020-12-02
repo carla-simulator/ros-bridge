@@ -6,11 +6,7 @@
 #
 
 os: linux
-
-stages:
-  - check
-  - test
-  - docker
+services: docker
 
 cache:
   - apt
@@ -22,28 +18,14 @@ addons:
 
 jobs:
   include:
-    - name: "Check code formatting"
-      stage: check
-      before_install: skip
-      install: pip install --user -r requirements.txt
-      script:
-        - make check_format
-    - name: "Xenial Kinetic"
-      stage: test
-      dist: xenial
-      env:
-        - ROS_DISTRO=kinetic
-        - PYTHON_SUFFIX=""
-    - name: "Bionic Melodic"
-      dist: bionic
+    - name: "Docker Melodic"
       env:
         - ROS_DISTRO=melodic
-        - PYTHON_SUFFIX=""
-    - name: "Focal Noetic"
-      dist: focal
+        - PYTHON_SUFFIX="2.7"
+    - name: "Docker Noetic"
       env:
         - ROS_DISTRO=noetic
-        - PYTHON_SUFFIX=3
+        - PYTHON_SUFFIX="3.7"
       addons:
         apt:
           packages:
@@ -92,14 +74,7 @@ install:
   - rosdep update
   - rosdep install --from-paths src --ignore-src -r
 
-script:
-  - catkin build
-  - export SCENARIO_RUNNER_PATH=""  # the env var needs to be set for testing
-  - if [ ! $ROS_DISTRO -eq kinetic ]; then catkin test; fi;
-  - catkin config --install
-  - source devel/setup.bash
-  - cd src/ros-bridge
-  - if [ ! $ROS_DISTRO -eq noetic ]; then make pylint; fi;
+script: cd docker && ./build.sh --build-arg ROS_VERSION=$ROS_DISTRO --build-arg PYTHON_VERSION=$PYTHON_SUFFIX
 
 after_failure:
   - tail --lines=2000 build.log

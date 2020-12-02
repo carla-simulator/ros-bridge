@@ -321,4 +321,5 @@ def carla_location_to_pose(carla_location):
     """
     ros_pose = Pose()
     ros_pose.position = carla_location_to_ros_point(carla_location)
+    ros_pose.orientation.w = 1.0
     return ros_pose
