@@ -74,7 +74,7 @@ class CarlaEgoVehicle(object):
             pose = Pose()
             pose.position.x = float(spawn_point[0])
             pose.position.y = float(spawn_point[1])
-            pose.position.z = float(spawn_point[2]) + 2
+            pose.position.z = float(spawn_point[2])
             quat = quaternion_from_euler(
                 math.radians(float(spawn_point[3])),
                 math.radians(float(spawn_point[4])),

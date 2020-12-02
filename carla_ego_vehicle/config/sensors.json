@@ -205,10 +205,6 @@
             "id": "objects"
         },
         {
-            "type": "actor.pseudo.control",
-            "id": "control"
-        },
-        {
             "type": "sensor.pseudo.odom",
             "id": "odometry"
         },
@@ -217,8 +213,24 @@
             "id": "speedometer"
         },
         {
+            "type": "actor.pseudo.control",
+            "id": "control"
+        },
+        {
+            "type": "sensor.pseudo.traffic_lights",
+            "id": "traffic_lights"
+        },
+        {
+            "type": "sensor.pseudo.actor_list",
+            "id": "actor_list"
+        },
+        {
             "type": "sensor.pseudo.markers",
             "id": "markers"
+        },
+        {
+            "type": "sensor.pseudo.opendrive_map",
+            "id": "map"
         }
     ]
 }
