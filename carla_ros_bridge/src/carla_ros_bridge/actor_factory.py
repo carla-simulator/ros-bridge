@@ -116,7 +116,7 @@ class ActorFactory(object):
         if parent is not None:
             parent_id = parent.uid
 
-        name = carla_actor.attributes.get("rolename", "")
+        name = carla_actor.attributes.get("role_name", "")
         if not name:
             name  = str(carla_actor.id)
         return self.create(carla_actor.type_id, name, parent_id, carla_actor)

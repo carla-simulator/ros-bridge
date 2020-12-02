@@ -252,19 +252,19 @@ The tf data for the ego vehicle is published when this pseudo sensor is spawned.
 
 | Topic                        | Type                                                                                                     | Description                                      |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `/carla/<PARENT ROLE NAME>/<SENSOR ROLE NAME>` | [std_msgs.Float32](http://docs.ros.org/en/api/std_msgs/html/msg/Float32.html) | speed of the parent actor |
+| `/carla/<PARENT ROLE NAME>/<SENSOR ROLE NAME>` | [std_msgs.Float32](http://docs.ros.org/en/api/std_msgs/html/msg/Float32.html) | speed of the parent actor. Units: m/s |
 
 ##### Map Sensor
 
 | Topic                        | Type                                                                                                     | Description                                      |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>` | [std_msgs.String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html) | OpenDRIVE map content |
+| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>` | [std_msgs.String](http://docs.ros.org/en/api/std_msgs/html/msg/String.html) | provides the OpenDRIVE map as a string on a latched topic. |
 
 ##### Object Sensor
 
 | Topic                        | Type                                                                                                     | Description                                      |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | all vehicles and walkers, except the parent actor if any |
+| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | publishes all vehicles and walker. If attached to a parent, the parent is not contained. |
 
 ##### Marker Sensor
 
@@ -351,6 +351,13 @@ You can find further documentation [here](carla_ackermann_control/README.md).
 | ------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
 | `/carla/status`     | [carla_msgs.CarlaStatus](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaStatus.msg)       |                                                        |
 | `/carla/world_info` | [carla_msgs.CarlaWorldInfo](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWorldInfo.msg) | Info about the CARLA world/level (e.g. OPEN Drive map) |
+
+#### Walker
+
+| Topic                                                | Type                                                                         | Description        |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
+| `/carla/<ID>/walker_control_cmd` (subscriber) | [carla_msgs.CarlaWalkerControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaWalkerControl.msg)       | Control a walker   |
+
 
 ### Debug Marker
 
