@@ -192,7 +192,7 @@ class CarlaSpawnActors(object):
                     player = self.world.get_actor(response.id)
                     players.append(player)
 
-                    if vehicle["id"] == "ego_vehicle":
+                    if vehicle["id"] == self.role_name:
                         self.ego_player = player
 
                     # Set up the sensors
