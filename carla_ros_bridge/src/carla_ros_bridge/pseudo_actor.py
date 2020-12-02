@@ -38,6 +38,15 @@ class PseudoActor(object):
         self.parent = parent
         self.node = node
 
+        if self.uid is None:
+            raise TypeError("Actor ID is not set")
+        
+        if self.uid > np.iinfo(np.uint32).max:
+            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
+
+        self.parent = parent
+        self.node = node
+
         if self.uid > np.iinfo(np.uint32).max:
             raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
 
