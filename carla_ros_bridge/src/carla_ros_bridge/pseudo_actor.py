@@ -34,8 +34,9 @@ class PseudoActor(object):
         :type node: carla_ros_bridge.CarlaRosBridge
         """
         self.uid = uid
-        if self.uid > np.iinfo(np.uint32).max:
-            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
+        if self.uid is not None:
+            if self.uid > np.iinfo(np.uint32).max:
+                raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
 
         self.parent = parent
         if self.parent:
