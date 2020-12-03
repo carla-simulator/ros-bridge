@@ -85,7 +85,7 @@ class CarlaRosBridge(object):
         self.actor_factory = ActorFactory(self, carla_world, self.carla_settings.synchronous_mode)
 
         # add world info
-        self.world_info = WorldInfo(carla_world=self.carla_world, node=self)
+        self.world_info = WorldInfo(carla_world=self.carla_world)
         # add debug helper
         self.debug_helper = DebugHelper(carla_world.debug)
 

@@ -13,35 +13,27 @@ Class to handle the carla map
 import rospy
 
 from carla_msgs.msg import CarlaWorldInfo
-from carla_ros_bridge.pseudo_actor import PseudoActor
 
 
-class WorldInfo(PseudoActor):
+class WorldInfo(object):
 
     """
     Publish the map
     """
 
-    def __init__(self, carla_world, node):
+    def __init__(self, carla_world):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
-        :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
         """
-
-        super(WorldInfo, self).__init__(uid=None,
-                                        name="world_info",
-                                        parent=None,
-                                        node=node)
 
         self.carla_map = carla_world.get_map()
 
         self.map_published = False
 
-        self.world_info_publisher = rospy.Publisher(self.get_topic_prefix(),
+        self.world_info_publisher = rospy.Publisher("/carla/world_info",
                                                     CarlaWorldInfo,
                                                     queue_size=10,
                                                     latch=True)
@@ -58,14 +50,6 @@ class WorldInfo(PseudoActor):
         rospy.logdebug("Destroying WorldInfo()")
         self.carla_map = None
         super(WorldInfo, self).destroy()
-
-    @staticmethod
-    def get_blueprint_name():
-        """
-        Get the blueprint identifier for the pseudo sensor
-        :return: name
-        """
-        return "sensor.pseudo.world_info"
 
     def update(self, frame, timestamp):
         """
