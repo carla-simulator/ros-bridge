@@ -14,11 +14,11 @@ import os
 from abc import abstractmethod
 import numpy
 from cv_bridge import CvBridge  # pylint: disable=import-error
-from sensor_msgs.msg import CameraInfo, Image  # pylint: disable=import-error
+from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField  # pylint: disable=import-error
 
 import carla
 import carla_common.transforms as trans
-from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.sensor import Sensor, create_cloud
 
 from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 
@@ -370,7 +370,8 @@ class DVSCamera(Camera):
     Sensor implementation details for dvs cameras
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None):  # pylint: disable=too-many-arguments
+    def __init__(self, carla_actor, parent, node, synchronous_mode, prefix=None,
+                 sensor_name="DVSCamera"):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -387,58 +388,57 @@ class DVSCamera(Camera):
                                         parent=parent,
                                         node=node,
                                         synchronous_mode=synchronous_mode,
-                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
+                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'),
+                                        sensor_name=sensor_name)
 
         self._dvs_events = None
         self.dvs_camera_publisher = node.new_publisher(
             PointCloud2,
             self.get_topic_prefix() + '/events')
 
-        self.listen()
-
-    # pylint: disable=arguments-differ
-    def sensor_data_updated(self, carla_dvs_event_array):
+    def sensor_data_updated(self, carla_image):
         """
         Function to transform the received DVS event array into a ROS message
 
-        :param carla_dvs_event_array: dvs event array object
+        :param carla_image: dvs event array object
         :type carla_image: carla.DVSEventArray
         """
-        super(DVSCamera, self).sensor_data_updated(carla_dvs_event_array)
+        super(DVSCamera, self).sensor_data_updated(carla_image)
 
-        header = self.get_msg_header(timestamp=carla_dvs_event_array.timestamp)
+        header = self.get_msg_header(timestamp=carla_image.timestamp)
+        
         fields = [
-            PointField('x', 0, PointField.UINT16, 1),
-            PointField('y', 2, PointField.UINT16, 1),
-            PointField('t', 4, PointField.FLOAT64, 1),
-            PointField('pol', 12, PointField.INT8, 1),
+            PointField(name='x', offset=0, datatype=PointField.UINT16, count=1),
+            PointField(name='y', offset=2, datatype=PointField.UINT16, count=1),
+            PointField(name='t', offset=4, datatype=PointField.FLOAT64, count=1),
+            PointField(name='pol', offset=12, datatype=PointField.INT8, count=1)
         ]
 
         dvs_events_msg = create_cloud(header, fields, self._dvs_events.tolist())
         self.dvs_camera_publisher.publish(dvs_events_msg)
 
     # pylint: disable=arguments-differ
-    def get_carla_image_data_array(self, carla_dvs_event_array):
+    def get_carla_image_data_array(self, carla_image):
         """
         Function (override) to convert the carla dvs event array to a numpy data array
         as input for the cv_bridge.cv2_to_imgmsg() function
 
         The carla.DVSEventArray is converted into a 3-channel int8 color image format (bgr).
 
-        :param carla_dvs_event_array: dvs event array object
-        :type carla_dvs_event_array: carla.DVSEventArray
+        :param carla_image: dvs event array object
+        :type carla_image: carla.DVSEventArray
         :return tuple (numpy data array containing the image information, encoding)
         :rtype tuple(numpy.ndarray, string)
         """
-        self._dvs_events = numpy.frombuffer(carla_dvs_event_array.raw_data,
+        self._dvs_events = numpy.frombuffer(carla_image.raw_data,
                                             dtype=numpy.dtype([
                                                 ('x', numpy.uint16),
                                                 ('y', numpy.uint16),
-                                                ('t', numpy.int64),
-                                                ('pol', numpy.bool)
+                                                ('t', numpy.double),
+                                                ('pol', numpy.int8)
                                             ]))
         carla_image_data_array = numpy.zeros(
-            (carla_dvs_event_array.height, carla_dvs_event_array.width, 3),
+            (carla_image.height, carla_image.width, 3),
             dtype=numpy.uint8)
         # Blue is positive, red is negative
         carla_image_data_array[self._dvs_events[:]['y'], self._dvs_events[:]['x'],

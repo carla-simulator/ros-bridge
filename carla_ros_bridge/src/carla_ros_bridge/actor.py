@@ -155,7 +155,6 @@ class Actor(PseudoActor):
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()
-        marker.text = "id = {}".format(marker.id)
         return marker
 
     def publish_marker(self):

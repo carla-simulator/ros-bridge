@@ -108,7 +108,7 @@ class CarlaEgoVehicle(CompatibleNode):
             CarlaWorldInfo,
             '/carla/world_info',
             self.run,
-            QoSProfile(depth=1, durability=False)
+            QoSProfile(depth=1, durability=True)
         )
 
     # pylint: disable=inconsistent-return-statements
