@@ -21,6 +21,8 @@ from threading import Thread, Lock, Event
 import pkg_resources
 import rospy
 
+import random
+
 from rosgraph_msgs.msg import Clock
 from tf2_msgs.msg import TFMessage
 
@@ -39,6 +41,9 @@ from carla_ros_bridge.ego_vehicle import EgoVehicle
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
 
+
+# to generate a random spawning position or vehicles
+secure_random = random.SystemRandom()
 
 class CarlaRosBridge(object):
 
@@ -140,8 +145,13 @@ class CarlaRosBridge(object):
         blueprint.set_attribute('role_name', req.id)
         for attribute in req.attributes:
             blueprint.set_attribute(attribute.key, attribute.value)
-
-        transform = trans.ros_pose_to_carla_transform(req.transform)
+        if req.random_pose is False:
+            transform = trans.ros_pose_to_carla_transform(req.transform)
+        else:
+            # get a random pose
+            spawn_points = self.carla_world.get_map().get_spawn_points()
+            transform = secure_random.choice(
+                spawn_points) if spawn_points else carla.Transform()
 
         attach_to = None
         if req.attach_to != 0:
