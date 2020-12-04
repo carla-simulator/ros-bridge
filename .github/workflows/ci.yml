@@ -54,8 +54,7 @@ jobs:
         catkin run_tests --no-status --force-color && catkin_test_results
         source devel/setup.bash
         cd $GITHUB_WORKSPACE
-      #  make pylint
-      # TODO enable pylint
+        if [ "${{ matrix.ros-version }}" = "melodic" ] ; then make pylint ; fi
 
   debian:
     runs-on: ubuntu-latest
