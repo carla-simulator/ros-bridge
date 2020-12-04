@@ -202,6 +202,7 @@ class RgbCamera(Camera):
 
         self.listen()
 
+    # pylint: disable=arguments-differ
     def get_carla_image_data_array(self, carla_image):
         """
         Function (override) to convert the carla image to a numpy data array
@@ -259,6 +260,7 @@ class DepthCamera(Camera):
 
         self.listen()
 
+    # pylint: disable=arguments-differ
     def get_carla_image_data_array(self, carla_image):
         """
         Function (override) to convert the carla image to a numpy data array
@@ -339,6 +341,7 @@ class SemanticSegmentationCamera(Camera):
 
         self.listen()
 
+    # pylint: disable=arguments-differ
     def get_carla_image_data_array(self, carla_image):
         """
         Function (override) to convert the carla image to a numpy data array
@@ -388,11 +391,13 @@ class DVSCamera(Camera):
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
         """
-        super(DVSCamera, self).__init__(carla_actor=carla_actor,
-                                        parent=parent,
-                                        node=node,
-                                        synchronous_mode=synchronous_mode,
-                                        prefix='camera/dvs/' + carla_actor.attributes.get('role_name'))
+        super(DVSCamera, self).__init__(
+            carla_actor=carla_actor,
+            parent=parent,
+            node=node,
+            synchronous_mode=synchronous_mode,
+            prefix="camera/dvs/" + carla_actor.attributes.get("role_name"),
+        )
 
         self._dvs_events = None
         self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +

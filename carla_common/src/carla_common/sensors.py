@@ -10,8 +10,8 @@
 Tool functions for carla sensors
 """
 
-import carla
 import rospy
+import carla
 
 
 def create_carla_sensor_transform_from_spec(sensor_spec):

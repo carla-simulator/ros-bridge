@@ -80,6 +80,7 @@ class CarlaRosBridge(object):
         self.carla_world = carla_world
 
         self.synchronous_mode_update_thread = None
+        self.ros_timestamp = None
         self.shutdown = Event()
         # set carla world settings
         self.carla_settings = carla_world.get_settings()
@@ -568,7 +569,7 @@ class CarlaRosBridge(object):
         try:
             self.tf_publisher.publish(tf_msg)
         except Exception as error:  # pylint: disable=broad-except
-            self.logwarn("Failed to publish message: {}".format(error))
+            rospy.logwarn("Failed to publish message: {}".format(error))
 
 
 def main():

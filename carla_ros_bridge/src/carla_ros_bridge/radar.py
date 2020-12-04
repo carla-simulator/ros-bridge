@@ -67,11 +67,21 @@ class Radar(Sensor):
                   PointField('ElevationAngle', 28, PointField.FLOAT32, 1)]
         points = []
         for detection in carla_radar_measurement:
-            points.append([detection.depth * np.cos(-detection.azimuth) * np.cos(detection.altitude),
-                           detection.depth * np.sin(-detection.azimuth) *
-                           np.cos(detection.altitude),
-                           detection.depth * np.sin(detection.altitude),
-                           detection.depth, detection.velocity, detection.azimuth, detection.altitude])
+            points.append(
+                [
+                    detection.depth
+                    * np.cos(-detection.azimuth)
+                    * np.cos(detection.altitude),
+                    detection.depth
+                    * np.sin(-detection.azimuth)
+                    * np.cos(detection.altitude),
+                    detection.depth * np.sin(detection.altitude),
+                    detection.depth,
+                    detection.velocity,
+                    detection.azimuth,
+                    detection.altitude,
+                ]
+            )
         radar_msg = create_cloud(self.get_msg_header(
             timestamp=carla_radar_measurement.timestamp), fields, points)
         self.radar_publisher.publish(radar_msg)
