@@ -1,4 +1,4 @@
-file_finder = find . -type f $(1) -not \( -path './venv/*' -o -path './carla_msgs/*' \)
+file_finder = find . -type f $(1) -not \( -path './venv/*' -o -path './carla_msgs/*' -o -path './packaging/build/*' \)
 
 CMAKE_FILES = $(call file_finder,-name "*.cmake" -o -name "CMakeLists.txt")
 PY_FILES = $(call file_finder,-name "*.py")
