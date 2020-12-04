@@ -7,14 +7,12 @@
 """
 base class for spawning actors in ROS
 
-Two modes are available:
-- spawn at random Carla Spawnpoint
-- spawn at the pose read from ROS topic /initialpose
+Gets config file from ros parameter ~actors_definition_file and spawns corresponding actors
+through ROS service /carla/spawn_object.
 
-Whenever a pose is received via /initialpose, the vehicle gets respawned at that
-position. If no /initialpose is set at startup, a random spawnpoint is used.
+Looks for an initial spawn point first in the launchfile, then in the config file, and 
+finally ask for a random one to the spawn service.
 
-/initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
 
 from abc import abstractmethod
@@ -27,7 +25,7 @@ import rospy
 from tf.transformations import quaternion_from_euler
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
-from carla_msgs.msg import CarlaWorldInfo
+from carla_msgs.msg import CarlaWorldInfo, CarlaActorList
 
 
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
@@ -47,19 +45,12 @@ class CarlaSpawnActors(object):
 
     def __init__(self):
         rospy.init_node('spawn_actors_node', anonymous=True)
-        self.host = rospy.get_param('carla/host', '127.0.0.1')
-        self.port = rospy.get_param('carla/port', 2000)
-        self.timeout = rospy.get_param('carla/timeout', 10)
         self.actors_definition_file = rospy.get_param('~actors_definition_file')
-        self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
-
-        self.spawn_point_param = rospy.get_param('~spawn_point', None)
+        self.spawn_sensors_only = rospy.get_param('~spawn_sensors_only', None)
 
         self.players = []
         self.vehicles_sensors = []
         self.global_sensors = []
-
-        rospy.loginfo('listening to server %s:%s', self.host, self.port)
         
         rospy.wait_for_service('/carla/spawn_object')
         self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
@@ -83,19 +74,36 @@ class CarlaSpawnActors(object):
 
         global_sensors = []
         vehicles = []
+        found_sensor_actor_list = False
+
         for actor in json_actors["actors"]:
             actor_type = actor["type"].split('.')[0]
-            if actor_type == "sensor":
+            if actor["type"] == "sensor.pseudo.actor_list" and self.spawn_sensors_only:
+                global_sensors.append(actor)
+                found_sensor_actor_list = True
+            elif actor_type == "sensor":
                 global_sensors.append(actor)
             elif actor_type == "vehicle" or actor_type == "walker":
                 vehicles.append(actor)
             else :
-                rospy.logwarn("Actor with type {} is not a vehicle nor a sensor, ignoring".format(actor["type"]))
-        
+                rospy.logwarn("Actor with type {} is not a vehicle, a walker or a sensor, ignoring".format(actor["type"]))
+        print(f'======={self.spawn_sensors_only}')
+        if self.spawn_sensors_only is True and found_sensor_actor_list is False:
+            raise Exception("Parameter 'spawn_sensors_only' enabled, " + 
+            "but 'sensor.pseudo.actor_list' is not instantiated, add it to your config file.")
+
         try:
             self.global_sensors = self.setup_sensors(global_sensors)
         except Exception as e:
             raise Exception("Setting up global sensors failed: {}".format(e))
+
+        if self.spawn_sensors_only is True:
+            # get vehicle id from topic /carla/actor_list for all vehicles listed in config file
+            actor_info_list = rospy.wait_for_message("/carla/actor_list", CarlaActorList)
+            for vehicle in vehicles:
+                for actor_info in actor_info_list.actors:
+                    if actor_info.type == vehicle["type"] and actor_info.rolename == vehicle["id"]:
+                        vehicle["carla_id"] = actor_info.id
         
         try:
             self.players = self.setup_vehicles(vehicles)
@@ -105,56 +113,74 @@ class CarlaSpawnActors(object):
     def setup_vehicles(self, vehicles):
         players = []
         for vehicle in vehicles:
-            spawn_object_request = SpawnObjectRequest()
-            spawn_object_request.type = vehicle["type"]
-            spawn_object_request.id = vehicle["id"]
-            spawn_object_request.attach_to = 0
-            spawn_object_request.random_pose = False
-
-            spawn_point = None
-
-            if (self.spawn_point_param is not None 
-                    and self.role_name == vehicle["id"]):
-                # try to use spawn_point from parameters 
-                # only for vehicle with id role_name
+            if self.spawn_sensors_only is True:
+                # spawn sensors of already spawned vehicles
                 try:
-                    spawn_point = self.check_spawn_point_param(self.spawn_point_param)
-                    rospy.loginfo("Spawn point from ros parameters")
-                except Exception as e:
-                    rospy.logerr("{}: Could not use spawn point from parameters, ".format(vehicle["id"])+ 
-                    "the spawn point from config file will be used. Error is: {}".format(e))
-
-            if "spawn_point" in vehicle and spawn_point is None:
-                # get spawn point from config file
-                try:
-                    spawn_point = self.create_spawn_point(
-                        vehicle["spawn_point"]["x"],
-                        vehicle["spawn_point"]["y"],
-                        vehicle["spawn_point"]["z"],
-                        vehicle["spawn_point"]["roll"],
-                        vehicle["spawn_point"]["pitch"],
-                        vehicle["spawn_point"]["yaw"]
-                    )
-                    rospy.loginfo("Spawn point from configuration file")
+                    carla_id = vehicle["carla_id"]
                 except KeyError as e:
-                    rospy.logerr("{}: Could not use the spawn point from config file, ".format(vehicle["id"]) +
-                    "the mandatory attribute {} is missing, a random spawn point will be used".format(e))
-                
-            if spawn_point is None :
-                # pose not specified, ask for a random one in the service call
-                rospy.loginfo("Spawn point selected at random")
-                spawn_point = Pose() # empty pose
-                spawn_object_request.random_pose = True
+                    rospy.logerr("Could not spawn sensors of vehicle {}, its carla ID is not known.".format(vehicle["id"]))
+                    break
+                # spawn the vehicle's sensors
+                try:
+                    self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], carla_id))
+                except Exception as e:
+                    raise Exception("Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
+            else:
+                spawn_object_request = SpawnObjectRequest()
+                spawn_object_request.type = vehicle["type"]
+                spawn_object_request.id = vehicle["id"]
+                spawn_object_request.attach_to = 0
+                spawn_object_request.random_pose = False
 
-            player_spawned = False
-            while not player_spawned:
-                spawn_object_request.transform = spawn_point
-                response = self.spawn_object_service(spawn_object_request)
-                if response.id != -1:
-                    player_spawned = True
-                    players.append(response.id)
-                    # Set up the sensors
-                    self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], response.id))
+                spawn_point = None
+
+                # check if there's a spawn_point corresponding to this vehicle
+                spawn_point_param = rospy.get_param("~spawn_point_" + vehicle["id"], None)
+                spawn_param_used = False
+                if (spawn_point_param is not None):
+                    # try to use spawn_point from parameters 
+                    try:
+                        spawn_point = self.check_spawn_point_param(spawn_point_param)
+                        rospy.loginfo("Spawn point from ros parameters")
+                        spawn_param_used = True
+                    except Exception as e:
+                        rospy.logerr("{}: Could not use spawn point from parameters, ".format(vehicle["id"])+ 
+                        "the spawn point from config file will be used. Error is: {}".format(e))
+
+                if "spawn_point" in vehicle and spawn_param_used is False:
+                    # get spawn point from config file
+                    try:
+                        spawn_point = self.create_spawn_point(
+                            vehicle["spawn_point"]["x"],
+                            vehicle["spawn_point"]["y"],
+                            vehicle["spawn_point"]["z"],
+                            vehicle["spawn_point"]["roll"],
+                            vehicle["spawn_point"]["pitch"],
+                            vehicle["spawn_point"]["yaw"]
+                        )
+                        rospy.loginfo("Spawn point from configuration file")
+                    except KeyError as e:
+                        rospy.logerr("{}: Could not use the spawn point from config file, ".format(vehicle["id"]) +
+                        "the mandatory attribute {} is missing, a random spawn point will be used".format(e))
+                    
+                if spawn_point is None :
+                    # pose not specified, ask for a random one in the service call
+                    rospy.loginfo("Spawn point selected at random")
+                    spawn_point = Pose() # empty pose
+                    spawn_object_request.random_pose = True
+
+                player_spawned = False
+                while not player_spawned:
+                    spawn_object_request.transform = spawn_point
+                    response = self.spawn_object_service(spawn_object_request)
+                    if response.id != -1:
+                        player_spawned = True
+                        players.append(response.id)
+                        # Set up the sensors
+                        try:
+                            self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], response.id))
+                        except KeyError:
+                            rospy.logwarn("Vehicle {} have no 'sensors' field in his config file, none will be spawned")
 
 
         return players
@@ -181,23 +207,28 @@ class CarlaSpawnActors(object):
                             sensor_spec['id']))
                 sensor_names.append(sensor_name)
 
-                if attached_vehicle_id == 0:
+                if attached_vehicle_id == 0 and sensor_type != "sensor.pseudo.actor_list":
+                    spawn_point = sensor_spec.pop("spawn_point")
                     sensor_transform = self.create_spawn_point(
-                            sensor_spec.pop("x"),
-                            sensor_spec.pop("y"),
-                            sensor_spec.pop("z"),
-                            sensor_spec.pop("roll", 0.0),
-                            sensor_spec.pop("pitch", 0.0),
-                            sensor_spec.pop("yaw", 0.0))
+                            spawn_point.pop("x"),
+                            spawn_point.pop("y"),
+                            spawn_point.pop("z"),
+                            spawn_point.pop("roll", 0.0),
+                            spawn_point.pop("pitch", 0.0),
+                            spawn_point.pop("yaw", 0.0))
                 else:
-                    # if sensor attached to a vehicle, allow default pose
-                    sensor_transform = self.create_spawn_point(
-                            sensor_spec.pop("x", 0.0),
-                            sensor_spec.pop("y", 0.0),
-                            sensor_spec.pop("z", 0.0),
-                            sensor_spec.pop("roll", 0.0),
-                            sensor_spec.pop("pitch", 0.0),
-                            sensor_spec.pop("yaw", 0.0))
+                    # if sensor attached to a vehicle, or is a 'sensor.pseudo.actor_list', allow default pose
+                    spawn_point = sensor_spec.pop("spawn_point", 0)
+                    if spawn_point == 0:
+                        sensor_transform = self.create_spawn_point(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+                    else:
+                        sensor_transform = self.create_spawn_point(
+                                spawn_point.pop("x", 0.0),
+                                spawn_point.pop("y", 0.0),
+                                spawn_point.pop("z", 0.0),
+                                spawn_point.pop("roll", 0.0),
+                                spawn_point.pop("pitch", 0.0),
+                                spawn_point.pop("yaw", 0.0))
 
                 spawn_object_request = SpawnObjectRequest()
                 spawn_object_request.type = sensor_type
@@ -303,7 +334,7 @@ class CarlaSpawnActors(object):
             rospy.logerr("Timeout while waiting for world info!")
             sys.exit(1)
 
-        rospy.loginfo("CARLA world available. Spawn ego vehicle...")
+        rospy.loginfo("World info is available. Spawning acotrs...")
         rospy.on_shutdown(self.destroy)
         self.spawn_actors()
         try:

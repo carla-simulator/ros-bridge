@@ -1,19 +1,16 @@
 <!-- -->
 <launch>
-  <arg name='host' default='localhost'/>
-  <arg name='port' default='2000'/>
-  <arg name='timeout' default='10'/>
-  <arg name="actors_definition_file"/>
-  <arg name="role_name" default="ego_vehicle"/>
-  <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
-  <arg name="spawn_point" default="392.5,-87.0,0.3,0.0,0.0,90.0"/>
+  <arg name="node_suffix"/>
+  <arg name="actors_definition_file" default='$(find carla_spawn_actors)/config/actors.json'/>
+  <!-- use comma separated format "x,y,z,roll,pitch,yaw", 
+    and parameter name spawn_point_<vehicle_name>. You can add
+    as many spawn_point as vehicles defined in actors_definition_file-->
+  <arg name="spawn_point_ego_vehicle"/>
+  <arg name="spawn_sensors_only" default="false"/>
 
-  <node pkg="carla_spawn_actors" type="carla_spawn_actors.py" name="carla_spawn_actors_$(arg role_name)" output="screen">
-    <param name="carla/host" value="$(arg host)" />
-    <param name="carla/port" value="$(arg port)" />
-    <param name="carla/timeout" value="$(arg timeout)" />
+  <node pkg="carla_spawn_actors" type="carla_spawn_actors.py" name="carla_spawn_actors_$(arg node_suffix)" output="screen">
     <param name="actors_definition_file" value="$(arg actors_definition_file)" />
-    <param name="role_name" value="$(arg role_name)" />
-    <param name="spawn_point" value="$(arg spawn_point)" />
+    <param name="spawn_point_ego_vehicle" value="$(arg spawn_point_ego_vehicle)" />
+    <param name="spawn_sensors_only" value="$(arg spawn_sensors_only)" />
   </node>
 </launch>
