@@ -70,6 +70,10 @@ class Sensor(Actor):
             self.sensor_tick_time = None
 
     def listen(self):
+        """
+        Register callback for sensor data
+        :return:
+        """
         self.carla_actor.listen(self._callback_sensor_data)
 
     def destroy(self):

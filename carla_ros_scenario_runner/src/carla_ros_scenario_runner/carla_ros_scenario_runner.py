@@ -10,6 +10,7 @@ Execute scenarios via ros service
 
 Internally, the CARLA scenario runner is executed
 """
+from __future__ import print_function
 import sys
 import os
 try:

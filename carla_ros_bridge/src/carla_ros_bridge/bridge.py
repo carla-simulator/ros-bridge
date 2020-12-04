@@ -42,7 +42,13 @@ from carla_ros_bridge.imu import ImuSensor
 from carla_ros_bridge.ego_vehicle import EgoVehicle
 from carla_ros_bridge.collision_sensor import CollisionSensor
 from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
+from carla_ros_bridge.camera import (
+    Camera,
+    RgbCamera,
+    DepthCamera,
+    SemanticSegmentationCamera,
+    DVSCamera,
+)
 from carla_ros_bridge.object_sensor import ObjectSensor
 from carla_ros_bridge.rss_sensor import RssSensor
 from carla_ros_bridge.walker import Walker
@@ -594,7 +600,8 @@ def main():
         if LooseVersion(carla_client.get_server_version()) != \
            LooseVersion(carla_client.get_client_version()):
             rospy.logwarn(
-                "Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API. Client API version: {}. Simulator API version: {}"
+                "Version mismatch detected: You are trying to connect to a simulator that might \
+                be incompatible with this API. Client API version: {}. Simulator API version: {}"
                 .format(carla_client.get_client_version(),
                         carla_client.get_server_version()))
 

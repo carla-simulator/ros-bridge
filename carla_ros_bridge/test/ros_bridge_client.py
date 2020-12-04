@@ -29,7 +29,7 @@ PKG = 'test_roslaunch'
 TIMEOUT = 20
 
 
-class TestClock(unittest.TestCase):
+class TestClock(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
     """
     Handles testing of the all nodes
