@@ -5,7 +5,9 @@ find_package(catkin REQUIRED COMPONENTS rospy roslaunch geometry_msgs)
 
 catkin_python_setup()
 
-roslaunch_add_file_check(launch)
+if(CATKIN_ENABLE_TESTING)
+  roslaunch_add_file_check(launch)
+endif()
 
 catkin_package(CATKIN_DEPENDS rospy)
 
