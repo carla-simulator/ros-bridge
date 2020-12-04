@@ -52,7 +52,21 @@ jobs:
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         catkin build --summarize --no-status --force-color
         catkin run_tests --no-status --force-color && catkin_test_results
-        catkin config --install && source devel/setup.bash
+        source devel/setup.bash
         cd $GITHUB_WORKSPACE
       #  make pylint
       # TODO enable pylint
+
+  debian:
+    runs-on: ubuntu-latest
+    container: ros:${{ matrix.ros-version }}-robot
+    strategy:
+      matrix:
+        ros-version: [melodic, noetic]
+    env:
+      SCENARIO_RUNNER_PATH: ""
+      DEBIAN_FRONTEND: "noninteractive"
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Debian Package
+      run: packaging/build-deb.sh
