@@ -118,7 +118,7 @@ class ActorFactory(object):
 
         name = carla_actor.attributes.get("role_name", "")
         if not name:
-            name  = str(carla_actor.id)
+            name = str(carla_actor.id)
         return self.create(carla_actor.type_id, name, parent_id, carla_actor)
 
     def create(self, type_id, name, attach_to, carla_actor=None):
@@ -263,7 +263,8 @@ class ActorFactory(object):
             elif carla_actor.type_id.startswith("sensor.other.rss"):
                 actor = RssSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
             elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-                actor = LaneInvasionSensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
+                actor = LaneInvasionSensor(uid, name, parent, self.node,
+                                           carla_actor, self.sync_mode)
             else:
                 actor = Sensor(uid, name, parent, self.node, carla_actor, self.sync_mode)
         elif carla_actor.type_id.startswith("spectator"):

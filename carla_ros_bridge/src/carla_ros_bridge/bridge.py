@@ -45,6 +45,7 @@ from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, Dest
 # to generate a random spawning position or vehicles
 secure_random = random.SystemRandom()
 
+
 class CarlaRosBridge(object):
 
     """
