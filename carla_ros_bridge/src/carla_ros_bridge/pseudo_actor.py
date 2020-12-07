@@ -40,7 +40,7 @@ class PseudoActor(object):
 
         if self.uid is None:
             raise TypeError("Actor ID is not set")
-        
+
         if self.uid > np.iinfo(np.uint32).max:
             raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
 

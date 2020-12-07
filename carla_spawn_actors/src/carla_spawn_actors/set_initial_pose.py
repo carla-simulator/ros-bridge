@@ -20,6 +20,7 @@ position.
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 
+
 class SetInitialPose(object):
 
     def __init__(self):
@@ -33,14 +34,12 @@ class SetInitialPose(object):
 
         self.initial_pose_subscriber = rospy.Subscriber(
             "/initialpose", PoseWithCovarianceStamped, self.intial_pose_callback)
-        
 
     def intial_pose_callback(self, initial_pose):
         pose_to_publish = initial_pose.pose.pose
         pose_to_publish.position.z += 2.0
         self.transform_publisher.publish(pose_to_publish)
 
-        
 
 def main():
     """
@@ -48,7 +47,7 @@ def main():
     """
     set_initial_pose_node = SetInitialPose()
     rospy.spin()
-    
+
 
 if __name__ == '__main__':
     main()
