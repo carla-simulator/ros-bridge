@@ -34,7 +34,8 @@ class EgoVehicle(Vehicle):
     Vehicle implementation details for the ego vehicle
     """
 
-    def __init__(self, uid, name, parent, node, carla_actor, vehicle_control_applied_callback):
+    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor,
+                 vehicle_control_applied_callback):
         """
         Constructor
 
@@ -44,6 +45,8 @@ class EgoVehicle(Vehicle):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -52,6 +55,7 @@ class EgoVehicle(Vehicle):
         super(EgoVehicle, self).__init__(uid=uid,
                                          name=name,
                                          parent=parent,
+                                         spawn_pose=spawn_pose,
                                          node=node,
                                          carla_actor=carla_actor)
 

@@ -22,7 +22,7 @@ class Traffic(Actor):
     Actor implementation details for traffic objects
     """
 
-    def __init__(self, uid, name, parent, node, carla_actor):
+    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor):
         """
         Constructor
 
@@ -32,6 +32,8 @@ class Traffic(Actor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -40,6 +42,7 @@ class Traffic(Actor):
         super(Traffic, self).__init__(uid=uid,
                                       name=name,
                                       parent=parent,
+                                      spawn_pose=spawn_pose,
                                       node=node,
                                       carla_actor=carla_actor)
 
@@ -50,7 +53,7 @@ class TrafficLight(Actor):
     Traffic implementation details for traffic lights
     """
 
-    def __init__(self, uid, name, parent, node, carla_actor):
+    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor):
         """
         Constructor
 
@@ -60,6 +63,8 @@ class TrafficLight(Actor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -68,6 +73,7 @@ class TrafficLight(Actor):
         super(TrafficLight, self).__init__(uid=uid,
                                            name=name,
                                            parent=parent,
+                                           spawn_pose=spawn_pose,
                                            node=node,
                                            carla_actor=carla_actor)
 

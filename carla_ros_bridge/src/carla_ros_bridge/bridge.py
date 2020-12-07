@@ -22,7 +22,6 @@ import pkg_resources
 import rospy
 
 from rosgraph_msgs.msg import Clock
-from tf2_msgs.msg import TFMessage
 
 import carla
 
@@ -91,7 +90,6 @@ class CarlaRosBridge(object):
 
         # Communication topics
         self.clock_publisher = rospy.Publisher('clock', Clock, queue_size=10)
-        self.tf_publisher = rospy.Publisher('tf', TFMessage, queue_size=100)
 
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
@@ -150,11 +148,11 @@ class CarlaRosBridge(object):
                 raise IndexError("Parent actor {} not found".format(req.attach_to))
 
         carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
-        actor = self.actor_factory.create(req.type, req.id, req.attach_to, carla_actor)
+        actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform, carla_actor)
         return actor.uid
 
     def _spawn_pseudo_actor(self, req):
-        actor = self.actor_factory.create(req.type, req.id, req.attach_to)
+        actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform)
         return actor.uid
 
     def spawn_object(self, req):
@@ -376,20 +374,6 @@ class CarlaRosBridge(object):
         self.ros_timestamp = rospy.Time.from_sec(
             carla_timestamp.elapsed_seconds)
         self.clock_publisher.publish(Clock(self.ros_timestamp))
-
-    def publish_tf_message(self, msg):
-        """
-        Function to publish ROS TF message.
-        """
-        # prepare tf message
-        tf_msg = None
-        tf_to_publish = []
-        tf_to_publish.append(msg)
-        tf_msg = TFMessage(tf_to_publish)
-        try:
-            self.tf_publisher.publish(tf_msg)
-        except Exception as error:  # pylint: disable=broad-except
-            self.logwarn("Failed to publish message: {}".format(error))
 
     def destroy(self):
         """

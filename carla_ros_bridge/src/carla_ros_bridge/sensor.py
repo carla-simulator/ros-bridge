@@ -16,6 +16,8 @@ except ImportError:
 
 
 import rospy
+import tf2_ros
+from geometry_msgs.msg import TransformStamped
 
 from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
@@ -31,6 +33,7 @@ class Sensor(Actor):
                  uid,
                  name,
                  parent,
+                 spawn_pose,
                  node,
                  carla_actor,
                  synchronous_mode,
@@ -48,6 +51,8 @@ class Sensor(Actor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -60,6 +65,7 @@ class Sensor(Actor):
         super(Sensor, self).__init__(uid=uid,
                                      name=name,
                                      parent=parent,
+                                     spawn_pose=spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor)
 
@@ -73,6 +79,38 @@ class Sensor(Actor):
             rospy.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
         except (KeyError, ValueError):
             self.sensor_tick_time = None
+
+        self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+
+    def publish_tf(self, pose=None):
+        if self.synchronous_mode:
+            pose = self.spawn_pose
+            child_frame_id = self.get_prefix()
+            if self.parent is not None:
+                frame_id = self.parent.get_prefix()
+            else:
+                frame_id = "map"
+
+        else:
+            child_frame_id = self.get_prefix()
+            frame_id = "map"
+
+        if pose is not None:
+            transform = TransformStamped()
+            transform.header.stamp = rospy.Time.now()
+            transform.header.frame_id = frame_id
+            transform.child_frame_id = child_frame_id
+
+            transform.transform.translation.x = pose.position.x
+            transform.transform.translation.y = pose.position.y
+            transform.transform.translation.z = pose.position.z
+
+            transform.transform.rotation.x = pose.orientation.x
+            transform.transform.rotation.y = pose.orientation.y
+            transform.transform.rotation.z = pose.orientation.z
+            transform.transform.rotation.w = pose.orientation.w
+
+            self._tf_broadcaster.sendTransform(transform)
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -105,8 +143,7 @@ class Sensor(Actor):
                         float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
-                self.publish_transform(self.get_ros_transform(
-                    trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
 
     @abstractmethod
@@ -134,9 +171,7 @@ class Sensor(Actor):
                                       frame))
                 rospy.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                self.publish_transform(
-                    self.get_ros_transform(
-                        trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
+                #self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -152,10 +187,7 @@ class Sensor(Actor):
                     if carla_sensor_data.frame == frame:
                         rospy.logdebug("{}({}): process {}".format(
                             self.__class__.__name__, self.get_id(), frame))
-                        self.publish_transform(
-                            self.get_ros_transform(
-                                trans.carla_transform_to_ros_transform(
-                                    carla_sensor_data.transform)))
+                        self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:

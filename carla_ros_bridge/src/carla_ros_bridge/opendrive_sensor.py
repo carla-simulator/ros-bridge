@@ -23,7 +23,7 @@ class OpenDriveSensor(PseudoActor):
     Pseudo opendrive sensor
     """
 
-    def __init__(self, uid, name, parent, node, carla_map):
+    def __init__(self, uid, name, parent, spawn_pose, node, carla_map):
         """
         Constructor
 
@@ -31,10 +31,10 @@ class OpenDriveSensor(PseudoActor):
         :type uid: int
         :param name: name identiying this object
         :type name: string
-        :param carla_world: carla world object
-        :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_map: carla map object
@@ -43,6 +43,7 @@ class OpenDriveSensor(PseudoActor):
         super(OpenDriveSensor, self).__init__(uid=uid,
                                               name=name,
                                               parent=parent,
+                                              spawn_pose=spawn_pose,
                                               node=node)
         self.carla_map = carla_map
         self._map_published = False

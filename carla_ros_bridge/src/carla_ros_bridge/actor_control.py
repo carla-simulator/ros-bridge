@@ -22,7 +22,7 @@ class ActorControl(PseudoActor):
     provide functions to control actors 
     """
 
-    def __init__(self, uid, name, parent, node):
+    def __init__(self, uid, name, parent, spawn_pose, node):
         """
         Constructor
 
@@ -30,10 +30,10 @@ class ActorControl(PseudoActor):
         :type uid: int
         :param name: name identifying this object
         :type name: string
-        :param carla_world: carla world object
-        :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
@@ -41,6 +41,7 @@ class ActorControl(PseudoActor):
         super(ActorControl, self).__init__(uid=uid,
                                            name=name,
                                            parent=parent,
+                                           spawn_pose=spawn_pose,
                                            node=node)
 
         self.set_location_subscriber = rospy.Subscriber(self.get_topic_prefix() +

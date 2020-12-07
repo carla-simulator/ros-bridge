@@ -22,7 +22,7 @@ class ActorListSensor(PseudoActor):
     Pseudo actor list sensor
     """
 
-    def __init__(self, uid, name, parent, node, actor_list):
+    def __init__(self, uid, name, parent, spawn_pose, node, actor_list):
         """
         Constructor
         :param uid: unique identifier for this object
@@ -33,6 +33,8 @@ class ActorListSensor(PseudoActor):
         :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param spawn_pose: the spawn pose of this
+        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param actor_list: current list of actors
@@ -42,6 +44,7 @@ class ActorListSensor(PseudoActor):
         super(ActorListSensor, self).__init__(uid=uid,
                                               name=name,
                                               parent=parent,
+                                              spawn_pose=spawn_pose,
                                               node=node)
         self.actor_list = actor_list
         self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix(),
