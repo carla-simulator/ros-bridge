@@ -3,7 +3,9 @@ project(carla_ad_demo)
 
 find_package(catkin REQUIRED COMPONENTS roslaunch)
 
-roslaunch_add_file_check(launch)
+if(CATKIN_ENABLE_TESTING)
+  roslaunch_add_file_check(launch)
+endif()
 
 catkin_package()
 

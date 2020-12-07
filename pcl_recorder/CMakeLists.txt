@@ -6,7 +6,9 @@ find_package(catkin REQUIRED COMPONENTS pcl_conversions pcl_ros roscpp
 
 catkin_package()
 
-roslaunch_add_file_check(launch DEPENDENCIES ${PROJECT_NAME}_node)
+if(CATKIN_ENABLE_TESTING)
+  roslaunch_add_file_check(launch DEPENDENCIES ${PROJECT_NAME}_node)
+endif()
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

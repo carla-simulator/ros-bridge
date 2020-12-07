@@ -5,7 +5,9 @@ find_package(catkin REQUIRED COMPONENTS roslaunch)
 
 catkin_python_setup()
 
-roslaunch_add_file_check(launch IGNORE_UNSET_ARGS)
+if(CATKIN_ENABLE_TESTING)
+  roslaunch_add_file_check(launch IGNORE_UNSET_ARGS)
+endif()
 
 catkin_package()
 
