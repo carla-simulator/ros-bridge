@@ -1,5 +1,9 @@
 ## Latest changed
 
+*   Updated debian packaging pipeline
+
+## CARLA-ROS-Bridge 0.9.10.1
+
 *   Support noetic and python 3
 *   Have all sensor types in sensors.json
 *   Update ad-demo rviz config to visualize more sensor types
