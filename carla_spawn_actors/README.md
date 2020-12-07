@@ -1,6 +1,6 @@
 # ROS Carla Spawn Actors
 
-The reference Carla client `carla_spawn_actors` can be used to spawn actors (vehicels, sensors, walkers) with attached sensors.
+`carla_spawn_actors` can be used to spawn actors (vehicles, sensors, walkers) with attached sensors.
 
 Info: To be able to use `carla_manual_control` a camera with role-name 'view' and resolution of 800x600 is required.
 
@@ -8,8 +8,9 @@ If no specific position is set for vehicles, they will be spawned at a random po
 
 ## Spawning at specific position
 
-- It is possible to specify the position at which the vehicle will be spawned, by defining a ros parameter named `spawn_point_vehicle_name`, the `vehicle_name` part being the same as the one specified in the config file.
+- It is possible to specify the position at which the vehicle will be spawned, by defining a ros parameter named `spawn_point_<VEHICLE-NAME>`, with `<VEHICLE-NAME>` specified in the `id` field of the vehicle, in the config file.
 - It is also possible to specify the initial position directly in the config file. This is also how the initial positions of sensors should be declared.
+- The `spawn_point` specified for a sensor attached to a vehicle, will be considered relative to the vehicle.
 
 It is possible to re-spawn a vehicle at a specific location by publishing to `/carla/<ROLE NAME>/initialpose`, but only if a `actor.pseudo.control` pseudo-actor is attached to the vehicle. The node `set_initial-pose` should also be running to handle the message on the topic. It can be launched using [set_initial_pose.launch](launch/set_initial_pose.launch)
 
@@ -38,7 +39,7 @@ The format is defined like that:
                     },
                     {
                     "type": "<VEHICLE-TYPE>",
-                    "id": "<NAME>",
+                    "id": "<VEHICLE-NAME>",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "sensors": 
                         [

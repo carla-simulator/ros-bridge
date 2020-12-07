@@ -29,7 +29,7 @@
     <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>
   </include>
 
-  <!-- the ego vehicle, that will be controlled by the carla_ad_agent -->
+  <!-- the ego vehicle, that will be controlled by an agent (e.g. carla_ad_agent) -->
   <include file="$(find carla_spawn_actors)/launch/carla_example_ego_vehicle.launch">
     <arg name="actors_definition_file" value='$(find carla_spawn_actors)/config/actors.json'/>
     <arg name='role_name' value='$(arg role_name)'/>
