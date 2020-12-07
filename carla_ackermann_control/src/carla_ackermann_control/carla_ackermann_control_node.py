@@ -24,6 +24,7 @@ from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-mod
 from carla_ackermann_control.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig  # pylint: disable=no-name-in-module,import-error
 import carla_control_physics as phys  # pylint: disable=relative-import
+from geometry_msgs.msg import Twist
 
 
 class CarlaAckermannControl(object):
@@ -42,6 +43,8 @@ class CarlaAckermannControl(object):
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
+        self.always_send = rospy.get_param('~always_send', True)
+        
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -77,6 +80,11 @@ class CarlaAckermannControl(object):
         self.info.output.steer = 0.
         self.info.output.reverse = False
         self.info.output.hand_brake = True
+
+        # input parameters
+        self.input_speed = 0.
+        self.input_accel = 0.
+
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
@@ -132,6 +140,11 @@ class CarlaAckermannControl(object):
         self.control_subscriber = rospy.Subscriber(
             "/carla/" + self.role_name + "/ackermann_cmd",
             AckermannDrive, self.ackermann_command_updated)
+
+        # ackermann drive commands
+        self.control_subscriber = rospy.Subscriber(
+            "/carla/" + self.role_name + "/ackermann_twist",
+            Twist, self.twist_command_updated)
 
         # current status of the vehicle
         self.vehicle_status_subscriber = rospy.Subscriber(
@@ -241,12 +254,43 @@ class CarlaAckermannControl(object):
         :type ros_ackermann_drive: ackermann_msgs.AckermannDrive
         :return:
         """
-        self.lastAckermannMsgReceived = datetime.datetime.now()
+        self.lastAckermannMsgReceived = rospy.get_rostime()
         # set target values
         self.set_target_steering_angle(ros_ackermann_drive.steering_angle)
         self.set_target_speed(ros_ackermann_drive.speed)
         self.set_target_accel(ros_ackermann_drive.acceleration)
         self.set_target_jerk(ros_ackermann_drive.jerk)
+
+        self.input_speed = ros_ackermann_drive.speed
+        self.input_accel = ros_ackermann_drive.acceleration
+
+    def twist_command_updated(self, ros_twist: Twist):
+        """
+        Stores the twist message for the next controller calculation
+        Allow controller to work with twist messages as well 
+
+        :param ros_twist: the current twist control input
+        :type ros_twist: geometry_msgs.Twist
+        :return:
+        """
+        self.lastAckermannMsgReceived = rospy.get_rostime()
+        # set target values
+        self.set_target_steering_angle(ros_twist.angular.z)
+        self.set_target_speed(ros_twist.linear.x)
+        self.set_target_accel(0)
+        self.set_target_jerk(0)
+
+        self.input_speed = ros_twist.linear.x
+        self.input_accel = 0.
+
+    def reload_input_params(self):
+        """
+        Reloads the last set parameters which prevents actions from being executed late
+        if the messages are not getting recieved at the frequency the controller is running at
+        """
+        self.set_target_speed(self.input_speed)
+        self.set_target_accel(self.input_accel)
+
 
     def set_target_steering_angle(self, target_steering_angle):
         """
@@ -294,6 +338,9 @@ class CarlaAckermannControl(object):
         """
         Perform a vehicle control cycle and sends out CarlaEgoVehicleControl message
         """
+        # reload the input parameters if the other node doesn't publish fast enough
+        self.reload_input_params()
+
         # perform actual control
         self.control_steering()
         self.control_stop_and_reverse()
@@ -304,16 +351,16 @@ class CarlaAckermannControl(object):
 
             # only send out the Carla Control Command if AckermannDrive messages are
             # received in the last second (e.g. to allows manually controlling the vehicle)
-            if (self.lastAckermannMsgReceived + datetime.timedelta(0, 1)) > \
-                    datetime.datetime.now():
+            # Attention: this may break steering for slow publishers, in those cases prefer always sending
+            # Not really neccesarry in carla anymore due to the manual control override
+            if self.always_send or ((self.lastAckermannMsgReceived + rospy.Duration(1, 0)) > rospy.get_time()):
                 self.carla_control_publisher.publish(self.info.output)
 
     def control_steering(self):
         """
         Basic steering control
         """
-        self.info.output.steer = self.info.target.steering_angle / \
-            self.info.restrictions.max_steering_angle
+        self.info.output.steer = self.info.target.steering_angle / self.info.restrictions.max_steering_angle
 
     def control_stop_and_reverse(self):
         """
@@ -322,7 +369,7 @@ class CarlaAckermannControl(object):
         # from this velocity on it is allowed to switch to reverse gear
         standing_still_epsilon = 0.1
         # from this velocity on hand brake is turned on
-        full_stop_epsilon = 0.00001
+        full_stop_epsilon = 0.001
 
         # auto-control of hand-brake and reverse gear
         self.info.output.hand_brake = False
@@ -360,6 +407,8 @@ class CarlaAckermannControl(object):
                           " Set desired speed to 0".format(self.info.current.speed,
                                                            self.info.target.speed))
             self.set_target_speed(0.)
+            # force braking on direction change
+            self.set_target_accel(0.)
 
     def run_speed_control_loop(self):
         """
@@ -498,9 +547,10 @@ class CarlaAckermannControl(object):
         """
         current_time_sec = rospy.get_rostime().to_sec()
         delta_time = current_time_sec - self.info.current.time_sec
-        current_speed = self.vehicle_status.velocity
+        # represent a changed gear into revserve as negative velocity to allow correctly changing direction
+        current_speed = self.vehicle_status.velocity * (-1 if self.vehicle_status.control.reverse else 1)
         if delta_time > 0:
-            delta_speed = current_speed - self.info.current.speed
+            delta_speed = abs(current_speed) - abs(self.info.current.speed)
             current_accel = delta_speed / delta_time
             # average filter
             self.info.current.accel = (self.info.current.accel * 4 + current_accel) / 5
