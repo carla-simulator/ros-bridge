@@ -1,6 +1,5 @@
 <!-- -->
 <launch>
-  <arg name="node_suffix"/>
   <arg name="actors_definition_file" default='$(find carla_spawn_actors)/config/actors.json'/>
   <!-- use comma separated format "x,y,z,roll,pitch,yaw", 
     and parameter name spawn_point_<vehicle_name>. You can add
@@ -8,7 +7,7 @@
   <arg name="spawn_point_ego_vehicle"/>
   <arg name="spawn_sensors_only" default="false"/>
 
-  <node pkg="carla_spawn_actors" type="carla_spawn_actors.py" name="carla_spawn_actors_$(arg node_suffix)" output="screen">
+  <node pkg="carla_spawn_actors" type="carla_spawn_actors.py" name="$(anon carla_spawn_actors)" output="screen">
     <param name="actors_definition_file" value="$(arg actors_definition_file)" />
     <param name="spawn_point_ego_vehicle" value="$(arg spawn_point_ego_vehicle)" />
     <param name="spawn_sensors_only" value="$(arg spawn_sensors_only)" />

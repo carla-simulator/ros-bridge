@@ -38,7 +38,7 @@
   <!-- the ego vehicle, that will be controlled by the carla_ad_agent -->
   <include file="$(find carla_spawn_actors)/launch/carla_example_ego_vehicle.launch">
     <arg name="actors_definition_file" value='$(find carla_spawn_actors)/config/actors.json'/>
-    <arg name='node_suffix' value='$(arg role_name)'/>
+    <arg name='role_name' value='$(arg role_name)'/>
     <arg name="spawn_point_ego_vehicle" value="$(arg spawn_point)"/>
     <arg name="spawn_sensors_only" value="false"/>
   </include>

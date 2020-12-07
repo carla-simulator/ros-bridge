@@ -352,6 +352,7 @@ def main():
     """
     main function
     """
+    spawn_actors_node = None
     try:
         spawn_actors_node = CarlaSpawnActors()
         spawn_actors_node.run()
