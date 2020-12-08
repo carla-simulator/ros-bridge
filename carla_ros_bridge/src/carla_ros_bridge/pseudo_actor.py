@@ -44,11 +44,6 @@ class PseudoActor(object):
         if self.uid > np.iinfo(np.uint32).max:
             raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
 
-        self.parent = parent
-        self.node = node
-
-        if self.uid > np.iinfo(np.uint32).max:
-            raise ValueError("Actor ID exceeds maximum supported value '{}'".format(self.uid))
 
     def destroy(self):
         """
