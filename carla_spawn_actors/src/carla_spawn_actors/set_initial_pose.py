@@ -28,9 +28,12 @@ class SetInitialPose(object):
         rospy.init_node('set_initial_pose', anonymous=True)
 
         self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
-
+        # control_id should correspond to the id of the actor.pseudo.control 
+        # actor that is set in the config file used to spawn it
+        self.control_id = rospy.get_param('~control_id', 'control')
+        print("/carla/{}/{}/set_transform".format(self.role_name, self.control_id))
         self.transform_publisher = rospy.Publisher(
-            "/carla/{}/set_transform".format(self.role_name), Pose, queue_size=10)
+            "/carla/{}/{}/set_transform".format(self.role_name, self.control_id), Pose, queue_size=10)
 
         self.initial_pose_subscriber = rospy.Subscriber(
             "/initialpose", PoseWithCovarianceStamped, self.intial_pose_callback)

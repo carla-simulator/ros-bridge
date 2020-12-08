@@ -210,7 +210,7 @@ class CarlaSpawnActors(object):
                             sensor_spec['id']))
                 sensor_names.append(sensor_name)
 
-                if attached_vehicle_id == 0 and sensor_type != "sensor.pseudo.actor_list":
+                if attached_vehicle_id == 0 and "pseudo" not in sensor_type:
                     spawn_point = sensor_spec.pop("spawn_point")
                     sensor_transform = self.create_spawn_point(
                         spawn_point.pop("x"),
@@ -220,7 +220,7 @@ class CarlaSpawnActors(object):
                         spawn_point.pop("pitch", 0.0),
                         spawn_point.pop("yaw", 0.0))
                 else:
-                    # if sensor attached to a vehicle, or is a 'sensor.pseudo.actor_list', allow default pose
+                    # if sensor attached to a vehicle, or is a 'pseudo_actor', allow default pose
                     spawn_point = sensor_spec.pop("spawn_point", 0)
                     if spawn_point == 0:
                         sensor_transform = self.create_spawn_point(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -251,12 +251,12 @@ class CarlaSpawnActors(object):
             except KeyError as e:
                 rospy.logerr(
                     "Sensor {} will not be spawned, the mandatory attribute {} is missing".format(sensor_name, e))
-                break
+                continue
 
             except Exception as e:
                 rospy.logerr(
                     "Sensor {} will not be spawned: {}".format(sensor_name, e))
-                break
+                continue
 
             actors.append(response.id)
         return actors
