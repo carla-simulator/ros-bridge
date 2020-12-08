@@ -12,7 +12,7 @@ If no specific position is set for vehicles, they will be spawned at a random po
 - It is also possible to specify the initial position directly in the config file. This is also how the initial positions of sensors should be declared.
 - The `spawn_point` specified for a sensor attached to a vehicle, will be considered relative to the vehicle.
 
-It is possible to re-spawn a vehicle at a specific location by publishing to `/carla/<ROLE NAME>/initialpose`, but only if a `actor.pseudo.control` pseudo-actor is attached to the vehicle. The node `set_initial-pose` should also be running to handle the message on the topic. It can be launched using [set_initial_pose.launch](launch/set_initial_pose.launch)
+It is possible to re-spawn a vehicle at a specific location by publishing to `/carla/<ROLE NAME>/<CONTROLLER_ID>/initialpose`, but only if an `actor.pseudo.control` pseudo-actor (with id `<CONTROLLER_ID>`) is attached to the vehicle. The node `set_initial_pose` should also be running to handle the message on the topic. It can be launched using [set_initial_pose.launch](launch/set_initial_pose.launch), and `<CONTROLLER_ID>` should be specified by setting the ros parameter called `controller_id`.
 
 The preferred way to publish the new pose message is to use RVIZ:
 
