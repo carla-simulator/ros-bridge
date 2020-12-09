@@ -5,9 +5,9 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 """
-base class for spawning actors in ROS
+base class for spawning objects (carla actors and pseudo_actors) in ROS
 
-Gets config file from ros parameter ~actors_definition_file and spawns corresponding actors
+Gets config file from ros parameter ~objects_definition_file and spawns corresponding objects
 through ROS service /carla/spawn_object.
 
 Looks for an initial spawn point first in the launchfile, then in the config file, and 
@@ -31,11 +31,11 @@ from carla_msgs.msg import CarlaWorldInfo, CarlaActorList
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
 
 # ==============================================================================
-# -- CarlaSpawnActors ------------------------------------------------------------
+# -- CarlaSpawnObjects ------------------------------------------------------------
 # ==============================================================================
 
 
-class CarlaSpawnActors(object):
+class CarlaSpawnObjects(object):
 
     """
     Handles the spawning of the ego vehicle and its sensors
@@ -44,8 +44,8 @@ class CarlaSpawnActors(object):
     """
 
     def __init__(self):
-        rospy.init_node('spawn_actors_node', anonymous=True)
-        self.actors_definition_file = rospy.get_param('~actors_definition_file')
+        rospy.init_node('spawn_objects_node', anonymous=True)
+        self.objects_definition_file = rospy.get_param('~objects_definition_file')
         self.spawn_sensors_only = rospy.get_param('~spawn_sensors_only', None)
 
         self.players = []
@@ -56,27 +56,27 @@ class CarlaSpawnActors(object):
         self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
         self.destroy_object_service = rospy.ServiceProxy("/carla/destroy_object", DestroyObject)
 
-    def spawn_actors(self):
+    def spawn_objects(self):
         """
-        Spawns the actors
+        Spawns the objects
 
-        Either at a given actor_spawnpoint or at a random Carla spawnpoint
+        Either at a given spawnpoint or at a random Carla spawnpoint
 
         :return:
         """
         # Read sensors from file
-        if not os.path.exists(self.actors_definition_file):
+        if not os.path.exists(self.objects_definition_file):
             raise RuntimeError(
-                "Could not read sensor-definition from {}".format(self.actors_definition_file))
+                "Could not read sensor-definition from {}".format(self.objects_definition_file))
         json_sensors = None
-        with open(self.actors_definition_file) as handle:
+        with open(self.objects_definition_file) as handle:
             json_actors = json.loads(handle.read())
 
         global_sensors = []
         vehicles = []
         found_sensor_actor_list = False
 
-        for actor in json_actors["actors"]:
+        for actor in json_actors["objects"]:
             actor_type = actor["type"].split('.')[0]
             if actor["type"] == "sensor.pseudo.actor_list" and self.spawn_sensors_only:
                 global_sensors.append(actor)
@@ -87,7 +87,7 @@ class CarlaSpawnActors(object):
                 vehicles.append(actor)
             else:
                 rospy.logwarn(
-                    "Actor with type {} is not a vehicle, a walker or a sensor, ignoring".format(actor["type"]))
+                    "Object with type {} is not a vehicle, a walker or a sensor, ignoring".format(actor["type"]))
         if self.spawn_sensors_only is True and found_sensor_actor_list is False:
             raise Exception("Parameter 'spawn_sensors_only' enabled, " +
                             "but 'sensor.pseudo.actor_list' is not instantiated, add it to your config file.")
@@ -194,7 +194,7 @@ class CarlaSpawnActors(object):
         (or not if global sensor)
         :param sensors: list of sensors
         :param attached_vehicle_id: id of vehicle to attach the sensors to
-        :return actors: list of ids of actors created
+        :return actors: list of ids of objects created
         """
         actors = []
         sensor_names = []
@@ -335,9 +335,9 @@ class CarlaSpawnActors(object):
             rospy.logerr("Timeout while waiting for world info!")
             sys.exit(1)
 
-        rospy.loginfo("World info is available. Spawning acotrs...")
+        rospy.loginfo("World info is available. Spawning objects...")
         rospy.on_shutdown(self.destroy)
-        self.spawn_actors()
+        self.spawn_objects()
         try:
             rospy.spin()
         except rospy.ROSInterruptException:
@@ -352,16 +352,16 @@ def main():
     """
     main function
     """
-    spawn_actors_node = None
+    spawn_objects_node = None
     try:
-        spawn_actors_node = CarlaSpawnActors()
-        spawn_actors_node.run()
+        spawn_objects_node = CarlaSpawnObjects()
+        spawn_objects_node.run()
     except Exception as e:
         rospy.logfatal(
             "Exception caught: {}".format(e))
     finally:
-        if spawn_actors_node is not None:
-            spawn_actors_node.destroy()
+        if spawn_objects_node is not None:
+            spawn_objects_node.destroy()
 
 
 if __name__ == '__main__':

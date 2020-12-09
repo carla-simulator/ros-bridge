@@ -30,8 +30,8 @@
   </include>
 
   <!-- the ego vehicle, that will be controlled by an agent (e.g. carla_ad_agent) -->
-  <include file="$(find carla_spawn_actors)/launch/carla_example_ego_vehicle.launch">
-    <arg name="actors_definition_file" value='$(find carla_spawn_actors)/config/actors.json'/>
+  <include file="$(find carla_spawn_objects)/launch/carla_example_ego_vehicle.launch">
+    <arg name="objects_definition_file" value='$(find carla_spawn_objects)/config/objects.json'/>
     <arg name='role_name' value='$(arg role_name)'/>
     <arg name="spawn_point_ego_vehicle" value="$(arg spawn_point)"/>
     <arg name="spawn_sensors_only" value="false"/>

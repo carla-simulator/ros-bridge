@@ -1,6 +1,6 @@
-# ROS Carla Spawn Actors
+# ROS Carla Spawn Objects
 
-`carla_spawn_actors` can be used to spawn actors (vehicles, sensors, walkers) with attached sensors.
+`carla_spawn_objects` can be used to spawn actors (vehicles, sensors, walkers) with attached sensors.
 
 Info: To be able to use `carla_manual_control` a camera with role-name 'view' and resolution of 800x600 is required.
 
@@ -22,11 +22,11 @@ Selecting a Pose with '2D Pose Estimate' will delete the current ego_vehicle and
 
 ## Attach sensor to an existing vehicle
 
-It possible to attach sensors to an existing vehicle. To do so, a `sensor.pseudo.actor_list` should also be spawned (define it in the config file) to give access to a list of active actors. The ROS parameter `spawn_sensors_only` should also be set to True. `carla_spawn_actors` will then check if an actor with same id and type as the one specified in its config file is already active, and if yes attach the sensors to this actor.
+It possible to attach sensors to an existing vehicle. To do so, a `sensor.pseudo.actor_list` should also be spawned (define it in the config file) to give access to a list of active actors. The ROS parameter `spawn_sensors_only` should also be set to True. `carla_spawn_objects` will then check if an actor with same id and type as the one specified in its config file is already active, and if yes attach the sensors to this actor.
 
 ## Create your own sensor setup
 
-Sensors, attached to vehicles or not, can be defined via a json file. `carla_spawn_actors` reads it from the file location defined via the private ros parameter `actors_definition_file`.
+Sensors, attached to vehicles or not, can be defined via a json file. `carla_spawn_objects` reads it from the file location defined via the private ros parameter `objects_definition_file`.
 
 The format is defined like that:
 
@@ -52,4 +52,4 @@ The format is defined like that:
 
 Define sensors with their attributes as described in the Carla Documentation about [Cameras and Sensors](https://github.com/carla-simulator/carla/blob/master/Docs/cameras_and_sensors.md).
 
-An example is provided by [carla_example_ego_vehicle.launch](launch/carla_example_ego_vehicle.launch). It uses the sensors from [actors.json](config/actors.json)
+An example is provided by [carla_example_ego_vehicle.launch](launch/carla_example_ego_vehicle.launch). It uses the sensors from [objects.json](config/objects.json)

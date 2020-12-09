@@ -1,5 +1,5 @@
 {   
-    "actors": 
+    "objects": 
     [
         {
             "type": "sensor.pseudo.traffic_lights",
