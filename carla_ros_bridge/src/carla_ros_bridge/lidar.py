@@ -63,12 +63,22 @@ class Lidar(Sensor):
             PointField('y', 4, PointField.FLOAT32, 1),
             PointField('z', 8, PointField.FLOAT32, 1),
             PointField('intensity', 12, PointField.FLOAT32, 1),
+            PointField('ring', 16, PointField.UINT16, 1)
         ]
 
         lidar_data = numpy.fromstring(
             bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
         lidar_data = numpy.reshape(
             lidar_data, (int(lidar_data.shape[0] / 4), 4))
+        
+        channels = int(self.carla_actor.attributes.get('channels'))
+        ring = None
+        for i in range(channels):
+            current_ring_points_count = carla_lidar_measurement.get_point_count(i)
+            ring = numpy.vstack((ring,numpy.full((current_ring_points_count,1), i)))
+        ring = numpy.delete(ring, 0, axis=0)
+        lidar_data = numpy.hstack((lidar_data,ring))
+        
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
