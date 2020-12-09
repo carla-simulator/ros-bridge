@@ -31,7 +31,6 @@ class SetInitialPose(object):
         # control_id should correspond to the id of the actor.pseudo.control 
         # actor that is set in the config file used to spawn it
         self.control_id = rospy.get_param('~control_id', 'control')
-        print("/carla/{}/{}/set_transform".format(self.role_name, self.control_id))
         self.transform_publisher = rospy.Publisher(
             "/carla/{}/{}/set_transform".format(self.role_name, self.control_id), Pose, queue_size=10)
 
