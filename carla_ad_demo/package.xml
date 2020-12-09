@@ -6,7 +6,6 @@
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roslaunch</build_depend>
   <exec_depend>carla_ros_bridge</exec_depend>
   <exec_depend>carla_spawn_actors</exec_depend>
   <exec_depend>carla_waypoint_publisher</exec_depend>
