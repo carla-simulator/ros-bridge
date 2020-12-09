@@ -39,12 +39,13 @@ class CarlaAckermannControl(object):
 
         """
         self.control_loop_rate = rospy.Rate(10)  # 10Hz
-        self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
+        self.lastAckermannMsgReceived = datetime.datetime(
+            datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
         self.always_send = rospy.get_param('~always_send', True)
-        
+
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -84,7 +85,6 @@ class CarlaAckermannControl(object):
         # input parameters
         self.input_speed = 0.
         self.input_accel = 0.
-
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
@@ -240,7 +240,8 @@ class CarlaAckermannControl(object):
             self.vehicle_info)
         self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
             self.vehicle_info)
-        self.info.restrictions.min_accel = rospy.get_param('/carla/ackermann_control/min_accel', 1.)
+        self.info.restrictions.min_accel = rospy.get_param(
+            '/carla/ackermann_control/min_accel', 1.)
         # clipping the pedal in both directions to the same range using the usual lower
         # border: the max_accel to ensure the the pedal target is in symmetry to zero
         self.info.restrictions.max_pedal = min(
@@ -290,7 +291,6 @@ class CarlaAckermannControl(object):
         """
         self.set_target_speed(self.input_speed)
         self.set_target_accel(self.input_accel)
-
 
     def set_target_steering_angle(self, target_steering_angle):
         """
@@ -360,7 +360,8 @@ class CarlaAckermannControl(object):
         """
         Basic steering control
         """
-        self.info.output.steer = self.info.target.steering_angle / self.info.restrictions.max_steering_angle
+        self.info.output.steer = self.info.target.steering_angle / \
+            self.info.restrictions.max_steering_angle
 
     def control_stop_and_reverse(self):
         """
@@ -548,12 +549,14 @@ class CarlaAckermannControl(object):
         current_time_sec = rospy.get_rostime().to_sec()
         delta_time = current_time_sec - self.info.current.time_sec
         # represent a changed gear into revserve as negative velocity to allow correctly changing direction
-        current_speed = self.vehicle_status.velocity * (-1 if self.vehicle_status.control.reverse else 1)
+        current_speed = self.vehicle_status.velocity * \
+            (-1 if self.vehicle_status.control.reverse else 1)
         if delta_time > 0:
             delta_speed = abs(current_speed) - abs(self.info.current.speed)
             current_accel = delta_speed / delta_time
             # average filter
-            self.info.current.accel = (self.info.current.accel * 4 + current_accel) / 5
+            self.info.current.accel = (
+                self.info.current.accel * 4 + current_accel) / 5
         self.info.current.time_sec = current_time_sec
         self.info.current.speed = current_speed
         self.info.current.speed_abs = abs(current_speed)
