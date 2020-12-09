@@ -22,7 +22,7 @@
             "id": "map"
         },
         {
-            "type": "vehicle.audi.tt",
+            "type": "vehicle.*",
             "id": "ego_vehicle",
             "sensors": 
             [

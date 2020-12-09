@@ -142,7 +142,11 @@ class CarlaRosBridge(object):
                              CarlaWeatherParameters, self.on_weather_changed)
 
     def _spawn_actor(self, req):
-        blueprint = self.carla_world.get_blueprint_library().find(req.type)
+        if "*" in req.type:
+            blueprint = secure_random.choice(
+            self.carla_world.get_blueprint_library().filter(req.type))
+        else:
+            blueprint = self.carla_world.get_blueprint_library().find(req.type)
         blueprint.set_attribute('role_name', req.id)
         for attribute in req.attributes:
             blueprint.set_attribute(attribute.key, attribute.value)
