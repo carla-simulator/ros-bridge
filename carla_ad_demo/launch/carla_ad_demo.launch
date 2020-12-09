@@ -13,7 +13,6 @@
 
   <!-- spectator camera parameter -->
   <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
-  <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
   <arg name='spawn_point' default='127.4,-195.4,2,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
   <arg name="target_speed" default="30"/> <!-- target speed in km/h that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
@@ -37,22 +36,11 @@
   </include>
 
   <!-- the ego vehicle, that will be controlled by the carla_ad_agent -->
-  <include file="$(find carla_ego_vehicle)/launch/carla_example_ego_vehicle.launch">
-    <arg name='host' value='$(arg host)'/>
-    <arg name='port' value='$(arg port)'/>
-    <arg name='timeout' value='$(arg timeout)'/>
-    <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
-    <arg name="sensor_definition_file" default="$(find carla_ego_vehicle)/config/sensors.json"/>
+  <include file="$(find carla_spawn_objects)/launch/carla_example_ego_vehicle.launch">
+    <arg name="objects_definition_file" value='$(find carla_spawn_objects)/config/objects.json'/>
     <arg name='role_name' value='$(arg role_name)'/>
-    <arg name="spawn_point" value="$(arg spawn_point)"/>
-  </include>
-
-  <!-- infrastructure sensors -->
-  <include file="$(find carla_infrastructure)/launch/carla_infrastructure.launch">
-    <arg name='host' value='$(arg host)'/>
-    <arg name='port' value='$(arg port)'/>
-    <arg name='timeout' value='$(arg timeout)'/>
-    <arg name="infrastructure_sensor_definition_file" default="$(find carla_infrastructure)/config/sensors.json"/>
+    <arg name="spawn_point_ego_vehicle" value="$(arg spawn_point)"/>
+    <arg name="spawn_sensors_only" value="false"/>
   </include>
 
   <!-- The agent to control the ego vehicle -->

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>carla_infrastructure</name>
+  <name>carla_spawn_objects</name>
   <version>0.0.0</version>
-  <description>The carla_infrastructure package</description>
+  <description>The carla_spawn_objects package</description>
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
@@ -10,6 +10,8 @@
   <build_depend>roslaunch</build_depend>
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
+  <exec_depend>carla_msgs</exec_depend>
   <export>
   </export>
 </package>

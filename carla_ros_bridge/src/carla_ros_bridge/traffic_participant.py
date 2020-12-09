@@ -27,7 +27,7 @@ class TrafficParticipant(Actor):
     actor implementation details for traffic participant
     """
 
-    def __init__(self, uid, name,parent, node, carla_actor):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
