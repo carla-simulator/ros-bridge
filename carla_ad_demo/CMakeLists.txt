@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(carla_ad_demo)
 
-find_package(catkin REQUIRED COMPONENTS roslaunch)
+find_package(catkin REQUIRED)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(roslaunch REQUIRED)
-  roslaunch_add_file_check(launch IGNORE_UNSET_ARGS)
+  roslaunch_add_file_check(launch)
 endif()
 
 catkin_package()
