@@ -171,7 +171,7 @@ class Sensor(Actor):
                                       frame))
                 rospy.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                #self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
