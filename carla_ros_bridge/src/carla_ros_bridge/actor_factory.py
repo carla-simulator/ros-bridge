@@ -172,31 +172,24 @@ class ActorFactory(object):
     def _create_object(self, uid, type_id, name, parent, spawn_pose, carla_actor=None):
 
         if type_id == TFSensor.get_blueprint_name():
-            actor = TFSensor(uid=uid,
-                             name=name,
-                             parent=parent,
-                             spawn_pose=spawn_pose,
-                             node=self.node)
+            actor = TFSensor(uid=uid, name=name, parent=parent, node=self.node)
 
         elif type_id == OdometrySensor.get_blueprint_name():
             actor = OdometrySensor(uid=uid,
                                    name=name,
                                    parent=parent,
-                                   spawn_pose=spawn_pose,
                                    node=self.node)
 
         elif type_id == SpeedometerSensor.get_blueprint_name():
             actor = SpeedometerSensor(uid=uid,
                                       name=name,
                                       parent=parent,
-                                      spawn_pose=spawn_pose,
                                       node=self.node)
 
         elif type_id == MarkerSensor.get_blueprint_name():
             actor = MarkerSensor(uid=uid,
                                  name=name,
                                  parent=parent,
-                                 spawn_pose=spawn_pose,
                                  node=self.node,
                                  actor_list=self.actors)
 
@@ -204,7 +197,6 @@ class ActorFactory(object):
             actor = ActorListSensor(uid=uid,
                                     name=name,
                                     parent=parent,
-                                    spawn_pose=spawn_pose,
                                     node=self.node,
                                     actor_list=self.actors)
 
@@ -213,7 +205,6 @@ class ActorFactory(object):
                 uid=uid,
                 name=name,
                 parent=parent,
-                spawn_pose=spawn_pose,
                 node=self.node,
                 actor_list=self.actors,
             )
@@ -223,7 +214,6 @@ class ActorFactory(object):
                 uid=uid,
                 name=name,
                 parent=parent,
-                spawn_pose=spawn_pose,
                 node=self.node,
                 actor_list=self.actors,
             )
@@ -232,7 +222,6 @@ class ActorFactory(object):
             actor = OpenDriveSensor(uid=uid,
                                     name=name,
                                     parent=parent,
-                                    spawn_pose=spawn_pose,
                                     node=self.node,
                                     carla_map=self.world.get_map())
 
@@ -240,25 +229,21 @@ class ActorFactory(object):
             actor = ActorControl(uid=uid,
                                  name=name,
                                  parent=parent,
-                                 spawn_pose=spawn_pose,
                                  node=self.node)
 
         elif carla_actor.type_id.startswith('traffic'):
             if carla_actor.type_id == "traffic.traffic_light":
-                actor = TrafficLight(uid, name, parent, spawn_pose, self.node,
-                                     carla_actor)
+                actor = TrafficLight(uid, name, parent, self.node, carla_actor)
             else:
-                actor = Traffic(uid, name, parent, spawn_pose, self.node,
-                                carla_actor)
+                actor = Traffic(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("vehicle"):
             if carla_actor.attributes.get('role_name')\
                     in self.node.parameters['ego_vehicle']['role_name']:
                 actor = EgoVehicle(
-                    uid, name, parent, spawn_pose, self.node, carla_actor,
+                    uid, name, parent, self.node, carla_actor,
                     self.node._ego_vehicle_control_applied_callback)
             else:
-                actor = Vehicle(uid, name, parent, spawn_pose, self.node,
-                                carla_actor)
+                actor = Vehicle(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("sensor"):
             if carla_actor.type_id.startswith("sensor.camera"):
                 if carla_actor.type_id.startswith("sensor.camera.rgb"):
@@ -311,13 +296,10 @@ class ActorFactory(object):
                 actor = Sensor(uid, name, parent, spawn_pose, self.node,
                                carla_actor, self.sync_mode)
         elif carla_actor.type_id.startswith("spectator"):
-            actor = Spectator(uid, name, parent, spawn_pose, self.node,
-                              carla_actor)
+            actor = Spectator(uid, name, parent, self.node, carla_actor)
         elif carla_actor.type_id.startswith("walker"):
-            actor = Walker(uid, name, parent, spawn_pose, self.node,
-                           carla_actor)
+            actor = Walker(uid, name, parent, self.node, carla_actor)
         else:
-            actor = Actor(uid, name, parent, spawn_pose, self.node,
-                          carla_actor)
+            actor = Actor(uid, name, parent, self.node, carla_actor)
 
         return actor

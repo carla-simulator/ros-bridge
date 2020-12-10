@@ -33,7 +33,7 @@ class Sensor(Actor):
                  uid,
                  name,
                  parent,
-                 spawn_pose,
+                 relative_spawn_pose,
                  node,
                  carla_actor,
                  synchronous_mode,
@@ -51,8 +51,8 @@ class Sensor(Actor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -65,10 +65,10 @@ class Sensor(Actor):
         super(Sensor, self).__init__(uid=uid,
                                      name=name,
                                      parent=parent,
-                                     spawn_pose=spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor)
 
+        self.relative_spawn_pose = relative_spawn_pose
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
         self.next_data_expected_time = None
@@ -84,7 +84,7 @@ class Sensor(Actor):
 
     def publish_tf(self, pose=None):
         if self.synchronous_mode:
-            pose = self.spawn_pose
+            pose = self.relative_spawn_pose
             child_frame_id = self.get_prefix()
             if self.parent is not None:
                 frame_id = self.parent.get_prefix()

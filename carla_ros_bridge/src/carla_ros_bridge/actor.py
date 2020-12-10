@@ -23,7 +23,7 @@ class Actor(PseudoActor):
     Generic base class for all carla actors
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
@@ -33,8 +33,6 @@ class Actor(PseudoActor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -43,7 +41,6 @@ class Actor(PseudoActor):
         super(Actor, self).__init__(uid=uid,
                                     name=name,
                                     parent=parent,
-                                    spawn_pose=spawn_pose,
                                     node=node)
         self.carla_actor = carla_actor
         self.carla_actor_id = carla_actor.id

@@ -20,7 +20,7 @@ class PseudoActor(object):
     Generic base class for Pseudo actors (that are not existing in Carla world)
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node):
+    def __init__(self, uid, name, parent, node):
         """
         Constructor
 
@@ -30,15 +30,12 @@ class PseudoActor(object):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.PseudoActor
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
         self.uid = uid
         self.name = name
         self.parent = parent
-        self.spawn_pose = spawn_pose
         self.node = node
 
         if self.uid is None:

@@ -23,7 +23,7 @@ class MarkerSensor(PseudoActor):
     Pseudo marker sensor
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
 
@@ -35,8 +35,6 @@ class MarkerSensor(PseudoActor):
         :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param actor_list: current list of actors
@@ -46,7 +44,6 @@ class MarkerSensor(PseudoActor):
         super(MarkerSensor, self).__init__(uid=uid,
                                            name=name,
                                            parent=parent,
-                                           spawn_pose=spawn_pose,
                                            node=node)
         self.actor_list = actor_list
 

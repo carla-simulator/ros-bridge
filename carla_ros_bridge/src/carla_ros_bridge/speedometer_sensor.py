@@ -23,7 +23,7 @@ class SpeedometerSensor(PseudoActor):
     Pseudo speedometer sensor
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node):
+    def __init__(self, uid, name, parent, node):
         """
         Constructor
 
@@ -33,8 +33,6 @@ class SpeedometerSensor(PseudoActor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
@@ -42,7 +40,6 @@ class SpeedometerSensor(PseudoActor):
         super(SpeedometerSensor, self).__init__(uid=uid,
                                                 name=name,
                                                 parent=parent,
-                                                spawn_pose=spawn_pose,
                                                 node=node)
 
         self.speedometer_publisher = rospy.Publisher(self.get_topic_prefix(),

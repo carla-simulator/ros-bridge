@@ -22,7 +22,7 @@ class LaneInvasionSensor(Sensor):
     Actor implementation details for a lane invasion sensor
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
@@ -32,8 +32,8 @@ class LaneInvasionSensor(Sensor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -44,7 +44,7 @@ class LaneInvasionSensor(Sensor):
         super(LaneInvasionSensor, self).__init__(uid=uid,
                                                  name=name,
                                                  parent=parent,
-                                                 spawn_pose=spawn_pose,
+                                                 relative_spawn_pose=relative_spawn_pose,
                                                  node=node,
                                                  carla_actor=carla_actor,
                                                  synchronous_mode=synchronous_mode,

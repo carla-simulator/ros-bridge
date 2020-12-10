@@ -34,7 +34,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -44,8 +44,8 @@ class Camera(Sensor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -56,7 +56,7 @@ class Camera(Sensor):
         super(Camera, self).__init__(uid=uid,
                                      name=name,
                                      parent=parent,
-                                     spawn_pose=spawn_pose,
+                                     relative_spawn_pose=relative_spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor,
                                      synchronous_mode=synchronous_mode)
@@ -174,7 +174,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
@@ -184,8 +184,8 @@ class RgbCamera(Camera):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -196,7 +196,7 @@ class RgbCamera(Camera):
         super(RgbCamera, self).__init__(uid=uid,
                                         name=name,
                                         parent=parent,
-                                        spawn_pose=spawn_pose,
+                                        relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
                                         synchronous_mode=synchronous_mode)
@@ -229,7 +229,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
@@ -239,8 +239,8 @@ class DepthCamera(Camera):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -251,7 +251,7 @@ class DepthCamera(Camera):
         super(DepthCamera, self).__init__(uid=uid,
                                           name=name,
                                           parent=parent,
-                                          spawn_pose=spawn_pose,
+                                          relative_spawn_pose=relative_spawn_pose,
                                           node=node,
                                           carla_actor=carla_actor,
                                           synchronous_mode=synchronous_mode)
@@ -306,7 +306,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
@@ -316,8 +316,8 @@ class SemanticSegmentationCamera(Camera):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -329,7 +329,7 @@ class SemanticSegmentationCamera(Camera):
             SemanticSegmentationCamera, self).__init__(uid=uid,
                                                        name=name,
                                                        parent=parent,
-                                                       spawn_pose=spawn_pose,
+                                                       relative_spawn_pose=relative_spawn_pose,
                                                        node=node,
                                                        synchronous_mode=synchronous_mode,
                                                        carla_actor=carla_actor)
@@ -363,7 +363,7 @@ class DVSCamera(Camera):
     Sensor implementation details for dvs cameras
     """
 
-    def __init__(self, uid, name, parent, spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -373,8 +373,8 @@ class DVSCamera(Camera):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param spawn_pose: the spawn pose of this
-        :type spawn_pose: geometry_msgs.Pose
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         :param carla_actor: carla actor object
@@ -385,7 +385,7 @@ class DVSCamera(Camera):
         super(DVSCamera, self).__init__(uid=uid,
                                         name=name,
                                         parent=parent,
-                                        spawn_pose=spawn_pose,
+                                        relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
                                         synchronous_mode=synchronous_mode)
