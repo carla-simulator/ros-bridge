@@ -30,8 +30,6 @@ class ActorControl(PseudoActor):
         :type uid: int
         :param name: name identifying this object
         :type name: string
-        :param carla_world: carla world object
-        :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
