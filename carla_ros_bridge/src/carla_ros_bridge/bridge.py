@@ -86,6 +86,9 @@ class CarlaRosBridge(object):
         # active sync mode in the ros bridge only if CARLA world is configured in sync mode and
         # passive mode is not enabled.
         self.sync_mode = self.carla_settings.synchronous_mode and not self.parameters["passive"]
+        if self.carla_settings.synchronous_mode and self.parameters["passive"]
+            rospy.loginfo(
+                "Passive mode is enabled and CARLA world is configured in synchronous mode. This configuration requires another client ticking the CARLA world.")
 
         self.carla_control_queue = queue.Queue()
 
