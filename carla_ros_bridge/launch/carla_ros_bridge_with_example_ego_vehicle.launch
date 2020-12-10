@@ -13,6 +13,9 @@
   <!-- Map to load on startup (either a predefined CARLA town (e.g. 'Town01'), or a OpenDRIVE map file) -->
   <arg name="town" default=''/>
 
+  <!-- Enable/disable configuring CARLA world -->
+  <arg name='configure_world' default=''/>
+
   <!-- Synchronous mode-->
   <arg name='synchronous_mode' default=''/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default=''/>
@@ -24,6 +27,7 @@
     <arg name='port' value='$(arg port)'/>
     <arg name='town' value='$(arg town)'/>
     <arg name='timeout' value='$(arg timeout)'/>
+    <arg name='configure_world' value='$(arg configure_world)'/>
     <arg name='synchronous_mode' value='$(arg synchronous_mode)'/>
     <arg name='synchronous_mode_wait_for_vehicle_control_command' value='$(arg synchronous_mode_wait_for_vehicle_control_command)'/>
     <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>

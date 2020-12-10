@@ -69,21 +69,20 @@ class CarlaRosBridge(object):
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
 
-        # set carla world settings
         self.carla_settings = carla_world.get_settings()
+        if self.parameters["configure_world"]:
+            # workaround: settings can only applied within non-sync mode
+            if self.carla_settings.synchronous_mode:
+                self.carla_settings.synchronous_mode = False
+                carla_world.apply_settings(self.carla_settings)
 
-        # workaround: settings can only applied within non-sync mode
-        if self.carla_settings.synchronous_mode:
-            self.carla_settings.synchronous_mode = False
+            rospy.loginfo("synchronous_mode: {}".format(
+                self.parameters["synchronous_mode"]))
+            self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
+            rospy.loginfo("fixed_delta_seconds: {}".format(
+                self.parameters["fixed_delta_seconds"]))
+            self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
             carla_world.apply_settings(self.carla_settings)
-
-        rospy.loginfo("synchronous_mode: {}".format(
-            self.parameters["synchronous_mode"]))
-        self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-        rospy.loginfo("fixed_delta_seconds: {}".format(
-            self.parameters["fixed_delta_seconds"]))
-        self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
-        carla_world.apply_settings(self.carla_settings)
 
         self.carla_control_queue = queue.Queue()
 

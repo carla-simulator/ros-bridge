@@ -29,6 +29,8 @@ class CarlaStatusPublisher(object):
         self.synchronous_mode = synchronous_mode
         self.synchronous_mode_running = True
         self.fixed_delta_seconds = fixed_delta_seconds
+        if self.fixed_delta_seconds is None:
+            self.fixed_delta_seconds = 0
         self.frame = 0
         self.carla_status_publisher = rospy.Publisher(
             "/carla/status", CarlaStatus, queue_size=10, latch=True)
