@@ -69,7 +69,7 @@ class CarlaRosBridge(object):
         self.shutdown = Event()
 
         self.carla_settings = carla_world.get_settings()
-        if self.parameters["configure_world"]:
+        if not self.parameters["passive"]:
             # workaround: settings can only applied within non-sync mode
             if self.carla_settings.synchronous_mode:
                 self.carla_settings.synchronous_mode = False
@@ -83,10 +83,14 @@ class CarlaRosBridge(object):
             self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
             carla_world.apply_settings(self.carla_settings)
 
+        # active sync mode in the ros bridge only if CARLA world is configured in sync mode and
+        # passive mode is not enabled.
+        self.sync_mode = self.carla_settings.synchronous_mode and not self.parameters["passive"]
+
         self.carla_control_queue = queue.Queue()
 
         # actor factory
-        self.actor_factory = ActorFactory(self, carla_world, self.carla_settings.synchronous_mode)
+        self.actor_factory = ActorFactory(self, carla_world, self.sync_mode)
 
         # add world info
         self.world_info = WorldInfo(carla_world=self.carla_world)
@@ -116,7 +120,7 @@ class CarlaRosBridge(object):
         self._expected_ego_vehicle_control_command_ids = []
         self._expected_ego_vehicle_control_command_ids_lock = Lock()
 
-        if self.carla_settings.synchronous_mode:
+        if self.sync_mode:
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
@@ -364,7 +368,7 @@ class CarlaRosBridge(object):
                 continue
 
     def _ego_vehicle_control_applied_callback(self, ego_vehicle_id):
-        if not self.carla_settings.synchronous_mode or \
+        if not self.sync_mode or \
                 not self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
             return
         with self._expected_ego_vehicle_control_command_ids_lock:
@@ -400,7 +404,7 @@ class CarlaRosBridge(object):
         self.shutdown.set()
         self.carla_weather_subscriber.unregister()
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
-        if not self.carla_settings.synchronous_mode:
+        if not self.sync_mode:
             if self.on_tick_id:
                 self.carla_world.remove_on_tick(self.on_tick_id)
             self.actor_factory.thread.join()
