@@ -38,7 +38,10 @@ class Actor(PseudoActor):
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         """
-        super(Actor, self).__init__(uid=uid, name=name, parent=parent, node=node)
+        super(Actor, self).__init__(uid=uid,
+                                    name=name,
+                                    parent=parent,
+                                    node=node)
         self.carla_actor = carla_actor
         self.carla_actor_id = carla_actor.id
 

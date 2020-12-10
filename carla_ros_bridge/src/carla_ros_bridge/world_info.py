@@ -49,7 +49,6 @@ class WorldInfo(object):
         """
         rospy.logdebug("Destroying WorldInfo()")
         self.carla_map = None
-        super(WorldInfo, self).destroy()
 
     def update(self, frame, timestamp):
         """
