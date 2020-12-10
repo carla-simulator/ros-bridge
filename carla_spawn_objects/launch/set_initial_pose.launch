@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+  <arg name='role_name' default='ego_vehicle'/>
+  <!-- id of the actor.pseudo.control actor-->
+  <arg name='control_id' default='control'/>
+  
+  <node pkg="carla_spawn_objects" type="set_initial_pose.py" name="set_initial_pose_$(arg role_name)" output="screen">
+    <param name="role_name" value="$(arg role_name)" />
+    <param name="control_id" value="$(arg control_id)" />
+  </node>
+</launch>

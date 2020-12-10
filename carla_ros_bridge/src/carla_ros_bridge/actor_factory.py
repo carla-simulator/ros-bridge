@@ -118,7 +118,7 @@ class ActorFactory(object):
 
         name = carla_actor.attributes.get("role_name", "")
         if not name:
-            name  = str(carla_actor.id)
+            name = str(carla_actor.id)
         return self.create(carla_actor.type_id, name, parent_id, None, carla_actor)
 
     def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None):

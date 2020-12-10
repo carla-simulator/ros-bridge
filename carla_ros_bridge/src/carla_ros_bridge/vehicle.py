@@ -72,7 +72,7 @@ class Vehicle(TrafficParticipant):
         color.g = 0
         color.b = 0
         return color
-    
+
     def get_marker_pose(self):
         """
         Function to return the pose for vehicles.

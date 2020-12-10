@@ -21,14 +21,12 @@ class WorldInfo(object):
     Publish the map
     """
 
-    def __init__(self, carla_world, node):
+    def __init__(self, carla_world):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
-        :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
         """
 
         self.carla_map = carla_world.get_map()
