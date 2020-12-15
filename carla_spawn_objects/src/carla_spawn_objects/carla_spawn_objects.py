@@ -53,6 +53,8 @@ class CarlaSpawnObjects(object):
         self.global_sensors = []
 
         rospy.wait_for_service('/carla/spawn_object')
+        rospy.wait_for_service('/carla/destroy_object')
+
         self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
         self.destroy_object_service = rospy.ServiceProxy("/carla/destroy_object", DestroyObject)
 
@@ -327,15 +329,6 @@ class CarlaSpawnObjects(object):
         """
         main loop
         """
-        # wait for ros-bridge to set up CARLA world
-        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
-        try:
-            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException:
-            rospy.logerr("Timeout while waiting for world info!")
-            sys.exit(1)
-
-        rospy.loginfo("World info is available. Spawning objects...")
         rospy.on_shutdown(self.destroy)
         self.spawn_objects()
         try:

@@ -107,15 +107,6 @@ class CarlaRosBridge(object):
             self.carla_settings.synchronous_mode,
             self.carla_settings.fixed_delta_seconds)
 
-        self._registered_actors = []
-        self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
-                                                  self.spawn_object)
-        self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
-                                                    self.destroy_object)
-
-        self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
-                                                    self.get_blueprints)
-
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
         # Before tick(), the list is filled and the loop waits until the list is empty.
@@ -140,6 +131,16 @@ class CarlaRosBridge(object):
 
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
+
+        # services configuration.
+        self._registered_actors = []
+        self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
+                                                  self.spawn_object)
+        self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
+                                                    self.destroy_object)
+
+        self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
+                                                    self.get_blueprints)
 
         self.carla_weather_subscriber = \
             rospy.Subscriber("/carla/weather_control",
