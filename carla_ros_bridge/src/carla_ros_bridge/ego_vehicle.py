@@ -10,19 +10,15 @@
 Classes to handle Carla vehicles
 """
 import math
-import numpy
 
 import rospy
 
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Bool
-from geometry_msgs.msg import Transform
 
 from carla import VehicleControl
-from carla import Vector3D
 
 from carla_ros_bridge.vehicle import Vehicle
-import carla_common.transforms as transforms
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel,\
     CarlaEgoVehicleControl, CarlaEgoVehicleStatus

@@ -10,22 +10,19 @@ base class for spawning objects (carla actors and pseudo_actors) in ROS
 Gets config file from ros parameter ~objects_definition_file and spawns corresponding objects
 through ROS service /carla/spawn_object.
 
-Looks for an initial spawn point first in the launchfile, then in the config file, and 
+Looks for an initial spawn point first in the launchfile, then in the config file, and
 finally ask for a random one to the spawn service.
 
 """
 
-from abc import abstractmethod
-
 import os
-import sys
 import math
 import json
 import rospy
 from tf.transformations import quaternion_from_euler
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
-from carla_msgs.msg import CarlaWorldInfo, CarlaActorList
+from carla_msgs.msg import CarlaActorList
 
 
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
@@ -70,7 +67,6 @@ class CarlaSpawnObjects(object):
         if not os.path.exists(self.objects_definition_file):
             raise RuntimeError(
                 "Could not read sensor-definition from {}".format(self.objects_definition_file))
-        json_sensors = None
         with open(self.objects_definition_file) as handle:
             json_actors = json.loads(handle.read())
 
@@ -302,6 +298,8 @@ class CarlaSpawnObjects(object):
             destroy_object_request = DestroyObjectRequest(actor_id)
             try:
                 response = self.destroy_object_service(destroy_object_request)
+                if response.id == -1:
+                    rospy.logwarn(response.error_string)
             except rospy.ServiceException as e:
                 rospy.logwarn_once(str(e))
         self.global_sensors = []

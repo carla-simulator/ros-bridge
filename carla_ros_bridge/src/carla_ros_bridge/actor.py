@@ -10,7 +10,6 @@
 Base Classes to handle Actor objects
 """
 
-import numpy as np
 from geometry_msgs.msg import TransformStamped
 
 from carla_ros_bridge.pseudo_actor import PseudoActor

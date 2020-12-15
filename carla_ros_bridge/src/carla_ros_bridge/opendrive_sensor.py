@@ -10,7 +10,6 @@ handle a opendrive sensor
 """
 
 import rospy
-import numpy as np
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
