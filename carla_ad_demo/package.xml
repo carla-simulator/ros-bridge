@@ -7,7 +7,7 @@
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>carla_ros_bridge</exec_depend>
-  <exec_depend>carla_ego_vehicle</exec_depend>
+  <exec_depend>carla_spawn_objects</exec_depend>
   <exec_depend>carla_waypoint_publisher</exec_depend>
   <exec_depend>carla_ad_agent</exec_depend>
   <exec_depend>carla_manual_control</exec_depend>

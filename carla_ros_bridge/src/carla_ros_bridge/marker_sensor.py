@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2019 Intel Corporation
+# Copyright (c) 2020 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 """
-handle a object sensor
+handle a marker sensor
 """
 
 import rospy
 
-from derived_object_msgs.msg import ObjectArray
-from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_ros_bridge.traffic_participant import TrafficParticipant
+
+from visualization_msgs.msg import MarkerArray
 
 
-class ObjectSensor(PseudoActor):
+class MarkerSensor(PseudoActor):
 
     """
-    Pseudo object sensor
+    Pseudo marker sensor
     """
 
     def __init__(self, uid, name, parent, node, actor_list):
@@ -31,6 +31,8 @@ class ObjectSensor(PseudoActor):
         :type uid: int
         :param name: name identiying this object
         :type name: string
+        :param carla_world: carla world object
+        :type carla_world: carla.World
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
@@ -39,13 +41,14 @@ class ObjectSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(ObjectSensor, self).__init__(uid=uid,
+        super(MarkerSensor, self).__init__(uid=uid,
                                            name=name,
                                            parent=parent,
                                            node=node)
         self.actor_list = actor_list
-        self.object_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                ObjectArray,
+
+        self.marker_publisher = rospy.Publisher(self.get_topic_prefix(),
+                                                MarkerArray,
                                                 queue_size=10)
 
     def destroy(self):
@@ -54,7 +57,7 @@ class ObjectSensor(PseudoActor):
         :return:
         """
         self.actor_list = None
-        super(ObjectSensor, self).destroy()
+        super(MarkerSensor, self).destroy()
 
     @staticmethod
     def get_blueprint_name():
@@ -62,7 +65,7 @@ class ObjectSensor(PseudoActor):
         Get the blueprint identifier for the pseudo sensor
         :return: name
         """
-        return "sensor.pseudo.objects"
+        return "sensor.pseudo.markers"
 
     def update(self, frame, timestamp):
         """
@@ -71,13 +74,8 @@ class ObjectSensor(PseudoActor):
         - tf global frame
         :return:
         """
-        ros_objects = ObjectArray(header=self.get_msg_header("map"))
-        for actor_id in self.actor_list.keys():
-            # currently only Vehicles and Walkers are added to the object array
-            if self.parent is None or self.parent.uid == actor_id:
-                actor = self.actor_list[actor_id]
-                if isinstance(actor, Vehicle):
-                    ros_objects.objects.append(actor.get_object_info())
-                elif isinstance(actor, Walker):
-                    ros_objects.objects.append(actor.get_object_info())
-        self.object_publisher.publish(ros_objects)
+        marker_array_msg = MarkerArray()
+        for actor in self.actor_list.values():
+            if isinstance(actor, TrafficParticipant):
+                marker_array_msg.markers.append(actor.get_marker())
+        self.marker_publisher.publish(marker_array_msg)

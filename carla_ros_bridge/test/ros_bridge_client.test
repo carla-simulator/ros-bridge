@@ -4,7 +4,7 @@
     <arg name='enable_rosbag' default='False'/>
     <rosparam file="$(find carla_ros_bridge)/config/settings.yaml" command="load" />
     <param name='enable_rosbag' type="boolean" value="False"/>
-    <arg name="sensor_definition_file" default="$(find carla_ros_bridge)/test/test_sensors.json"/>
+    <arg name="objects_definition_file" default="$(find carla_ros_bridge)/test/test_objects.json"/>
     <arg name="vehicle_filter" default='vehicle.tesla.model3'/>
 
     <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
@@ -12,11 +12,8 @@
       <arg name='port' value='$(arg port)'/>
     </include>
 
-    <include file="$(find carla_ego_vehicle)/launch/carla_ego_vehicle.launch">
-        <arg name='host' value='$(arg host)'/>
-        <arg name='port' value='$(arg port)'/>
-        <arg name="vehicle_filter" value='$(arg vehicle_filter)'/>
-        <arg name="sensor_definition_file" value='$(arg sensor_definition_file)'/>
+    <include file="$(find carla_spawn_objects)/launch/carla_spawn_objects.launch">
+        <arg name="objects_definition_file" value='$(arg objects_definition_file)'/>
     </include>
 
     <test test-name="testPublishedData" pkg="carla_ros_bridge" type="ros_bridge_client.py" time-limit="20.0"/>

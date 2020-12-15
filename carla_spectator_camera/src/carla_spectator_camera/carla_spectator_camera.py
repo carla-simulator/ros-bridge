@@ -11,15 +11,20 @@ The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
 
-import sys
 import math
-import rospy
-from tf.transformations import euler_from_quaternion
-import tf
-from geometry_msgs.msg import PoseStamped
-from carla_msgs.msg import CarlaWorldInfo
+import sys
 
 import carla
+import rospy
+
+from tf.transformations import euler_from_quaternion
+
+from carla_msgs.msg import CarlaWorldInfo
+from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
+from diagnostic_msgs.msg import KeyValue
+from geometry_msgs.msg import PoseStamped
+
+import carla_common.transforms as trans
 
 # ==============================================================================
 # -- CarlaSpectatorCamera ------------------------------------------------------------
@@ -39,7 +44,6 @@ class CarlaSpectatorCamera(object):
         Constructor
         """
         rospy.init_node('spectator_camera', anonymous=True)
-        self.listener = tf.TransformListener()
         self.role_name = rospy.get_param("/role_name", "ego_vehicle")
         self.camera_resolution_x = rospy.get_param("~resolution_x", 800)
         self.camera_resolution_y = rospy.get_param("~resolution_y", 600)
@@ -51,6 +55,13 @@ class CarlaSpectatorCamera(object):
         self.pose = None
         self.camera_actor = None
         self.ego_vehicle = None
+
+        rospy.wait_for_service('/carla/spawn_object')
+        rospy.wait_for_service('/carla/destroy_object')
+
+        self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
+        self.destroy_object_service = rospy.ServiceProxy("/carla/destroy_object", DestroyObject)
+
         rospy.Subscriber("/carla/{}/spectator_pose".format(self.role_name),
                          PoseStamped, self.pose_received)
 
@@ -96,24 +107,27 @@ class CarlaSpectatorCamera(object):
         """
         Attach the camera to the ego vehicle
         """
-        bp_library = self.world.get_blueprint_library()
-        try:
-            bp = bp_library.find("sensor.camera.rgb")
-            bp.set_attribute('role_name', "spectator_view")
-            rospy.loginfo("Creating camera with resolution {}x{}, fov {}".format(
-                self.camera_resolution_x,
-                self.camera_resolution_y,
-                self.camera_fov))
-            bp.set_attribute('image_size_x', str(self.camera_resolution_x))
-            bp.set_attribute('image_size_y', str(self.camera_resolution_y))
-            bp.set_attribute('fov', str(self.camera_fov))
-        except KeyError as e:
-            rospy.logfatal("Camera could not be spawned: '{}'".format(e))
         transform = self.get_camera_transform()
         if not transform:
             transform = carla.Transform()
-        self.camera_actor = self.world.spawn_actor(bp, transform,
-                                                   attach_to=ego_actor)
+
+        spawn_object_request = SpawnObjectRequest()
+        spawn_object_request.type = "sensor.camera.rgb"
+        spawn_object_request.id = "spectator_view"
+        spawn_object_request.attach_to = ego_actor.id
+        spawn_object_request.transform = trans.carla_transform_to_ros_pose(transform)
+        spawn_object_request.random_pose = False
+        spawn_object_request.attributes.extend([
+            KeyValue("image_size_x", str(self.camera_resolution_x)),
+            KeyValue("image_size_y", str(self.camera_resolution_y)),
+            KeyValue("fov", str(self.camera_fov))
+        ])
+
+        response = self.spawn_object_service(spawn_object_request)
+        if response.id == -1:
+            raise Exception(response.error_string)
+
+        self.camera_actor = self.world.get_actor(response.id)
 
     def find_ego_vehicle_actor(self):
         """
@@ -147,22 +161,18 @@ class CarlaSpectatorCamera(object):
         destroy the camera
         """
         if self.camera_actor:
-            self.camera_actor.destroy()
+            destroy_object_request = DestroyObjectRequest(self.camera_actor.id)
+            try:
+                self.destroy_object_service(destroy_object_request)
+            except rospy.ServiceException as e:
+                rospy.logwarn_once(str(e))
+
             self.camera_actor = None
 
     def run(self):
         """
         main loop
         """
-        # wait for ros-bridge to set up CARLA world
-        rospy.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
-        try:
-            rospy.wait_for_message("/carla/world_info", CarlaWorldInfo, timeout=10.0)
-        except rospy.ROSException:
-            rospy.logerr("Error while waiting for world info!")
-            sys.exit(1)
-        rospy.loginfo("CARLA world available. Waiting for ego vehicle...")
-
         client = carla.Client(self.host, self.port)
         client.set_timeout(self.timeout)
         self.world = client.get_world()

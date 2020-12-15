@@ -4,6 +4,8 @@ carla:
   host: localhost
   port: 2000
   timeout: 10
+  # enable/disable passive mode.
+  passive: False
   # enable/disable synchronous mode. If enabled ros-bridge waits until
   # expected data is received for all sensors
   synchronous_mode: false
