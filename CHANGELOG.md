@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Added passive mode. Wordl configuration and ticking are performed by other clients.
 *   Support spawning of pseudo-actors through service
 *   Use new spawning service to combine carla_infrastructure and carla_ego_vehicle into carla_spawn_objects
 *   Reworked ROS topics

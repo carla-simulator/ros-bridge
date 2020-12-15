@@ -112,7 +112,7 @@ class CarlaSpectatorCamera(object):
             transform = carla.Transform()
 
         spawn_object_request = SpawnObjectRequest()
-        spawn_object_request.type = "sensor.camera.rgb" 
+        spawn_object_request.type = "sensor.camera.rgb"
         spawn_object_request.id = "spectator_view"
         spawn_object_request.attach_to = ego_actor.id
         spawn_object_request.transform = trans.carla_transform_to_ros_pose(transform)
@@ -161,7 +161,7 @@ class CarlaSpectatorCamera(object):
         destroy the camera
         """
         if self.camera_actor:
-            destroy_object_request = DestroyObjectRequest(self.camera_actor.id) 
+            destroy_object_request = DestroyObjectRequest(self.camera_actor.id)
             try:
                 self.destroy_object_service(destroy_object_request)
             except rospy.ServiceException as e:

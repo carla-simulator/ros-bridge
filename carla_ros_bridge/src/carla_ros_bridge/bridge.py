@@ -149,7 +149,7 @@ class CarlaRosBridge(object):
     def _spawn_actor(self, req):
         if "*" in req.type:
             blueprint = secure_random.choice(
-            self.carla_world.get_blueprint_library().filter(req.type))
+                self.carla_world.get_blueprint_library().filter(req.type))
         else:
             blueprint = self.carla_world.get_blueprint_library().find(req.type)
         blueprint.set_attribute('role_name', req.id)
@@ -170,7 +170,8 @@ class CarlaRosBridge(object):
                 raise IndexError("Parent actor {} not found".format(req.attach_to))
 
         carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
-        actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform, carla_actor)
+        actor = self.actor_factory.create(
+            req.type, req.id, req.attach_to, req.transform, carla_actor)
         return actor.uid
 
     def _spawn_pseudo_actor(self, req):
