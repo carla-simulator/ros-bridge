@@ -8,9 +8,18 @@
 
 import rospy
 
+try:
+    import queue
+except ImportError:
+    import Queue as queue
+
 import time
 from threading import Thread, Lock
 import itertools
+
+import carla
+
+import carla_common.transforms as trans
 
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.spectator import Spectator

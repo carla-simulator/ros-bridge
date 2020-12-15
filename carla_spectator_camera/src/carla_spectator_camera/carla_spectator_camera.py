@@ -12,12 +12,14 @@ to /carla/<ROLENAME>/spectator_position.
 """
 
 import math
+import sys
 
 import carla
 import rospy
 
 from tf.transformations import euler_from_quaternion
 
+from carla_msgs.msg import CarlaWorldInfo
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import PoseStamped

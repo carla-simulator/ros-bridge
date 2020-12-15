@@ -22,6 +22,8 @@ import sys
 import threading
 
 import rospy
+import tf
+from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans

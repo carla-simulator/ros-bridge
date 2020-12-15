@@ -48,10 +48,7 @@ def main():
     main function
     """
     set_initial_pose_node = SetInitialPose()
-    try:
-        rospy.spin()
-    finally:
-        del set_initial_pose_node
+    rospy.spin()
 
 
 if __name__ == '__main__':

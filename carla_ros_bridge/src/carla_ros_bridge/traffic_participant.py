@@ -10,6 +10,8 @@
 Classes to handle Carla traffic participants
 """
 
+import rospy
+
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
 from std_msgs.msg import ColorRGBA
