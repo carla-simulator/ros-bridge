@@ -6,8 +6,6 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
-import rospy
-
 try:
     import queue
 except ImportError:
@@ -142,7 +140,7 @@ class ActorFactory(object):
             actor = self._create_object(uid, type_id, name, parent, spawn_pose, carla_actor)
             self.actors[actor.uid] = actor
 
-            rospy.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
+            self.node.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
 
             return actor
 
@@ -160,7 +158,7 @@ class ActorFactory(object):
             actor = self.actors.pop(actor_id)
             actor.destroy()
 
-            rospy.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))
+            self.node.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))
 
     def get_pseudo_sensor_types(self):
         pseudo_sensors = []

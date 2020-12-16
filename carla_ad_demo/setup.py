@@ -1,5 +1,5 @@
 """
-Setup for carla_ego_vehicle
+Setup for carla_ad_demo
 """
 import os
 from glob import glob

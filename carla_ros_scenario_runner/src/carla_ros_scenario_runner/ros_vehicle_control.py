@@ -32,8 +32,7 @@ class RosVehicleControl(BasicControl):
 
     def __init__(self, actor, args=None):
         super(RosVehicleControl, self).__init__(actor)
-        if ROS_VERSION == 2:
-            rclpy.init()
+        ros_init(args=None)
 
         self._carla_actor = actor
         self._role_name = actor.attributes["role_name"]

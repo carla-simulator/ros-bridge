@@ -13,7 +13,14 @@ import time
 from nav_msgs.msg import Path  # pylint: disable=import-error
 from std_msgs.msg import Float64  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, ROSInterruptException, ros_ok, QoSProfile, ROSException, latch_on
+from ros_compatibility import (
+    CompatibleNode,
+    ROSInterruptException,
+    ros_ok,
+    QoSProfile,
+    ROSException,
+    latch_on,
+    ros_init)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -163,8 +170,7 @@ def main(args=None):
 
     :return:
     """
-    if ROS_VERSION == 2:
-        rclpy.init()
+    ros_init(args)
 
     controller = CarlaAdAgent()
     try:

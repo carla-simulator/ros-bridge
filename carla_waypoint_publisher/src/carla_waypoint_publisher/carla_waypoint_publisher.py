@@ -33,8 +33,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans
 from carla_msgs.msg import CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypointResponse, GetWaypoint
-from carla_waypoint_types.srv import GetActorWaypointResponse, GetActorWaypoint
+from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint
 
 import carla
 
@@ -43,6 +42,8 @@ from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
+if ROS_VERSION == 1:
+    from carla_waypoint_types.srv import GetWaypointResponse, GetActorWaypointResponse
 
 class CarlaToRosWaypointConverter(CompatibleNode):
 
@@ -272,8 +273,7 @@ def main(args=None):
     """
     main function
     """
-    if ROS_VERSION == 2:
-        rclpy.init(args=None)
+    ros_init(args)
 
     try:
         waypointConverter = CarlaToRosWaypointConverter()

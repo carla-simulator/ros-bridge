@@ -37,10 +37,5 @@ elif ROS_VERSION == 2:
         description='The ros_compatibility package',
         license='MIT',
         tests_require=['pytest'],
-        entry_points={
-            'console_scripts': [
-                'ros_compatible_node = ros_compatibility.ros_compatible_node:main'
-            ],
-        },
         package_dir={'': 'src'},
     )

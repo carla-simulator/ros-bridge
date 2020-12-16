@@ -27,7 +27,8 @@ from ros_compatibility import (
     euler_from_quaternion,
     QoSProfile,
     ROSException,
-    ROSInterruptException
+    ROSInterruptException,
+    ros_init
 )
 # ==============================================================================
 # -- CarlaSpectatorCamera ------------------------------------------------------------
@@ -190,12 +191,11 @@ class CarlaSpectatorCamera(CompatibleNode):
 # ==============================================================================
 
 
-def main():
+def main(args=None):
     """
     main function
     """
-    if ROS_VERSION == 2:
-        rclpy.init()
+    ros_init(args)
 
     carla_spectator_camera = CarlaSpectatorCamera()
     try:

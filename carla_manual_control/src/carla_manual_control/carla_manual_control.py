@@ -36,7 +36,12 @@ from carla_msgs.msg import CarlaCollisionEvent
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Bool
-from ros_compatibility import CompatibleNode, latch_on, euler_from_quaternion, ros_ok
+from ros_compatibility import (
+    CompatibleNode,
+    latch_on,
+    euler_from_quaternion,
+    ros_ok,
+    ros_init)
 import os
 import datetime
 import math
@@ -467,12 +472,12 @@ class HUD(CompatibleNode):
         try:
             (position, quaternion) = self.tf_listener.lookupTransform(
                 '/map', self.role_name, rospy.Time())
-            _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
+            _, _, yaw = euler_from_quaternion(quaternion)
             yaw = -math.degrees(yaw)
             x = position[0]
             y = -position[1]
             z = position[2]
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        except (LookupException, ConnectivityException, ExtrapolationException):
             x = 0
             y = 0
             z = 0
@@ -675,11 +680,11 @@ def main(args=None):
     """
     main function
     """
+    ros_init(args)
     if ROS_VERSION == 1:
         rospy.init_node('carla_manual_control', anonymous=True)
         role_name = rospy.get_param("~role_name", "ego_vehicle")
     elif ROS_VERSION == 2:
-        rclpy.init(args=args)
         node = rclpy.create_node('carla_manual_control')
         role_name = rclpy.Parameter("~role_name", value="ego_vehicle").value
         thread = Thread()

@@ -9,11 +9,16 @@
 handle a tf sensor
 """
 
-import rospy
-
+import os
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
-import tf
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    import tf
+elif ROS_VERSION == 2:
+    import tf2_ros
+
 
 
 class TFSensor(PseudoActor):
@@ -61,4 +66,4 @@ class TFSensor(PseudoActor):
         self.tf_broadcaster.sendTransform(
             (position.x, position.y, position.z),
             (orientation.x, orientation.y, orientation.z, orientation.w),
-            rospy.Time.now(), self.parent.get_prefix(), "map")
+            ros_timestamp(self.ros_node.get_time(), from_sec=True), self.parent.get_prefix(), "map")

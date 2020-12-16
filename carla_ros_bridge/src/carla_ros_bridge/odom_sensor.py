@@ -9,8 +9,6 @@
 handle a odom sensor
 """
 
-import rospy
-
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from nav_msgs.msg import Odometry
@@ -43,8 +41,8 @@ class OdometrySensor(PseudoActor):
                                              parent=parent,
                                              node=node)
 
-        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                  Odometry,
+        self.odometry_publisher = node.new_publisher(Odometry,
+           self.get_topic_prefix(),
                                                   queue_size=10)
 
     @staticmethod

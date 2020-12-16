@@ -9,6 +9,9 @@ if ROS_VERSION == 1:
 
     latch_on = True
 
+    def ros_init(args=None):
+        pass
+    
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         if from_sec:
             return rospy.Time.from_sec(sec)
@@ -150,6 +153,9 @@ elif ROS_VERSION == 2:
     from transforms3d.quaternions import mat2quat, qmult
 
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+
+    def ros_init(args=None):
+        rclpy.init(args=args)
 
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         time = Time()

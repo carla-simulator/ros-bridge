@@ -9,7 +9,12 @@ receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
 
 use max wheel steer angle
 """
-from ros_compatibility import CompatibleNode, ros_ok, ROSException, ROSInterruptException
+from ros_compatibility import (
+    CompatibleNode, 
+    ros_ok, 
+    ROSException, 
+    ROSInterruptException,
+    ros_init)
 import sys
 from geometry_msgs.msg import Twist  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo  # pylint: disable=import-error
@@ -110,13 +115,13 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
                 self.logwarn("Error while publishing control: {}".format(e))
 
 
-def main():
+def main(args=None):
     """
     main function
 
     :return:
     """
-    # rospy.init_node('convert_twist_to_vehicle_control', anonymous=True)
+    ros_init(args)
 
     role_name = None
     twist_to_vehicle_control = None
@@ -125,7 +130,6 @@ def main():
         twist_to_vehicle_control = TwistToVehicleControl()
         role_name = rospy.get_param("~role_name", "ego_vehicle")
     elif ROS_VERSION == 2:
-        rclpy.init(args=None)
         twist_to_vehicle_control = TwistToVehicleControl()
         executor = rclpy.executors.MultiThreadedExecutor()
         executor.add_node(twist_to_vehicle_control)

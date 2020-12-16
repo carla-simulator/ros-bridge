@@ -8,7 +8,7 @@
 """
 Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
-
+import numpy as np
 from std_msgs.msg import Header
 
 from ros_compatibility import (

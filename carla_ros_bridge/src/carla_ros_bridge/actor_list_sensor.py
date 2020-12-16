@@ -9,8 +9,6 @@
 handle a actor list sensor
 """
 
-import rospy
-
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo
@@ -44,9 +42,7 @@ class ActorListSensor(PseudoActor):
                                               parent=parent,
                                               node=node)
         self.actor_list = actor_list
-        self.actor_list_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                    CarlaActorList,
-                                                    queue_size=10)
+        self.actor_list_publisher = sel.new_publisher(CarlaActorList, self.get_topic_prefix())
 
     def destroy(self):
         """

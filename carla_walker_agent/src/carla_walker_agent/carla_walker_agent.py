@@ -13,7 +13,12 @@ from nav_msgs.msg import Path, Odometry
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Pose, Vector3
 from carla_msgs.msg import CarlaWalkerControl
-from ros_compatibility import CompatibleNode, QoSProfile, ros_ok, ROSInterruptException
+from ros_compatibility import (
+    CompatibleNode, 
+    QoSProfile, 
+    ros_ok, 
+    ROSInterruptException,
+    ros_init)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
@@ -139,15 +144,14 @@ class CarlaWalkerAgent(CompatibleNode):
                 pass
 
 
-def main():
+def main(args=None):
     """
 
     main function
 
     :return:
     """
-    if ROS_VERSION == 2:
-        rclpy.init()
+    ros_init(args)
 
     controller = CarlaWalkerAgent()
 

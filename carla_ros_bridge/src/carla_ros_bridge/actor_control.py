@@ -9,11 +9,11 @@
 provide functions to control actors 
 """
 
-import rospy
 import numpy
 import carla_common.transforms as trans
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from geometry_msgs.msg import Pose, Twist
+from carla import Vector3D
 
 
 class ActorControl(PseudoActor):
@@ -41,14 +41,13 @@ class ActorControl(PseudoActor):
                                            parent=parent,
                                            node=node)
 
-        self.set_location_subscriber = rospy.Subscriber(self.get_topic_prefix() +
-                                                        "/set_transform",
-                                                        Pose,
+        self.set_location_subscriber = self.node.create_subscriber(Pose,
+                     self.get_topic_prefix() + "/set_transform",
                                                         self.on_pose)
 
-        self.twist_control_subscriber = rospy.Subscriber(
+        self.twist_control_subscriber = self.node.create_subscriber(Twist,
             self.get_topic_prefix() + "/set_target_velocity",
-            Twist, self.on_twist)
+            self.on_twist)
 
     def destroy(self):
         """
@@ -94,7 +93,7 @@ class ActorControl(PseudoActor):
             linear_velocity.y = -rotated_linear_vector[1]
             linear_velocity.z = rotated_linear_vector[2]
 
-            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
+            self.node.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
             self.carla_actor.set_target_velocity(linear_velocity)
             self.carla_actor.set_target_angular_velocity(angular_velocity)

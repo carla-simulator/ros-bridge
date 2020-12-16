@@ -17,7 +17,8 @@ from ros_compatibility import (
     ros_shutdown,
     ros_timestamp,
     QoSProfile,
-    latch_on)
+    latch_on,
+    ros_init)
 
 try:
     import queue
@@ -43,8 +44,7 @@ from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
-from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
-
+from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
 
 # to generate a random spawning position or vehicles
 secure_random = random.SystemRandom()
@@ -54,6 +54,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error
+    from carla_msgs.srv import SpawnObjectResponse, DestroyObjectResponse, GetBlueprintsResponse
 elif ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
@@ -107,10 +108,10 @@ class CarlaRosBridge(CompatibleNode):
                 self.carla_settings.synchronous_mode = False
                 carla_world.apply_settings(self.carla_settings)
 
-            rospy.loginfo("synchronous_mode: {}".format(
+            self.loginfo("synchronous_mode: {}".format(
                 self.parameters["synchronous_mode"]))
             self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-            rospy.loginfo("fixed_delta_seconds: {}".format(
+            self.loginfo("fixed_delta_seconds: {}".format(
                 self.parameters["fixed_delta_seconds"]))
             self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
             carla_world.apply_settings(self.carla_settings)
@@ -123,7 +124,7 @@ class CarlaRosBridge(CompatibleNode):
         # passive mode is not enabled.
         self.sync_mode = self.carla_settings.synchronous_mode and not self.parameters["passive"]
         if self.carla_settings.synchronous_mode and self.parameters["passive"]:
-            rospy.loginfo(
+            self.loginfo(
                 "Passive mode is enabled and CARLA world is configured in synchronous mode. This configuration requires another client ticking the CARLA world.")
 
         self.carla_control_queue = queue.Queue()
@@ -132,9 +133,9 @@ class CarlaRosBridge(CompatibleNode):
         self.actor_factory = ActorFactory(self, carla_world, self.sync_mode)
 
         # add world info
-        self.world_info = WorldInfo(carla_world=self.carla_world)
+        self.world_info = WorldInfo(carla_world=self.carla_world, node=self)
         # add debug helper
-        self.debug_helper = DebugHelper(carla_world.debug)
+        self.debug_helper = DebugHelper(carla_world.debug, self)
 
         # Communication topics
         if ROS_VERSION == 1:
@@ -144,7 +145,8 @@ class CarlaRosBridge(CompatibleNode):
 
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
-            self.carla_settings.fixed_delta_seconds)
+            self.carla_settings.fixed_delta_seconds,
+            self)
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -174,12 +176,12 @@ class CarlaRosBridge(CompatibleNode):
 
         # services configuration.
         self._registered_actors = []
-        self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
+        self.spawn_object_service = self.new_service(SpawnObject, "/carla/spawn_object", 
                                                   self.spawn_object)
-        self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
+        self.destroy_object_service = self.new_service(DestroyObject, "/carla/destroy_object", 
                                                     self.destroy_object)
 
-        self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
+        self.get_blueprints_service = self.new_service(GetBlueprints, "/carla/get_blueprints", 
                                                     self.get_blueprints)
 
         self.carla_weather_subscriber = \
@@ -230,7 +232,7 @@ class CarlaRosBridge(CompatibleNode):
                 return SpawnObjectResponse(id_, "")
 
             except Exception as e:
-                rospy.logwarn("Error spawning object '{}: {}".format(req.type, e))
+                self.logwarn("Error spawning object '{}: {}".format(req.type, e))
                 return SpawnObjectResponse(-1, str(e))
 
     def _destroy_actor(self, uid):
@@ -372,27 +374,6 @@ class CarlaRosBridge(CompatibleNode):
                                  carla_snapshot.timestamp.elapsed_seconds)
                 self.actor_factory.lock.release()
 
-    def run(self):
-        """
-        Run the bridge functionality.
-
-        Registers on shutdown callback at rospy and spins ROS.
-
-        :return:
-        """
-        rospy.on_shutdown(self.on_shutdown)
-        rospy.spin()
-
-    def on_shutdown(self):
-        """
-        Function to be called on shutdown.
-
-        This function is registered at rospy as shutdown handler.
-
-        """
-        rospy.loginfo("Shutdown requested")
-        self.destroy()
-
     def _update(self, frame_id, timestamp):
         """
         update all actors
@@ -432,9 +413,11 @@ class CarlaRosBridge(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        self.ros_timestamp = rospy.Time.from_sec(
-            carla_timestamp.elapsed_seconds)
-        self.clock_publisher.publish(Clock(self.ros_timestamp))
+        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+        if ROS_VERSION == 1:
+            self.clock_publisher.publish(Clock(self.ros_timestamp))
+        elif ROS_VERSION == 2:
+            self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
 
     def destroy(self):
         """
@@ -442,10 +425,9 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        self.shutdown()
         self.debug_helper.destroy()
         self.shutdown.set()
-        self.carla_weather_subscriber.unregister()
+        destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.sync_mode:
             if self.on_tick_id:
@@ -462,11 +444,12 @@ class CarlaRosBridge(CompatibleNode):
         super(CarlaRosBridge, self).destroy()
 
 
-def main():
+def main(args=None):
     """
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaBridge object
     """
+    ros_init(args)
     carla_bridge = None
     carla_world = None
     carla_client = None
@@ -477,7 +460,6 @@ def main():
         # rospy.init_node('carla_ros_bridge', anonymous=True)
 
     elif ROS_VERSION == 2:
-        rclpy.init(args=None)
         executor = rclpy.executors.MultiThreadedExecutor(num_threads=12)
         carla_bridge = CarlaRosBridge(executor=executor)
         # init_node = rclpy.create_node("init_ros_bridge")
@@ -486,6 +468,7 @@ def main():
     parameters['host'] = carla_bridge.get_param('host', 'localhost')
     parameters['port'] = carla_bridge.get_param('port', 2000)
     parameters['timeout'] = carla_bridge.get_param('timeout', 2)
+    parameters['passive'] = carla_bridge.get_param('passive', False)
     parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', False)
     parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
         'synchronous_mode_wait_for_vehicle_control_command', False)

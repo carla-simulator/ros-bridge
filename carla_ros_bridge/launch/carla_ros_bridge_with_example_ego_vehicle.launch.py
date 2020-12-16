@@ -37,6 +37,10 @@ def generate_launch_description():
             default_value='Town01'
         ),
         launch.actions.DeclareLaunchArgument(
+            name='passive',
+            default_value='False'
+        ),
+        launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
             default_value='False'
         ),
@@ -58,6 +62,7 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
+                'passive': launch.substitutions.LaunchConfiguration('passive'),
                 'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode'),
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
@@ -66,7 +71,7 @@ def generate_launch_description():
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_ego_vehicle'), 'carla_example_ego_vehicle.launch.py')
+                    'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
             ),
             launch_arguments={
                 'host': launch.substitutions.LaunchConfiguration('host'),

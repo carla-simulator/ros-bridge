@@ -9,13 +9,11 @@
 handle a speedometer sensor
 """
 
-import rospy
 import numpy as np
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from std_msgs.msg import Float32
-
 
 class SpeedometerSensor(PseudoActor):
 
@@ -42,9 +40,8 @@ class SpeedometerSensor(PseudoActor):
                                                 parent=parent,
                                                 node=node)
 
-        self.speedometer_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                     Float32,
-                                                     queue_size=10)
+        self.speedometer_publisher = node.new_publisher(Float32,
+            self.get_topic_prefix())
 
     @staticmethod
     def get_blueprint_name():

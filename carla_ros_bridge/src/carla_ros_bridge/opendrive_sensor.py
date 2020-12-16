@@ -9,7 +9,6 @@
 handle a opendrive sensor
 """
 
-import rospy
 import numpy as np
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
@@ -44,8 +43,7 @@ class OpenDriveSensor(PseudoActor):
                                               node=node)
         self.carla_map = carla_map
         self._map_published = False
-        self.map_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                             String,
+        self.map_publisher = node.new_publisher(String, self.get_topic_prefix(),
                                              queue_size=10,
                                              latch=True)
 

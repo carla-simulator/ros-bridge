@@ -144,7 +144,7 @@ class Camera(Sensor):
         """
         if ((carla_camera_data.height != self._camera_info.height) or
                 (carla_camera_data.width != self._camera_info.width)):
-            rospy.logerr(
+            self.node.logerr(
                 "Camera{} received image not matching configuration".format(self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_camera_data)

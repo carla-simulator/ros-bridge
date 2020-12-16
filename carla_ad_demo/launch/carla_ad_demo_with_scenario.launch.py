@@ -109,15 +109,11 @@ def generate_launch_description():
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_ego_vehicle'), 'carla_example_ego_vehicle.launch.py')
+                    'carla_spawn_actors'), 'carla_example_ego_vehicle.launch.py')
             ),
             launch_arguments={
-                'host': launch.substitutions.LaunchConfiguration('host'),
-                'port': launch.substitutions.LaunchConfiguration('port'),
-                'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'vehicle_filter': launch.substitutions.LaunchConfiguration('vehicle_filter'),
-                'sensor_definition_file': get_package_share_directory('carla_ego_vehicle') + '/config/sensors.json',
-                'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                'object_definition_file': get_package_share_directory('carla_spawn_actors') + '/config/objects.json',
+                'role_name_' + launch.substitutions.LaunchConfiguration('role_name'): launch.substitutions.LaunchConfiguration('role_name')
             }.items()
         ),
         launch.actions.IncludeLaunchDescription(

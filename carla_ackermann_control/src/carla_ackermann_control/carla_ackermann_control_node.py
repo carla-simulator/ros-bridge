@@ -20,7 +20,7 @@ from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile
+from ros_compatibility import CompatibleNode, QoSProfile, ros_init
 from carla_ackermann_control import carla_control_physics as phys
 
 from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
@@ -586,15 +586,14 @@ class CarlaAckermannControl(CompatibleNode):
         self.spin()
 
 
-def main():
+def main(args=None):
     """
 
     main function
 
     :return:
     """
-    if ROS_VERSION == 2:
-        rclpy.init()
+    ros_init(args)
 
     controller = CarlaAckermannControl()
     controller.run()

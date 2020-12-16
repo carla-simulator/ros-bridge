@@ -25,7 +25,11 @@ from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
 from carla_ros_scenario_runner.application_runner import ApplicationStatus  # pylint: disable=relative-import
 from carla_ros_scenario_runner.scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_ok
+from ros_compatibility import (
+    CompatibleNode, 
+    QoSProfile, 
+    ros_ok,
+    ros_init)
 
 # Check Python dependencies of scenario runner
 try:
@@ -160,15 +164,14 @@ class CarlaRosScenarioRunner(CompatibleNode):
             self._scenario_runner.shutdown()
 
 
-def main():
+def main(args=None):
     """
 
     main function
 
     :return:
     """
-    if ROS_VERSION == 2:
-        rclpy.init()
+    ros_init(args)
 
     scenario_runner = CarlaRosScenarioRunner()
 
