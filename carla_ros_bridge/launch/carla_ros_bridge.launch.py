@@ -47,7 +47,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_ros_bridge',
-            node_executable='bridge',
+            executable='bridge',
             name='carla_ros_bridge',
             output='screen',
             emulate_tty='True',

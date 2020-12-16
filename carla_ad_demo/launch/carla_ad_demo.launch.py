@@ -59,7 +59,7 @@ def generate_launch_description():
         # TODO: adapt this to ROS2
         # launch_ros.actions.Node(
         #     package='rostopic',
-        #     node_executable='rostopic',
+        #     executable='rostopic',
         #     name='publish_goal'
         # ),
         launch.actions.IncludeLaunchDescription(

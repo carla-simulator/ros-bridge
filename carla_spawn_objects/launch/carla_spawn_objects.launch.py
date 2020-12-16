@@ -22,7 +22,7 @@ def generate_launch_description():
 
         launch_ros.actions.Node(
             package='carla_spawn_objects',
-            node_executable='carla_spawn_objects',
+            executable='carla_spawn_objects',
             name='carla_spawn_objects',
             output='screen',
             parameters=[

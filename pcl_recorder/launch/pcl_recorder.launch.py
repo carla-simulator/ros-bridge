@@ -22,12 +22,12 @@ def generate_launch_description():
         ),
         # launch_ros.actions.Node(
         #     package='rostopic',
-        #     node_executable='rostopic',
+        #     executable='rostopic',
         #     name='enable_autopilot_rostopic'
         # ),
         launch_ros.actions.Node(
             package='pcl_recorder',
-            node_executable='pcl_recorder_node',
+            executable='pcl_recorder_node',
             name='pcl_recorder_node',
             output='screen',
             parameters=[

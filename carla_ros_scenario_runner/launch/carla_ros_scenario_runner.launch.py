@@ -28,7 +28,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_ros_scenario_runner',
-            node_executable='carla_ros_scenario_runner',
+            executable='carla_ros_scenario_runner',
             name='carla_ros_scenario_runner',
             output='screen',
             emulate_tty='True',

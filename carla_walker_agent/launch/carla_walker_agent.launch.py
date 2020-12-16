@@ -21,7 +21,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_walker_agent',
-            node_executable='carla_walker_agent',
+            executable='carla_walker_agent',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
             emulate_tty='True',

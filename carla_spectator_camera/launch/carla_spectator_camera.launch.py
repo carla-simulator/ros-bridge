@@ -37,7 +37,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_spectator_camera',
-            node_executable='carla_spectator_camera',
+            executable='carla_spectator_camera',
             name='carla_spectator_camera',
             output='screen',
             emulate_tty='True',

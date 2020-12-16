@@ -25,7 +25,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_waypoint_publisher',
-            node_executable='carla_waypoint_publisher',
+            executable='carla_waypoint_publisher',
             name='carla_waypoint_publisher',
             output='screen',
             emulate_tty='True',

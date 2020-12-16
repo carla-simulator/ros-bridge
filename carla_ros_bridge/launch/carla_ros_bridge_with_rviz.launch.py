@@ -10,7 +10,7 @@ def generate_launch_description():
     ld = launch.LaunchDescription([
         launch_ros.actions.Node(
             package='rviz',
-            node_executable='rviz',
+            executable='rviz',
             name='rviz'
         ),
         launch.actions.IncludeLaunchDescription(

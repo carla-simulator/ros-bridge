@@ -70,7 +70,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
-            node_executable='carla_twist_to_control',
+            executable='carla_twist_to_control',
             name='carla_twist_to_control',
             remappings=[
                 (
@@ -158,7 +158,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='rviz2',
-            node_executable='rviz2',
+            executable='rviz2',
             name='rviz2',
             output='screen',
             arguments=[

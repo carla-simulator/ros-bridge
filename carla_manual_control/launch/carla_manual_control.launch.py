@@ -13,7 +13,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_manual_control',
-            node_executable='carla_manual_control',
+            executable='carla_manual_control',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
             parameters=[

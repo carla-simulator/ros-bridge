@@ -13,7 +13,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_ackermann_control',
-            node_executable='carla_ackermann_control_node',
+            executable='carla_ackermann_control_node',
             node_name='carla_ackermann_control',
             output='screen',
             parameters=[
