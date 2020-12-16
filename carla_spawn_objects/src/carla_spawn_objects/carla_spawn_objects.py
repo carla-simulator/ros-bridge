@@ -28,7 +28,7 @@ from geometry_msgs.msg import Pose
 from carla_msgs.msg import CarlaWorldInfo, CarlaActorList
 
 
-from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
+from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest, GetActor, GetActorRequest
 
 # ==============================================================================
 # -- CarlaSpawnObjects ------------------------------------------------------------
@@ -54,9 +54,11 @@ class CarlaSpawnObjects(object):
 
         rospy.wait_for_service('/carla/spawn_object')
         rospy.wait_for_service('/carla/destroy_object')
+        rospy.wait_for_service('/carla/get_actor')
 
         self.spawn_object_service = rospy.ServiceProxy("/carla/spawn_object", SpawnObject)
         self.destroy_object_service = rospy.ServiceProxy("/carla/destroy_object", DestroyObject)
+        self.get_actor_service = rospy.ServiceProxy("/carla/get_actor", GetActor)
 
     def spawn_objects(self):
         """
@@ -100,12 +102,8 @@ class CarlaSpawnObjects(object):
             raise Exception("Setting up global sensors failed: {}".format(e))
 
         if self.spawn_sensors_only is True:
-            # get vehicle id from topic /carla/actor_list for all vehicles listed in config file
-            actor_info_list = rospy.wait_for_message("/carla/actor_list", CarlaActorList)
             for vehicle in vehicles:
-                for actor_info in actor_info_list.actors:
-                    if actor_info.type == vehicle["type"] and actor_info.rolename == vehicle["id"]:
-                        vehicle["carla_id"] = actor_info.id
+                vehicle["carla_id"] = self.get_actor_service(vehicle["id"], -1).id
 
         try:
             self.players = self.setup_vehicles(vehicles)

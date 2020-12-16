@@ -22,6 +22,7 @@ import pkg_resources
 import rospy
 
 import random
+import time
 
 from rosgraph_msgs.msg import Clock
 
@@ -38,7 +39,7 @@ from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
-from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
+from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse, GetActor, GetActorResponse
 
 
 # to generate a random spawning position or vehicles
@@ -142,6 +143,8 @@ class CarlaRosBridge(object):
         self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
                                                     self.get_blueprints)
 
+        self.get_actor_service = rospy.Service("/carla/get_actor", GetActor, self.get_actor)
+
         self.carla_weather_subscriber = \
             rospy.Subscriber("/carla/weather_control",
                              CarlaWeatherParameters, self.on_weather_changed)
@@ -224,6 +227,16 @@ class CarlaRosBridge(object):
         response.blueprints.extend(self.actor_factory.get_pseudo_sensor_types())
         response.blueprints.sort()
         return response
+
+    def get_actor(self, req):
+        timeout_t = time.time() + req.timeout
+        while req.timeout < 0 or time.time() < timeout_t:
+            for obj in self.actor_factory.actors.values():
+                if obj.name == req.rolename:
+                    return GetActorResponse(obj.uid)
+            rospy.loginfo_throttle(1, "Waiting for {}".format(req.rolename))
+            time.sleep(0.25)
+        return GetActorResponse(0)
 
     def on_weather_changed(self, weather_parameters):
         """
