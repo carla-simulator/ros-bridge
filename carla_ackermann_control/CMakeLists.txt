@@ -10,7 +10,9 @@ catkin_python_setup()
 
 generate_dynamic_reconfigure_options(config/EgoVehicleControlParameter.cfg)
 
-roslaunch_add_file_check(launch)
+if(CATKIN_ENABLE_TESTING)
+  roslaunch_add_file_check(launch)
+endif()
 
 catkin_package()
 

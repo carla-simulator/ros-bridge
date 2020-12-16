@@ -10,43 +10,46 @@
 Classes to handle Carla pedestrians
 """
 
-from derived_object_msgs.msg import Object  # pylint: disable=import-error
-from carla import WalkerControl
-from carla_msgs.msg import CarlaWalkerControl  # pylint: disable=import-error
+from derived_object_msgs.msg import Object
+
 from carla_ros_bridge.traffic_participant import TrafficParticipant
+from carla_msgs.msg import CarlaWalkerControl
+from carla import WalkerControl
 
 from ros_compatibility import destroy_subscription
 
 
 class Walker(TrafficParticipant):
+
     """
     Actor implementation details for pedestrians
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
-        :param carla_actor: carla walker actor object
-        :type carla_actor: carla.Walker
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: CompatibleNode
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla walker actor object
+        :type carla_actor: carla.Walker
         """
-        if carla_actor.attributes.get('role_name'):
-            prefix = carla_actor.attributes.get('role_name')
-        else:
-            prefix = "walker/w{:03}".format(carla_actor.id)
-
-        super(Walker, self).__init__(carla_actor=carla_actor, parent=parent,
-                                     node=node, prefix=prefix)
+        super(Walker, self).__init__(uid=uid,
+                                     name=name,
+                                     parent=parent,
+                                     node=node,
+                                     carla_actor=carla_actor)
 
         self.control_subscriber = self.node.create_subscriber(
             CarlaWalkerControl,
-            self.get_topic_prefix() + "/walker_control_cmd", self.control_command_updated)
+            self.get_topic_prefix() + "/walker_control_cmd",
+            self.control_command_updated)
 
     def destroy(self):
         """

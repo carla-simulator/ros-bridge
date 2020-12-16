@@ -13,8 +13,10 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_package()
 
-  roslaunch_add_file_check(launch)
-  roslaunch_add_file_check(test)
+  if(CATKIN_ENABLE_TESTING)
+    roslaunch_add_file_check(launch)
+    roslaunch_add_file_check(test)
+  endif()
 
   include_directories(${catkin_INCLUDE_DIRS})
 

@@ -10,9 +10,15 @@ Rosbridge class:
 
 Class that handle communication between CARLA and ROS
 """
+from ros_compatibility import (
+    CompatibleNode,
+    ros_ok,
+    destroy_subscription,
+    ros_shutdown,
+    ros_timestamp,
+    QoSProfile,
+    latch_on)
 
-
-from rosgraph_msgs.msg import Clock
 try:
     import queue
 except ImportError:
@@ -23,45 +29,26 @@ import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
-
-from tf2_msgs.msg import TFMessage
-from visualization_msgs.msg import Marker
+import random
+from rosgraph_msgs.msg import Clock
 
 import carla
 
-
 from carla_ros_bridge.actor import Actor
-from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.actor_factory import ActorFactory
 
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
-from carla_ros_bridge.world_info import WorldInfo
-from carla_ros_bridge.spectator import Spectator
-from carla_ros_bridge.traffic import Traffic, TrafficLight
-from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.lidar import Lidar
-from carla_ros_bridge.lidar import SemanticLidar
-from carla_ros_bridge.radar import Radar
-from carla_ros_bridge.gnss import Gnss
-from carla_ros_bridge.imu import ImuSensor
-from carla_ros_bridge.ego_vehicle import EgoVehicle
-from carla_ros_bridge.collision_sensor import CollisionSensor
-from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
-from carla_ros_bridge.object_sensor import ObjectSensor
-from carla_ros_bridge.rss_sensor import RssSensor
-from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.debug_helper import DebugHelper
-from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
-from carla_msgs.msg import CarlaActorList, CarlaActorInfo, CarlaControl, CarlaWeatherParameters  # pylint: disable=import-error
+from carla_ros_bridge.world_info import WorldInfo
+from carla_ros_bridge.ego_vehicle import EgoVehicle
 
-from ros_compatibility import (
-    CompatibleNode,
-    ros_ok,
-    destroy_subscription,
-    ros_shutdown,
-    ros_timestamp,
-    QoSProfile,
-    latch_on)
+from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
+from carla_msgs.srv import SpawnObject, SpawnObjectResponse, DestroyObject, DestroyObjectResponse, GetBlueprints, GetBlueprintsResponse
+
+
+# to generate a random spawning position or vehicles
+secure_random = random.SystemRandom()
+
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -76,6 +63,7 @@ else:
 
 
 class CarlaRosBridge(CompatibleNode):
+
     """
     Carla Ros bridge
     """
@@ -91,16 +79,6 @@ class CarlaRosBridge(CompatibleNode):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
-        self.debug_helper = None
-        self.carla_weather_subscriber = None
-        self.update_lock = Lock()
-        self.carla_control_queue = queue.Queue()
-        self.on_tick_id = None
-        self.update_actor_thread = None
-        self.carla_settings = None
-        self.shutdown = None
-        self.actors = {}
-        self.pseudo_actors = []
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
 
@@ -121,32 +99,52 @@ class CarlaRosBridge(CompatibleNode):
 
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
-        # set carla world settings
-        self.carla_settings = carla_world.get_settings()
 
-        # workaround: settings can only applied within non-sync mode
-        if self.carla_settings.synchronous_mode:
-            self.carla_settings.synchronous_mode = False
+        self.carla_settings = carla_world.get_settings()
+        if not self.parameters["passive"]:
+            # workaround: settings can only applied within non-sync mode
+            if self.carla_settings.synchronous_mode:
+                self.carla_settings.synchronous_mode = False
+                carla_world.apply_settings(self.carla_settings)
+
+            rospy.loginfo("synchronous_mode: {}".format(
+                self.parameters["synchronous_mode"]))
+            self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
+            rospy.loginfo("fixed_delta_seconds: {}".format(
+                self.parameters["fixed_delta_seconds"]))
+            self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
             carla_world.apply_settings(self.carla_settings)
 
         self.loginfo("Parameters:")
         for key in self.parameters:
             self.loginfo("  {}: {}".format(key, self.parameters[key]))
-        self.carla_settings.synchronous_mode = self.parameters["synchronous_mode"]
-        self.carla_settings.fixed_delta_seconds = self.parameters["fixed_delta_seconds"]
-        carla_world.apply_settings(self.carla_settings)
 
-        self.marker_publisher = self.new_publisher(Marker, '/carla/marker')
-        self.tf_publisher = self.new_publisher(TFMessage, 'tf')
+        # active sync mode in the ros bridge only if CARLA world is configured in sync mode and
+        # passive mode is not enabled.
+        self.sync_mode = self.carla_settings.synchronous_mode and not self.parameters["passive"]
+        if self.carla_settings.synchronous_mode and self.parameters["passive"]:
+            rospy.loginfo(
+                "Passive mode is enabled and CARLA world is configured in synchronous mode. This configuration requires another client ticking the CARLA world.")
+
+        self.carla_control_queue = queue.Queue()
+
+        # actor factory
+        self.actor_factory = ActorFactory(self, carla_world, self.sync_mode)
+
+        # add world info
+        self.world_info = WorldInfo(carla_world=self.carla_world)
+        # add debug helper
+        self.debug_helper = DebugHelper(carla_world.debug)
+
+        # Communication topics
         if ROS_VERSION == 1:
             self.clock_publisher = self.new_publisher(Clock, 'clock')
         elif ROS_VERSION == 2:
             self.clock_publisher = self.new_publisher(Clock, 'clock')
-        self.actor_list_publisher = self.new_publisher(
-            CarlaActorList, "/carla/actor_list", qos_profile=QoSProfile(depth=10, durability=latch_on))
-        self.status_publisher = CarlaStatusPublisher(self.carla_settings.synchronous_mode,
-                                                     self.carla_settings.fixed_delta_seconds,
-                                                     self)
+
+        self.status_publisher = CarlaStatusPublisher(
+            self.carla_settings.synchronous_mode,
+            self.carla_settings.fixed_delta_seconds)
 
         # for waiting for ego vehicle control commands in synchronous mode,
         # their ids are maintained in a list.
@@ -155,7 +153,7 @@ class CarlaRosBridge(CompatibleNode):
         self._expected_ego_vehicle_control_command_ids = []
         self._expected_ego_vehicle_control_command_ids_lock = Lock()
 
-        if self.carla_settings.synchronous_mode:
+        if self.sync_mode:
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
@@ -163,64 +161,109 @@ class CarlaRosBridge(CompatibleNode):
                                        lambda control: self.carla_control_queue.put(
                                            control.command), callback_group=self.callback_group)
 
-            self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
+            self.synchronous_mode_update_thread = Thread(
+                target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
         else:
             self.timestamp_last_run = 0.0
 
-            self.update_actors_queue = queue.Queue(maxsize=1)
-
-            # start thread to update actors
-            self.update_actor_thread = Thread(target=self._update_actors_thread)
-            self.update_actor_thread.start()
-
-            # create initially existing actors
-            self.update_actors_queue.put(set([x.id for x in self.carla_world.get_snapshot()]))
-
-            # wait for first actors creation to be finished
-            self.update_actors_queue.join()
+            self.actor_factory.start()
 
             # register callback to update actors
             self.on_tick_id = self.carla_world.on_tick(self._carla_time_tick)
+
+        # services configuration.
+        self._registered_actors = []
+        self.spawn_object_service = rospy.Service("/carla/spawn_object", SpawnObject,
+                                                  self.spawn_object)
+        self.destroy_object_service = rospy.Service("/carla/destroy_object", DestroyObject,
+                                                    self.destroy_object)
+
+        self.get_blueprints_service = rospy.Service("/carla/get_blueprints", GetBlueprints,
+                                                    self.get_blueprints)
 
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
                                    self.on_weather_changed, callback_group=self.callback_group)
 
-        # add world info
-        self.pseudo_actors.append(WorldInfo(carla_world=self.carla_world, node=self))
+    def _spawn_actor(self, req):
+        if "*" in req.type:
+            blueprint = secure_random.choice(
+                self.carla_world.get_blueprint_library().filter(req.type))
+        else:
+            blueprint = self.carla_world.get_blueprint_library().find(req.type)
+        blueprint.set_attribute('role_name', req.id)
+        for attribute in req.attributes:
+            blueprint.set_attribute(attribute.key, attribute.value)
+        if req.random_pose is False:
+            transform = trans.ros_pose_to_carla_transform(req.transform)
+        else:
+            # get a random pose
+            spawn_points = self.carla_world.get_map().get_spawn_points()
+            transform = secure_random.choice(
+                spawn_points) if spawn_points else carla.Transform()
 
-        # add global object sensor
-        self.pseudo_actors.append(
-            ObjectSensor(parent=None, node=self, actor_list=self.actors,
-                         filtered_id=None))
-        self.debug_helper = DebugHelper(carla_world.debug, self)
+        attach_to = None
+        if req.attach_to != 0:
+            attach_to = self.carla_world.get_actor(req.attach_to)
+            if attach_to is None:
+                raise IndexError("Parent actor {} not found".format(req.attach_to))
 
-        # add traffic light pseudo sensor
-        self.pseudo_actors.append(
-            TrafficLightsSensor(parent=None, node=self, actor_list=self.actors))
+        carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
+        actor = self.actor_factory.create(
+            req.type, req.id, req.attach_to, req.transform, carla_actor)
+        return actor.uid
 
-    def destroy(self):
-        """
-        Function to destroy this object.
+    def _spawn_pseudo_actor(self, req):
+        actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform)
+        return actor.uid
 
-        :return:
-        """
-        if self.debug_helper:
-            self.debug_helper.destroy()
-        if self.shutdown:
-            self.shutdown.set()
-        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
-        if self.carla_settings:
-            if not self.carla_settings.synchronous_mode:
-                if self.on_tick_id:
-                    self.carla_world.remove_on_tick(self.on_tick_id)
-                if self.update_actor_thread:
-                    self.update_actor_thread.join()
-        self._update_actors(set())
+    def spawn_object(self, req):
+        with self.actor_factory.spawn_lock:
+            try:
+                if "pseudo" in req.type:
+                    id_ = self._spawn_pseudo_actor(req)
+                else:
+                    id_ = self._spawn_actor(req)
 
-        self.loginfo("Exiting Bridge")
-        super(CarlaRosBridge, self).destroy()
+                self._registered_actors.append(id_)
+                return SpawnObjectResponse(id_, "")
+
+            except Exception as e:
+                rospy.logwarn("Error spawning object '{}: {}".format(req.type, e))
+                return SpawnObjectResponse(-1, str(e))
+
+    def _destroy_actor(self, uid):
+        if uid not in self.actor_factory.actors:
+            return False
+
+        actor = self.actor_factory.actors[uid]
+        if isinstance(actor, Actor):
+            actor.carla_actor.destroy()
+
+        self.actor_factory.destroy(uid)
+        return True
+
+    def destroy_object(self, req):
+        with self.actor_factory.spawn_lock:
+            result = self._destroy_actor(req.id)
+            if result and req.id in self._registered_actors:
+                self._registered_actors.remove(req.id)
+
+            return DestroyObjectResponse(result)
+
+    def get_blueprints(self, req):
+        response = GetBlueprintsResponse()
+        if req.filter:
+            bp_filter = req.filter
+        else:
+            bp_filter = "*"
+
+        response.blueprints = [
+            bp.id for bp in self.carla_world.get_blueprint_library().filter(bp_filter)]
+        response.blueprints.extend(self.actor_factory.get_pseudo_sensor_types())
+        response.blueprints.sort()
+        return response
 
     def on_weather_changed(self, weather_parameters):
         """
@@ -281,9 +324,10 @@ class CarlaRosBridge(CompatibleNode):
                 # fill list of available ego vehicles
                 self._expected_ego_vehicle_control_command_ids = []
                 with self._expected_ego_vehicle_control_command_ids_lock:
-                    for actor_id, actor in self.actors.items():
+                    for actor_id, actor in self.actor_factory.actors.items():
                         if isinstance(actor, EgoVehicle):
-                            self._expected_ego_vehicle_control_command_ids.append(actor_id)
+                            self._expected_ego_vehicle_control_command_ids.append(
+                                actor_id)
 
             frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
@@ -319,20 +363,66 @@ class CarlaRosBridge(CompatibleNode):
         :return:
         """
         if not self.shutdown.is_set():
-            if self.update_lock.acquire(False):
+            if self.actor_factory.lock.acquire(False):
                 if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
                     self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
                     self.update_clock(carla_snapshot.timestamp)
                     self.status_publisher.set_frame(carla_snapshot.frame)
+                    self._update(carla_snapshot.frame,
+                                 carla_snapshot.timestamp.elapsed_seconds)
+                self.actor_factory.lock.release()
 
-                    self._update(carla_snapshot.frame, carla_snapshot.timestamp.elapsed_seconds)
-                self.update_lock.release()
+    def run(self):
+        """
+        Run the bridge functionality.
 
-            # if possible push current snapshot to update-actors-thread
+        Registers on shutdown callback at rospy and spins ROS.
+
+        :return:
+        """
+        rospy.on_shutdown(self.on_shutdown)
+        rospy.spin()
+
+    def on_shutdown(self):
+        """
+        Function to be called on shutdown.
+
+        This function is registered at rospy as shutdown handler.
+
+        """
+        rospy.loginfo("Shutdown requested")
+        self.destroy()
+
+    def _update(self, frame_id, timestamp):
+        """
+        update all actors
+        :return:
+        """
+        # update world info
+        self.world_info.update(frame_id, timestamp)
+
+        # update all carla actors
+        for actor_id in self.actor_factory.actors:
             try:
-                self.update_actors_queue.put_nowait(set([x.id for x in carla_snapshot]))
-            except queue.Full:
-                pass
+                self.actor_factory.actors[actor_id].update(frame_id, timestamp)
+            except RuntimeError as e:
+                self.logwarn("Update actor {}({}) failed: {}".format(
+                    self.actor_factory.actors[actor_id].__class__.__name__, actor_id, e))
+                continue
+
+    def _ego_vehicle_control_applied_callback(self, ego_vehicle_id):
+        if not self.sync_mode or \
+                not self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
+            return
+        with self._expected_ego_vehicle_control_command_ids_lock:
+            if ego_vehicle_id in self._expected_ego_vehicle_control_command_ids:
+                self._expected_ego_vehicle_control_command_ids.remove(
+                    ego_vehicle_id)
+            else:
+                self.logwarn(
+                    "Unexpected vehicle control command received from {}".format(ego_vehicle_id))
+            if not self._expected_ego_vehicle_control_command_ids:
+                self._all_vehicle_control_commands_received.set()
 
     def update_clock(self, carla_timestamp):
         """
@@ -342,238 +432,34 @@ class CarlaRosBridge(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
-        if ROS_VERSION == 1:
-            self.clock_publisher.publish(Clock(self.ros_timestamp))
-        elif ROS_VERSION == 2:
-            self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
+        self.ros_timestamp = rospy.Time.from_sec(
+            carla_timestamp.elapsed_seconds)
+        self.clock_publisher.publish(Clock(self.ros_timestamp))
 
-    def _update_actors_thread(self):
+    def destroy(self):
         """
-        execution loop for async mode actor list updates
-        """
-        while not self.shutdown.is_set():
-            try:
-                current_actors = self.update_actors_queue.get(timeout=1)
-                if current_actors:
-                    self._update_actors(current_actors)
-                    self.update_actors_queue.task_done()
-            except queue.Empty:
-                pass
+        Function to destroy this object.
 
-    def _update_actors(self, current_actors):
-        """
-        update the available actors
-        """
-        previous_actors = set(self.actors)
-
-        new_actors = current_actors - previous_actors
-        deleted_actors = previous_actors - current_actors
-
-        if new_actors:
-            for carla_actor in self.carla_world.get_actors(list(new_actors)):
-                self._create_actor(carla_actor)
-
-        if deleted_actors:
-            for id_to_delete in deleted_actors:
-                # remove actor
-                actor = self.actors[id_to_delete]
-                with self.update_lock:
-                    self.loginfo("Remove {}(id={}, parent_id={}, prefix={})".format(
-                        actor.__class__.__name__, actor.get_id(), actor.get_parent_id(),
-                        actor.get_prefix()))
-                    actor.destroy()
-                    del self.actors[id_to_delete]
-
-                # remove pseudo-actors that have actor as parent
-                updated_pseudo_actors = []
-                for pseudo_actor in self.pseudo_actors:
-                    if pseudo_actor.get_parent_id() == id_to_delete:
-                        self.loginfo("Remove {}(parent_id={}, prefix={})".format(
-                            pseudo_actor.__class__.__name__, pseudo_actor.get_parent_id(),
-                            pseudo_actor.get_prefix()))
-                        pseudo_actor.destroy()
-                        del pseudo_actor
-                    else:
-                        updated_pseudo_actors.append(pseudo_actor)
-                self.pseudo_actors = updated_pseudo_actors
-
-        # publish actor list on change
-        if new_actors or deleted_actors:
-            self.publish_actor_list()
-
-    def publish_actor_list(self):
-        """
-        publish list of carla actors
         :return:
         """
-        ros_actor_list = CarlaActorList()
+        self.shutdown()
+        self.debug_helper.destroy()
+        self.shutdown.set()
+        self.carla_weather_subscriber.unregister()
+        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
+        if not self.sync_mode:
+            if self.on_tick_id:
+                self.carla_world.remove_on_tick(self.on_tick_id)
+            self.actor_factory.thread.join()
 
-        for actor_id in self.actors:
-            actor = self.actors[actor_id].carla_actor
-            ros_actor = CarlaActorInfo()
-            ros_actor.id = actor.id
-            ros_actor.type = actor.type_id
-            try:
-                ros_actor.rolename = str(actor.attributes.get('role_name'))
-            except ValueError:
-                pass
+        with self.actor_factory.spawn_lock:
+            # remove actors in reverse order to destroy parent actors first.
+            for uid in self._registered_actors[::-1]:
+                self._destroy_actor(uid)
+        self.actor_factory.clear()
 
-            if actor.parent:
-                ros_actor.parent_id = actor.parent.id
-            else:
-                ros_actor.parent_id = 0
-
-            ros_actor_list.actors.append(ros_actor)
-
-        self.actor_list_publisher.publish(ros_actor_list)
-
-    def _create_actor(self, carla_actor):  # pylint: disable=too-many-branches,too-many-statements
-        """
-        create an actor
-        """
-        parent = None
-        if carla_actor.parent:
-            if carla_actor.parent.id in self.actors:
-                parent = self.actors[carla_actor.parent.id]
-            else:
-                parent = self._create_actor(carla_actor.parent)
-
-        actor = None
-        pseudo_actors = []
-        if carla_actor.type_id.startswith('traffic'):
-            if carla_actor.type_id == "traffic.traffic_light":
-                actor = TrafficLight(carla_actor, parent, node=self)
-            else:
-                actor = Traffic(carla_actor, parent, node=self)
-        elif carla_actor.type_id.startswith("vehicle"):
-            if carla_actor.attributes.get('role_name') \
-                    in self.parameters['ego_vehicle']['role_name']:
-                actor = EgoVehicle(carla_actor, parent, self,
-                                   self._ego_vehicle_control_applied_callback)
-                pseudo_actors.append(
-                    ObjectSensor(parent=actor, node=self, actor_list=self.actors,
-                                 filtered_id=carla_actor.id))
-            else:
-                actor = Vehicle(carla_actor, parent, self)
-        elif carla_actor.type_id.startswith("sensor"):
-            if carla_actor.type_id.startswith("sensor.camera"):
-                if carla_actor.type_id.startswith("sensor.camera.rgb"):
-                    actor = RgbCamera(carla_actor, parent, self,
-                                      self.carla_settings.synchronous_mode)
-                elif carla_actor.type_id.startswith("sensor.camera.depth"):
-                    actor = DepthCamera(carla_actor, parent, self,
-                                        self.carla_settings.synchronous_mode)
-                elif carla_actor.type_id.startswith("sensor.camera.semantic_segmentation"):
-                    actor = SemanticSegmentationCamera(carla_actor, parent, self,
-                                                       self.carla_settings.synchronous_mode)
-                elif carla_actor.type_id.startswith("sensor.camera.dvs"):
-                    actor = DVSCamera(carla_actor, parent, self,
-                                      self.carla_settings.synchronous_mode)
-                else:
-                    actor = Camera(carla_actor, parent, self,
-                                   self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.lidar"):
-                if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
-                    actor = Lidar(carla_actor, parent, self,
-                                  self.carla_settings.synchronous_mode)
-                elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
-                    actor = SemanticLidar(carla_actor, parent, self,
-                                          self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.radar"):
-                actor = Radar(carla_actor, parent, self, self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.gnss"):
-                actor = Gnss(carla_actor, parent, self, self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.imu"):
-                actor = ImuSensor(carla_actor, parent, self,
-                                  self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.collision"):
-                actor = CollisionSensor(
-                    carla_actor, parent, self, self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.rss"):
-                actor = RssSensor(
-                    carla_actor, parent, self, self.carla_settings.synchronous_mode)
-            elif carla_actor.type_id.startswith("sensor.other.lane_invasion"):
-                actor = LaneInvasionSensor(carla_actor, parent, self,
-                                           self.carla_settings.synchronous_mode)
-            else:
-                actor = Sensor(carla_actor, parent, self,
-                               self.carla_settings.synchronous_mode)
-        elif carla_actor.type_id.startswith("spectator"):
-            actor = Spectator(carla_actor, parent, node=self)
-        elif carla_actor.type_id.startswith("walker"):
-            actor = Walker(carla_actor, parent, node=self)
-        else:
-            actor = Actor(carla_actor, parent, node=self)
-
-        self.loginfo("Created {}(id={}, parent_id={},"
-                     " type={}, prefix={}, attributes={})".format(actor.__class__.__name__,
-                                                                  actor.get_id(),
-                                                                  actor.get_parent_id(),
-                                                                  carla_actor.type_id,
-                                                                  actor.get_prefix(),
-                                                                  carla_actor.attributes))
-        with self.update_lock:
-            self.actors[carla_actor.id] = actor
-
-        for pseudo_actor in pseudo_actors:
-            self.loginfo("Created {}(parent_id={}, prefix={})".format(
-                pseudo_actor.__class__.__name__, pseudo_actor.get_parent_id(),
-                pseudo_actor.get_prefix()))
-            with self.update_lock:
-                self.pseudo_actors.append(pseudo_actor)
-
-        return actor
-
-    def _update(self, frame_id, timestamp):
-        """
-        update all actors
-        :return:
-        """
-        # update all pseudo actors
-        for actor in self.pseudo_actors:
-            actor.update(frame_id, timestamp)
-
-        # update all carla actors
-        for actor_id in self.actors:
-            try:
-                self.actors[actor_id].update(frame_id, timestamp)
-            except RuntimeError as e:
-                self.logwarn("Update actor {}({}) failed: {}".format(
-                    self.actors[actor_id].__class__.__name__, actor_id, e))
-                continue
-
-    def _ego_vehicle_control_applied_callback(self, ego_vehicle_id):
-        if not self.carla_settings.synchronous_mode or \
-                not self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
-            return
-        with self._expected_ego_vehicle_control_command_ids_lock:
-            if ego_vehicle_id in self._expected_ego_vehicle_control_command_ids:
-                self._expected_ego_vehicle_control_command_ids.remove(ego_vehicle_id)
-            else:
-                self.logwarn(
-                    "Unexpected vehicle control command received from {}".format(ego_vehicle_id))
-            if not self._expected_ego_vehicle_control_command_ids:
-                self._all_vehicle_control_commands_received.set()
-
-    def publish_tf_message(self, msg):
-        """
-        Function to publish ROS TF message.
-        """
-
-        # prepare tf message
-        tf_msg = None
-        tf_to_publish = []
-        tf_to_publish.append(msg)
-        if ROS_VERSION == 1:
-            tf_msg = TFMessage(tf_to_publish)
-        elif ROS_VERSION == 2:
-            tf_msg = TFMessage()
-            tf_msg.transforms = tf_to_publish
-        try:
-            self.tf_publisher.publish(tf_msg)
-        except Exception as error:  # pylint: disable=broad-except
-            self.logwarn("Failed to publish message: {}".format(error))
+        self.loginfo("Exiting Bridge")
+        super(CarlaRosBridge, self).destroy()
 
 
 def main():
@@ -614,7 +500,9 @@ def main():
         host=parameters['host'], port=parameters['port']))
 
     try:
-        carla_client = carla.Client(host=parameters['host'], port=parameters['port'])
+        carla_client = carla.Client(
+            host=parameters['host'],
+            port=parameters['port'])
         carla_client.set_timeout(parameters['timeout'])
 
         # check carla version
@@ -635,16 +523,15 @@ def main():
 
         if "town" in parameters:
             if parameters["town"].endswith(".xodr"):
-                carla_bridge.loginfo("Loading opendrive world from file '{}'".format(
-                    parameters["town"]))
+                carla_bridge.loginfo(
+                    "Loading opendrive world from file '{}'".format(parameters["town"]))
                 with open(parameters["town"]) as od_file:
                     data = od_file.read()
                 carla_world = carla_client.generate_opendrive_world(str(data))
             else:
                 if carla_world.get_map().name != parameters["town"]:
                     carla_bridge.loginfo("Loading town '{}' (previous: '{}').".format(
-                        parameters["town"],
-                        carla_world.get_map().name))
+                        parameters["town"], carla_world.get_map().name))
                     carla_world = carla_client.load_world(parameters["town"])
             carla_world.tick()
 

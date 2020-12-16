@@ -9,11 +9,12 @@
 a sensor that reports the state of all traffic lights
 """
 
-from carla_msgs.msg import CarlaTrafficLightStatusList  # pylint: disable=import-error
-from carla_msgs.msg import CarlaTrafficLightInfoList  # pylint: disable=import-error
-from carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_msgs.msg import (
+    CarlaTrafficLightStatusList,
+    CarlaTrafficLightInfoList
+)
 from carla_ros_bridge.traffic import TrafficLight
-
+from carla_ros_bridge.pseudo_actor import PseudoActor
 from ros_compatibility import QoSProfile, latch_on
 
 
@@ -22,9 +23,14 @@ class TrafficLightsSensor(PseudoActor):
     a sensor that reports the state of all traffic lights
     """
 
-    def __init__(self, parent, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying the sensor
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
@@ -33,16 +39,22 @@ class TrafficLightsSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(TrafficLightsSensor, self).__init__(parent=parent, node=node,
-                                                  prefix="")
+        super(TrafficLightsSensor, self).__init__(uid=uid,
+                                                  name=name,
+                                                  parent=parent,
+                                                  node=node)
+
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
-        self.traffic_lights_info_publisher = node.new_publisher(CarlaTrafficLightInfoList, self.get_topic_prefix(
-        ) + "traffic_lights_info", qos_profile=QoSProfile(depth=10, durability=latch_on))
-        self.traffic_light_status_publisher = node.new_publisher(CarlaTrafficLightStatusList, self.get_topic_prefix(
-        ) + "traffic_lights", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.traffic_lights_info_publisher = node.new_publisher(
+            CarlaTrafficLightInfoList,
+            self.get_topic_prefix() + "/info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.traffic_lights_status_publisher = node.new_publisher(
+            CarlaTrafficLightStatusList,
+            self.get_topic_prefix() + "/status",
+            qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     def destroy(self):
         """
@@ -51,6 +63,14 @@ class TrafficLightsSensor(PseudoActor):
         """
         self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
+
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.traffic_lights"
 
     def update(self, frame, timestamp):
         """
@@ -73,4 +93,4 @@ class TrafficLightsSensor(PseudoActor):
 
         if traffic_light_status != self.traffic_light_status:
             self.traffic_light_status = traffic_light_status
-            self.traffic_light_status_publisher.publish(traffic_light_status)
+            self.traffic_lights_status_publisher.publish(traffic_light_status)

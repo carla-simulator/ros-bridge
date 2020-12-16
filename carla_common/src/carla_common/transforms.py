@@ -32,7 +32,11 @@ def carla_location_to_numpy_vector(carla_location):
     :return: a numpy.array with 3 elements
     :rtype: numpy.array
     """
-    return numpy.array([carla_location.x, -carla_location.y, carla_location.z])
+    return numpy.array([
+        carla_location.x,
+        -carla_location.y,
+        carla_location.z
+    ])
 
 
 def carla_location_to_ros_vector3(carla_location):
@@ -245,7 +249,11 @@ def carla_velocity_to_numpy_vector(carla_velocity):
     :return: a numpy.array with 3 elements
     :rtype: numpy.array
     """
-    return numpy.array([carla_velocity.x, -carla_velocity.y, carla_velocity.z])
+    return numpy.array([
+        carla_velocity.x,
+        -carla_velocity.y,
+        carla_velocity.z
+    ])
 
 
 def carla_acceleration_to_ros_accel(carla_acceleration):
@@ -282,8 +290,10 @@ def carla_transform_to_ros_transform(carla_transform):
     """
     ros_transform = Transform()
 
-    ros_transform.translation = carla_location_to_ros_vector3(carla_transform.location)
-    ros_transform.rotation = carla_rotation_to_ros_quaternion(carla_transform.rotation)
+    ros_transform.translation = carla_location_to_ros_vector3(
+        carla_transform.location)
+    ros_transform.rotation = carla_rotation_to_ros_quaternion(
+        carla_transform.rotation)
 
     return ros_transform
 
@@ -301,8 +311,10 @@ def carla_transform_to_ros_pose(carla_transform):
     """
     ros_pose = Pose()
 
-    ros_pose.position = carla_location_to_ros_point(carla_transform.location)
-    ros_pose.orientation = carla_rotation_to_ros_quaternion(carla_transform.rotation)
+    ros_pose.position = carla_location_to_ros_point(
+        carla_transform.location)
+    ros_pose.orientation = carla_rotation_to_ros_quaternion(
+        carla_transform.rotation)
 
     return ros_pose
 
@@ -323,3 +335,42 @@ def carla_location_to_pose(carla_location):
     ros_pose.position = carla_location_to_ros_point(carla_location)
     ros_pose.orientation.w = 1.0
     return ros_pose
+
+
+def RPY_to_ros_quaternion(roll, pitch, yaw):
+    quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+    return Quaternion(*quat)
+
+
+def ros_point_to_carla_location(ros_point):
+    return carla.Location(ros_point.x, -ros_point.y, ros_point.z)
+
+
+def ros_quaternion_to_RPY(ros_quaternion):
+    quaternion = (
+        ros_quaternion.x,
+        ros_quaternion.y,
+        ros_quaternion.z,
+        ros_quaternion.w
+    )
+    return tf.transformations.euler_from_quaternion(quaternion)
+
+
+def RPY_to_carla_rotation(roll, pitch, yaw):
+    return carla.Rotation(roll=math.degrees(roll),
+                          pitch=-math.degrees(pitch),
+                          yaw=-math.degrees(yaw))
+
+
+def ros_quaternion_to_carla_rotation(ros_quaternion):
+    roll, pitch, yaw = ros_quaternion_to_RPY(ros_quaternion)
+    return RPY_to_carla_rotation(roll, pitch, yaw)
+
+
+def ros_pose_to_carla_transform(ros_pose):
+    """
+    Convert a ROS pose a carla transform.
+    """
+    return carla.Transform(
+        ros_point_to_carla_location(ros_pose.position),
+        ros_quaternion_to_carla_rotation(ros_pose.orientation))

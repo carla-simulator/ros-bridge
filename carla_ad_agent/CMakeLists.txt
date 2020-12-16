@@ -12,7 +12,9 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_package(CATKIN_DEPENDS rospy)
 
-  roslaunch_add_file_check(launch)
+  if(CATKIN_ENABLE_TESTING)
+    roslaunch_add_file_check(launch)
+  endif()
 
   include_directories(${catkin_INCLUDE_DIRS})
 

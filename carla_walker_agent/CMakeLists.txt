@@ -10,14 +10,14 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_python_setup()
 
-  roslaunch_add_file_check(launch)
+  if(CATKIN_ENABLE_TESTING)
+    roslaunch_add_file_check(launch)
+  endif()
 
   catkin_package(CATKIN_DEPENDS rospy)
 
-  catkin_install_python(
-    PROGRAMS src/carla_walker_agent/carla_walker_agent.py
-    src/carla_walker_agent/__init__.py DESTINATION
-    ${CATKIN_PACKAGE_BIN_DESTINATION})
+  catkin_install_python(PROGRAMS src/carla_walker_agent/carla_walker_agent.py
+                        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)

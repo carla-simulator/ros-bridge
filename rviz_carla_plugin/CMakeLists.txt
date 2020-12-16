@@ -57,8 +57,7 @@ elseif(${ROS_VERSION} EQUAL 2)
 
   set(CMAKE_AUTOMOC ON)
 
-  message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+  find_package(Qt5 REQUIRED Core Widgets)
   set(QT_LIBRARIES Qt5::Widgets)
 
   set(SRC_FILES src/drive_widget.cpp src/indicator_widget.cpp

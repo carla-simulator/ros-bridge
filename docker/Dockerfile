@@ -31,8 +31,7 @@ ENV PYTHONPATH=/opt/carla/PythonAPI/carla/dist/carla-$CARLA_VERSION-py$PYTHON_VE
 
 COPY carla_ackermann_control /opt/carla-ros-bridge/src/carla_ackermann_control
 COPY carla_common /opt/carla-ros-bridge/src/carla_common
-COPY carla_ego_vehicle /opt/carla-ros-bridge/src/carla_ego_vehicle
-COPY carla_infrastructure /opt/carla-ros-bridge/src/carla_infrastructure
+COPY carla_spawn_objects /opt/carla-ros-bridge/src/carla_spawn_objects
 COPY carla_manual_control /opt/carla-ros-bridge/src/carla_manual_control
 COPY carla_msgs /opt/carla-ros-bridge/src/carla_msgs
 COPY carla_ros_bridge /opt/carla-ros-bridge/src/carla_ros_bridge

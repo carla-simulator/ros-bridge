@@ -8,83 +8,77 @@
 """
 Classes to handle Carla sensors
 """
-from __future__ import print_function
+from abc import abstractmethod
 import ctypes
-import os
 import struct
 import sys
-from abc import abstractmethod
-
-import carla_common.transforms as trans
-from carla_ros_bridge.actor import Actor
-
-from ros_compatibility import ros_ok
-
 try:
     import queue
 except ImportError:
     import Queue as queue
 
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION not in (1, 2):
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
+from carla_ros_bridge.actor import Actor
+import carla_common.transforms as trans
+from ros_compatibility import ros_ok
 from sensor_msgs.msg import PointCloud2, PointField
+
 _DATATYPES = {}
-_DATATYPES[PointField.INT8]    = ('b', 1)
-_DATATYPES[PointField.UINT8]   = ('B', 1)
-_DATATYPES[PointField.INT16]   = ('h', 2)
-_DATATYPES[PointField.UINT16]  = ('H', 2)
-_DATATYPES[PointField.INT32]   = ('i', 4)
-_DATATYPES[PointField.UINT32]  = ('I', 4)
+_DATATYPES[PointField.INT8] = ('b', 1)
+_DATATYPES[PointField.UINT8] = ('B', 1)
+_DATATYPES[PointField.INT16] = ('h', 2)
+_DATATYPES[PointField.UINT16] = ('H', 2)
+_DATATYPES[PointField.INT32] = ('i', 4)
+_DATATYPES[PointField.UINT32] = ('I', 4)
 _DATATYPES[PointField.FLOAT32] = ('f', 4)
 _DATATYPES[PointField.FLOAT64] = ('d', 8)
 
 
 class Sensor(Actor):
+
     """
     Actor implementation details for sensors
     """
-    # pylint: disable=too-many-arguments
 
-    def __init__(
-            self,  # pylint: disable=too-many-arguments
-            carla_actor,
-            parent,
-            node,
-            synchronous_mode,
-            is_event_sensor=False,  # only relevant in synchronous_mode:
-            # if a sensor only delivers data on special events,
-            # do not wait for it. That means you might get data from a
-            # sensor, that belongs to a different frame
-            prefix=None,
-            sensor_name=None):
+    def __init__(self,  # pylint: disable=too-many-arguments
+                 uid,
+                 name,
+                 parent,
+                 relative_spawn_pose,
+                 node,
+                 carla_actor,
+                 synchronous_mode,
+                 is_event_sensor=False,  # only relevant in synchronous_mode:
+                 # if a sensor only delivers data on special events,
+                 # do not wait for it. That means you might get data from a
+                 # sensor, that belongs to a different frame
+                 prefix=None):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: CompatibleNode
+        :type node: carla_ros_bridge.CarlaRosBridge
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         :param prefix: the topic prefix to be used for this actor
         :type prefix: string
-        :param sensor_name: sensor type
-        :type sensor_name: string
         """
-        if prefix is None:
-            prefix = 'sensor'
-        Actor.__init__(self, carla_actor=carla_actor, parent=parent, node=node,
-                       prefix=prefix)
-        if sensor_name is None:
-            sensor_name = "Sensor"
+        super(Sensor, self).__init__(uid=uid,
+                                     name=name,
+                                     parent=parent,
+                                     node=node,
+                                     carla_actor=carla_actor)
 
-        self.node = node
+        self.relative_spawn_pose = relative_spawn_pose
         self.synchronous_mode = synchronous_mode
         self.queue = queue.Queue()
         self.next_data_expected_time = None
@@ -92,9 +86,41 @@ class Sensor(Actor):
         self.is_event_sensor = is_event_sensor
         try:
             self.sensor_tick_time = float(carla_actor.attributes["sensor_tick"])
-            self.node.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
+            node.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
         except (KeyError, ValueError):
             self.sensor_tick_time = None
+
+        self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+
+    def publish_tf(self, pose=None):
+        if self.synchronous_mode:
+            pose = self.relative_spawn_pose
+            child_frame_id = self.get_prefix()
+            if self.parent is not None:
+                frame_id = self.parent.get_prefix()
+            else:
+                frame_id = "map"
+
+        else:
+            child_frame_id = self.get_prefix()
+            frame_id = "map"
+
+        if pose is not None:
+            transform = TransformStamped()
+            transform.header.stamp = ros_timestamp(sec=self.node.get_time, from_sec=True)
+            transform.header.frame_id = frame_id
+            transform.child_frame_id = child_frame_id
+
+            transform.transform.translation.x = pose.position.x
+            transform.transform.translation.y = pose.position.y
+            transform.transform.translation.z = pose.position.z
+
+            transform.transform.rotation.x = pose.orientation.x
+            transform.transform.rotation.y = pose.orientation.y
+            transform.transform.rotation.z = pose.orientation.z
+            transform.transform.rotation.w = pose.orientation.w
+
+            self._tf_broadcaster.sendTransform(transform)
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -127,9 +153,7 @@ class Sensor(Actor):
                         float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
-                self.publish_transform(
-                    self.get_ros_transform(
-                        trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
 
     @abstractmethod
@@ -153,30 +177,26 @@ class Sensor(Actor):
                                       " (expected {}). Process it anyways.".format(
                                           self.__class__.__name__, self.get_id(),
                                           carla_sensor_data.frame, frame))
-                self.node.logdebug("{}({}): process {}".format(self.__class__.__name__, self.get_id(),
-                                                               frame))
-                self.publish_transform(
-                    self.get_ros_transform(
-                        trans.carla_transform_to_ros_transform(carla_sensor_data.transform)))
+                self.node.logdebug("{}({}): process {}".format(
+                    self.__class__.__name__, self.get_id(), frame))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
 
     def _update_synchronous_sensor(self, frame, timestamp):
         while not self.next_data_expected_time or \
-                (not self.queue.empty() or
-                 self.next_data_expected_time and
-                 self.next_data_expected_time < timestamp):
+            (not self.queue.empty() or
+             self.next_data_expected_time and
+             self.next_data_expected_time < timestamp):
             while True:
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
                     if carla_sensor_data.frame == frame:
                         self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
                                                                        self.get_id(), frame))
-                        self.publish_transform(
-                            self.get_ros_transform(
-                                trans.carla_transform_to_ros_transform(
-                                    carla_sensor_data.transform)))
+                        self.publish_tf(trans.carla_transform_to_ros_pose(
+                            carla_sensor_data.transform))
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:
@@ -186,7 +206,6 @@ class Sensor(Actor):
                             carla_sensor_data.frame,
                             frame))
                 except queue.Empty:
-                    # if not rospy.is_shutdown():
                     if ros_ok():
                         self.node.logwarn("{}({}): Expected Frame {} not received".format(
                             self.__class__.__name__, self.get_id(), frame))
@@ -199,7 +218,7 @@ class Sensor(Actor):
             else:
                 self._update_synchronous_sensor(frame, timestamp)
 
-        Actor.update(self, frame, timestamp)
+        super(Sensor, self).update(frame, timestamp)
 
 
 # http://docs.ros.org/indigo/api/sensor_msgs/html/point__cloud2_8py_source.html
@@ -232,7 +251,7 @@ def create_cloud(header, fields, points):
     @type  fields: iterable of L{sensor_msgs.msg.PointField}
     @param points: The point cloud points.
     @type  points: list of iterables, i.e. one iterable for each point, with the
-                   elements of each iterable being the values of the fields for 
+                   elements of each iterable being the values of the fields for
                    that point (in the same order as the fields parameter)
     @return: The point cloud.
     @rtype:  L{sensor_msgs.msg.PointCloud2}

@@ -17,7 +17,7 @@
   <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>carla_common</exec_depend>
   <exec_depend>carla_msgs</exec_depend>
-  <exec_depend>carla_ego_vehicle</exec_depend>
+  <exec_depend>carla_spawn_objects</exec_depend>
   <exec_depend>carla_manual_control</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>python-transforms3d-pip</exec_depend>

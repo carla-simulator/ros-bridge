@@ -10,13 +10,12 @@
 Class to handle the carla map
 """
 
-from carla_msgs.msg import CarlaWorldInfo  # pylint: disable=import-error
-from carla_ros_bridge.pseudo_actor import PseudoActor
-
+from carla_msgs.msg import CarlaWorldInfo
 from ros_compatibility import QoSProfile, latch_on
 
 
-class WorldInfo(PseudoActor):
+class WorldInfo(object):
+
     """
     Publish the map
     """
@@ -30,16 +29,14 @@ class WorldInfo(PseudoActor):
         :param node: node-handle
         :type node: CompatibleNode
         """
-
-        super(WorldInfo, self).__init__(parent=None, node=node,
-                                        prefix="world_info")
-
+        self.node = node
         self.carla_map = carla_world.get_map()
 
-        self.world_info_publisher = node.new_publisher(
-            CarlaWorldInfo, self.get_topic_prefix(), qos_profile=QoSProfile(depth=10, durability=latch_on))
-
         self.map_published = False
+
+        self.world_info_publisher = node.new_publisher(CarlaWorldInfo,
+                                                       "/carla/world_info",
+                                                       qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     def destroy(self):
         """
@@ -51,8 +48,8 @@ class WorldInfo(PseudoActor):
         :return:
         """
         self.logdebug("Destroying WorldInfo()")
+        self.node.destroy_publisher(self.world_info_publisher)
         self.carla_map = None
-        super(WorldInfo, self).destroy()
 
     def update(self, frame, timestamp):
         """

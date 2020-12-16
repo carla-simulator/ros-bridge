@@ -114,7 +114,7 @@ class World(CompatibleNode):
             self.callback_group = ReentrantCallbackGroup()
 
         self.image_subscriber = self.create_subscriber(
-            Image, "/carla/{}/camera/rgb/view/image_color".format(self.role_name),
+            Image, "/carla/{}/rgb_view/image".format(self.role_name),
             self.on_view_image, callback_group=self.callback_group)
 
         self.collision_subscriber = self.create_subscriber(
@@ -129,10 +129,10 @@ class World(CompatibleNode):
         """
         Callback on collision event
         """
-        intensity = math.sqrt(data.normal_impulse.x**2 + data.normal_impulse.y**2 +
-                              data.normal_impulse.z**2)
-        self.hud.notification('Collision with {} (impulse {})'.format(data.other_actor_id,
-                                                                      intensity))
+        intensity = math.sqrt(data.normal_impulse.x**2 +
+                              data.normal_impulse.y**2 + data.normal_impulse.z**2)
+        self.hud.notification('Collision with {} (impulse {})'.format(
+            data.other_actor_id, intensity))
 
     def on_lane_invasion(self, data):
         """
@@ -465,27 +465,14 @@ class HUD(CompatibleNode):
         if not self._show_info:
             return
         try:
-            if ROS_VERSION == 1:
-                (position,
-                 quaternion) = self.tf_listener.lookupTransform('/map', self.role_name,
-                                                                rospy.Time())
-                _, _, yaw = euler_from_quaternion(quaternion)
-                yaw = -math.degrees(yaw)
-                x = position[0]
-                y = -position[1]
-                z = position[2]
-            elif ROS_VERSION == 2:
-                when = self.time
-                q = self.tfBuffer.lookup_transform('map', self.role_name, when)
-                quaternion = q.transform.rotation
-                position = q.transform.translation
-                quaternion = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
-                _, __, yaw = euler_from_quaternion(quaternion)
-                yaw = -math.degrees(yaw)
-                x = position.x
-                y = -position.y
-                z = position.z
-        except (LookupException, ConnectivityException, ExtrapolationException):
+            (position, quaternion) = self.tf_listener.lookupTransform(
+                '/map', self.role_name, rospy.Time())
+            _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
+            yaw = -math.degrees(yaw)
+            x = position[0]
+            y = -position[1]
+            z = position[2]
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             x = 0
             y = 0
             z = 0

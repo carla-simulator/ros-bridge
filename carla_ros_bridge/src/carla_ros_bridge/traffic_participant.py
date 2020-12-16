@@ -10,36 +10,41 @@
 Classes to handle Carla traffic participants
 """
 
-from derived_object_msgs.msg import Object  # pylint: disable=import-error
-from nav_msgs.msg import Odometry  # pylint: disable=import-error
-from shape_msgs.msg import SolidPrimitive  # pylint: disable=import-error
-
+from derived_object_msgs.msg import Object
+from shape_msgs.msg import SolidPrimitive
+from std_msgs.msg import ColorRGBA
+from visualization_msgs.msg import Marker
 from carla_ros_bridge.actor import Actor
+import carla_common.transforms as trans
 
 
 class TrafficParticipant(Actor):
+
     """
     actor implementation details for traffic participant
     """
 
-    def __init__(self, carla_actor, parent, node, prefix):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: CompatibleNode
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         """
         self.classification_age = 0
-        super(TrafficParticipant, self).__init__(carla_actor=carla_actor, parent=parent,
-                                                 node=node, prefix=prefix)
-        self.odometry_publisher = node.new_publisher(
-            Odometry, self.get_topic_prefix() + "/odometry")
+        super(TrafficParticipant, self).__init__(uid=uid,
+                                                 name=name,
+                                                 parent=parent,
+                                                 node=node,
+                                                 carla_actor=carla_actor)
 
     def update(self, frame, timestamp):
         """
@@ -92,8 +97,7 @@ class TrafficParticipant(Actor):
         obj.shape.dimensions.extend([
             self.carla_actor.bounding_box.extent.x * 2.0,
             self.carla_actor.bounding_box.extent.y * 2.0,
-            self.carla_actor.bounding_box.extent.z * 2.0
-        ])
+            self.carla_actor.bounding_box.extent.z * 2.0])
 
         # Classification if available in attributes
         if self.get_classification() != Object.CLASSIFICATION_UNKNOWN:
@@ -109,3 +113,44 @@ class TrafficParticipant(Actor):
         Function to get object classification (overridden in subclasses)
         """
         return Object.CLASSIFICATION_UNKNOWN
+
+    def get_marker_color(self):  # pylint: disable=no-self-use
+        """
+        Function (override) to return the color for marker messages.
+
+        :return: default color used by traffic participants
+        :rtpye : std_msgs.msg.ColorRGBA
+        """
+        color = ColorRGBA()
+        color.r = 0
+        color.g = 0
+        color.b = 255
+        return color
+
+    def get_marker_pose(self):
+        """
+        Function to return the pose for traffic participants.
+
+        :return: the pose of the traffic participant.
+        :rtype: geometry_msgs.msg.Pose
+        """
+        return trans.carla_transform_to_ros_pose(self.carla_actor.get_transform())
+
+    def get_marker(self):
+        """
+        Helper function to create a ROS visualization_msgs.msg.Marker for the actor
+
+        :return:
+        visualization_msgs.msg.Marker
+        """
+        marker = Marker(header=self.get_msg_header(frame_id="map"))
+        marker.color = self.get_marker_color()
+        marker.color.a = 0.3
+        marker.id = self.get_id()
+        marker.type = Marker.CUBE
+
+        marker.pose = self.get_marker_pose()
+        marker.scale.x = self.carla_actor.bounding_box.extent.x * 2.0
+        marker.scale.y = self.carla_actor.bounding_box.extent.y * 2.0
+        marker.scale.z = self.carla_actor.bounding_box.extent.z * 2.0
+        return marker

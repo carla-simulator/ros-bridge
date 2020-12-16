@@ -11,6 +11,7 @@
     enable/disable synchronous mode. If enabled ros-bridge waits until
     expected data is received for all sensors
   -->
+  <arg name="passive" default='False'/>
   <arg name='synchronous_mode' default='False'/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default='True'/>
   <!-- set the fixed timestep length -->
@@ -27,6 +28,7 @@
     <param name="host" value="$(arg host)" unless="$(eval host == '')"/>
     <param name="port" value="$(arg port)" unless="$(eval port == '')"/>
     <param name="timeout" value="$(arg timeout)" unless="$(eval timeout == '')"/>
+    <param name="passive" value="$(arg passive)"/>
     <param name="synchronous_mode" value="$(arg synchronous_mode)"/>
     <param name="synchronous_mode_wait_for_vehicle_control_command" value="$(arg synchronous_mode_wait_for_vehicle_control_command)"/>
     <param name="fixed_delta_seconds" value="$(arg fixed_delta_seconds)"/>

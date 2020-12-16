@@ -1,6 +1,6 @@
-file_finder = find . -type f $(1) -not \( -path './venv/*' -o -path './carla_msgs/*' -o -path './astuff_sensor_msgs/*' \)
+file_finder = find . -type f $(1) -not \( -path './venv/*' -o -path './carla_msgs/*' -o -path './packaging/build/*' -o -path './build/*' -o -path './log/*' -o -path './install/*' \)
 
-CMAKE_FILES = $(call file_finder,-name "*.cmake" -o -name "CMakeLists.txt")
+CMAKE_FILES = $(call file_finder,\( -name "*.cmake" -o -name "CMakeLists.txt" \))
 PY_FILES = $(call file_finder,-name "*.py")
 
 check: check_format pylint

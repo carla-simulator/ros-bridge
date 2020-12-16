@@ -10,44 +10,53 @@
 Classes to handle Carla Radar
 """
 
-from sensor_msgs.msg import PointCloud2, PointField
-
 import numpy as np
+
+from sensor_msgs.msg import PointCloud2, PointField
 
 from carla_ros_bridge.sensor import Sensor, create_cloud
 
 
 class Radar(Sensor):
+
     """
     Actor implementation details of Carla RADAR
     """
-    # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="Radar"):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: CompatibleNode
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(Radar, self).__init__(carla_actor=carla_actor, parent=parent,
-                                    node=node, synchronous_mode=synchronous_mode,
-                                    prefix="radar/" + carla_actor.attributes.get('role_name'),
-                                    sensor_name=sensor_name)
-        self.radar_publisher = node.new_publisher(
-            PointCloud2, self.get_topic_prefix() + "/radar")
+        super(Radar, self).__init__(uid=uid,
+                                    name=name,
+                                    parent=parent,
+                                    relative_spawn_pose=relative_spawn_pose,
+                                    node=node,
+                                    carla_actor=carla_actor,
+                                    synchronous_mode=synchronous_mode)
+
+        self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):
         """
         Function to transform the a received Radar measurement into a ROS message
-
         :param carla_radar_measurement: carla Radar measurement object
         :type carla_radar_measurement: carla.RadarMeasurement
         """

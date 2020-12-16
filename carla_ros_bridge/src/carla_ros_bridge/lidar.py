@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 #
 # Copyright (c) 2018, Willow Garage, Inc.
 # Copyright (c) 2018-2019 Intel Corporation
@@ -10,44 +11,50 @@
 Classes to handle Carla lidars
 """
 
-from __future__ import print_function
-
-import sys
-import ctypes
-import os
-import struct
 import numpy
 
-from sensor_msgs.msg import PointCloud2, PointField  # pylint: disable=import-error
-from carla_ros_bridge.sensor import Sensor, create_cloud
+from sensor_msgs.msg import PointCloud2, PointField
+
+from carla_ros_bridge.sensor import Sensor
 
 from ros_compatibility import quaternion_from_euler, euler_from_quaternion
 
 
 class Lidar(Sensor):
+
     """
     Actor implementation details for lidars
     """
-    # pylint: disable=too-many-arguments
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode, sensor_name="Lidar"):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: CompatibleNode
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
-        super(Lidar, self).__init__(carla_actor=carla_actor, parent=parent,
-                                    node=node, synchronous_mode=synchronous_mode,
-                                    prefix='lidar/' + carla_actor.attributes.get('role_name'),
-                                    sensor_name=sensor_name)
+        super(Lidar, self).__init__(uid=uid,
+                                    name=name,
+                                    parent=parent,
+                                    relative_spawn_pose=relative_spawn_pose,
+                                    node=node,
+                                    carla_actor=carla_actor,
+                                    synchronous_mode=synchronous_mode)
 
-        self.lidar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix() +
-                                                  "/point_cloud")
+        self.lidar_publisher = node.new_publisher(PointCloud2,
+                                                  self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ
@@ -59,6 +66,12 @@ class Lidar(Sensor):
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
         header = self.get_msg_header()
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+        ]
 
         lidar_data = numpy.fromstring(
             bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
@@ -67,14 +80,6 @@ class Lidar(Sensor):
         # we take the opposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
-
-        fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
-        ]
-
         point_cloud_msg = create_cloud(header, fields, lidar_data)
         self.lidar_publisher.publish(point_cloud_msg)
 
@@ -85,26 +90,36 @@ class SemanticLidar(Sensor):
     Actor implementation details for semantic lidars
     """
 
-    def __init__(self, carla_actor, parent, node, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
         """
-        super(SemanticLidar, self).__init__(carla_actor=carla_actor,
+        super(SemanticLidar, self).__init__(uid=uid,
+                                            name=name,
                                             parent=parent,
+                                            relative_spawn_pose=relative_spawn_pose,
                                             node=node,
-                                            synchronous_mode=synchronous_mode,
-                                            prefix='semantic_lidar/' + carla_actor.attributes.get('role_name'))
+                                            carla_actor=carla_actor,
+                                            synchronous_mode=synchronous_mode)
 
         self.semantic_lidar_publisher = node.new_publisher(
             PointCloud2,
-            self.get_topic_prefix() + "/point_cloud")
+            self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ

@@ -1,5 +1,5 @@
 """
-Setup for carla_infrastructure
+Setup for carla_spawn_objects
 """
 import os
 from glob import glob
@@ -10,7 +10,7 @@ if ROS_VERSION == 1:
     from catkin_pkg.python_setup import generate_distutils_setup
 
     d = generate_distutils_setup(
-        packages=['carla_infrastructure'],
+        packages=['carla_spawn_objects'],
         package_dir={'': 'src'}
     )
 
@@ -19,7 +19,7 @@ if ROS_VERSION == 1:
 elif ROS_VERSION == 2:
     from setuptools import setup
 
-    package_name = 'carla_infrastructure'
+    package_name = 'carla_spawn_objects'
     setup(
         name=package_name,
         version='0.0.0',
@@ -29,19 +29,19 @@ elif ROS_VERSION == 2:
              ['resource/' + package_name]),
             ('share/' + package_name, ['package.xml']),
             ('share/' + package_name + '/config',
-             ['config/sensors.json']),
+             ['config/settings.yaml', 'config/objects.json']),
             (os.path.join('share', package_name), glob('launch/*.launch.py'))
         ],
         install_requires=['setuptools'],
         zip_safe=True,
         maintainer='CARLA Simulator Team',
         maintainer_email='carla.simulator@gmail.com',
-        description='CARLA infrastructure for ROS2 bridge',
+        description='CARLA spawn_objects for ROS2 bridge',
         license='MIT',
         tests_require=['pytest'],
         entry_points={
             'console_scripts': [
-                'carla_infrastructure = src.carla_infrastructure.carla_infrastructure:main'
+                'carla_spawn_objects = src.carla_spawn_objects.carla_spawn_objects:main'
             ],
         },
     )

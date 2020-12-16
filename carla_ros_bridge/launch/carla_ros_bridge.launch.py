@@ -21,6 +21,10 @@ def generate_launch_description():
             default_value='2'
         ),
         launch.actions.DeclareLaunchArgument(
+            name='passive',
+            default_value='False'
+        ),
+        launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
             default_value='False'
         ),
@@ -60,6 +64,9 @@ def generate_launch_description():
                 },
                 {
                     'timeout': launch.substitutions.LaunchConfiguration('timeout')
+                },
+                {
+                    'passive': launch.substitutions.LaunchConfiguration('passive')
                 },
                 {
                     'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode')

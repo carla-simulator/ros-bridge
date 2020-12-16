@@ -10,36 +10,46 @@
 Classes to handle lane invasion events
 """
 
-from carla_msgs.msg import CarlaLaneInvasionEvent  # pylint: disable=import-error
 from carla_ros_bridge.sensor import Sensor
+from carla_msgs.msg import CarlaLaneInvasionEvent
 
 
 class LaneInvasionSensor(Sensor):
+
     """
     Actor implementation details for a lane invasion sensor
     """
 
-    # pylint: disable=too-many-arguments
-    def __init__(self, carla_actor, parent, node, synchronous_mode,
-                 sensor_name="LaneInvasionSensor"):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
         :type node: CompatibleNode
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
         :type synchronous_mode: bool
         """
-        super(LaneInvasionSensor,
-              self).__init__(carla_actor=carla_actor, parent=parent, node=node,
-                             synchronous_mode=synchronous_mode, is_event_sensor=True,
-                             prefix="lane_invasion", sensor_name=sensor_name)
-        self.lane_invasion_publisher = node.new_publisher(
-            CarlaLaneInvasionEvent, self.get_topic_prefix())
+        super(LaneInvasionSensor, self).__init__(uid=uid,
+                                                 name=name,
+                                                 parent=parent,
+                                                 relative_spawn_pose=relative_spawn_pose,
+                                                 node=node,
+                                                 carla_actor=carla_actor,
+                                                 synchronous_mode=synchronous_mode,
+                                                 is_event_sensor=True)
+
+        self.lane_invasion_publisher = node.new_publisher(CarlaLaneInvasionEvent,
+                                                          self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ

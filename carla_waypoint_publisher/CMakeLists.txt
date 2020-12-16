@@ -11,7 +11,9 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_python_setup()
 
-  roslaunch_add_file_check(launch)
+  if(CATKIN_ENABLE_TESTING)
+    roslaunch_add_file_check(launch)
+  endif()
 
   catkin_package(CATKIN_DEPENDS rospy)
 
