@@ -10,7 +10,7 @@ Spawns a camera, attached to an ego vehicle.
 The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
-
+import os
 import sys
 
 import carla
@@ -30,6 +30,11 @@ from ros_compatibility import (
     ROSInterruptException,
     ros_init
 )
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION == 1:
+    from carla_msgs.srv import SpawnObjectRequest, DestroyObjectRequest
 # ==============================================================================
 # -- CarlaSpectatorCamera ------------------------------------------------------------
 # ==============================================================================
@@ -113,7 +118,10 @@ class CarlaSpectatorCamera(CompatibleNode):
         if not transform:
             transform = carla.Transform()
 
-        spawn_object_request = SpawnObjectRequest()
+        if ROS_VERSION == 1:
+            spawn_object_request = SpawnObjectRequest()
+        elif ROS_VERSION == 2:
+            spawn_object_request = SpawnObject.Request()
         spawn_object_request.type = "sensor.camera.rgb"
         spawn_object_request.id = "spectator_view"
         spawn_object_request.attach_to = ego_actor.id

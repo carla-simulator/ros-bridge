@@ -80,11 +80,11 @@ def generate_launch_description():
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_spawn_actors'), 'carla_example_ego_vehicle.launch.py')
+                    'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
             ),
             launch_arguments={
-                'object_definition_file': get_package_share_directory('carla_spawn_actors') + '/config/sensors.json',
-                'role_name_' + launch.substitutions.LaunchConfiguration('role_name'): launch.substitutions.LaunchConfiguration('role_name'),
+                'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/sensors.json',
+                'role_name_' + str(launch.substitutions.LaunchConfiguration('role_name')): launch.substitutions.LaunchConfiguration('role_name'),
                 'spawn_point': launch.substitutions.LaunchConfiguration('spawn_point')
             }.items()
         ),

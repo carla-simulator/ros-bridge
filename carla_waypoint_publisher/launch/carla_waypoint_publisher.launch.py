@@ -31,13 +31,13 @@ def generate_launch_description():
             emulate_tty='True',
             parameters=[
                 {
-                    '/carla/host': launch.substitutions.LaunchConfiguration('host')
+                    'host': launch.substitutions.LaunchConfiguration('host')
                 },
                 {
-                    '/carla/port': launch.substitutions.LaunchConfiguration('port')
+                    'port': launch.substitutions.LaunchConfiguration('port')
                 },
                 {
-                    '/carla/timeout': launch.substitutions.LaunchConfiguration('timeout')
+                    'timeout': launch.substitutions.LaunchConfiguration('timeout')
                 },
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')

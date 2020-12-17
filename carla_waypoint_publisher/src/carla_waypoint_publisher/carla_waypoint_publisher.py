@@ -28,7 +28,8 @@ from ros_compatibility import (euler_from_quaternion,
                                QoSProfile,
                                ROSException,
                                ros_timestamp,
-                               latch_on)
+                               latch_on,
+                               ros_init)
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans
@@ -71,14 +72,14 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             Path, '/carla/{}/waypoints'.format(self.role_name), QoSProfile(depth=1, durability=True))
 
         # initialize ros services
-        self.getWaypointService = self.new_service(
+        self.get_waypoint_service = self.new_service(
             GetWaypoint,
             '/carla_waypoint_publisher/{}/get_waypoint'.format(self.role_name),
             self.get_waypoint)
-        self.getActorWaypointService = self.new_service(
+        self.get_actor_waypoint_service = self.new_service(
             GetActorWaypoint,
             '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(self.role_name),
-            GetActorWaypoint, self.get_actor_waypoint)
+            self.get_actor_waypoint)
 
         # set initial goal
         self.goal = self.world.get_map().get_spawn_points()[0]
@@ -133,11 +134,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         if ROS_VERSION == 1:
             response = GetActorWaypointResponse()
+        else:
+            response = GetActorWaypoint.Response()
         if actor:
             carla_waypoint = self.map.get_waypoint(actor.get_location())
-            response.waypoint.pose.position.x = carla_waypoint.transform.location.x
-            response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
-            response.waypoint.pose.position.z = carla_waypoint.transform.location.z
+            response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
             response.waypoint.is_junction = carla_waypoint.is_junction
             response.waypoint.road_id = carla_waypoint.road_id
             response.waypoint.section_id = carla_waypoint.section_id
@@ -253,9 +254,9 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             self.logerr("Error while waiting for world info!")
             sys.exit(1)
 
-        host = self.get_param("carla/host", "127.0.0.1")
-        port = self.get_param("carla/port", 2000)
-        timeout = self.get_param("carla/timeout", 10)
+        host = self.get_param("host", "127.0.0.1")
+        port = self.get_param("port", 2000)
+        timeout = self.get_param("timeout", 10)
         self.loginfo("CARLA world available. Trying to connect to {host}:{port}".format(
             host=host, port=port))
 
@@ -265,9 +266,6 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.world = carla_client.get_world()
 
         self.loginfo("Connected to Carla.")
-
-        waypointConverter = CarlaToRosWaypointConverter(carla_world)
-
 
 def main(args=None):
     """
