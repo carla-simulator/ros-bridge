@@ -52,6 +52,7 @@ ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
     import rospy
+    from rospy import Time
     from tf import LookupException
     from tf import ConnectivityException
     from tf import ExtrapolationException
@@ -467,14 +468,12 @@ class HUD(CompatibleNode):
         if not self._show_info:
             return
         try:
-            
             if ROS_VERSION == 1:
                 (position, quaternion) = self.tf_listener.lookupTransform(
-                    'map', self.role_name, Time())
+                    '/map', self.role_name, Time())
             elif ROS_VERSION == 2:
                 (position, quaternion) = self.tf_buffer.lookup_transform(
-                    target_frame='map', source_frame=self.role_name, time=Time())
-
+                    source_frame='map', target_frame=self.role_name, time=Time())
             _, _, yaw = euler_from_quaternion(quaternion)
             yaw = -math.degrees(yaw)
             x = position[0]

@@ -432,6 +432,7 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
+        #TODO fix if carla is not running
         self.loginfo("Shutting down...")
         self.debug_helper.destroy()
         self.shutdown.set()

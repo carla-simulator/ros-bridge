@@ -16,10 +16,7 @@ from geometry_msgs.msg import TransformStamped, Transform
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
-if ROS_VERSION == 1:
-    import tf
-elif ROS_VERSION == 2:
-    import tf2_ros
+import tf2_ros
 
 
 
@@ -48,7 +45,10 @@ class TFSensor(PseudoActor):
                                        parent=parent,
                                        node=node)
 
-        self.tf_broadcaster = tf2_ros.TransformBroadcaster(node)
+        if ROS_VERSION == 1:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        elif ROS_VERSION == 2:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     @staticmethod
     def get_blueprint_name():
@@ -63,7 +63,7 @@ class TFSensor(PseudoActor):
         Function (override) to update this object.
         """
         self.parent.get_prefix()
-        self.tf_broadcaster.sendTransform(TransformStamped(
+        self._tf_broadcaster.sendTransform(TransformStamped(
             header=self.get_msg_header("map"),
             child_frame_id=self.parent.get_prefix(),
             transform=self.parent.get_current_ros_transform()))

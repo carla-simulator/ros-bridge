@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(carla_ego_vehicle)
+project(carla_spawn_objects)
 
 find_package(ros_environment REQUIRED)
 set(ROS_VERSION $ENV{ROS_VERSION})
@@ -28,6 +28,7 @@ if(${ROS_VERSION} EQUAL 1)
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
 
 elseif(${ROS_VERSION} EQUAL 2)
+#TODO: not needed?
   find_package(ament_cmake REQUIRED)
   find_package(rclpy REQUIRED)
   ament_export_dependencies(rclpy)

@@ -18,7 +18,7 @@ if(${ROS_VERSION} EQUAL 1)
 
   catkin_install_python(
     PROGRAMS
-    src/carla_ros_scenario_runner/carla_ros_scenario_runner.py
+    src/carla_ros_scenario_runner/carla_ros_scenario_runner_node.py
     src/carla_ros_scenario_runner/application_runner.py
     src/carla_ros_scenario_runner/scenario_runner_runner.py
     src/carla_ros_scenario_runner/ros_vehicle_control.py

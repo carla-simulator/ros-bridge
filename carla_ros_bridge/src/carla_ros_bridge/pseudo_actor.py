@@ -78,10 +78,10 @@ class PseudoActor(object):
             header.frame_id = frame_id
         else:
             header.frame_id = self.get_prefix()
-        if timestamp:
-            header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
-        else:
-            header.stamp = self.node.ros_timestamp
+
+        if not timestamp:
+            timestamp = self.node.get_time()            
+        header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         return header
 
     def get_prefix(self):

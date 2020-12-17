@@ -8,8 +8,10 @@
 """
 Classes to handle Carla sensors
 """
+from __future__ import print_function
 from abc import abstractmethod
 import ctypes
+import os
 import struct
 import sys
 try:
@@ -22,6 +24,8 @@ from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
 from ros_compatibility import ros_ok, ros_timestamp
 from sensor_msgs.msg import PointCloud2, PointField
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 _DATATYPES = {}
 _DATATYPES[PointField.INT8] = ('b', 1)
@@ -91,7 +95,10 @@ class Sensor(Actor):
         except (KeyError, ValueError):
             self.sensor_tick_time = None
 
-        self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
+        if ROS_VERSION == 1:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        elif ROS_VERSION == 2:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     def publish_tf(self, pose=None):
         if self.synchronous_mode:
@@ -234,7 +241,7 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
             fmt += 'x' * (field.offset - offset)
             offset = field.offset
         if field.datatype not in _DATATYPES:
-            print('Skipping unknown PointField datatype [%d]' % field.datatype, file=sys.stderr)
+            print('Skipping unknown PointField datatype [{}]' % field.datatype, file=sys.stderr)
         else:
             datatype_fmt, datatype_length = _DATATYPES[field.datatype]
             fmt += field.count * datatype_fmt
