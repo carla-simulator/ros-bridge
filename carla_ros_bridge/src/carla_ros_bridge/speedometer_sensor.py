@@ -68,4 +68,4 @@ class SpeedometerSensor(PseudoActor):
         ])
         speed = np.dot(vel_np, orientation)
 
-        self.speedometer_publisher.publish(Float32(speed))
+        self.speedometer_publisher.publish(Float32(data=speed))

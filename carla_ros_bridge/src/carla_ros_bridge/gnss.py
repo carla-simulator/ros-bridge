@@ -49,8 +49,7 @@ class Gnss(Sensor):
                                    synchronous_mode=synchronous_mode)
 
         self.gnss_publisher = node.new_publisher(NavSatFix,
-                                                 self.get_topic_prefix(),
-                                                 queue_size=10)
+                                                 self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ

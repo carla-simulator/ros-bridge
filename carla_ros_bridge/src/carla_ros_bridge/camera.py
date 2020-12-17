@@ -80,7 +80,7 @@ class Camera(Sensor):
         """
         camera_info = CameraInfo()
         # store info without header
-        camera_info.header = None
+        camera_info.header = self.get_msg_header()
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
@@ -115,28 +115,6 @@ class Camera(Sensor):
 
         self.camera_info_publisher.publish(cam_info)
         self.camera_image_publisher.publish(img_msg)
-
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function (override) to modify the tf messages sent by this camera.
-
-        The camera transformation has to be altered to look at the same axis
-        as the opencv projection in order to get easy depth cloud for RGBD camera
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-
-        if ROS_VERSION == 1:
-            quat_swap = quaternion_from_matrix([[0, 0, 1, 0], [-1, 0, 0, 0],
-                                                [0, -1, 0, 0], [0, 0, 0, 1]])
-        elif ROS_VERSION == 2:
-            quat_swap = quaternion_from_matrix(
-                numpy.asarray([numpy.asarray([0, 0, 1]), numpy.asarray([-1, 0, 0]),
-                               numpy.asarray([0, -1, 0])]))
 
     def get_ros_image(self, carla_camera_data):
         """

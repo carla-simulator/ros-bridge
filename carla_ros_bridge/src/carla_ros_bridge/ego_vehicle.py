@@ -76,7 +76,7 @@ class EgoVehicle(Vehicle):
         self.vehicle_control_override = False
         self._vehicle_control_applied_callback = vehicle_control_applied_callback
 
-        self.vehicle_status_publisher = (
+        self.vehicle_status_publisher = node.new_publisher(
             CarlaEgoVehicleStatus,
             self.get_topic_prefix() + "/vehicle_status")
         self.vehicle_info_publisher = node.new_publisher(CarlaEgoVehicleInfo,
@@ -208,8 +208,6 @@ class EgoVehicle(Vehicle):
         self.control_subscriber = None
         destroy_subscription(self.enable_autopilot_subscriber)
         self.enable_autopilot_subscriber = None
-        self.twist_control_subscriber.unregister()
-        self.twist_control_subscriber = None
         destroy_subscription(self.control_override_subscriber)
         self.control_override_subscriber = None
         destroy_subscription(self.manual_control_subscriber)

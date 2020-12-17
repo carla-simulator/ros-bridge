@@ -41,7 +41,8 @@ from ros_compatibility import (
     latch_on,
     euler_from_quaternion,
     ros_ok,
-    ros_init)
+    ros_init,
+    destroy_subscription)
 import os
 import datetime
 import math
@@ -59,6 +60,7 @@ if ROS_VERSION == 1:
 
 elif ROS_VERSION == 2:
     import rclpy
+    from rclpy.time import Time
     from rclpy.callback_groups import ReentrantCallbackGroup
     from tf2_ros import LookupException
     from tf2_ros import ConnectivityException
@@ -177,14 +179,9 @@ class World(CompatibleNode):
         """
         destroy all objects
         """
-        if ROS_VERSION == 1:
-            self.image_subscriber.unregister()
-            self.collision_subscriber.unregister()
-            self.lane_invasion_subscriber.unregister()
-        elif ROS_VERSION == 2:
-            self.image_subscriber.destroy()
-            self.collision_subscriber.destroy()
-            self.lane_invasion_subscriber.destroy()
+        destroy_subscription(self.image_subscriber)
+        destroy_subscription(self.collision_subscriber)
+        destroy_subscription(self.lane_invasion_subscriber)
 
 
 # ==============================================================================
@@ -368,8 +365,8 @@ class HUD(CompatibleNode):
             self.callback_group = None
         elif ROS_VERSION == 2:
             self.tf_listener_node = rclpy.create_node("tf_listener")
-            self.tfBuffer = tf2_ros.Buffer()
-            self.tf_listener = tf2_ros.TransformListener(self.tfBuffer, node=self.tf_listener_node)
+            self.tf_buffer = tf2_ros.Buffer()
+            self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, node=self.tf_listener_node)
             self.time = Time()
             self.callback_group = ReentrantCallbackGroup()
 
@@ -470,14 +467,21 @@ class HUD(CompatibleNode):
         if not self._show_info:
             return
         try:
-            (position, quaternion) = self.tf_listener.lookupTransform(
-                '/map', self.role_name, rospy.Time())
+            
+            if ROS_VERSION == 1:
+                (position, quaternion) = self.tf_listener.lookupTransform(
+                    'map', self.role_name, Time())
+            elif ROS_VERSION == 2:
+                (position, quaternion) = self.tf_buffer.lookup_transform(
+                    target_frame='map', source_frame=self.role_name, time=Time())
+
             _, _, yaw = euler_from_quaternion(quaternion)
             yaw = -math.degrees(yaw)
             x = position[0]
             y = -position[1]
             z = position[2]
-        except (LookupException, ConnectivityException, ExtrapolationException):
+        except (LookupException, ConnectivityException, ExtrapolationException) as e:
+            print(e)
             x = 0
             y = 0
             z = 0
@@ -488,6 +492,7 @@ class HUD(CompatibleNode):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
 
+        #TODO
         if ROS_VERSION == 1:
             time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
         elif ROS_VERSION == 2:
@@ -681,6 +686,7 @@ def main(args=None):
     main function
     """
     ros_init(args)
+    #TODO
     if ROS_VERSION == 1:
         rospy.init_node('carla_manual_control', anonymous=True)
         role_name = rospy.get_param("~role_name", "ego_vehicle")

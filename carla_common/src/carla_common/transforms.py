@@ -10,15 +10,12 @@
 Tool functions to convert transforms from carla to ROS coordinate system
 """
 
-import os
 import math
 import numpy
+import carla
 
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
-from ros_compatibility import euler_matrix, quaternion_from_euler
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
+from ros_compatibility import euler_matrix, quaternion_from_euler, euler_from_quaternion
 
 def carla_location_to_numpy_vector(carla_location):
     """
@@ -338,7 +335,7 @@ def carla_location_to_pose(carla_location):
 
 
 def RPY_to_ros_quaternion(roll, pitch, yaw):
-    quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+    quat = quaternion_from_euler(roll, pitch, yaw)
     return Quaternion(*quat)
 
 
@@ -353,7 +350,7 @@ def ros_quaternion_to_RPY(ros_quaternion):
         ros_quaternion.z,
         ros_quaternion.w
     )
-    return tf.transformations.euler_from_quaternion(quaternion)
+    return euler_from_quaternion(quaternion)
 
 
 def RPY_to_carla_rotation(roll, pitch, yaw):

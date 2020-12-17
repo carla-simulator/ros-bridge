@@ -11,6 +11,8 @@ handle a tf sensor
 
 import os
 from carla_ros_bridge.pseudo_actor import PseudoActor
+from ros_compatibility import ros_timestamp
+from geometry_msgs.msg import TransformStamped, Transform
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -46,7 +48,7 @@ class TFSensor(PseudoActor):
                                        parent=parent,
                                        node=node)
 
-        self.tf_broadcaster = tf.TransformBroadcaster()
+        self.tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     @staticmethod
     def get_blueprint_name():
@@ -60,10 +62,8 @@ class TFSensor(PseudoActor):
         """
         Function (override) to update this object.
         """
-        pose = self.parent.get_current_ros_pose()
-        position = pose.position
-        orientation = pose.orientation
-        self.tf_broadcaster.sendTransform(
-            (position.x, position.y, position.z),
-            (orientation.x, orientation.y, orientation.z, orientation.w),
-            ros_timestamp(self.ros_node.get_time(), from_sec=True), self.parent.get_prefix(), "map")
+        self.parent.get_prefix()
+        self.tf_broadcaster.sendTransform(TransformStamped(
+            header=self.get_msg_header("map"),
+            child_frame_id=self.parent.get_prefix(),
+            transform=self.parent.get_current_ros_transform()))

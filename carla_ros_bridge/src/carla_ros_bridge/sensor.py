@@ -17,9 +17,10 @@ try:
 except ImportError:
     import Queue as queue
 
+import tf2_ros
 from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
-from ros_compatibility import ros_ok
+from ros_compatibility import ros_ok, ros_timestamp
 from sensor_msgs.msg import PointCloud2, PointField
 
 _DATATYPES = {}
@@ -51,7 +52,7 @@ class Sensor(Actor):
                  # if a sensor only delivers data on special events,
                  # do not wait for it. That means you might get data from a
                  # sensor, that belongs to a different frame
-                 prefix=None):
+                 ):
         """
         Constructor
 
@@ -90,7 +91,7 @@ class Sensor(Actor):
         except (KeyError, ValueError):
             self.sensor_tick_time = None
 
-        self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     def publish_tf(self, pose=None):
         if self.synchronous_mode:
@@ -106,8 +107,8 @@ class Sensor(Actor):
             frame_id = "map"
 
         if pose is not None:
-            transform = TransformStamped()
-            transform.header.stamp = ros_timestamp(sec=self.node.get_time, from_sec=True)
+            transform = tf2_ros.TransformStamped()
+            transform.header.stamp = ros_timestamp(sec=self.node.get_time(), from_sec=True)
             transform.header.frame_id = frame_id
             transform.child_frame_id = child_frame_id
 

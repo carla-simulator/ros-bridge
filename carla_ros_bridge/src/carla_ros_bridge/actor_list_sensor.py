@@ -42,7 +42,7 @@ class ActorListSensor(PseudoActor):
                                               parent=parent,
                                               node=node)
         self.actor_list = actor_list
-        self.actor_list_publisher = sel.new_publisher(CarlaActorList, self.get_topic_prefix())
+        self.actor_list_publisher = node.new_publisher(CarlaActorList, self.get_topic_prefix())
 
     def destroy(self):
         """

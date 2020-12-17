@@ -97,7 +97,7 @@ class TrafficLight(Actor):
         info = CarlaTrafficLightInfo()
         info.id = self.get_id()
         info.transform = self.get_current_ros_pose()
-        info.trigger_volume.center = trans.carla_location_to_ros_point(
+        info.trigger_volume.center = trans.carla_location_to_ros_vector3(
             self.carla_actor.trigger_volume.location)
         info.trigger_volume.size.x = self.carla_actor.trigger_volume.extent.x * 2.0
         info.trigger_volume.size.y = self.carla_actor.trigger_volume.extent.y * 2.0

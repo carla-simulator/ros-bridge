@@ -16,6 +16,7 @@ def generate_launch_description():
             executable='carla_manual_control',
             name=launch.substitutions.LaunchConfiguration('role_name'),
             output='screen',
+            emulate_tty=True,
             parameters=[
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')

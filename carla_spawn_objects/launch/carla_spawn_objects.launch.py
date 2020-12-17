@@ -25,6 +25,7 @@ def generate_launch_description():
             executable='carla_spawn_objects',
             name='carla_spawn_objects',
             output='screen',
+            emulate_tty=True,
             parameters=[
                 {
                     'objects_definition_file': launch.substitutions.LaunchConfiguration('objects_definition_file')

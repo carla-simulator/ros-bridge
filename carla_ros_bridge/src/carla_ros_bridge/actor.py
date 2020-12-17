@@ -65,6 +65,16 @@ class Actor(PseudoActor):
         return trans.carla_transform_to_ros_pose(
             self.carla_actor.get_transform())
 
+    def get_current_ros_transform(self):
+        """
+        Function to provide the current ROS pose
+
+        :return: the ROS pose of this actor
+        :rtype: geometry_msgs.msg.Pose
+        """
+        return trans.carla_transform_to_ros_transform(
+            self.carla_actor.get_transform())
+
     def get_current_ros_twist_rotated(self):
         """
         Function to provide the current ROS twist rotated
@@ -105,34 +115,3 @@ class Actor(PseudoActor):
         :rtype: int64
         """
         return self.carla_actor_id
-
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function to provide the current ROS transform
-
-        :return: the ROS transfrom
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = TransformStamped()
-        if frame_id:
-            tf_msg.header = self.get_msg_header(frame_id)
-        else:
-            tf_msg.header = self.get_msg_header("map")
-        if child_frame_id:
-            tf_msg.child_frame_id = child_frame_id
-        else:
-            tf_msg.child_frame_id = self.get_prefix()
-        if transform:
-            tf_msg.transform = transform
-        else:
-            tf_msg.transform = trans.carla_transform_to_ros_transform(
-                self.carla_actor.get_transform())
-        return tf_msg
-
-    def publish_transform(self, ros_transform_msg):
-        """
-        Helper function to send a ROS tf message of this child
-
-        :return:
-        """
-        self.node.publish_tf_message(ros_transform_msg)

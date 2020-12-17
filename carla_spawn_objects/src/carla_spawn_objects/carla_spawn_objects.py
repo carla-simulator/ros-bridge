@@ -33,7 +33,8 @@ from ros_compatibility import (
     CompatibleNode,
     ROSInterruptException,
     ServiceException,
-    quaternion_from_euler
+    quaternion_from_euler,
+    ros_init
 )
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -56,8 +57,8 @@ class CarlaSpawnObjects(CompatibleNode):
 
     def __init__(self):
         super(CarlaSpawnObjects, self).__init__('carla_spawn_objects')
-        self.objects_definition_file = self.get_param('~objects_definition_file')
-        self.spawn_sensors_only = self.get_param('~spawn_sensors_only', None)
+        self.objects_definition_file = self.get_param('objects_definition_file')
+        self.spawn_sensors_only = self.get_param('spawn_sensors_only', None)
 
         self.players = []
         self.vehicles_sensors = []
@@ -75,10 +76,9 @@ class CarlaSpawnObjects(CompatibleNode):
         :return:
         """
         # Read sensors from file
-        if not os.path.exists(self.objects_definition_file):
+        if not self.objects_definition_file or not os.path.exists(self.objects_definition_file):
             raise RuntimeError(
-                "Could not read sensor-definition from {}".format(self.objects_definition_file))
-        json_sensors = None
+                "Could not read object definitions from {}".format(self.objects_definition_file))
         with open(self.objects_definition_file) as handle:
             json_actors = json.loads(handle.read())
 
@@ -138,7 +138,10 @@ class CarlaSpawnObjects(CompatibleNode):
                     raise Exception(
                         "Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
             else:
-                spawn_object_request = SpawnObjectRequest()
+                if ROS_VERSION == 1:
+                    spawn_object_request = SpawnObjectRequest()
+                elif ROS_VERSION == 2:
+                    spawn_object_request = SpawnObject.Request()
                 spawn_object_request.type = vehicle["type"]
                 spawn_object_request.id = vehicle["id"]
                 spawn_object_request.attach_to = 0
@@ -180,11 +183,12 @@ class CarlaSpawnObjects(CompatibleNode):
                     self.loginfo("Spawn point selected at random")
                     spawn_point = Pose()  # empty pose
                     spawn_object_request.random_pose = True
-
+                
                 player_spawned = False
                 while not player_spawned:
                     spawn_object_request.transform = spawn_point
-                    response = self.spawn_object_service(spawn_object_request)
+                    
+                    response = self.call_service(self.spawn_object_service, spawn_object_request)
                     if response.id != -1:
                         player_spawned = True
                         players.append(response.id)
@@ -243,7 +247,10 @@ class CarlaSpawnObjects(CompatibleNode):
                             spawn_point.pop("pitch", 0.0),
                             spawn_point.pop("yaw", 0.0))
 
-                spawn_object_request = SpawnObjectRequest()
+                if ROS_VERSION == 1:
+                    spawn_object_request = SpawnObjectRequest()
+                elif ROS_VERSION == 2:
+                    spawn_object_request = SpawnObject.Request()
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
                 spawn_object_request.attach_to = attached_vehicle_id
@@ -252,9 +259,9 @@ class CarlaSpawnObjects(CompatibleNode):
 
                 for attribute, value in sensor_spec.items():
                     spawn_object_request.attributes.append(
-                        KeyValue(str(attribute), str(value)))
+                        KeyValue(key=str(attribute), value=str(value)))
 
-                response = self.spawn_object_service(spawn_object_request)
+                response = self.call_service(self.spawn_object_service, spawn_object_request)
                 if response.id == -1:
                     raise Exception(response.error_string)
 
@@ -276,7 +283,7 @@ class CarlaSpawnObjects(CompatibleNode):
         spawn_point.position.x = x
         spawn_point.position.y = y
         spawn_point.position.z = z
-        quat = trans.quaternion_from_euler(
+        quat = quaternion_from_euler(
             math.radians(roll),
             math.radians(pitch),
             math.radians(yaw))
@@ -305,11 +312,15 @@ class CarlaSpawnObjects(CompatibleNode):
         """
         destroy all the players and sensors
         """
+        self.loginfo("Shutting down...")
         # destroy global sensors
         for actor_id in self.global_sensors:
-            destroy_object_request = DestroyObjectRequest(actor_id)
+            if ROS_VERSION == 1:
+                destroy_object_request = DestroyObjectRequest(actor_id)
+            elif ROS_VERSION == 2:
+                destroy_object_request = DestroyObject.Request(actor_id)
             try:
-                response = self.destroy_object_service(destroy_object_request)
+                self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
                 self.logwarn_once(str(e))
         self.global_sensors = []
@@ -317,18 +328,24 @@ class CarlaSpawnObjects(CompatibleNode):
         # destroy vehicles sensors
         for vehicle_sensors_id in self.vehicles_sensors:
             for actor_id in vehicle_sensors_id:
-                destroy_object_request = DestroyObjectRequest(actor_id)
+                if ROS_VERSION == 1:
+                    destroy_object_request = DestroyObjectRequest(actor_id)
+                elif ROS_VERSION == 2:
+                    destroy_object_request = DestroyObject.Request(actor_id)
                 try:
-                    response = self.destroy_object_service(destroy_object_request)
+                    self.call_service(self.destroy_object_service, destroy_object_request)
                 except ServiceException as e:
                     self.logwarn_once(str(e))
         self.vehicles_sensors = []
 
         # destroy player
         for player_id in self.players:
-            destroy_object_request = DestroyObjectRequest(player_id)
+            if ROS_VERSION == 1:
+                destroy_object_request = DestroyObjectRequest(player_id)
+            elif ROS_VERSION == 2:
+                destroy_object_request = DestroyObject.Request(player_id)
             try:
-                self.destroy_object_service(destroy_object_request)
+                self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
                 self.logwarn_once(str(e))
         self.players = []
@@ -349,10 +366,11 @@ class CarlaSpawnObjects(CompatibleNode):
 # ==============================================================================
 
 
-def main():
+def main(args=None):
     """
     main function
     """
+    ros_init(args)
     spawn_objects_node = None
     try:
         spawn_objects_node = CarlaSpawnObjects()

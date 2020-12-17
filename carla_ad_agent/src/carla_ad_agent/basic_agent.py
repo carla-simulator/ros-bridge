@@ -85,12 +85,12 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
+            #TODO: have ros_compat get_service_request(GetActorWaypoint)
             if ROS_VERSION == 1:
                 request = GetActorWaypointRequest()
-                request.id = actor_id
             elif ROS_VERSION == 2:
                 request = GetActorWaypoint.Request()
-                request.id = actor_id
+            request.id = actor_id
             response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
         except (ServiceException, ROSInterruptException, TypeError) as e:

@@ -45,6 +45,7 @@ from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
+import carla_common.transforms as trans
 
 # to generate a random spawning position or vehicles
 secure_random = random.SystemRandom()
@@ -220,20 +221,24 @@ class CarlaRosBridge(CompatibleNode):
         actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform)
         return actor.uid
 
-    def spawn_object(self, req):
+    def spawn_object(self, req, response=None):
+        if ROS_VERSION == 1:
+            response = SpawnObjectResponse()
+        else:
+            response = SpawnObject.Response()
         with self.actor_factory.spawn_lock:
             try:
                 if "pseudo" in req.type:
                     id_ = self._spawn_pseudo_actor(req)
                 else:
                     id_ = self._spawn_actor(req)
-
                 self._registered_actors.append(id_)
-                return SpawnObjectResponse(id_, "")
-
+                response.id = id_
             except Exception as e:
-                self.logwarn("Error spawning object '{}: {}".format(req.type, e))
-                return SpawnObjectResponse(-1, str(e))
+                self.logwarn("Error spawning object '{}': {}".format(req.type, e))
+                response.id = -1
+                response.error_string = str(e)
+        return response
 
     def _destroy_actor(self, uid):
         if uid not in self.actor_factory.actors:
@@ -336,10 +341,12 @@ class CarlaRosBridge(CompatibleNode):
 
             self.status_publisher.set_frame(frame)
             self.update_clock(world_snapshot.timestamp)
-            self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(frame))
-            self._update(frame, world_snapshot.timestamp.elapsed_seconds)
+            self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(
+                frame))
+            with self.actor_factory.lock:
+                self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             self.logdebug("Waiting for sensor data finished.")
-            self._update_actors(set([x.id for x in world_snapshot]))
+            self.actor_factory.update()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # wait for all ego vehicles to send a vehicle control command
@@ -425,6 +432,7 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
+        self.loginfo("Shutting down...")
         self.debug_helper.destroy()
         self.shutdown.set()
         destroy_subscription(self.carla_weather_subscriber)
@@ -440,7 +448,6 @@ class CarlaRosBridge(CompatibleNode):
                 self._destroy_actor(uid)
         self.actor_factory.clear()
 
-        self.loginfo("Exiting Bridge")
         super(CarlaRosBridge, self).destroy()
 
 

@@ -42,8 +42,7 @@ class OdometrySensor(PseudoActor):
                                              node=node)
 
         self.odometry_publisher = node.new_publisher(Odometry,
-           self.get_topic_prefix(),
-                                                  queue_size=10)
+           self.get_topic_prefix())
 
     @staticmethod
     def get_blueprint_name():

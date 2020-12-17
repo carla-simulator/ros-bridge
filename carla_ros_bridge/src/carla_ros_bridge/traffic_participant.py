@@ -58,22 +58,7 @@ class TrafficParticipant(Actor):
         :return:
         """
         self.classification_age += 1
-        self.publish_transform(self.get_ros_transform(None, None, str(self.get_id())))
-        self.publish_marker()
-        self.send_odometry()
-
         super(TrafficParticipant, self).update(frame, timestamp)
-
-    def send_odometry(self):
-        """
-        Sends odometry
-        :return:
-        """
-        odometry = Odometry(header=self.get_msg_header("map"))
-        odometry.child_frame_id = self.get_prefix()
-        odometry.pose.pose = self.get_current_ros_pose()
-        odometry.twist.twist = self.get_current_ros_twist_rotated()
-        self.odometry_publisher.publish(odometry)
 
     def get_object_info(self):
         """

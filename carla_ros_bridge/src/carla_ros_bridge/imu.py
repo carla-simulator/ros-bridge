@@ -48,7 +48,7 @@ class ImuSensor(Sensor):
                                         carla_actor=carla_actor,
                                         synchronous_mode=synchronous_mode)
 
-        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix(), queue_size=10)
+        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix())
         self.listen()
 
     # pylint: disable=arguments-differ
