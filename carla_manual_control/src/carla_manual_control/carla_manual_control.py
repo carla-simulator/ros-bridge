@@ -389,7 +389,7 @@ class HUD(CompatibleNode):
         self.manual_control = False
 
         self.gnss_subscriber = self.create_subscriber(
-            NavSatFix, "/carla/{}/gnss/gnss1/fix".format(self.role_name), self.gnss_updated,
+            NavSatFix, "/carla/{}/gnss".format(self.role_name), self.gnss_updated,
             callback_group=self.callback_group)
 
         self.manual_control_subscriber = self.create_subscriber(
@@ -469,18 +469,24 @@ class HUD(CompatibleNode):
             return
         try:
             if ROS_VERSION == 1:
-                (position, quaternion) = self.tf_listener.lookupTransform(
+                (position, rotation) = self.tf_listener.lookupTransform(
                     '/map', self.role_name, Time())
             elif ROS_VERSION == 2:
-                (position, quaternion) = self.tf_buffer.lookup_transform(
-                    source_frame='map', target_frame=self.role_name, time=Time())
-            _, _, yaw = euler_from_quaternion(quaternion)
-            yaw = -math.degrees(yaw)
+                transform = self.tf_buffer.lookup_transform(
+                    target_frame='map', source_frame=self.role_name, time=Time())
+                position = [transform.transform.translation.x,
+                    transform.transform.translation.y,
+                    transform.transform.translation.z]
+                rotation = [transform.transform.rotation.x,
+                    transform.transform.rotation.y,
+                    transform.transform.rotation.z,
+                    transform.transform.rotation.w]
+            _, _, yaw = euler_from_quaternion(rotation)
+            yaw = math.degrees(yaw)
             x = position[0]
-            y = -position[1]
+            y = position[1]
             z = position[2]
-        except (LookupException, ConnectivityException, ExtrapolationException) as e:
-            print(e)
+        except (LookupException, ConnectivityException, ExtrapolationException):
             x = 0
             y = 0
             z = 0
