@@ -80,7 +80,7 @@ class PseudoActor(object):
             header.frame_id = self.get_prefix()
 
         if not timestamp:
-            timestamp = self.node.get_time()            
+            timestamp = self.node.get_time()
         header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         return header
 

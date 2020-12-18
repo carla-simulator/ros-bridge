@@ -9,15 +9,13 @@
 handle a tf sensor
 """
 
+import tf2_ros
 import os
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from ros_compatibility import ros_timestamp
 from geometry_msgs.msg import TransformStamped, Transform
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-import tf2_ros
-
 
 
 class TFSensor(PseudoActor):

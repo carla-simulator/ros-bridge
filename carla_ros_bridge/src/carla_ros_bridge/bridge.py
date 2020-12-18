@@ -177,13 +177,13 @@ class CarlaRosBridge(CompatibleNode):
 
         # services configuration.
         self._registered_actors = []
-        self.spawn_object_service = self.new_service(SpawnObject, "/carla/spawn_object", 
-                                                  self.spawn_object)
-        self.destroy_object_service = self.new_service(DestroyObject, "/carla/destroy_object", 
-                                                    self.destroy_object)
+        self.spawn_object_service = self.new_service(SpawnObject, "/carla/spawn_object",
+                                                     self.spawn_object)
+        self.destroy_object_service = self.new_service(DestroyObject, "/carla/destroy_object",
+                                                       self.destroy_object)
 
-        self.get_blueprints_service = self.new_service(GetBlueprints, "/carla/get_blueprints", 
-                                                    self.get_blueprints)
+        self.get_blueprints_service = self.new_service(GetBlueprints, "/carla/get_blueprints",
+                                                       self.get_blueprints)
 
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
@@ -432,7 +432,7 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        #TODO fix if carla is not running
+        # TODO fix if carla is not running
         self.loginfo("Shutting down...")
         self.debug_helper.destroy()
         self.shutdown.set()

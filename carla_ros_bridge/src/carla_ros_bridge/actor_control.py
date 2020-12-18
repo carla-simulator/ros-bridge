@@ -16,6 +16,7 @@ from geometry_msgs.msg import Pose, Twist
 from carla import Vector3D
 from ros_compatibility import destroy_subscription
 
+
 class ActorControl(PseudoActor):
 
     """
@@ -42,12 +43,12 @@ class ActorControl(PseudoActor):
                                            node=node)
 
         self.set_location_subscriber = self.node.create_subscriber(Pose,
-                     self.get_topic_prefix() + "/set_transform",
-                                                        self.on_pose)
+                                                                   self.get_topic_prefix() + "/set_transform",
+                                                                   self.on_pose)
 
         self.twist_control_subscriber = self.node.create_subscriber(Twist,
-            self.get_topic_prefix() + "/set_target_velocity",
-            self.on_twist)
+                                                                    self.get_topic_prefix() + "/set_target_velocity",
+                                                                    self.on_twist)
 
     def destroy(self):
         """

@@ -46,6 +46,7 @@ ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 if ROS_VERSION == 1:
     from carla_waypoint_types.srv import GetWaypointResponse, GetActorWaypointResponse
 
+
 class CarlaToRosWaypointConverter(CompatibleNode):
 
     """
@@ -266,6 +267,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.world = carla_client.get_world()
 
         self.loginfo("Connected to Carla.")
+
 
 def main(args=None):
     """

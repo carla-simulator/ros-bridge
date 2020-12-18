@@ -15,6 +15,7 @@ from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from std_msgs.msg import Float32
 
+
 class SpeedometerSensor(PseudoActor):
 
     """
@@ -41,7 +42,7 @@ class SpeedometerSensor(PseudoActor):
                                                 node=node)
 
         self.speedometer_publisher = node.new_publisher(Float32,
-            self.get_topic_prefix())
+                                                        self.get_topic_prefix())
 
     @staticmethod
     def get_blueprint_name():

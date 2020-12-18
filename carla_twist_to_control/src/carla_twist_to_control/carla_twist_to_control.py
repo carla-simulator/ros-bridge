@@ -10,9 +10,9 @@ receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
 use max wheel steer angle
 """
 from ros_compatibility import (
-    CompatibleNode, 
-    ros_ok, 
-    ROSException, 
+    CompatibleNode,
+    ros_ok,
+    ROSException,
     ROSInterruptException,
     ros_init)
 import sys

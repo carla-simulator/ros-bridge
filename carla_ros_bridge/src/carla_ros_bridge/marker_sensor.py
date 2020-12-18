@@ -46,7 +46,7 @@ class MarkerSensor(PseudoActor):
         self.actor_list = actor_list
 
         self.marker_publisher = node.new_publisher(MarkerArray,
-            self.get_topic_prefix())
+                                                   self.get_topic_prefix())
 
     def destroy(self):
         """

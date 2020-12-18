@@ -475,12 +475,12 @@ class HUD(CompatibleNode):
                 transform = self.tf_buffer.lookup_transform(
                     target_frame='map', source_frame=self.role_name, time=Time())
                 position = [transform.transform.translation.x,
-                    transform.transform.translation.y,
-                    transform.transform.translation.z]
+                            transform.transform.translation.y,
+                            transform.transform.translation.z]
                 rotation = [transform.transform.rotation.x,
-                    transform.transform.rotation.y,
-                    transform.transform.rotation.z,
-                    transform.transform.rotation.w]
+                            transform.transform.rotation.y,
+                            transform.transform.rotation.z,
+                            transform.transform.rotation.w]
             _, _, yaw = euler_from_quaternion(rotation)
             yaw = math.degrees(yaw)
             x = position[0]
@@ -497,7 +497,7 @@ class HUD(CompatibleNode):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
 
-        #TODO
+        # TODO
         if ROS_VERSION == 1:
             time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
         elif ROS_VERSION == 2:
@@ -691,7 +691,7 @@ def main(args=None):
     main function
     """
     ros_init(args)
-    #TODO
+    # TODO
     if ROS_VERSION == 1:
         rospy.init_node('carla_manual_control', anonymous=True)
         role_name = rospy.get_param("~role_name", "ego_vehicle")

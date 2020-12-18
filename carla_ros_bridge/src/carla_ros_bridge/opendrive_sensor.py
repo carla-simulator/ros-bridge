@@ -17,6 +17,7 @@ from std_msgs.msg import String
 
 from ros_compatibility import QoSProfile, latch_on
 
+
 class OpenDriveSensor(PseudoActor):
 
     """
@@ -45,7 +46,7 @@ class OpenDriveSensor(PseudoActor):
         self.carla_map = carla_map
         self._map_published = False
         self.map_publisher = node.new_publisher(String, self.get_topic_prefix(),
-                                                         qos_profile=QoSProfile(depth=10, durability=latch_on))
+                                                qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     @staticmethod
     def get_blueprint_name():

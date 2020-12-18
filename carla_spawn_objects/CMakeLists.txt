@@ -28,7 +28,7 @@ if(${ROS_VERSION} EQUAL 1)
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
 
 elseif(${ROS_VERSION} EQUAL 2)
-#TODO: not needed?
+  # TODO: not needed?
   find_package(ament_cmake REQUIRED)
   find_package(rclpy REQUIRED)
   ament_export_dependencies(rclpy)

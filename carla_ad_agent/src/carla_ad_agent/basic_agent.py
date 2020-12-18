@@ -85,7 +85,7 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
-            #TODO: have ros_compat get_service_request(GetActorWaypoint)
+            # TODO: have ros_compat get_service_request(GetActorWaypoint)
             if ROS_VERSION == 1:
                 request = GetActorWaypointRequest()
             elif ROS_VERSION == 2:

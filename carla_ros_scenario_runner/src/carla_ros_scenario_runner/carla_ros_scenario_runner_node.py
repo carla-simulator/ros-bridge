@@ -26,8 +26,8 @@ from carla_ros_scenario_runner.application_runner import ApplicationStatus  # py
 from carla_ros_scenario_runner.scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
 
 from ros_compatibility import (
-    CompatibleNode, 
-    QoSProfile, 
+    CompatibleNode,
+    QoSProfile,
     ros_ok,
     ros_init)
 

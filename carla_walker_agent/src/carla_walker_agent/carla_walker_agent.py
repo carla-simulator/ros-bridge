@@ -14,9 +14,9 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import Pose, Vector3
 from carla_msgs.msg import CarlaWalkerControl
 from ros_compatibility import (
-    CompatibleNode, 
-    QoSProfile, 
-    ros_ok, 
+    CompatibleNode,
+    QoSProfile,
+    ros_ok,
     ROSInterruptException,
     ros_init)
 

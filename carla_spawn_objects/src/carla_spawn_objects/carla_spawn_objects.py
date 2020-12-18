@@ -65,7 +65,8 @@ class CarlaSpawnObjects(CompatibleNode):
         self.global_sensors = []
 
         self.spawn_object_service = self.create_service_client("/carla/spawn_object", SpawnObject)
-        self.destroy_object_service = self.create_service_client("/carla/destroy_object", DestroyObject)
+        self.destroy_object_service = self.create_service_client(
+            "/carla/destroy_object", DestroyObject)
 
     def spawn_objects(self):
         """
@@ -160,7 +161,7 @@ class CarlaSpawnObjects(CompatibleNode):
                         spawn_param_used = True
                     except Exception as e:
                         self.logerr("{}: Could not use spawn point from parameters, ".format(vehicle["id"]) +
-                                     "the spawn point from config file will be used. Error is: {}".format(e))
+                                    "the spawn point from config file will be used. Error is: {}".format(e))
 
                 if "spawn_point" in vehicle and spawn_param_used is False:
                     # get spawn point from config file
@@ -176,18 +177,18 @@ class CarlaSpawnObjects(CompatibleNode):
                         self.loginfo("Spawn point from configuration file")
                     except KeyError as e:
                         self.logerr("{}: Could not use the spawn point from config file, ".format(vehicle["id"]) +
-                                     "the mandatory attribute {} is missing, a random spawn point will be used".format(e))
+                                    "the mandatory attribute {} is missing, a random spawn point will be used".format(e))
 
                 if spawn_point is None:
                     # pose not specified, ask for a random one in the service call
                     self.loginfo("Spawn point selected at random")
                     spawn_point = Pose()  # empty pose
                     spawn_object_request.random_pose = True
-                
+
                 player_spawned = False
                 while not player_spawned:
                     spawn_object_request.transform = spawn_point
-                    
+
                     response = self.call_service(self.spawn_object_service, spawn_object_request)
                     if response.id != -1:
                         player_spawned = True

@@ -11,7 +11,7 @@ if ROS_VERSION == 1:
 
     def ros_init(args=None):
         pass
-    
+
     def ros_timestamp(sec=0, nsec=0, from_sec=False):
         if from_sec:
             return rospy.Time.from_sec(sec)

@@ -17,6 +17,7 @@ import carla
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
 from ros_compatibility import euler_matrix, quaternion_from_euler, euler_from_quaternion
 
+
 def carla_location_to_numpy_vector(carla_location):
     """
     Convert a carla location to a ROS vector3
