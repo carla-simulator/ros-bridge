@@ -15,16 +15,13 @@ finally ask for a random one to the spawn service.
 
 """
 
-from abc import abstractmethod
-
 import os
-import sys
 import math
 import json
 
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
-from carla_msgs.msg import CarlaWorldInfo, CarlaActorList
+from carla_msgs.msg import CarlaActorList
 
 
 from carla_msgs.srv import SpawnObject, DestroyObject

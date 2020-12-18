@@ -13,11 +13,8 @@ import math
 import os
 
 import numpy
-from geometry_msgs.msg import Twist, Transform  # pylint: disable=import-error
 from std_msgs.msg import Bool  # pylint: disable=import-error
 from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
-import carla_common.transforms as transforms
-from carla import Vector3D
 from carla import VehicleControl
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error

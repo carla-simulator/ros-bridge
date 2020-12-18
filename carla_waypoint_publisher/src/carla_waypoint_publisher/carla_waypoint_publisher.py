@@ -22,8 +22,7 @@ import sys
 import threading
 import os
 
-from ros_compatibility import (euler_from_quaternion,
-                               quaternion_from_euler,
+from ros_compatibility import (quaternion_from_euler,
                                CompatibleNode,
                                QoSProfile,
                                ROSException,

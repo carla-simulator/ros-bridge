@@ -9,8 +9,6 @@
 handle a opendrive sensor
 """
 
-import numpy as np
-
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from std_msgs.msg import String

@@ -11,11 +11,9 @@ The pose of the camera can be changed by publishing
 to /carla/<ROLENAME>/spectator_position.
 """
 import os
-import sys
 
 import carla
 from geometry_msgs.msg import PoseStamped
-from carla_msgs.msg import CarlaWorldInfo
 from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
 from diagnostic_msgs.msg import KeyValue
 
