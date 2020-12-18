@@ -20,10 +20,10 @@ jobs:
 
   ros:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}-robot
+    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic, noetic, foxy]
+        ros-version: [melodic-robot, noetic-robot, foxy-desktop]
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
@@ -59,10 +59,10 @@ jobs:
 
   debian:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}-robot
+    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic, noetic, foxy]
+        ros-version: [melodic-robot, noetic-robot, foxy-desktop]
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
