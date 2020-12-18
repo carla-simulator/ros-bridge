@@ -121,7 +121,7 @@ class ActorFactory(object):
             name = str(carla_actor.id)
         return self.create(carla_actor.type_id, name, parent_id, None, carla_actor)
 
-    def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None):
+    def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None, allow_transform=False):
         with self.lock:
             # check that the actor is not already created.
             if carla_actor is not None and carla_actor.id in self.actors:
@@ -139,7 +139,8 @@ class ActorFactory(object):
             else:
                 uid = next(self.id_gen)
 
-            actor = self._create_object(uid, type_id, name, parent, spawn_pose, carla_actor)
+            actor = self._create_object(uid, type_id, name, parent,
+                                        spawn_pose, carla_actor, allow_transform=allow_transform)
             self.actors[actor.uid] = actor
 
             rospy.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
@@ -169,7 +170,7 @@ class ActorFactory(object):
                 pseudo_sensors.append(cls.get_blueprint_name())
         return pseudo_sensors
 
-    def _create_object(self, uid, type_id, name, parent, spawn_pose, carla_actor=None):
+    def _create_object(self, uid, type_id, name, parent, spawn_pose, carla_actor=None, allow_transform=False):
 
         if type_id == TFSensor.get_blueprint_name():
             actor = TFSensor(uid=uid, name=name, parent=parent, node=self.node)
@@ -248,22 +249,22 @@ class ActorFactory(object):
             if carla_actor.type_id.startswith("sensor.camera"):
                 if carla_actor.type_id.startswith("sensor.camera.rgb"):
                     actor = RgbCamera(uid, name, parent, spawn_pose, self.node,
-                                      carla_actor, self.sync_mode)
+                                      carla_actor, self.sync_mode, allow_transform=allow_transform)
                 elif carla_actor.type_id.startswith("sensor.camera.depth"):
                     actor = DepthCamera(uid, name, parent, spawn_pose,
-                                        self.node, carla_actor, self.sync_mode)
+                                        self.node, carla_actor, self.sync_mode, allow_transform=allow_transform)
                 elif carla_actor.type_id.startswith(
                         "sensor.camera.semantic_segmentation"):
                     actor = SemanticSegmentationCamera(uid, name, parent,
                                                        spawn_pose, self.node,
                                                        carla_actor,
-                                                       self.sync_mode)
+                                                       self.sync_mode, allow_transform=allow_transform)
                 elif carla_actor.type_id.startswith("sensor.camera.dvs"):
                     actor = DVSCamera(uid, name, parent, spawn_pose, self.node,
-                                      carla_actor, self.sync_mode)
+                                      carla_actor, self.sync_mode, allow_transform=allow_transform)
                 else:
                     actor = Camera(uid, name, parent, spawn_pose, self.node,
-                                   carla_actor, self.sync_mode)
+                                   carla_actor, self.sync_mode, allow_transform=allow_transform)
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
                     actor = Lidar(uid, name, parent, spawn_pose, self.node,

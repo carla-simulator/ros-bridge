@@ -19,10 +19,13 @@ import tf
 from cv_bridge import CvBridge
 from sensor_msgs.point_cloud2 import create_cloud
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
+from geometry_msgs.msg import PoseStamped
 
 import carla
 from carla_ros_bridge.sensor import Sensor
 import carla_common.transforms as trans
+from math import degrees
+from tf.transformations import euler_from_quaternion
 
 
 class Camera(Sensor):
@@ -34,7 +37,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, allow_transform=False):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -69,6 +72,8 @@ class Camera(Sensor):
         else:
             self._build_camera_info()
 
+        self.carla_actor = carla_actor
+
         self.camera_info_publisher = rospy.Publisher(self.get_topic_prefix() +
                                                      '/camera_info',
                                                      CameraInfo,
@@ -77,6 +82,44 @@ class Camera(Sensor):
         self.camera_image_publisher = rospy.Publisher(self.get_topic_prefix() + '/' + 'image',
                                                       Image,
                                                       queue_size=10)
+
+        if allow_transform:
+            rospy.Subscriber(self.get_topic_prefix() + '/' + 'update_pose',
+                             PoseStamped, self.new_pose_received)
+
+    def new_pose_received(self, pose):
+        """
+        Move the sensor
+        """
+        if self.relative_spawn_pose != pose.pose:
+            rospy.logdebug("Camera pose changed. Updating carla camera")
+            self.relative_spawn_pose = pose.pose
+            transform = self.get_sensor_carla_transform()
+            if transform and self.carla_actor:
+                self.carla_actor.set_transform(transform)
+
+    def get_sensor_carla_transform(self):
+        """
+        Calculate the CARLA sensor transform
+        """
+        if not self.relative_spawn_pose:
+            rospy.loginfo("no pose!")
+            return None
+        sensor_location = carla.Location(x=self.relative_spawn_pose.position.x,
+                                         y=-self.relative_spawn_pose.position.y,
+                                         z=self.relative_spawn_pose.position.z)
+        quaternion = (
+            self.relative_spawn_pose.orientation.x,
+            self.relative_spawn_pose.orientation.y,
+            self.relative_spawn_pose.orientation.z,
+            self.relative_spawn_pose.orientation.w
+        )
+        roll, pitch, yaw = euler_from_quaternion(quaternion)
+        # rotate to CARLA
+        sensor_rotation = carla.Rotation(pitch=degrees(roll)-90,
+                                         roll=degrees(pitch),
+                                         yaw=-degrees(yaw)-90)
+        return carla.Transform(sensor_location, sensor_rotation)
 
     def _build_camera_info(self):
         """
@@ -174,7 +217,7 @@ class RgbCamera(Camera):
     Camera implementation details for rgb camera
     """
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, allow_transform=False):
         """
         Constructor
 
@@ -199,7 +242,8 @@ class RgbCamera(Camera):
                                         relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
-                                        synchronous_mode=synchronous_mode)
+                                        synchronous_mode=synchronous_mode,
+                                        allow_transform=allow_transform)
 
         self.listen()
 
@@ -229,7 +273,7 @@ class DepthCamera(Camera):
     Camera implementation details for depth camera
     """
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, allow_transform=False):
         """
         Constructor
 
@@ -254,7 +298,8 @@ class DepthCamera(Camera):
                                           relative_spawn_pose=relative_spawn_pose,
                                           node=node,
                                           carla_actor=carla_actor,
-                                          synchronous_mode=synchronous_mode)
+                                          synchronous_mode=synchronous_mode,
+                                          allow_transform=allow_transform)
 
         self.listen()
 
@@ -306,7 +351,7 @@ class SemanticSegmentationCamera(Camera):
     Camera implementation details for segmentation camera
     """
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, allow_transform=False):
         """
         Constructor
 
@@ -332,7 +377,8 @@ class SemanticSegmentationCamera(Camera):
                                                        relative_spawn_pose=relative_spawn_pose,
                                                        node=node,
                                                        synchronous_mode=synchronous_mode,
-                                                       carla_actor=carla_actor)
+                                                       carla_actor=carla_actor,
+                                                       allow_transform=allow_transform)
 
         self.listen()
 
@@ -363,7 +409,7 @@ class DVSCamera(Camera):
     Sensor implementation details for dvs cameras
     """
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, allow_transform=False):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -388,7 +434,8 @@ class DVSCamera(Camera):
                                         relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
-                                        synchronous_mode=synchronous_mode)
+                                        synchronous_mode=synchronous_mode,
+                                        allow_transform=allow_transform)
 
         self._dvs_events = None
         self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +

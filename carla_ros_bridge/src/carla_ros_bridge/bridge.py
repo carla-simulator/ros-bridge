@@ -153,7 +153,11 @@ class CarlaRosBridge(object):
         else:
             blueprint = self.carla_world.get_blueprint_library().find(req.type)
         blueprint.set_attribute('role_name', req.id)
+        allow_transform = False
         for attribute in req.attributes:
+            if attribute.key == "allow_transform":
+                allow_transform = attribute.value
+                continue
             blueprint.set_attribute(attribute.key, attribute.value)
         if req.random_pose is False:
             transform = trans.ros_pose_to_carla_transform(req.transform)
@@ -171,7 +175,7 @@ class CarlaRosBridge(object):
 
         carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
         actor = self.actor_factory.create(
-            req.type, req.id, req.attach_to, req.transform, carla_actor)
+            req.type, req.id, req.attach_to, req.transform, carla_actor, allow_transform=allow_transform)
         return actor.uid
 
     def _spawn_pseudo_actor(self, req):
