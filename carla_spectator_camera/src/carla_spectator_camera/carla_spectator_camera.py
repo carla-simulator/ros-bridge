@@ -14,7 +14,7 @@ import os
 
 import carla
 from geometry_msgs.msg import PoseStamped
-from carla_msgs.srv import SpawnObject, SpawnObjectRequest, DestroyObject, DestroyObjectRequest
+from carla_msgs.srv import SpawnObject, DestroyObject
 from diagnostic_msgs.msg import KeyValue
 
 import carla
@@ -26,7 +26,8 @@ from ros_compatibility import (
     QoSProfile,
     ROSException,
     ROSInterruptException,
-    ros_init
+    ros_init,
+    ServiceException
 )
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -126,12 +127,12 @@ class CarlaSpectatorCamera(CompatibleNode):
         spawn_object_request.transform = trans.carla_transform_to_ros_pose(transform)
         spawn_object_request.random_pose = False
         spawn_object_request.attributes.extend([
-            KeyValue("image_size_x", str(self.camera_resolution_x)),
-            KeyValue("image_size_y", str(self.camera_resolution_y)),
-            KeyValue("fov", str(self.camera_fov))
+            KeyValue(key="image_size_x", value=str(self.camera_resolution_x)),
+            KeyValue(key="image_size_y", value=str(self.camera_resolution_y)),
+            KeyValue(key="fov", value=str(self.camera_fov))
         ])
 
-        response = self.spawn_object_service(spawn_object_request)
+        response = self.call_service(self.spawn_object_service, spawn_object_request)
         if response.id == -1:
             raise Exception(response.error_string)
 
@@ -171,9 +172,9 @@ class CarlaSpectatorCamera(CompatibleNode):
         if self.camera_actor:
             destroy_object_request = DestroyObjectRequest(self.camera_actor.id)
             try:
-                self.destroy_object_service(destroy_object_request)
-            except rospy.ServiceException as e:
-                rospy.logwarn_once(str(e))
+                self.call_service(self.destroy_object_service,destroy_object_request)
+            except ServiceException as e:
+                self.logwarn_once(str(e))
 
             self.camera_actor = None
 
