@@ -100,7 +100,7 @@ class ActorFactory(object):
 
     def clear(self):
         ids = self.actors.keys()
-        for id_ in ids:
+        for id_ in list(ids):
             self.destroy(id_)
 
     def _create_carla_actor(self, carla_actor):
