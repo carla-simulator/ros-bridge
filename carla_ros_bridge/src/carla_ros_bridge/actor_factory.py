@@ -77,8 +77,6 @@ class ActorFactory(object):
         """
         while not self.node.shutdown.is_set():
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
-
-            # self.world.wait_for_tick()
             with self.spawn_lock:
                 self.world.wait_for_tick()
                 self.update()
