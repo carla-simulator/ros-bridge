@@ -51,7 +51,6 @@ jobs:
         cd $GITHUB_WORKSPACE/../catkin_ws/src
         ln -s $GITHUB_WORKSPACE
         cd ..
-        catkin init
     - name: Build, Test, Lint
       if: matrix.ros-version == 'foxy'
       shell: bash
@@ -60,8 +59,6 @@ jobs:
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         colcon build --continue-on-error
         colcon test && colcon test-result
-        #--return-code-on-test-failure
-        #catkin run_tests --no-status --force-color && catkin_test_results
         source install/setup.bash
         cd $GITHUB_WORKSPACE
     - name: Build, Test, Lint
@@ -69,6 +66,7 @@ jobs:
       shell: bash
       run: |
         source /opt/ros/$(rosversion -d)/setup.bash
+        catkin init
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         catkin build --summarize --no-status --force-color
         catkin run_tests --no-status --force-color && catkin_test_results
