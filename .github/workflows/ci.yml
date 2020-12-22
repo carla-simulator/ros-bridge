@@ -42,8 +42,10 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get update && sudo apt-get install wget unzip -y
-        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/master.zip
-        unzip master.zip -d carla_msgs && rm master.zip
+        #rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/master.zip
+        #unzip master.zip -d carla_msgs && rm master.zip
+        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
+        unzip ros2.zip -d carla_msgs && rm ros2.zip
         packaging/install_dependencies.sh
     - name: Init Workspace
       run: |
