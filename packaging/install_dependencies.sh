@@ -9,7 +9,7 @@ else
 fi
 
 if [ "$ROS_VERSION" = "foxy" ]; then
-    ADDITIONAL_PACKAGES=ros-$ROS_VERSION-rviz2 \
+    ADDITIONAL_PACKAGES=ros-$ROS_VERSION-rviz2
 else
     ADDITIONAL_PACKAGES=ros-$ROS_VERSION-rviz \
         ros-$ROS_VERSION-opencv-apps \
