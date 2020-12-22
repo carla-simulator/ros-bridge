@@ -56,7 +56,7 @@ jobs:
       if: ${{ matrix.ros-version }} == foxy
       shell: bash
       run: |
-        source /opt/ros/${rosversion -d}/setup.bash
+        source /opt/ros/$(rosversion -d)/setup.bash
         #cd $GITHUB_WORKSPACE/../catkin_ws &&
         #catkin build --summarize --no-status --force-color
         #catkin run_tests --no-status --force-color && catkin_test_results
@@ -66,7 +66,7 @@ jobs:
       if: ${{ matrix.ros-version }} != foxy
       shell: bash
       run: |
-        source /opt/ros/${rosversion -d}/setup.bash
+        source /opt/ros/$(rosversion -d)/setup.bash
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         catkin build --summarize --no-status --force-color
         catkin run_tests --no-status --force-color && catkin_test_results
