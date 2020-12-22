@@ -36,7 +36,7 @@ class CarlaStatusPublisher(object):
         self.synchronous_mode_running = True
         self.fixed_delta_seconds = fixed_delta_seconds
         if self.fixed_delta_seconds is None:
-            self.fixed_delta_seconds = 0
+            self.fixed_delta_seconds = 0.
         self.frame = 0
         if ROS_VERSION == 1:
             callback_group = None
