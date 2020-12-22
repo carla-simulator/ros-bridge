@@ -24,7 +24,7 @@
         {
             "type": "vehicle.*",
             "id": "ego_vehicle",
-            "sensors": 
+            "objects": 
             [
                 {
                     "type": "sensor.camera.rgb",
