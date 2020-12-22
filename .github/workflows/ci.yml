@@ -62,7 +62,7 @@ jobs:
     container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic-robot, noetic-robot, foxy-desktop]
+        ros-version: [melodic-robot, noetic-robot, foxy]
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
