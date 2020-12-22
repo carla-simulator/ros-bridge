@@ -359,6 +359,8 @@ def main():
     except RuntimeError as e:
         rospy.logfatal(
             "Exception caught: {}".format(e))
+    except KeyboardInterrupt as e:
+        pass
     finally:
         if spawn_objects_node is not None:
             spawn_objects_node.destroy()
