@@ -53,7 +53,7 @@ jobs:
         cd ..
         catkin init
     - name: Build, Test, Lint
-      if: ${{ matrix.ros-version }} == foxy
+      if: ${{ matrix.ros-version == foxy }}
       shell: bash
       run: |
         source /opt/ros/$(rosversion -d)/setup.bash
@@ -63,7 +63,7 @@ jobs:
         #source devel/setup.bash
         #cd $GITHUB_WORKSPACE
     - name: Build, Test, Lint
-      if: ${{ matrix.ros-version }} != foxy
+      if: ${{ matrix.ros-version != foxy }}
       shell: bash
       run: |
         source /opt/ros/$(rosversion -d)/setup.bash
