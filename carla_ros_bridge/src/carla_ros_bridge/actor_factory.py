@@ -66,9 +66,8 @@ class ActorFactory(object):
         """
         while not self.node.shutdown.is_set():
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
-
-            self.world.wait_for_tick()
             with self.spawn_lock:
+                self.world.wait_for_tick()
                 self.update()
 
     def update(self):
@@ -90,7 +89,7 @@ class ActorFactory(object):
 
     def clear(self):
         ids = self.actors.keys()
-        for id_ in ids:
+        for id_ in list(ids):
             self.destroy(id_)
 
     def _create_carla_actor(self, carla_actor):
