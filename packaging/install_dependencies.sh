@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROS_VERSION=$(rosversion -d)
-if [ "$ROS_VERSION" = "noetic" ]; then
+if [ "$ROS_VERSION" = "noetic" -o "$ROS_VERSION" = "foxy" ]; then
     PYTHON_SUFFIX=3
 else
     PYTHON_SUFFIX=""
