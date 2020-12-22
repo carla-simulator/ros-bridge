@@ -20,16 +20,17 @@ jobs:
 
   ros:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-container }}
+    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        include:
-            - ros-version: melodic
-              ros-container: melodic-robot
-            - ros-version: noetic
-              ros-container: noetic-robot
-            - ros-version: foxy
-              ros-container: foxy
+        ros-version: [melodic-robot, noetic-robot, foxy]
+#        include:
+#            - ros-version: melodic
+#              ros-container: melodic-robot
+#            - ros-version: noetic
+#              ros-container: noetic-robot
+#            - ros-version: foxy
+#              ros-container: foxy
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
@@ -52,9 +53,20 @@ jobs:
         cd ..
         catkin init
     - name: Build, Test, Lint
+      if: ${{ matrix.ros-version }} == foxy
       shell: bash
       run: |
-        source /opt/ros/${{ matrix.ros-version }}/setup.bash
+        source /opt/ros/${rosversion -d}/setup.bash
+        #cd $GITHUB_WORKSPACE/../catkin_ws &&
+        #catkin build --summarize --no-status --force-color
+        #catkin run_tests --no-status --force-color && catkin_test_results
+        #source devel/setup.bash
+        #cd $GITHUB_WORKSPACE
+    - name: Build, Test, Lint
+      if: ${{ matrix.ros-version }} != foxy
+      shell: bash
+      run: |
+        source /opt/ros/${rosversion -d}/setup.bash
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         catkin build --summarize --no-status --force-color
         catkin run_tests --no-status --force-color && catkin_test_results
