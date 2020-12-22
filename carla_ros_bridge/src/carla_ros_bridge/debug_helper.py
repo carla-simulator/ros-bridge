@@ -145,8 +145,8 @@ class DebugHelper(object):
         box.extent.z = marker.scale.z / 2
 
         roll, pitch, yaw = quat2euler([
-            marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z,
-            marker.pose.orientation.w
+            marker.pose.orientation.w, marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z
+
         ])
         rotation = carla.Rotation()
         rotation.roll = math.degrees(roll)

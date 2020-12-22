@@ -89,10 +89,10 @@ class Agent(object):
         """
         self._vehicle_location = odo.pose.pose.position
         quaternion = (
+            odo.pose.pose.orientation.w,
             odo.pose.pose.orientation.x,
             odo.pose.pose.orientation.y,
-            odo.pose.pose.orientation.z,
-            odo.pose.pose.orientation.w
+            odo.pose.pose.orientation.z
         )
         _, _, self._vehicle_yaw = quat2euler(quaternion)
 

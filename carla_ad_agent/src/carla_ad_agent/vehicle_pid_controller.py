@@ -137,10 +137,10 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
         """
         v_begin = current_pose.position
         quaternion = (
+            current_pose.orientation.w,
             current_pose.orientation.x,
             current_pose.orientation.y,
-            current_pose.orientation.z,
-            current_pose.orientation.w
+            current_pose.orientation.z
         )
         _, _, yaw = quat2euler(quaternion)
         v_end = Point()

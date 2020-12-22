@@ -283,10 +283,10 @@ class CarlaSpawnObjects(CompatibleNode):
         spawn_point.position.z = z
         quat = euler2quat(roll, pitch, yaw)
 
-        spawn_point.orientation.x = quat[0]
-        spawn_point.orientation.y = quat[1]
-        spawn_point.orientation.z = quat[2]
-        spawn_point.orientation.w = quat[3]
+        spawn_point.orientation.w = quat[0]
+        spawn_point.orientation.x = quat[1]
+        spawn_point.orientation.y = quat[2]
+        spawn_point.orientation.z = quat[3]
         return spawn_point
 
     def check_spawn_point_param(self, spawn_point_parameter):

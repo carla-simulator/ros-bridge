@@ -477,10 +477,10 @@ class HUD(CompatibleNode):
                 position = [transform.transform.translation.x,
                             transform.transform.translation.y,
                             transform.transform.translation.z]
-                rotation = [transform.transform.rotation.x,
+                rotation = [transform.transform.rotation.w,
+                            transform.transform.rotation.x,
                             transform.transform.rotation.y,
-                            transform.transform.rotation.z,
-                            transform.transform.rotation.w]
+                            transform.transform.rotation.z]
             _, _, yaw = quat2euler(rotation)
             yaw = math.degrees(yaw)
             x = position[0]

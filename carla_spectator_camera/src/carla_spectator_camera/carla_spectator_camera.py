@@ -97,10 +97,10 @@ class CarlaSpectatorCamera(CompatibleNode):
                                          y=-self.pose.pose.position.y,
                                          z=self.pose.pose.position.z)
         quaternion = (
+            self.pose.pose.orientation.w,
             self.pose.pose.orientation.x,
             self.pose.pose.orientation.y,
-            self.pose.pose.orientation.z,
-            self.pose.pose.orientation.w
+            self.pose.pose.orientation.z
         )
         roll, pitch, yaw = quat2euler(quaternion)
         # rotate to CARLA
