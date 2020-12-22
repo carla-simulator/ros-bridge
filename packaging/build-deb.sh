@@ -5,7 +5,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR=${SCRIPT_DIR}/build/$(rosversion -d)
 WORKSPACE_DIR=${BUILD_DIR}/catkin_ws
-if [ "$(rosversion -d)" = "noetic" ]; then
+ROS_VERSION=$(rosversion -d)
+if [ "$ROS_VERSION" = "noetic" -o "$ROS_VERSION" = "foxy" ]; then
     PYTHON_SUFFIX=3
 else
     PYTHON_SUFFIX=""
