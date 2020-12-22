@@ -336,6 +336,7 @@ class CarlaSpawnObjects(object):
         """
         main loop
         """
+        rospy.on_shutdown(self.destroy)
         self.spawn_objects()
         try:
             rospy.spin()
