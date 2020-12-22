@@ -26,21 +26,6 @@ if ROS_VERSION == 1:
     def destroy_subscription(subscription):
         subscription.unregister()
 
-    def euler_matrix(roll, pitch, yaw):
-        return trans.euler_matrix(roll, pitch, yaw)
-
-    def euler_from_quaternion(quaternion):
-        return trans.euler_from_quaternion(quaternion)
-
-    def quaternion_from_euler(roll, pitch, yaw):
-        return trans.quaternion_from_euler(roll, pitch, yaw)
-
-    def quaternion_from_matrix(matrix):
-        return trans.quaternion_from_matrix(matrix)
-
-    def quaternion_multiply(q1, q2):
-        return trans.quaternion_multiply(q1, q2)
-
     class ROSException(rospy.ROSException):
         pass
 
@@ -149,9 +134,6 @@ elif ROS_VERSION == 2:
     import rclpy
     from builtin_interfaces.msg import Time
 
-    from transforms3d.euler import euler2mat, euler2quat, quat2euler
-    from transforms3d.quaternions import mat2quat, qmult
-
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
 
     def ros_init(args=None):
@@ -175,26 +157,6 @@ elif ROS_VERSION == 2:
 
     def destroy_subscription(subscription):
         subscription.destroy()
-
-    def euler_matrix(roll, pitch, yaw):
-        return euler2mat(roll, pitch, yaw)
-
-    def euler_from_quaternion(quaternion):
-        quat = [quaternion[3], quaternion[0], quaternion[1], quaternion[2]]
-        return quat2euler(quat)
-
-    def quaternion_from_euler(roll, pitch, yaw):
-        quat = euler2quat(roll, pitch, yaw)
-        return [quat[1], quat[2], quat[3], quat[0]]
-
-    def quaternion_from_matrix(matrix):
-        return mat2quat(matrix)
-
-    def quaternion_multiply(q1, q2):
-        q1 = [q1[3], q1[0], q1[1], q1[2]]
-        q2 = [q2[3], q2[0], q2[1], q2[2]]
-        quat = qmult(q1, q2)
-        return [quat[1], quat[2], quat[3], quat[0]]
 
     class WaitForMessageHelper(object):
         def __init__(self):

@@ -35,11 +35,13 @@ class SpeedometerSensor(PseudoActor):
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
         """
+        node.logerror("SpeedometerSensor needs to be attached to parent.")
 
         super(SpeedometerSensor, self).__init__(uid=uid,
                                                 name=name,
                                                 parent=parent,
                                                 node=node)
+
 
         self.speedometer_publisher = node.new_publisher(Float32,
                                                         self.get_topic_prefix())

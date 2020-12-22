@@ -24,13 +24,13 @@ from geometry_msgs.msg import Pose
 from carla_msgs.msg import CarlaActorList
 
 
+from transforms3d.euler import euler2quat
 from carla_msgs.srv import SpawnObject, DestroyObject
 
 from ros_compatibility import (
     CompatibleNode,
     ROSInterruptException,
     ServiceException,
-    quaternion_from_euler,
     ros_init
 )
 
@@ -281,10 +281,7 @@ class CarlaSpawnObjects(CompatibleNode):
         spawn_point.position.x = x
         spawn_point.position.y = y
         spawn_point.position.z = z
-        quat = quaternion_from_euler(
-            math.radians(roll),
-            math.radians(pitch),
-            math.radians(yaw))
+        quat = euler2quat(roll, pitch, yaw)
 
         spawn_point.orientation.x = quat[0]
         spawn_point.orientation.y = quat[1]

@@ -19,10 +19,10 @@ from diagnostic_msgs.msg import KeyValue
 
 import carla
 import carla_common.transforms as trans
+from transforms3d.euler import quat2euler
 
 from ros_compatibility import (
     CompatibleNode,
-    euler_from_quaternion,
     QoSProfile,
     ROSException,
     ROSInterruptException,
@@ -102,7 +102,7 @@ class CarlaSpectatorCamera(CompatibleNode):
             self.pose.pose.orientation.z,
             self.pose.pose.orientation.w
         )
-        roll, pitch, yaw = euler_from_quaternion(quaternion)
+        roll, pitch, yaw = quat2euler(quaternion)
         # rotate to CARLA
         sensor_rotation = carla.Rotation(pitch=math.degrees(roll)-90,
                                          roll=math.degrees(pitch),

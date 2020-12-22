@@ -14,8 +14,8 @@ import os
 from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import-error
 
 import carla
-
-from ros_compatibility import CompatibleNode, destroy_subscription, euler_from_quaternion
+from transforms3d.euler import quat2euler
+from ros_compatibility import CompatibleNode, destroy_subscription
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -144,7 +144,7 @@ class DebugHelper(object):
         box.extent.y = marker.scale.y / 2
         box.extent.z = marker.scale.z / 2
 
-        roll, pitch, yaw = euler_from_quaternion([
+        roll, pitch, yaw = quat2euler([
             marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z,
             marker.pose.orientation.w
         ])

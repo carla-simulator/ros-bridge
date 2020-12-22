@@ -15,7 +15,7 @@ import numpy
 import carla
 
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
-from ros_compatibility import euler_matrix, quaternion_from_euler, euler_from_quaternion
+from transforms3d.euler import euler2mat
 
 
 def carla_location_to_numpy_vector(carla_location):
@@ -114,25 +114,6 @@ def carla_rotation_to_RPY(carla_rotation):
     return (roll, pitch, yaw)
 
 
-def carla_rotation_to_numpy_quaternion(carla_rotation):
-    """
-    Convert a carla rotation to a numpy quaternion
-
-    Considers the conversion from left-handed system (unreal) to right-handed
-    system (ROS).
-    Considers the conversion from degrees (carla) to radians (ROS).
-
-    :param carla_rotation: the carla rotation
-    :type carla_rotation: carla.Rotation
-    :return: a numpy.array with 4 elements (quaternion)
-    :rtype: numpy.array
-    """
-    roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
-    quat = quaternion_from_euler(roll, pitch, yaw)
-
-    return quat
-
-
 def carla_rotation_to_ros_quaternion(carla_rotation):
     """
     Convert a carla rotation to a ROS quaternion
@@ -166,7 +147,7 @@ def carla_rotation_to_numpy_rotation_matrix(carla_rotation):
     :rtype: numpy.array
     """
     roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
-    numpy_array = euler_matrix(roll, pitch, yaw)
+    numpy_array = euler2mat(roll, pitch, yaw)
     rotation_matrix = numpy_array[:3, :3]
     return rotation_matrix
 
@@ -335,23 +316,8 @@ def carla_location_to_pose(carla_location):
     return ros_pose
 
 
-def RPY_to_ros_quaternion(roll, pitch, yaw):
-    quat = quaternion_from_euler(roll, pitch, yaw)
-    return Quaternion(*quat)
-
-
 def ros_point_to_carla_location(ros_point):
     return carla.Location(ros_point.x, -ros_point.y, ros_point.z)
-
-
-def ros_quaternion_to_RPY(ros_quaternion):
-    quaternion = (
-        ros_quaternion.x,
-        ros_quaternion.y,
-        ros_quaternion.z,
-        ros_quaternion.w
-    )
-    return euler_from_quaternion(quaternion)
 
 
 def RPY_to_carla_rotation(roll, pitch, yaw):
