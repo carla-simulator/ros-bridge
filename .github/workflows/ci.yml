@@ -20,10 +20,10 @@ jobs:
 
   ros:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}-robot
+    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic, noetic, foxy]
+        ros-version: [melodic-robot, noetic-robot, foxy]
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
@@ -35,10 +35,12 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get update && sudo apt-get install wget unzip -y
-        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/master.zip
-        unzip master.zip -d carla_msgs && rm master.zip
+        #TODO: replace ros2 with master
+        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
+        unzip ros2.zip -d carla_msgs && rm ros2.zip
         packaging/install_dependencies.sh
     - name: Init Workspace
+      if: matrix.ros-version != 'foxy'
       run: |
         mkdir -p $GITHUB_WORKSPACE/../catkin_ws/src
         cd $GITHUB_WORKSPACE/../catkin_ws/src
@@ -46,9 +48,18 @@ jobs:
         cd ..
         catkin init
     - name: Build, Test, Lint
+      if: matrix.ros-version == 'foxy'
       shell: bash
       run: |
-        source /opt/ros/${{ matrix.ros-version }}/setup.bash
+        source /opt/ros/$(rosversion -d)/setup.bash
+        colcon build --continue-on-error
+        colcon test && colcon test-result
+        source install/setup.bash
+    - name: Build, Test, Lint
+      if: matrix.ros-version != 'foxy'
+      shell: bash
+      run: |
+        source /opt/ros/$(rosversion -d)/setup.bash
         cd $GITHUB_WORKSPACE/../catkin_ws &&
         catkin build --summarize --no-status --force-color
         catkin run_tests --no-status --force-color && catkin_test_results
@@ -59,10 +70,10 @@ jobs:
 
   debian:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}-robot
+    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic, noetic, foxy]
+        ros-version: [melodic-robot, noetic-robot, foxy]
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
