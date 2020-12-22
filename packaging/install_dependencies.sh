@@ -9,12 +9,12 @@ else
 fi
 
 if [ "$ROS_VERSION" = "foxy" ]; then
-    ADDITIONAL_PACKAGES=ros-$ROS_VERSION-rviz2
+    ADDITIONAL_PACKAGES="ros-$ROS_VERSION-rviz2"
 else
-    ADDITIONAL_PACKAGES=ros-$ROS_VERSION-rviz \
-        ros-$ROS_VERSION-opencv-apps \
-        ros-$ROS_VERSION-rospy-message-converter \
-        ros-$ROS_VERSION-pcl-ros
+    ADDITIONAL_PACKAGES="ros-$ROS_VERSION-rviz
+                         ros-$ROS_VERSION-opencv-apps
+                         ros-$ROS_VERSION-rospy-message-converter
+                         ros-$ROS_VERSION-pcl-ros"
 fi
 echo ADDITIONAL PACKAGES $ADDITIONAL_PACKAGES
 
