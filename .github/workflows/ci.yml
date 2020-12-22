@@ -53,17 +53,19 @@ jobs:
         cd ..
         catkin init
     - name: Build, Test, Lint
-      if: ${{ matrix.ros-version }} == 'foxy'
+      if: matrix.ros-version == 'foxy'
       shell: bash
       run: |
         source /opt/ros/$(rosversion -d)/setup.bash
-        #cd $GITHUB_WORKSPACE/../catkin_ws &&
-        #catkin build --summarize --no-status --force-color
+        cd $GITHUB_WORKSPACE/../catkin_ws &&
+        colcon build --continue-on-error
+        colcon test && colcon test-result
+        #--return-code-on-test-failure
         #catkin run_tests --no-status --force-color && catkin_test_results
-        #source devel/setup.bash
-        #cd $GITHUB_WORKSPACE
+        source install/setup.bash
+        cd $GITHUB_WORKSPACE
     - name: Build, Test, Lint
-      if: ${{ matrix.ros-version }} != 'foxy'
+      if: matrix.ros-version != 'foxy'
       shell: bash
       run: |
         source /opt/ros/$(rosversion -d)/setup.bash
