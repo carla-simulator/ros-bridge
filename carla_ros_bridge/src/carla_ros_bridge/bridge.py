@@ -198,7 +198,7 @@ class CarlaRosBridge(object):
             return False
 
         # remove actors that have the actor to be removed as parent.
-        for actor in self.actor_factory.actors.values():
+        for actor in list(self.actor_factory.actors.values()):
             if actor.parent is not None and actor.parent.uid == uid:
                 if actor.uid in self._registered_actors:
                     success = self._destroy_actor(actor.uid)
