@@ -39,25 +39,37 @@ def validate(func):
     def is_valid(self, type_, id_, spawn_point, attributes, parent_uid):
         #if "sensor" in type_ and parent_uid == 0:
         #    if spawn_point is None:
-        #        raise RuntimeError("Sensor {} d")
+        #        raise RuntimeError("")
 
         return func(self, type_, id_, spawn_point, attributes, parent_uid)
+    return is_valid
+
+def validate_spawn_point_param(func):
+    def is_valid(spawn_point_param):
+        values = spawn_point_param.split(",")
+        print(values)
+        if len(values) != 6:
+            rospy.logwarn("")
+            return
+        try:
+            [float(x) for x in values]
+        except ValueError:
+            rospy.logwarn("")
+            return
+        return func(spawn_point_param)
     return is_valid
 
 
 class CarlaSpawnObjects(object):
 
     """
-    Handles the spawning of the ego vehicle and its sensors
-
-    Derive from this class and implement method sensors()
     """
 
     def __init__(self):
         rospy.init_node("carla_spawner", anonymous=True)
 
         self.objects_definition_file = rospy.get_param("~objects_definition_file")
-        self.spawn_sensors_only = rospy.get_param("~spawn_sensors_only", None)
+        self.spawn_sensors_only = rospy.get_param("~spawn_sensors_only", False)
 
         self._objects = []
 
@@ -97,8 +109,11 @@ class CarlaSpawnObjects(object):
 
     def _spawn_object_from_dict(self, obj_data, parent_uid):
 
-        def _create_spawn_point_from_param(id_):
-            pass
+        @validate_spawn_point_param
+        def _create_spawn_point_from_param(spawn_point_param):
+            keys = ["x", "y", "z", "roll", "pitch", "yaw"]
+            values = [float(value) for value in spawn_point_param.split(",")]
+            return _create_spawn_point_from_dict(dict(zip(keys, values)))
 
         def _create_spawn_point_from_dict(data):
             x, y, z = data.pop("x", 0), data.pop("y", 0), data.pop("z", 0)
@@ -109,12 +124,13 @@ class CarlaSpawnObjects(object):
             )
 
         def _get_spawn_point():
-#            if rospy.has_param("spawn_point_{}".format(id_)):
-#                spawn_point = self.create_spawn_point_from_param(id_)
-            if obj_data.has_key("spawn_point"):
+            spawn_point = None
+            if rospy.has_param("~spawn_point_{}".format(id_)):
+                spawn_point_param = rospy.get_param("~spawn_point_{}".format(id_))
+                print("~spawn_point_{}".format(id_), spawn_point_param)
+                spawn_point = _create_spawn_point_from_param(spawn_point_param)
+            if not spawn_point and obj_data.has_key("spawn_point"):
                 spawn_point = _create_spawn_point_from_dict(obj_data.pop("spawn_point"))
-            else:
-                spawn_point = None
             return spawn_point
 
         type_ = obj_data.pop("type")
@@ -139,7 +155,7 @@ class CarlaSpawnObjects(object):
             try:
                 response = self.destroy_object_service(destroy_object_request)
             except rospy.ServiceException as e:
-                rospy.logwarn_once("{} for object with uid: {}".format(str(e), uid))
+                rospy.logwarn_once(str(e))
 
     def run(self):
         """
