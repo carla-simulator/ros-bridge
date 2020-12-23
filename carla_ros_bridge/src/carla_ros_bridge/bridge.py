@@ -244,19 +244,27 @@ class CarlaRosBridge(CompatibleNode):
         if uid not in self.actor_factory.actors:
             return False
 
+        # remove actors that have the actor to be removed as parent.
+        for actor in list(self.actor_factory.actors.values()):
+            if actor.parent is not None and actor.parent.uid == uid:
+                if actor.uid in self._registered_actors:
+                    success = self._destroy_actor(actor.uid)
+                    if not success:
+                        return False
+
         actor = self.actor_factory.actors[uid]
         if isinstance(actor, Actor):
             actor.carla_actor.destroy()
 
         self.actor_factory.destroy(uid)
+        if uid in self._registered_actors:
+            self._registered_actors.remove(uid)
+
         return True
 
     def destroy_object(self, req):
         with self.actor_factory.spawn_lock:
             result = self._destroy_actor(req.id)
-            if result and req.id in self._registered_actors:
-                self._registered_actors.remove(req.id)
-
             return DestroyObjectResponse(result)
 
     def get_blueprints(self, req):

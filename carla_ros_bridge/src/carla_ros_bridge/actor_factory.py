@@ -135,11 +135,6 @@ class ActorFactory(object):
             return actor
 
     def destroy(self, actor_id):
-        # remove actors that have the actor to be removed as parent.
-        for actor in self.actors.values():
-            if actor.parent is not None and actor.parent.uid == actor_id:
-                self.destroy(actor.uid)
-
         with self.lock:
             # check that the actor is not already removed.
             if actor_id not in self.actors:
