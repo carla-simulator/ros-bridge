@@ -327,7 +327,7 @@ class CarlaSpawnObjects(object):
         rospy.on_shutdown(self.destroy)
         try:
             self.spawn_objects()
-        except rospy.ROSInterruptException:
+        except (rospy.ROSInterruptException, rospy.ServiceException):
             rospy.logwarn(
                 "Spawning process has been interrupted. There might be actors that has not been destroyed properly")
         rospy.spin()
