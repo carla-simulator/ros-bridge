@@ -172,7 +172,7 @@ class CarlaSpectatorCamera(CompatibleNode):
         if self.camera_actor:
             destroy_object_request = DestroyObjectRequest(self.camera_actor.id)
             try:
-                self.call_service(self.destroy_object_service,destroy_object_request)
+                self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
                 self.logwarn_once(str(e))
 

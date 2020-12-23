@@ -311,9 +311,9 @@ def RPY_to_carla_rotation(roll, pitch, yaw):
 
 def ros_quaternion_to_carla_rotation(ros_quaternion):
     roll, pitch, yaw = quat2euler([ros_quaternion.w,
-        ros_quaternion.x,
-        ros_quaternion.y,
-        ros_quaternion.z])
+                                   ros_quaternion.x,
+                                   ros_quaternion.y,
+                                   ros_quaternion.z])
     return RPY_to_carla_rotation(roll, pitch, yaw)
 
 

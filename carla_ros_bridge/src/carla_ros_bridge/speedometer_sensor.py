@@ -41,7 +41,6 @@ class SpeedometerSensor(PseudoActor):
                                                 parent=parent,
                                                 node=node)
 
-
         self.speedometer_publisher = node.new_publisher(Float32,
                                                         self.get_topic_prefix())
 
