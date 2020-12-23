@@ -15,7 +15,7 @@ import numpy
 import carla
 
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
-from transforms3d.euler import euler2mat
+from transforms3d.euler import euler2mat, quat2euler, euler2quat
 
 
 def carla_location_to_numpy_vector(carla_location):
@@ -77,23 +77,6 @@ def carla_location_to_ros_point(carla_location):
     return ros_point
 
 
-def numpy_quaternion_to_ros_quaternion(numpy_quaternion):
-    """
-    Convert a quaternion from transforms to a ROS msg quaternion
-
-    :param numpy_quaternion: a numpy quaternion
-    :type numpy_quaternion: numpy.array
-    :return: a ROS quaternion
-    :rtype: geometry_msgs.msg.Quaternion
-    """
-    ros_quaternion = Quaternion()
-    ros_quaternion.x = numpy_quaternion[0]
-    ros_quaternion.y = numpy_quaternion[1]
-    ros_quaternion.z = numpy_quaternion[2]
-    ros_quaternion.w = numpy_quaternion[3]
-    return ros_quaternion
-
-
 def carla_rotation_to_RPY(carla_rotation):
     """
     Convert a carla rotation to a roll, pitch, yaw tuple
@@ -127,9 +110,9 @@ def carla_rotation_to_ros_quaternion(carla_rotation):
     :return: a ROS quaternion
     :rtype: geometry_msgs.msg.Quaternion
     """
-    quat = carla_rotation_to_numpy_quaternion(carla_rotation)
-    ros_quaternion = numpy_quaternion_to_ros_quaternion(quat)
-
+    roll, pitch, yaw = carla_rotation_to_RPY(carla_rotation)
+    quat = euler2quat(roll, pitch, yaw)
+    ros_quaternion = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
     return ros_quaternion
 
 
@@ -327,7 +310,10 @@ def RPY_to_carla_rotation(roll, pitch, yaw):
 
 
 def ros_quaternion_to_carla_rotation(ros_quaternion):
-    roll, pitch, yaw = ros_quaternion_to_RPY(ros_quaternion)
+    roll, pitch, yaw = quat2euler([ros_quaternion.w,
+        ros_quaternion.x,
+        ros_quaternion.y,
+        ros_quaternion.z])
     return RPY_to_carla_rotation(roll, pitch, yaw)
 
 

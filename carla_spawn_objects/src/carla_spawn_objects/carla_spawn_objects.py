@@ -281,7 +281,7 @@ class CarlaSpawnObjects(CompatibleNode):
         spawn_point.position.x = x
         spawn_point.position.y = y
         spawn_point.position.z = z
-        quat = euler2quat(roll, pitch, yaw)
+        quat = euler2quat(math.radians(roll), math.radians(pitch), math.radians(yaw))
 
         spawn_point.orientation.w = quat[0]
         spawn_point.orientation.x = quat[1]
