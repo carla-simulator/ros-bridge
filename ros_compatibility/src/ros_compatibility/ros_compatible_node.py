@@ -26,6 +26,21 @@ if ROS_VERSION == 1:
     def destroy_subscription(subscription):
         subscription.unregister()
 
+    def logdebug(log):
+        rospy.logdebug(log)
+
+    def loginfo(log):
+        rospy.loginfo(log)
+
+    def logwarn(log):
+        rospy.logwarn(log)
+
+    def logerr(log):
+        rospy.logerr(log)
+
+    def logfatal(log):
+        rospy.logfatal(log)
+
     class ROSException(rospy.ROSException):
         pass
 
@@ -157,6 +172,21 @@ elif ROS_VERSION == 2:
 
     def destroy_subscription(subscription):
         subscription.destroy()
+
+    def logdebug(log):
+        rclpy.logging.get_logger("default").debug(log)
+
+    def loginfo(log):
+        rclpy.logging.get_logger("default").info(log)
+
+    def logwarn(log):
+        rclpy.logging.get_logger("default").warn(log)
+
+    def logerr(log):
+        rclpy.logging.get_logger("default").error(log)
+
+    def logfatal(log):
+        rclpy.logging.get_logger("default").fatal(log)
 
     class WaitForMessageHelper(object):
         def __init__(self):

@@ -32,7 +32,11 @@ from ros_compatibility import (
     ROSInterruptException,
     ServiceException,
     ros_init,
-    logfatal
+    logfatal,
+    loginfo,
+    logwarn,
+    logerr,
+    ros_ok
 )
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -118,9 +122,9 @@ class CarlaSpawnObjects(CompatibleNode):
             self.setup_vehicles(vehicles)
         except RuntimeError as e:
             raise RuntimeError("Setting up vehicles failed: {}".format(e))
+        self.loginfo("All objects spawned.")
 
     def setup_vehicles(self, vehicles):
-        players = []
         for vehicle in vehicles:
             if self.spawn_sensors_only is True:
                 # spawn sensors of already spawned vehicles
@@ -189,6 +193,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
                     response = self.call_service(self.spawn_object_service, spawn_object_request)
                     if response.id != -1:
+                        self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(spawn_object_request.type, spawn_object_request.id))
                         player_spawned = True
                         self.players.append(response.id)
                         # Set up the sensors
@@ -196,7 +201,7 @@ class CarlaSpawnObjects(CompatibleNode):
                             self.setup_sensors(vehicle["sensors"], response.id)
                         except KeyError:
                             self.logwarn(
-                                "Vehicle {} have no 'sensors' field in his config file, none will be spawned")
+                                "Object (type='{}', id='{}') has no 'sensors' field in his config file, none will be spawned.".format(spawn_object_request.type, spawn_object_request.id))
 
     def setup_sensors(self, sensors, attached_vehicle_id=None):
         """
@@ -256,7 +261,9 @@ class CarlaSpawnObjects(CompatibleNode):
 
                 response = self.call_service(self.spawn_object_service, spawn_object_request)
                 if response.id == -1:
+                    self.logwarn("Error while spawning object (type='{}', id='{}').".format(spawn_object_request.type, spawn_object_request.id))
                     raise RuntimeError(response.error_string)
+                self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(spawn_object_request.type, spawn_object_request.id))
                 if attached_vehicle_id is None:
                     self.global_sensors.append(response.id)
                 else:
@@ -309,12 +316,14 @@ class CarlaSpawnObjects(CompatibleNode):
         """
         destroy all the players and sensors
         """
+        self.loginfo("Shutting down.")
         # destroy global sensors
         for actor_id in self.global_sensors:
             if ROS_VERSION == 1:
-                destroy_object_request = DestroyObjectRequest(actor_id)
+                destroy_object_request = DestroyObjectRequest()
             elif ROS_VERSION == 2:
-                destroy_object_request = DestroyObject.Request(actor_id)
+                destroy_object_request = DestroyObject.Request()
+            destroy_object_request.id=actor_id
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
@@ -323,23 +332,28 @@ class CarlaSpawnObjects(CompatibleNode):
 
         # destroy vehicles sensors
         for actor_id in self.vehicles_sensors:
-            destroy_object_request = DestroyObjectRequest(actor_id)
+            if ROS_VERSION == 1:
+                destroy_object_request = DestroyObjectRequest()
+            elif ROS_VERSION == 2:
+                destroy_object_request = DestroyObject.Request()
+            destroy_object_request.id=actor_id
             try:
-                self.destroy_object_service(destroy_object_request)
-            except rospy.ServiceException as e:
-                self.logwarn_once(str(e))
+                self.call_service(self.destroy_object_service, destroy_object_request)
+            except ServiceException as e:
+                self.logwarn(str(e))
         self.vehicles_sensors = []
 
         # destroy player
         for player_id in self.players:
             if ROS_VERSION == 1:
-                destroy_object_request = DestroyObjectRequest(player_id)
+                destroy_object_request = DestroyObjectRequest()
             elif ROS_VERSION == 2:
-                destroy_object_request = DestroyObject.Request(player_id)
+                destroy_object_request = DestroyObject.Request()
+            destroy_object_request.id = player_id
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
-                self.logwarn_once(str(e))
+                self.logwarn(str(e))
         self.players = []
 
     def run(self):
@@ -347,15 +361,18 @@ class CarlaSpawnObjects(CompatibleNode):
         main loop
         """
         self.on_shutdown(self.destroy)
+        spin = True
         try:
             self.spawn_objects()
-        except (ROSInterruptException, ServiceException):
-            self.logwarn_once(
+        except (ROSInterruptException, ServiceException, KeyboardInterrupt):
+            spin = False
+            self.logwarn(
                 "Spawning process has been interrupted. There might be actors that has not been destroyed properly")
-        try:
-            rospy.spin()
-        except ROSInterruptException:
-            pass
+        if spin:
+            try:
+                self.spin()
+            except (KeyboardInterrupt):
+                self.loginfo("Shutdown requested.")
 
 # ==============================================================================
 # -- main() --------------------------------------------------------------------

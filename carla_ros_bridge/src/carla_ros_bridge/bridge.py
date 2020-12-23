@@ -262,13 +262,20 @@ class CarlaRosBridge(CompatibleNode):
 
         return True
 
-    def destroy_object(self, req):
+    def destroy_object(self, req, response=None):
+        if ROS_VERSION == 1:
+            response = DestroyObjectResponse()
+        else:
+            response = DestroyObject.Response()
         with self.actor_factory.spawn_lock:
-            result = self._destroy_actor(req.id)
-            return DestroyObjectResponse(result)
+            response.success = self._destroy_actor(req.id)
+            return response
 
     def get_blueprints(self, req):
-        response = GetBlueprintsResponse()
+        if ROS_VERSION == 1:
+            response = GetBlueprintsResponse()
+        else:
+            response = GetBlueprints.Response()
         if req.filter:
             bp_filter = req.filter
         else:
