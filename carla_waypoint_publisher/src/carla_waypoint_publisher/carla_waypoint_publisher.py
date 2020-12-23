@@ -27,7 +27,8 @@ from ros_compatibility import (CompatibleNode,
                                ROSException,
                                ros_timestamp,
                                latch_on,
-                               ros_init)
+                               ros_init,
+                               get_service_response)
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans
@@ -38,12 +39,6 @@ import carla
 
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from carla_waypoint_types.srv import GetWaypointResponse, GetActorWaypointResponse
-
 
 class CarlaToRosWaypointConverter(CompatibleNode):
 
@@ -112,8 +107,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         carla_waypoint = self.map.get_waypoint(carla_position)
 
-        if ROS_VERSION == 1:
-            response = GetWaypointResponse()
+        response = get_service_response(GetWaypoint)
         response.waypoint.pose.position.x = carla_waypoint.transform.location.x
         response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
         response.waypoint.pose.position.z = carla_waypoint.transform.location.z
@@ -131,10 +125,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         # self.loginfo("get_actor_waypoint(): Get waypoint of actor {}".format(req.id))
         actor = self.world.get_actors().find(req.id)
 
-        if ROS_VERSION == 1:
-            response = GetActorWaypointResponse()
-        else:
-            response = GetActorWaypoint.Response()
+        response = get_service_response(GetActorWaypoint)
         if actor:
             carla_waypoint = self.map.get_waypoint(actor.get_location())
             response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)

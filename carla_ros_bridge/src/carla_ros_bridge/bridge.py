@@ -18,7 +18,8 @@ from ros_compatibility import (
     ros_timestamp,
     QoSProfile,
     latch_on,
-    ros_init)
+    ros_init,
+    get_service_response)
 
 try:
     import queue
@@ -222,10 +223,7 @@ class CarlaRosBridge(CompatibleNode):
         return actor.uid
 
     def spawn_object(self, req, response=None):
-        if ROS_VERSION == 1:
-            response = SpawnObjectResponse()
-        else:
-            response = SpawnObject.Response()
+        response = get_service_response(SpawnObject)
         with self.actor_factory.spawn_lock:
             try:
                 if "pseudo" in req.type:
@@ -263,19 +261,13 @@ class CarlaRosBridge(CompatibleNode):
         return True
 
     def destroy_object(self, req, response=None):
-        if ROS_VERSION == 1:
-            response = DestroyObjectResponse()
-        else:
-            response = DestroyObject.Response()
+        response = get_service_response(DestroyObject)
         with self.actor_factory.spawn_lock:
             response.success = self._destroy_actor(req.id)
             return response
 
     def get_blueprints(self, req):
-        if ROS_VERSION == 1:
-            response = GetBlueprintsResponse()
-        else:
-            response = GetBlueprints.Response()
+        response = get_service_response(GetBlueprints)
         if req.filter:
             bp_filter = req.filter
         else:

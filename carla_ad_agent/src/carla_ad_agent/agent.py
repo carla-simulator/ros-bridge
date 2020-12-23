@@ -20,13 +20,13 @@ from ros_compatibility import (
     ServiceException,
     ROSInterruptException,
     QoSProfile,
-    latch_on)
+    latch_on,
+    get_service_request)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
-    from carla_waypoint_types.srv import GetWaypointRequest
     from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
 elif ROS_VERSION == 2:
     from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
@@ -125,10 +125,7 @@ class Agent(object):
                    red traffic light affecting us
         """
         if self._vehicle_location is not None:
-            if ROS_VERSION == 2:
-                ego_vehicle_location = GetWaypoint.Request()
-            elif ROS_VERSION == 1:
-                ego_vehicle_location = GetWaypointRequest()
+            ego_vehicle_location = get_service_request(GetWaypoint)
             ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
@@ -182,10 +179,7 @@ class Agent(object):
                    red traffic light affecting us
         """
         if self._vehicle_location is not None:
-            if ROS_VERSION == 2:
-                ego_vehicle_location = GetWaypoint.Request()
-            elif ROS_VERSION == 1:
-                ego_vehicle_location = GetWaypointRequest()
+            ego_vehicle_location = get_service_request(GetWaypoint)
             ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
@@ -200,12 +194,8 @@ class Agent(object):
             return (False, None)
 
         if self._local_planner.target_route_point is not None:
-            if ROS_VERSION == 2:
-                request = GetWaypoint.Request()
-                request.location = self._local_planner.target_route_point.position
-            elif ROS_VERSION == 1:
-                request = GetWaypointRequest()
-                request.location = self._local_planner.target_route_point.position
+            request = get_service_request(GetWaypoint)
+            request.location = self._local_planner.target_route_point.position
             target_waypoint = self.get_waypoint(request)
             if not target_waypoint:
                 if ros_ok():
@@ -269,10 +259,7 @@ class Agent(object):
         """
 
         if self._vehicle_location is not None:
-            if ROS_VERSION == 2:
-                ego_vehicle_location = GetWaypoint.Request()
-            elif ROS_VERSION == 1:
-                ego_vehicle_location = GetWaypointRequest()
+            ego_vehicle_location = get_service_request(GetWaypoint)
             ego_vehicle_location.location = self._vehicle_location
         else:
             ego_vehicle_location = self._vehicle_location
@@ -299,12 +286,8 @@ class Agent(object):
                 continue
 
             # if the object is not in our lane it's not an obstacle
-            if ROS_VERSION == 2:
-                request = GetWaypoint.Request()
-                request.location = target_vehicle_location.position
-            elif ROS_VERSION == 1:
-                request = GetWaypointRequest()
-                request.location = target_vehicle_location.position
+            request = get_service_request(GetWaypoint)
+            request.location = target_vehicle_location.position
             target_vehicle_waypoint = self.get_waypoint(request)
             if not target_vehicle_waypoint:
                 if ros_ok():

@@ -36,13 +36,9 @@ from ros_compatibility import (
     loginfo,
     logwarn,
     logerr,
-    ros_ok
+    ros_ok,
+    get_service_request
 )
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from carla_msgs.srv import SpawnObjectRequest, DestroyObjectRequest
 
 # ==============================================================================
 # -- CarlaSpawnObjects ------------------------------------------------------------
@@ -124,6 +120,7 @@ class CarlaSpawnObjects(CompatibleNode):
             raise RuntimeError("Setting up vehicles failed: {}".format(e))
         self.loginfo("All objects spawned.")
 
+
     def setup_vehicles(self, vehicles):
         for vehicle in vehicles:
             if self.spawn_sensors_only is True:
@@ -141,10 +138,7 @@ class CarlaSpawnObjects(CompatibleNode):
                     raise Exception(
                         "Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
             else:
-                if ROS_VERSION == 1:
-                    spawn_object_request = SpawnObjectRequest()
-                elif ROS_VERSION == 2:
-                    spawn_object_request = SpawnObject.Request()
+                spawn_object_request = get_service_request(SpawnObject)
                 spawn_object_request.type = vehicle["type"]
                 spawn_object_request.id = vehicle["id"]
                 spawn_object_request.attach_to = 0
@@ -244,11 +238,8 @@ class CarlaSpawnObjects(CompatibleNode):
                             spawn_point.pop("roll", 0.0),
                             spawn_point.pop("pitch", 0.0),
                             spawn_point.pop("yaw", 0.0))
-
-                if ROS_VERSION == 1:
-                    spawn_object_request = SpawnObjectRequest()
-                elif ROS_VERSION == 2:
-                    spawn_object_request = SpawnObject.Request()
+                
+                spawn_object_request = get_service_request(SpawnObject)
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
                 spawn_object_request.attach_to = attached_vehicle_id if attached_vehicle_id is not None else 0
@@ -319,10 +310,7 @@ class CarlaSpawnObjects(CompatibleNode):
         self.loginfo("Shutting down.")
         # destroy global sensors
         for actor_id in self.global_sensors:
-            if ROS_VERSION == 1:
-                destroy_object_request = DestroyObjectRequest()
-            elif ROS_VERSION == 2:
-                destroy_object_request = DestroyObject.Request()
+            destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id=actor_id
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
@@ -332,10 +320,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
         # destroy vehicles sensors
         for actor_id in self.vehicles_sensors:
-            if ROS_VERSION == 1:
-                destroy_object_request = DestroyObjectRequest()
-            elif ROS_VERSION == 2:
-                destroy_object_request = DestroyObject.Request()
+            destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id=actor_id
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
@@ -345,10 +330,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
         # destroy player
         for player_id in self.players:
-            if ROS_VERSION == 1:
-                destroy_object_request = DestroyObjectRequest()
-            elif ROS_VERSION == 2:
-                destroy_object_request = DestroyObject.Request()
+            destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id = player_id
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)

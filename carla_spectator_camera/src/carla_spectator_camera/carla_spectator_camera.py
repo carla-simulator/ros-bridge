@@ -27,13 +27,10 @@ from ros_compatibility import (
     ROSException,
     ROSInterruptException,
     ros_init,
-    ServiceException
+    ServiceException,
+    get_service_request
 )
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from carla_msgs.srv import SpawnObjectRequest, DestroyObjectRequest
 # ==============================================================================
 # -- CarlaSpectatorCamera ------------------------------------------------------------
 # ==============================================================================
@@ -117,10 +114,7 @@ class CarlaSpectatorCamera(CompatibleNode):
         if not transform:
             transform = carla.Transform()
 
-        if ROS_VERSION == 1:
-            spawn_object_request = SpawnObjectRequest()
-        elif ROS_VERSION == 2:
-            spawn_object_request = SpawnObject.Request()
+        spawn_object_request = get_service_request(SpawnObject)
         spawn_object_request.type = "sensor.camera.rgb"
         spawn_object_request.id = "spectator_view"
         spawn_object_request.attach_to = ego_actor.id

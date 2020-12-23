@@ -21,12 +21,12 @@ from ros_compatibility import (
     ServiceException,
     ROSInterruptException,
     QoSProfile,
-    latch_on)
+    latch_on,
+    get_service_request)
 
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 if ROS_VERSION == 1:
-    from carla_waypoint_types.srv import GetActorWaypointRequest
     from local_planner import LocalPlanner  # pylint: disable=relative-import
     from agent import Agent, AgentState  # pylint: disable=relative-import
 elif ROS_VERSION == 2:
@@ -85,11 +85,7 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
-            # TODO: have ros_compat get_service_request(GetActorWaypoint)
-            if ROS_VERSION == 1:
-                request = GetActorWaypointRequest()
-            elif ROS_VERSION == 2:
-                request = GetActorWaypoint.Request()
+            request = get_service_request(GetActorWaypoint)
             request.id = actor_id
             response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
