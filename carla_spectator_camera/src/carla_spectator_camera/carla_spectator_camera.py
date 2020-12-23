@@ -19,10 +19,10 @@ from diagnostic_msgs.msg import KeyValue
 
 import carla
 import carla_common.transforms as trans
+from transforms3d.euler import quat2euler
 
 from ros_compatibility import (
     CompatibleNode,
-    euler_from_quaternion,
     QoSProfile,
     ROSException,
     ROSInterruptException,
@@ -97,12 +97,12 @@ class CarlaSpectatorCamera(CompatibleNode):
                                          y=-self.pose.pose.position.y,
                                          z=self.pose.pose.position.z)
         quaternion = (
+            self.pose.pose.orientation.w,
             self.pose.pose.orientation.x,
             self.pose.pose.orientation.y,
-            self.pose.pose.orientation.z,
-            self.pose.pose.orientation.w
+            self.pose.pose.orientation.z
         )
-        roll, pitch, yaw = euler_from_quaternion(quaternion)
+        roll, pitch, yaw = quat2euler(quaternion)
         # rotate to CARLA
         sensor_rotation = carla.Rotation(pitch=math.degrees(roll)-90,
                                          roll=math.degrees(pitch),
@@ -172,7 +172,7 @@ class CarlaSpectatorCamera(CompatibleNode):
         if self.camera_actor:
             destroy_object_request = DestroyObjectRequest(self.camera_actor.id)
             try:
-                self.call_service(self.destroy_object_service,destroy_object_request)
+                self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
                 self.logwarn_once(str(e))
 

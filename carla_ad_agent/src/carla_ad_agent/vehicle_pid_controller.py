@@ -11,7 +11,7 @@
 from collections import deque
 import math
 import numpy as np
-from ros_compatibility import euler_from_quaternion  # pylint: disable=import-error
+from transforms3d.euler import quat2euler
 from geometry_msgs.msg import Point  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 
@@ -137,12 +137,12 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
         """
         v_begin = current_pose.position
         quaternion = (
+            current_pose.orientation.w,
             current_pose.orientation.x,
             current_pose.orientation.y,
-            current_pose.orientation.z,
-            current_pose.orientation.w
+            current_pose.orientation.z
         )
-        _, _, yaw = euler_from_quaternion(quaternion)
+        _, _, yaw = quat2euler(quaternion)
         v_end = Point()
         v_end.x = v_begin.x + math.cos(yaw)
         v_end.y = v_begin.y + math.sin(yaw)

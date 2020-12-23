@@ -36,10 +36,10 @@ from carla_msgs.msg import CarlaCollisionEvent
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Bool
+from transforms3d.euler import quat2euler
 from ros_compatibility import (
     CompatibleNode,
     latch_on,
-    euler_from_quaternion,
     ros_ok,
     ros_init,
     destroy_subscription)
@@ -477,11 +477,11 @@ class HUD(CompatibleNode):
                 position = [transform.transform.translation.x,
                             transform.transform.translation.y,
                             transform.transform.translation.z]
-                rotation = [transform.transform.rotation.x,
+                rotation = [transform.transform.rotation.w,
+                            transform.transform.rotation.x,
                             transform.transform.rotation.y,
-                            transform.transform.rotation.z,
-                            transform.transform.rotation.w]
-            _, _, yaw = euler_from_quaternion(rotation)
+                            transform.transform.rotation.z]
+            _, _, yaw = quat2euler(rotation)
             yaw = math.degrees(yaw)
             x = position[0]
             y = position[1]

@@ -14,9 +14,8 @@ from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
 from enum import Enum
 import math
-
+from transforms3d.euler import quat2euler
 from ros_compatibility import (
-    euler_from_quaternion,
     ros_ok,
     ServiceException,
     ROSInterruptException,
@@ -90,12 +89,12 @@ class Agent(object):
         """
         self._vehicle_location = odo.pose.pose.position
         quaternion = (
+            odo.pose.pose.orientation.w,
             odo.pose.pose.orientation.x,
             odo.pose.pose.orientation.y,
-            odo.pose.pose.orientation.z,
-            odo.pose.pose.orientation.w
+            odo.pose.pose.orientation.z
         )
-        _, _, self._vehicle_yaw = euler_from_quaternion(quaternion)
+        _, _, self._vehicle_yaw = quat2euler(quaternion)
 
     def _is_light_red(self, lights_list):
         """

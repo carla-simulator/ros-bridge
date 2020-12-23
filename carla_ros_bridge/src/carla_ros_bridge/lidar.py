@@ -17,8 +17,6 @@ from sensor_msgs.msg import PointCloud2, PointField
 
 from carla_ros_bridge.sensor import Sensor, create_cloud
 
-from ros_compatibility import quaternion_from_euler, euler_from_quaternion
-
 
 class Lidar(Sensor):
 

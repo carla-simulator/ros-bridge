@@ -20,7 +20,6 @@ from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
 import carla
 from carla_ros_bridge.sensor import Sensor, create_cloud
 import carla_common.transforms as trans
-from ros_compatibility import quaternion_from_matrix, quaternion_multiply
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
