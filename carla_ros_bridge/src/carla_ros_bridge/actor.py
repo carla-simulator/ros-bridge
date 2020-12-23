@@ -10,7 +10,6 @@
 Base Classes to handle Actor objects
 """
 
-import numpy as np
 from geometry_msgs.msg import TransformStamped  # pylint: disable=import-error
 from visualization_msgs.msg import Marker  # pylint: disable=import-error
 from std_msgs.msg import ColorRGBA  # pylint: disable=import-error

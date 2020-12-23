@@ -6,7 +6,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 """
-provide functions to control actors 
+provide functions to control actors
 """
 
 import numpy

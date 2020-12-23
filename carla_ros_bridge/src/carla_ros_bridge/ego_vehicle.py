@@ -12,7 +12,6 @@ Classes to handle Carla vehicles
 import math
 import os
 
-import numpy
 from std_msgs.msg import Bool  # pylint: disable=import-error
 from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 from carla import VehicleControl

@@ -40,6 +40,7 @@ import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
+
 class CarlaToRosWaypointConverter(CompatibleNode):
 
     """

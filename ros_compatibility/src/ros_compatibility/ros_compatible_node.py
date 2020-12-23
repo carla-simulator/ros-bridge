@@ -44,13 +44,13 @@ if ROS_VERSION == 1:
     def get_service_request(service_type):
         ros1_classname = service_type.__name__ + "Request"
         module = ".".join(service_type.__module__.split(".")[:-1])
-        request_class = __import__(module, fromlist=[ros1_classname])            
+        request_class = __import__(module, fromlist=[ros1_classname])
         return getattr(request_class, ros1_classname)()
 
     def get_service_response(service_type):
         ros1_classname = service_type.__name__ + "Response"
         module = ".".join(service_type.__module__.split(".")[:-1])
-        request_class = __import__(module, fromlist=[ros1_classname])            
+        request_class = __import__(module, fromlist=[ros1_classname])
         return getattr(request_class, ros1_classname)()
 
     class ROSException(rospy.ROSException):
