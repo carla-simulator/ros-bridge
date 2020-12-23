@@ -70,7 +70,7 @@ class CarlaSpawnObjects(object):
         if not os.path.exists(self.objects_definition_file):
             raise RuntimeError(
                 "Could not read sensor-definition from {}".format(self.objects_definition_file))
-        json_sensors = None
+
         with open(self.objects_definition_file) as handle:
             json_actors = json.loads(handle.read())
 
@@ -91,13 +91,13 @@ class CarlaSpawnObjects(object):
                 rospy.logwarn(
                     "Object with type {} is not a vehicle, a walker or a sensor, ignoring".format(actor["type"]))
         if self.spawn_sensors_only is True and found_sensor_actor_list is False:
-            raise Exception("Parameter 'spawn_sensors_only' enabled, " +
-                            "but 'sensor.pseudo.actor_list' is not instantiated, add it to your config file.")
+            raise RuntimeError("Parameter 'spawn_sensors_only' enabled, " +
+                               "but 'sensor.pseudo.actor_list' is not instantiated, add it to your config file.")
 
         try:
-            self.global_sensors = self.setup_sensors(global_sensors)
-        except Exception as e:
-            raise Exception("Setting up global sensors failed: {}".format(e))
+            self.setup_sensors(global_sensors)
+        except RuntimeError as e:
+            raise RuntimeError("Setting up global sensors failed: {}".format(e))
 
         if self.spawn_sensors_only is True:
             # get vehicle id from topic /carla/actor_list for all vehicles listed in config file
@@ -108,12 +108,11 @@ class CarlaSpawnObjects(object):
                         vehicle["carla_id"] = actor_info.id
 
         try:
-            self.players = self.setup_vehicles(vehicles)
-        except Exception as e:
-            raise Exception("Setting up vehicles failed: {}".format(e))
+            self.setup_vehicles(vehicles)
+        except RuntimeError as e:
+            raise RuntimeError("Setting up vehicles failed: {}".format(e))
 
     def setup_vehicles(self, vehicles):
-        players = []
         for vehicle in vehicles:
             if self.spawn_sensors_only is True:
                 # spawn sensors of already spawned vehicles
@@ -124,11 +123,7 @@ class CarlaSpawnObjects(object):
                         "Could not spawn sensors of vehicle {}, its carla ID is not known.".format(vehicle["id"]))
                     break
                 # spawn the vehicle's sensors
-                try:
-                    self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], carla_id))
-                except Exception as e:
-                    raise Exception(
-                        "Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
+                self.setup_sensors(vehicle["sensors"], carla_id)
             else:
                 spawn_object_request = SpawnObjectRequest()
                 spawn_object_request.type = vehicle["type"]
@@ -143,13 +138,13 @@ class CarlaSpawnObjects(object):
                 spawn_param_used = False
                 if (spawn_point_param is not None):
                     # try to use spawn_point from parameters
-                    try:
-                        spawn_point = self.check_spawn_point_param(spawn_point_param)
+                    spawn_point = self.check_spawn_point_param(spawn_point_param)
+                    if spawn_point is None:
+                        rospy.logwarn("{}: Could not use spawn point from parameters, ".format(vehicle["id"]) +
+                                      "the spawn point from config file will be used.")
+                    else:
                         rospy.loginfo("Spawn point from ros parameters")
                         spawn_param_used = True
-                    except Exception as e:
-                        rospy.logerr("{}: Could not use spawn point from parameters, ".format(vehicle["id"]) +
-                                     "the spawn point from config file will be used. Error is: {}".format(e))
 
                 if "spawn_point" in vehicle and spawn_param_used is False:
                     # get spawn point from config file
@@ -179,18 +174,15 @@ class CarlaSpawnObjects(object):
                     response = self.spawn_object_service(spawn_object_request)
                     if response.id != -1:
                         player_spawned = True
-                        players.append(response.id)
+                        self.players.append(response.id)
                         # Set up the sensors
                         try:
-                            self.vehicles_sensors.append(
-                                self.setup_sensors(vehicle["sensors"], response.id))
+                            self.setup_sensors(vehicle["sensors"], response.id)
                         except KeyError:
                             rospy.logwarn(
                                 "Vehicle {} have no 'sensors' field in his config file, none will be spawned")
 
-        return players
-
-    def setup_sensors(self, sensors, attached_vehicle_id=0):
+    def setup_sensors(self, sensors, attached_vehicle_id=None):
         """
         Create the sensors defined by the user and attach them to the vehicle
         (or not if global sensor)
@@ -198,7 +190,6 @@ class CarlaSpawnObjects(object):
         :param attached_vehicle_id: id of vehicle to attach the sensors to
         :return actors: list of ids of objects created
         """
-        actors = []
         sensor_names = []
         for sensor_spec in sensors:
             try:
@@ -207,12 +198,10 @@ class CarlaSpawnObjects(object):
 
                 sensor_name = sensor_type + "/" + sensor_id
                 if sensor_name in sensor_names:
-                    raise NameError(
-                        "Sensor rolename '{}' is only allowed to be used once.".format(
-                            sensor_spec['id']))
+                    raise NameError
                 sensor_names.append(sensor_name)
 
-                if attached_vehicle_id == 0 and "pseudo" not in sensor_type:
+                if attached_vehicle_id is None and "pseudo" not in sensor_type:
                     spawn_point = sensor_spec.pop("spawn_point")
                     sensor_transform = self.create_spawn_point(
                         spawn_point.pop("x"),
@@ -238,7 +227,7 @@ class CarlaSpawnObjects(object):
                 spawn_object_request = SpawnObjectRequest()
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
-                spawn_object_request.attach_to = attached_vehicle_id
+                spawn_object_request.attach_to = attached_vehicle_id if attached_vehicle_id is not None else 0
                 spawn_object_request.transform = sensor_transform
                 spawn_object_request.random_pose = False  # never set a random pose for a sensor
 
@@ -248,20 +237,26 @@ class CarlaSpawnObjects(object):
 
                 response = self.spawn_object_service(spawn_object_request)
                 if response.id == -1:
-                    raise Exception(response.error_string)
+                    raise RuntimeError(response.error_string)
+                if attached_vehicle_id is None:
+                    self.global_sensors.append(response.id)
+                else:
+                    self.vehicles_sensors.append(response.id)
 
             except KeyError as e:
                 rospy.logerr(
                     "Sensor {} will not be spawned, the mandatory attribute {} is missing".format(sensor_name, e))
                 continue
 
-            except Exception as e:
+            except RuntimeError as e:
                 rospy.logerr(
                     "Sensor {} will not be spawned: {}".format(sensor_name, e))
                 continue
 
-            actors.append(response.id)
-        return actors
+            except NameError:
+                rospy.logerr("Sensor rolename '{}' is only allowed to be used once.".format(
+                    sensor_spec['id']))
+                continue
 
     def create_spawn_point(self, x, y, z, roll, pitch, yaw):
         spawn_point = Pose()
@@ -282,7 +277,8 @@ class CarlaSpawnObjects(object):
     def check_spawn_point_param(self, spawn_point_parameter):
         components = spawn_point_parameter.split(',')
         if len(components) != 6:
-            raise ValueError("Invalid spawnpoint '{}'".format(spawn_point_parameter))
+            rospy.logwarn("Invalid spawnpoint '{}'".format(spawn_point_parameter))
+            return None
         spawn_point = self.create_spawn_point(
             float(components[0]),
             float(components[1]),
@@ -307,13 +303,12 @@ class CarlaSpawnObjects(object):
         self.global_sensors = []
 
         # destroy vehicles sensors
-        for vehicle_sensors_id in self.vehicles_sensors:
-            for actor_id in vehicle_sensors_id:
-                destroy_object_request = DestroyObjectRequest(actor_id)
-                try:
-                    response = self.destroy_object_service(destroy_object_request)
-                except rospy.ServiceException as e:
-                    rospy.logwarn_once(str(e))
+        for actor_id in self.vehicles_sensors:
+            destroy_object_request = DestroyObjectRequest(actor_id)
+            try:
+                response = self.destroy_object_service(destroy_object_request)
+            except rospy.ServiceException as e:
+                rospy.logwarn_once(str(e))
         self.vehicles_sensors = []
 
         # destroy player
@@ -330,11 +325,13 @@ class CarlaSpawnObjects(object):
         main loop
         """
         rospy.on_shutdown(self.destroy)
-        self.spawn_objects()
         try:
-            rospy.spin()
+            self.spawn_objects()
         except rospy.ROSInterruptException:
-            pass
+            rospy.logwarn(
+                "Spawning process has been interrupted. There might be actors that has not been destroyed properly")
+        rospy.spin()
+
 
 # ==============================================================================
 # -- main() --------------------------------------------------------------------
@@ -349,7 +346,7 @@ def main():
     try:
         spawn_objects_node = CarlaSpawnObjects()
         spawn_objects_node.run()
-    except Exception as e:
+    except RuntimeError as e:
         rospy.logfatal(
             "Exception caught: {}".format(e))
     finally:
