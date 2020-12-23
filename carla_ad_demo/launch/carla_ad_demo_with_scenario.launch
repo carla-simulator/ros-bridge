@@ -18,11 +18,6 @@
   <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
 
-  <!-- spectator camera parameter -->
-  <arg name='resolution_x' default='800'/> <!-- width of the spectator camera image -->
-  <arg name='resolution_y' default='600'/> <!-- height of the spectator camera image -->
-  <arg name='fov' default='50'/> <!-- field of view of the spectator camera. -->
-
   <!-- ===================================================== -->
 
   <!-- The ros bridge -->
@@ -52,17 +47,6 @@
     <arg name='role_name' value='$(arg role_name)'/>
   </include>
 
-  <!-- a spectator camera that is attached to the ego vehicle and be controlled from within rviz -->
-  <include file="$(find carla_spectator_camera)/launch/carla_spectator_camera.launch">
-    <arg name='host' value='$(arg host)'/>
-    <arg name='port' value='$(arg port)'/>
-    <arg name='timeout' value='$(arg timeout)'/>
-    <arg name="role_name" value="$(arg role_name)"/>
-    <arg name="resolution_x" value="$(arg resolution_x)"/>
-    <arg name="resolution_y" value="$(arg resolution_y)"/>
-    <arg name="fov" value="$(arg fov)"/>
-  </include>
-
   <!-- To be able to maneuver with rviz, this node converts twist to vehicle control commands -->
   <node pkg="carla_twist_to_control" type="carla_twist_to_control.py" name="carla_twist_to_control">
     <remap from="/carla/$(arg role_name)/vehicle_control_cmd" to="/carla/$(arg role_name)/vehicle_control_cmd_manual"/>
@@ -88,6 +72,8 @@
   </include>
 
   <!-- Rviz visualization-->
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find carla_ad_demo)/config/carla_ad_demo.rviz" required="true" output="screen"/>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find carla_ad_demo)/config/carla_ad_demo.rviz" required="true" output="screen">
+    <remap from="carla/ego_vehicle/spectator_pose" to="/carla/ego_vehicle/rgb_view/control/set_transform"/>
+  </node>
 
 </launch>
