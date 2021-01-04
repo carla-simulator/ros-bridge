@@ -10,7 +10,7 @@ elif ROS_VERSION == 2:
     import rclpy
 else:
     raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
-        
+
 if ROS_VERSION == 1:
     import tf.transformations as trans
 
