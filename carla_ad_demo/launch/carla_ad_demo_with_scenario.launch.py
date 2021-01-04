@@ -48,26 +48,6 @@ def generate_launch_description():
             name='role_name',
             default_value='ego_vehicle'
         ),
-        launch.actions.DeclareLaunchArgument(
-            name='vehicle_filter',
-            default_value='vehicle.tesla.model3'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='avoid_risk',
-            default_value='True'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='resolution_x',
-            default_value='800'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='resolution_y',
-            default_value='600'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='fov',
-            default_value='50'
-        ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
             executable='carla_twist_to_control',
@@ -131,21 +111,6 @@ def generate_launch_description():
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
-                    'carla_spectator_camera'), 'carla_spectator_camera.launch.py')
-            ),
-            launch_arguments={
-                'host': launch.substitutions.LaunchConfiguration('host'),
-                'port': launch.substitutions.LaunchConfiguration('port'),
-                'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'role_name': launch.substitutions.LaunchConfiguration('role_name'),
-                'resolution_x': launch.substitutions.LaunchConfiguration('resolution_x'),
-                'resolution_y': launch.substitutions.LaunchConfiguration('resolution_y'),
-                'fov': launch.substitutions.LaunchConfiguration('fov')
-            }.items()
-        ),
-        launch.actions.IncludeLaunchDescription(
-            launch.launch_description_sources.PythonLaunchDescriptionSource(
-                os.path.join(get_package_share_directory(
                     'carla_ros_scenario_runner'), 'carla_ros_scenario_runner.launch.py')
             ),
             launch_arguments={
@@ -161,6 +126,12 @@ def generate_launch_description():
             executable='rviz2',
             name='rviz2',
             output='screen',
+            remappings=[
+                (
+                    "carla/ego_vehicle/spectator_pose",
+                    "/carla/ego_vehicle/rgb_view/control/set_transform"
+                )
+            ],
             arguments=[
                 '-d', os.path.join(get_package_share_directory('carla_ad_demo'), 'config/carla_ad_demo_ros2.rviz')],
             on_exit=launch.actions.Shutdown()

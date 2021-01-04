@@ -131,11 +131,7 @@ class CarlaSpawnObjects(CompatibleNode):
                         "Could not spawn sensors of vehicle {}, its carla ID is not known.".format(vehicle["id"]))
                     break
                 # spawn the vehicle's sensors
-                try:
-                    self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], carla_id))
-                except Exception as e:
-                    raise Exception(
-                        "Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
+                self.setup_sensors(vehicle["sensors"], carla_id)
             else:
                 spawn_object_request = get_service_request(SpawnObject)
                 spawn_object_request.type = vehicle["type"]
@@ -183,11 +179,8 @@ class CarlaSpawnObjects(CompatibleNode):
                 player_spawned = False
                 while not player_spawned:
                     spawn_object_request.transform = spawn_point
-
                     response = self.call_service(self.spawn_object_service, spawn_object_request)
                     if response.id != -1:
-                        self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(
-                            spawn_object_request.type, spawn_object_request.id))
                         player_spawned = True
                         self.players.append(response.id)
                         # Set up the sensors
@@ -246,17 +239,23 @@ class CarlaSpawnObjects(CompatibleNode):
                 spawn_object_request.transform = sensor_transform
                 spawn_object_request.random_pose = False  # never set a random pose for a sensor
 
+                attached_objects = []
                 for attribute, value in sensor_spec.items():
+                    if attribute == "attached_objects":
+                        for attached_object in sensor_spec["attached_objects"]:
+                            attached_objects.append(attached_object)
+                        continue
                     spawn_object_request.attributes.append(
                         KeyValue(key=str(attribute), value=str(value)))
 
                 response = self.call_service(self.spawn_object_service, spawn_object_request)
                 if response.id == -1:
-                    self.logwarn("Error while spawning object (type='{}', id='{}').".format(
-                        spawn_object_request.type, spawn_object_request.id))
                     raise RuntimeError(response.error_string)
-                self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(
-                    spawn_object_request.type, spawn_object_request.id))
+
+                if attached_objects:
+                    # spawn the attached objects
+                    self.setup_sensors(attached_objects, response.id)
+
                 if attached_vehicle_id is None:
                     self.global_sensors.append(response.id)
                 else:
@@ -310,15 +309,6 @@ class CarlaSpawnObjects(CompatibleNode):
         destroy all the players and sensors
         """
         self.loginfo("Shutting down.")
-        # destroy global sensors
-        for actor_id in self.global_sensors:
-            destroy_object_request = get_service_request(DestroyObject)
-            destroy_object_request.id = actor_id
-            try:
-                self.call_service(self.destroy_object_service, destroy_object_request)
-            except ServiceException as e:
-                self.logwarn_once(str(e))
-        self.global_sensors = []
 
         # destroy vehicles sensors
         for actor_id in self.vehicles_sensors:
@@ -329,6 +319,16 @@ class CarlaSpawnObjects(CompatibleNode):
             except ServiceException as e:
                 self.logwarn(str(e))
         self.vehicles_sensors = []
+
+        # destroy global sensors
+        for actor_id in self.global_sensors:
+            destroy_object_request = get_service_request(DestroyObject)
+            destroy_object_request.id = actor_id
+            try:
+                self.call_service(self.destroy_object_service, destroy_object_request)
+            except ServiceException as e:
+                self.logwarn_once(str(e))
+        self.global_sensors = []
 
         # destroy player
         for player_id in self.players:

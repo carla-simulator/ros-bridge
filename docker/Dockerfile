@@ -37,7 +37,6 @@ COPY carla_msgs /opt/carla-ros-bridge/src/carla_msgs
 COPY carla_ros_bridge /opt/carla-ros-bridge/src/carla_ros_bridge
 COPY carla_ros_scenario_runner /opt/carla-ros-bridge/src/carla_ros_scenario_runner
 COPY carla_ros_scenario_runner_types /opt/carla-ros-bridge/src/carla_ros_scenario_runner_types
-COPY carla_spectator_camera /opt/carla-ros-bridge/src/carla_spectator_camera
 COPY carla_twist_to_control /opt/carla-ros-bridge/src/carla_twist_to_control
 COPY carla_walker_agent /opt/carla-ros-bridge/src/carla_walker_agent
 COPY carla_waypoint_publisher /opt/carla-ros-bridge/src/carla_waypoint_publisher

@@ -153,17 +153,17 @@ void CarlaControlPanel::cameraPreRenderScene(Ogre::Camera *cam)
 
 void CarlaControlPanel::updateCameraPos()
 {
-  auto frame = mViewController->subProp("Target Frame")->getValue();
-  geometry_msgs::msg::PoseStamped pose;
-  pose.header.frame_id = frame.toString().toStdString();
-  pose.header.stamp = _node->now();
-  pose.pose.position.x = mCameraCurrentPosition.x;
-  pose.pose.position.y = mCameraCurrentPosition.y;
-  pose.pose.position.z = mCameraCurrentPosition.z;
-  pose.pose.orientation.x = mCameraCurrentOrientation.x;
-  pose.pose.orientation.y = mCameraCurrentOrientation.y;
-  pose.pose.orientation.z = mCameraCurrentOrientation.z;
-  pose.pose.orientation.w = mCameraCurrentOrientation.w;
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = mCameraCurrentPosition.x;
+  pose.position.y = mCameraCurrentPosition.y;
+  pose.position.z = mCameraCurrentPosition.z;
+
+  mCameraCurrentOrientation = mCameraCurrentOrientation * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y);
+  mCameraCurrentOrientation = mCameraCurrentOrientation * Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
+  pose.orientation.x = mCameraCurrentOrientation.x;
+  pose.orientation.y = mCameraCurrentOrientation.y;
+  pose.orientation.z = mCameraCurrentOrientation.z;
+  pose.orientation.w = mCameraCurrentOrientation.w;
 
   mCameraPosePublisher->publish(pose);
 }
@@ -185,7 +185,7 @@ void CarlaControlPanel::onInitialize()
   auto qos_latch_10 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10));
   qos_latch_10.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
   mCameraPosePublisher
-    = _node->create_publisher<geometry_msgs::msg::PoseStamped>("/carla/ego_vehicle/spectator_pose", qos_latch_10);
+    = _node->create_publisher<geometry_msgs::msg::Pose>("/carla/ego_vehicle/spectator_pose", qos_latch_10);
 
   auto qos_latch_1 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1));
   qos_latch_1.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
