@@ -10,9 +10,7 @@ This plugin is expecting a ego vehicle named `ego_vehicle`.
 
 ### Provide the RVIZ view pose to other nodes
 
-When a `actor.pseudo.control` is attached to a camera (using the [carla_spawn_objects](../carla_spawn_objects) node), it allows to the camera around in the CARLA world.
-
-Currently, it is limited to a camera attached to the ego-vehicle. Please set the target frame of the "Current View" to `ego_vehicle`.
+When a `actor.pseudo.control` is attached to a camera (using the [carla_spawn_objects](../carla_spawn_objects) node), it allows to move the camera around in the CARLA world, by publishing a Pose message.
 
 ### Visualize the current ego vehicle state
 
