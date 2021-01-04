@@ -153,7 +153,6 @@ void CarlaControlPanel::cameraPreRenderScene(Ogre::Camera *cam)
 
 void CarlaControlPanel::updateCameraPos()
 {
-  auto frame = mViewController->subProp("Target Frame")->getValue();
   geometry_msgs::msg::Pose pose;
   pose.position.x = mCameraCurrentPosition.x;
   pose.position.y = mCameraCurrentPosition.y;
