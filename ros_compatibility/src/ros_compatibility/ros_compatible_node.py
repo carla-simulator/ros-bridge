@@ -1,10 +1,17 @@
 # pylint: disable=import-error
 import os
+from threading import Thread, currentThread
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy
+elif ROS_VERSION == 2:
+    import rclpy
+else:
+    raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
+        
+if ROS_VERSION == 1:
     import tf.transformations as trans
 
     latch_on = True
@@ -139,7 +146,7 @@ if ROS_VERSION == 1:
             try:
                 return client(req)
             except rospy.ServiceException as e:
-                print("Service call failed: %s" % e)
+                raise ServiceException(e)
 
         def spin(self, executor=None):
             rospy.spin()
@@ -159,7 +166,6 @@ elif ROS_VERSION == 2:
     from rclpy.exceptions import ROSInterruptException
     from rclpy.node import Node
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
-    import rclpy
     from builtin_interfaces.msg import Time
 
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
@@ -318,14 +324,7 @@ elif ROS_VERSION == 2:
             return client
 
         def call_service(self, client, req):
-            resp = client.call_async(req)
-            rclpy.spin_until_future_complete(self, resp)
-            try:
-                result = resp.result()
-            except Exception as e:
-                node.get_logger().info('Service call failed %r' % (e,))
-            else:
-                return result
+            return client.call(req)
 
         def spin(self, executor=None):
             rclpy.spin(self, executor)
