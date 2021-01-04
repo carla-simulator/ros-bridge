@@ -231,13 +231,23 @@ class CarlaSpawnObjects(object):
                 spawn_object_request.transform = sensor_transform
                 spawn_object_request.random_pose = False  # never set a random pose for a sensor
 
+                attached_objects = []
                 for attribute, value in sensor_spec.items():
+                    if attribute == "attached_objects":
+                        for attached_object in sensor_spec["attached_objects"]:
+                            attached_objects.append(attached_object)
+                        continue
                     spawn_object_request.attributes.append(
                         KeyValue(str(attribute), str(value)))
 
                 response = self.spawn_object_service(spawn_object_request)
                 if response.id == -1:
                     raise RuntimeError(response.error_string)
+
+                if attached_objects:
+                    # spawn the attached objects
+                    self.setup_sensors(attached_objects, response.id)
+
                 if attached_vehicle_id is None:
                     self.global_sensors.append(response.id)
                 else:
@@ -293,15 +303,6 @@ class CarlaSpawnObjects(object):
         """
         destroy all the players and sensors
         """
-        # destroy global sensors
-        for actor_id in self.global_sensors:
-            destroy_object_request = DestroyObjectRequest(actor_id)
-            try:
-                response = self.destroy_object_service(destroy_object_request)
-            except rospy.ServiceException as e:
-                rospy.logwarn_once(str(e))
-        self.global_sensors = []
-
         # destroy vehicles sensors
         for actor_id in self.vehicles_sensors:
             destroy_object_request = DestroyObjectRequest(actor_id)
@@ -310,6 +311,15 @@ class CarlaSpawnObjects(object):
             except rospy.ServiceException as e:
                 rospy.logwarn_once(str(e))
         self.vehicles_sensors = []
+
+        # destroy global sensors
+        for actor_id in self.global_sensors:
+            destroy_object_request = DestroyObjectRequest(actor_id)
+            try:
+                response = self.destroy_object_service(destroy_object_request)
+            except rospy.ServiceException as e:
+                rospy.logwarn_once(str(e))
+        self.global_sensors = []
 
         # destroy player
         for player_id in self.players:

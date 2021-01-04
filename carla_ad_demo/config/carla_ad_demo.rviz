@@ -68,7 +68,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /carla/ego_vehicle/spectator_view/image
+      Image Topic: /carla/ego_vehicle/rgb_view/image
       Name: RGB Camera
       Overlay Alpha: 0.5
       Queue Size: 2
