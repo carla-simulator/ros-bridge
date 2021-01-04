@@ -126,17 +126,13 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz_default_plugins/Marker
+    - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Name: Marker
+      Topic: /carla/markers
+      Name: MarkerArray
       Namespaces:
         "": true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /carla/marker
+      Queue Size: 100
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
