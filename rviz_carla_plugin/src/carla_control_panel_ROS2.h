@@ -17,7 +17,7 @@
 #include <rviz_common/panel.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <carla_ros_scenario_runner_types/srv/execute_scenario.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include <rviz_common/frame_position_tracking_view_controller.hpp>
@@ -96,7 +96,7 @@ protected:
   rclcpp::Client<carla_ros_scenario_runner_types::srv::ExecuteScenario>::SharedPtr mExecuteScenarioClient;
   rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>::SharedPtr mScenarioSubscriber;
   rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus>::SharedPtr mScenarioRunnerStatusSubscriber;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr mCameraPosePublisher;
+  rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr mCameraPosePublisher;
 
   carla_ros_scenario_runner_types::msg::CarlaScenarioList::SharedPtr mCarlaScenarios;
 

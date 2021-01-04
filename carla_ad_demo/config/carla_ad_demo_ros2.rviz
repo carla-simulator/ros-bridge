@@ -79,7 +79,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/ego_vehicle/camera/rgb/spectator_view/image_color
+        Value: /carla/ego_vehicle/rgb_view/image
       Value: true
       Visibility:
         DVS Camera: true
@@ -150,7 +150,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/ego_vehicle/camera/depth/front/image_depth
+        Value: /carla/ego_vehicle/depth_front/image
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
@@ -164,7 +164,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/ego_vehicle/camera/semantic_segmentation/front/image_segmentation
+        Value: /carla/ego_vehicle/semantic_segmentation_front/image
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
@@ -178,7 +178,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/ego_vehicle/camera/dvs/front/image_events
+        Value: /carla/ego_vehicle/dvs_front/image
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true

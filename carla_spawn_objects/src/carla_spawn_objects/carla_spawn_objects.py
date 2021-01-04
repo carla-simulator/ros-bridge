@@ -131,11 +131,7 @@ class CarlaSpawnObjects(CompatibleNode):
                         "Could not spawn sensors of vehicle {}, its carla ID is not known.".format(vehicle["id"]))
                     break
                 # spawn the vehicle's sensors
-                try:
-                    self.vehicles_sensors.append(self.setup_sensors(vehicle["sensors"], carla_id))
-                except Exception as e:
-                    raise Exception(
-                        "Setting up sensors of already spawned vehicle {} failed with error: {}".format(vehicle["id"], e))
+                self.setup_sensors(vehicle["sensors"], carla_id)
             else:
                 spawn_object_request = get_service_request(SpawnObject)
                 spawn_object_request.type = vehicle["type"]
@@ -183,11 +179,8 @@ class CarlaSpawnObjects(CompatibleNode):
                 player_spawned = False
                 while not player_spawned:
                     spawn_object_request.transform = spawn_point
-
                     response = self.call_service(self.spawn_object_service, spawn_object_request)
                     if response.id != -1:
-                        self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(
-                            spawn_object_request.type, spawn_object_request.id))
                         player_spawned = True
                         self.players.append(response.id)
                         # Set up the sensors
@@ -257,11 +250,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
                 response = self.call_service(self.spawn_object_service, spawn_object_request)
                 if response.id == -1:
-                    self.logwarn("Error while spawning object (type='{}', id='{}').".format(
-                        spawn_object_request.type, spawn_object_request.id))
                     raise RuntimeError(response.error_string)
-                self.loginfo("Object (type='{}', id='{}') spawned successfully.".format(
-                    spawn_object_request.type, spawn_object_request.id))
 
                 if attached_objects:
                     # spawn the attached objects
@@ -330,7 +319,7 @@ class CarlaSpawnObjects(CompatibleNode):
             except ServiceException as e:
                 self.logwarn(str(e))
         self.vehicles_sensors = []
-        
+
         # destroy global sensors
         for actor_id in self.global_sensors:
             destroy_object_request = get_service_request(DestroyObject)
