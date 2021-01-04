@@ -70,7 +70,7 @@ class CarlaSpawnObjects(CompatibleNode):
             "/carla/destroy_object", DestroyObject)
 
     def spawn_object(self, spawn_object_request):
-        response_id= -1
+        response_id = -1
         try:
             response = self.call_service(self.spawn_object_service, spawn_object_request)
             response_id = response.id
@@ -82,7 +82,8 @@ class CarlaSpawnObjects(CompatibleNode):
                     spawn_object_request.type, spawn_object_request.id))
                 raise RuntimeError(response.error_string)
         except ServiceException as e:
-            self.logwarn("Error while calling spawn_object(type='{}', id='{}'): {}".format(spawn_object_request.type, spawn_object_request.id, e))
+            self.logwarn("Error while calling spawn_object(type='{}', id='{}'): {}".format(
+                spawn_object_request.type, spawn_object_request.id, e))
         return response_id
 
     def spawn_objects(self):
@@ -271,7 +272,7 @@ class CarlaSpawnObjects(CompatibleNode):
                         KeyValue(key=str(attribute), value=str(value)))
 
                 response_id = self.spawn_object(spawn_object_request)
-                
+
                 if response_id == -1:
                     raise RuntimeError(response.error_string)
 
@@ -381,14 +382,15 @@ def main(args=None):
         spawn_objects_node = CarlaSpawnObjects()
     except KeyboardInterrupt:
         logerr("Could not initialize CarlaSpawnObjects. Shutting down.")
-        
+
     if spawn_objects_node:
         if ROS_VERSION == 1:
             spawn_objects_node.on_shutdown(spawn_objects_node.destroy)
             try:
                 spawn_objects_node.spawn_objects()
             except (ROSInterruptException, ServiceException, KeyboardInterrupt):
-                spawn_objects_node.logwarn("Spawning process has been interrupted. There might be actors that has not been destroyed properly")
+                spawn_objects_node.logwarn(
+                    "Spawning process has been interrupted. There might be actors that has not been destroyed properly")
             except RuntimeError as e:
                 logfatal("Exception caught: {}".format(e))
             spawn_objects_node.spin()
@@ -403,6 +405,7 @@ def main(args=None):
                 spawn_objects_node.destroy()
 
     ros_shutdown()
+
 
 if __name__ == '__main__':
     main()
