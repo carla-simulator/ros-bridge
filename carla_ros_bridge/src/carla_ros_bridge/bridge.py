@@ -73,6 +73,10 @@ class CarlaRosBridge(CompatibleNode):
 
     CARLA_VERSION = "0.9.10"
 
+    # in synchronous mode, if synchronous_mode_wait_for_vehicle_control_command is True,
+    # wait for this time until a next tick is triggered.
+    VEHICLE_CONTROL_TIMEOUT = 1.
+
     def __init__(self, rospy_init=True, executor=None):
         """
         Constructor
@@ -184,7 +188,7 @@ class CarlaRosBridge(CompatibleNode):
                                                        self.destroy_object)
 
         self.get_blueprints_service = self.new_service(GetBlueprints, "/carla/get_blueprints",
-                                                       self.get_blueprints)
+                                                       self.get_blueprints, callback_group=self.callback_group)
 
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
@@ -342,7 +346,6 @@ class CarlaRosBridge(CompatibleNode):
                         if isinstance(actor, EgoVehicle):
                             self._expected_ego_vehicle_control_command_ids.append(
                                 actor_id)
-
             frame = self.carla_world.tick()
             world_snapshot = self.carla_world.get_snapshot()
 
@@ -358,9 +361,9 @@ class CarlaRosBridge(CompatibleNode):
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # wait for all ego vehicles to send a vehicle control command
                 if self._expected_ego_vehicle_control_command_ids:
-                    if not self._all_vehicle_control_commands_received.wait(1):
-                        self.logwarn("Timeout (1s) while waiting for vehicle control commands. "
-                                     "Missing command from actor ids {}".format(
+                    if not self._all_vehicle_control_commands_received.wait(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT):
+                        self.logwarn("Timeout ({}s) while waiting for vehicle control commands. "
+                                     "Missing command from actor ids {}".format(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT,
                                          self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
@@ -393,17 +396,8 @@ class CarlaRosBridge(CompatibleNode):
         update all actors
         :return:
         """
-        # update world info
         self.world_info.update(frame_id, timestamp)
-
-        # update all carla actors
-        for actor_id in self.actor_factory.actors:
-            try:
-                self.actor_factory.actors[actor_id].update(frame_id, timestamp)
-            except RuntimeError as e:
-                self.logwarn("Update actor {}({}) failed: {}".format(
-                    self.actor_factory.actors[actor_id].__class__.__name__, actor_id, e))
-                continue
+        self.actor_factory.update_actor_states(frame_id, timestamp)
 
     def _ego_vehicle_control_applied_callback(self, ego_vehicle_id):
         if not self.sync_mode or \
@@ -475,9 +469,8 @@ def main(args=None):
         # rospy.init_node('carla_ros_bridge', anonymous=True)
 
     elif ROS_VERSION == 2:
-        executor = rclpy.executors.MultiThreadedExecutor(num_threads=12)
+        executor = rclpy.executors.MultiThreadedExecutor()
         carla_bridge = CarlaRosBridge(executor=executor)
-        # init_node = rclpy.create_node("init_ros_bridge")
         executor.add_node(carla_bridge)
 
     parameters['host'] = carla_bridge.get_param('host', 'localhost')

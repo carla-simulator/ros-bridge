@@ -42,13 +42,15 @@ from ros_compatibility import (
     latch_on,
     ros_ok,
     ros_init,
-    destroy_subscription)
+    destroy_subscription,
+    ros_shutdown,
+    loginfo,
+    logwarn,
+    ROS_VERSION)
 import os
 import datetime
 import math
 import numpy
-
-ROS_VERSION = int(os.environ['ROS_VERSION'])
 
 if ROS_VERSION == 1:
     import rospy
@@ -105,16 +107,17 @@ except ImportError:
 # ==============================================================================
 
 
-class World(CompatibleNode):
+class ManualControl(CompatibleNode):
     """
     Handle the rendering
     """
 
-    def __init__(self, role_name, hud):
-        super(World, self).__init__("World", rospy_init=False)
+    def __init__(self, resolution):
+        super(ManualControl, self).__init__("ManualControl")
         self._surface = None
-        self.hud = hud
-        self.role_name = role_name
+        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.hud = HUD(self.role_name, resolution['width'], resolution['height'], self)
+        self.controller = KeyboardControl(self.role_name, self.hud, self)
 
         if ROS_VERSION == 1:
             self.callback_group = None
@@ -168,37 +171,34 @@ class World(CompatibleNode):
         array = array[:, :, ::-1]
         self._surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
 
-    def render(self, display):
+    def render(self, game_clock, display):
         """
         render the current image
         """
+        
+        do_quit = self.controller.parse_events(game_clock)
+        if do_quit:
+            return
+        self.hud.tick(game_clock)
+
         if self._surface is not None:
             display.blit(self._surface, (0, 0))
         self.hud.render(display)
-
-    def destroy(self):
-        """
-        destroy all objects
-        """
-        destroy_subscription(self.image_subscriber)
-        destroy_subscription(self.collision_subscriber)
-        destroy_subscription(self.lane_invasion_subscriber)
-
 
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
 # ==============================================================================
 
 
-class KeyboardControl(CompatibleNode):
+class KeyboardControl(object):
     """
     Handle input events
     """
 
-    def __init__(self, role_name, hud):
-        super(KeyboardControl, self).__init__("keyboard_control", rospy_init=False)
+    def __init__(self, role_name, hud, node):
         self.role_name = role_name
         self.hud = hud
+        self.node = node
 
         self._autopilot_enabled = False
         self._control = CarlaEgoVehicleControl()
@@ -213,23 +213,23 @@ class KeyboardControl(CompatibleNode):
         fast_latched_qos = QoSProfile(depth=10, durability=latch_on)  # imported from ros_compat.
 
         self.vehicle_control_manual_override_publisher = \
-            self.new_publisher(Bool,
+            self.node.new_publisher(Bool,
                                "/carla/{}/vehicle_control_manual_override".format(self.role_name),
                                qos_profile=fast_latched_qos, callback_group=self.callback_group)
 
         self.vehicle_control_manual_override = False
 
         self.auto_pilot_enable_publisher = \
-            self.new_publisher(Bool,
+            self.node.new_publisher(Bool,
                                "/carla/{}/enable_autopilot".format(self.role_name),
                                qos_profile=fast_qos, callback_group=self.callback_group)
 
         self.vehicle_control_publisher = \
-            self.new_publisher(CarlaEgoVehicleControl,
+            self.node.new_publisher(CarlaEgoVehicleControl,
                                "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
                                qos_profile=fast_qos, callback_group=self.callback_group)
 
-        self.carla_status_subscriber = self.create_subscriber(CarlaStatus, "/carla/status",
+        self.carla_status_subscriber = self.node.create_subscriber(CarlaStatus, "/carla/status",
                                                               self._on_new_carla_frame,
                                                               callback_group=self.callback_group)
 
@@ -237,16 +237,6 @@ class KeyboardControl(CompatibleNode):
 
         self.set_vehicle_control_manual_override(
             self.vehicle_control_manual_override)  # disable manual override
-
-    def __del__(self):
-        if ROS_VERSION == 1:
-            self.auto_pilot_enable_publisher.unregister()
-            self.vehicle_control_publisher.unregister()
-            self.vehicle_control_manual_override_publisher.unregister()
-        elif ROS_VERSION == 2:
-            self.auto_pilot_enable_publisher.destroy()
-            self.vehicle_control_publisher.destroy()
-            self.vehicle_control_manual_override_publisher.destroy()
 
     def set_vehicle_control_manual_override(self, enable):
         """
@@ -311,7 +301,7 @@ class KeyboardControl(CompatibleNode):
             try:
                 self.vehicle_control_publisher.publish(self._control)
             except Exception as error:
-                self.logwarn("Could not send vehicle control: {}".format(error))
+                self.node.logwarn("Could not send vehicle control: {}".format(error))
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         """
@@ -340,15 +330,15 @@ class KeyboardControl(CompatibleNode):
 # ==============================================================================
 
 
-class HUD(CompatibleNode):
+class HUD(object):
     """
     Handle the info display
     """
 
-    def __init__(self, role_name, width, height):
-        super(HUD, self).__init__(role_name, rospy_init=False)
+    def __init__(self, role_name, width, height, node):
         self.role_name = role_name
         self.dim = (width, height)
+        self.node = node
         font = pygame.font.Font(pygame.font.get_default_font(), 20)
         fonts = [x for x in pygame.font.get_fonts() if 'mono' in x]
         default_font = 'ubuntumono'
@@ -365,22 +355,17 @@ class HUD(CompatibleNode):
             self.tf_listener = tf.TransformListener()
             self.callback_group = None
         elif ROS_VERSION == 2:
-            self.tf_listener_node = rclpy.create_node("tf_listener")
             self.tf_buffer = tf2_ros.Buffer()
-            self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, node=self.tf_listener_node)
+            self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, node=self.node)
             self.time = Time()
             self.callback_group = ReentrantCallbackGroup()
 
-        self.vehicle_status_subscriber = self.create_subscriber(
-            CarlaEgoVehicleStatus, "/carla/{}/vehicle_status".format(self.role_name),
-            self.vehicle_status_updated, callback_group=self.callback_group)
-
-        self.vehicle_status_subscriber = self.create_subscriber(
+        self.vehicle_status_subscriber = node.create_subscriber(
             CarlaEgoVehicleStatus, "/carla/{}/vehicle_status".format(self.role_name),
             self.vehicle_status_updated, callback_group=self.callback_group)
 
         self.vehicle_info = CarlaEgoVehicleInfo()
-        self.vehicle_info_subscriber = self.create_subscriber(
+        self.vehicle_info_subscriber = node.create_subscriber(
             CarlaEgoVehicleInfo, "/carla/{}/vehicle_info".format(self.role_name),
             self.vehicle_info_updated, callback_group=self.callback_group)
 
@@ -388,33 +373,22 @@ class HUD(CompatibleNode):
         self.longitude = 0
         self.manual_control = False
 
-        self.gnss_subscriber = self.create_subscriber(
+        self.gnss_subscriber = node.create_subscriber(
             NavSatFix, "/carla/{}/gnss".format(self.role_name), self.gnss_updated,
             callback_group=self.callback_group)
 
-        self.manual_control_subscriber = self.create_subscriber(
+        self.manual_control_subscriber = node.create_subscriber(
             Bool, "/carla/{}/vehicle_control_manual_override".format(self.role_name),
             self.manual_control_override_updated, callback_group=self.callback_group)
 
         self.carla_status = CarlaStatus()
-        self.status_subscriber = self.create_subscriber(CarlaStatus, "/carla/status",
+        self.status_subscriber = node.create_subscriber(CarlaStatus, "/carla/status",
                                                         self.carla_status_updated,
                                                         callback_group=self.callback_group)
         if ROS_VERSION == 2:
-            self.clock_subscriber = self.create_subscriber(Time, "/clock",
+            self.clock_subscriber = node.create_subscriber(Time, "/clock",
                                                            self.clock_status_updated,
                                                            callback_group=self.callback_group)
-
-    def __del__(self):
-        if ROS_VERSION == 1:
-            self.gnss_subscriber.unregister()
-            self.vehicle_status_subscriber.unregister()
-            self.vehicle_info_subscriber.unregister()
-        elif ROS_VERSION == 2:
-            self.gnss_subscriber.destroy()
-            self.vehicle_status_subscriber.destroy()
-            self.vehicle_info_subscriber.destroy()
-            self.clock_subscriber.destroy()
 
     def tick(self, clock):
         """
@@ -502,7 +476,7 @@ class HUD(CompatibleNode):
             time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
         elif ROS_VERSION == 2:
             time = str(datetime.timedelta(seconds=float(
-                self.get_clock().now().nanoseconds)/10**9))[:10]
+                self.node.get_clock().now().nanoseconds)/10**9))[:10]
 
         if self.carla_status.fixed_delta_seconds:
             fps = 1 / self.carla_status.fixed_delta_seconds
@@ -681,24 +655,11 @@ class HelpText(object):
 # -- main() --------------------------------------------------------------------
 # ==============================================================================
 
-
-def run(executer):
-    executer.spin()
-
-
 def main(args=None):
     """
     main function
     """
     ros_init(args)
-    # TODO
-    if ROS_VERSION == 1:
-        rospy.init_node('carla_manual_control', anonymous=True)
-        role_name = rospy.get_param("~role_name", "ego_vehicle")
-    elif ROS_VERSION == 2:
-        node = rclpy.create_node('carla_manual_control')
-        role_name = rclpy.Parameter("~role_name", value="ego_vehicle").value
-        thread = Thread()
 
     # resolution should be similar to spawned camera with role-name 'view'
     resolution = {"width": 800, "height": 600}
@@ -706,38 +667,31 @@ def main(args=None):
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption("CARLA ROS manual control")
-    world = None
+
     try:
         display = pygame.display.set_mode((resolution['width'], resolution['height']),
                                           pygame.HWSURFACE | pygame.DOUBLEBUF)
 
-        hud = HUD(role_name, resolution['width'], resolution['height'])
-        world = World(role_name, hud)
-        controller = KeyboardControl(role_name, hud)
+        manual_control_node = ManualControl(resolution)
         clock = pygame.time.Clock()
 
         if ROS_VERSION == 2:
-            executer = rclpy.executors.MultiThreadedExecutor(num_threads=12)
-            executer.add_node(hud.tf_listener_node)
-            executer.add_node(hud)
-            executer.add_node(world)
-            executer.add_node(controller)
-            thread = Thread(target=run, args=(executer,))
-            thread.start()
+            executer = rclpy.executors.MultiThreadedExecutor()
+            executer.add_node(manual_control_node)
+            spin_thread = Thread(target=executer.spin)
+            spin_thread.start()
 
         while ros_ok():
             clock.tick_busy_loop(60)
-            if controller.parse_events(clock):
+            if manual_control_node.render(clock, display):
                 return
-            hud.tick(clock)
-            world.render(display)
             pygame.display.flip()
-
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
-        if world is not None:
-            world.destroy()
-            if ROS_VERSION == 2:
-                thread.join()
+        ros_shutdown()
+        if ROS_VERSION == 2:
+            spin_thread.join()
         pygame.quit()
 
 

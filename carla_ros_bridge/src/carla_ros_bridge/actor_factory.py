@@ -34,6 +34,7 @@ from carla_ros_bridge.marker_sensor import MarkerSensor
 from carla_ros_bridge.actor_list_sensor import ActorListSensor
 from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
 from carla_ros_bridge.actor_control import ActorControl
+from carla_ros_bridge.sensor import Sensor
 
 
 class ActorFactory(object):
@@ -46,6 +47,7 @@ class ActorFactory(object):
         self.sync_mode = sync_mode
 
         self.actors = {}
+        self._newly_spawned_actors = [] # actors that were spawned but are not yet available via world.get_actors()
 
         self.lock = Lock()
         self.spawn_lock = Lock()
@@ -53,11 +55,11 @@ class ActorFactory(object):
         # id generator for pseudo sensors
         self.id_gen = itertools.count(10000)
 
+        self.thread = Thread(target=self._update_thread)
+
     def start(self):
         # create initially existing actors
         self.update()
-
-        self.thread = Thread(target=self._update_thread)
         self.thread.start()
 
     def _update_thread(self):
@@ -78,14 +80,33 @@ class ActorFactory(object):
         previous_actors = set([x.uid for x in self.actors.values() if isinstance(x, Actor)])
         current_actors = set([x.id for x in self.world.get_actors()])
 
+        # create bridge objects for actors that were created from outside the bridge
         new_actors = current_actors - previous_actors
         for actor_id in new_actors:
             carla_actor = self.world.get_actor(actor_id)
             self._create_carla_actor(carla_actor)
 
+        # remove bridge objects for actors that were deleted from outside the bridge
         deleted_actors = previous_actors - current_actors
+        # world.get_actors() does not report the newly created actors until the next tick,
+        # therefore use newly_spawned_actors list to remove all actors from list, that were just created
+        if deleted_actors:
+            deleted_actors = [x for x in deleted_actors if x not in self._newly_spawned_actors]
         for actor_id in deleted_actors:
             self.destroy(actor_id)
+        self._newly_spawned_actors.clear()
+
+    def update_actor_states(self, frame_id, timestamp):
+        """
+        update the state of all known actors
+        """
+        for actor_id in self.actors:
+            try:
+                self.actors[actor_id].update(frame_id, timestamp)
+            except RuntimeError as e:
+                self.node.logwarn("Update actor {}({}) failed: {}".format(
+                    self.actors[actor_id].__class__.__name__, actor_id, e))
+                continue
 
     def clear(self):
         ids = self.actors.keys()
@@ -111,6 +132,8 @@ class ActorFactory(object):
 
     def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None):
         with self.lock:
+            if carla_actor:
+                self._newly_spawned_actors.append(carla_actor.id)
             # check that the actor is not already created.
             if carla_actor is not None and carla_actor.id in self.actors:
                 return None
