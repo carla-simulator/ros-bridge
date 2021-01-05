@@ -315,7 +315,7 @@ elif ROS_VERSION == 2:
             return wfm.msg
 
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
-            return self.create_service(srv_type, srv_name, callback)
+            return self.create_service(srv_type, srv_name, callback, callback_group=callback_group)
 
         def create_service_client(self, service_name, service, callback_group=None):
             client = self.create_client(service, service_name, callback_group=callback_group)

@@ -100,8 +100,11 @@ class Sensor(Actor):
         elif ROS_VERSION == 2:
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
-    def publish_tf(self, pose=None):
+    def publish_tf(self, pose, timestamp):
         if self.synchronous_mode:
+            if not self.relative_spawn_pose:
+                self.node.loginfo("SKIP {}".format(self.get_prefix()))
+                return
             pose = self.relative_spawn_pose
             child_frame_id = self.get_prefix()
             if self.parent is not None:
@@ -112,23 +115,23 @@ class Sensor(Actor):
         else:
             child_frame_id = self.get_prefix()
             frame_id = "map"
+        #self.node.logwarn("TF {} {} pose {}".format(self.get_prefix(), timestamp, pose))
 
-        if pose is not None:
-            transform = tf2_ros.TransformStamped()
-            transform.header.stamp = ros_timestamp(sec=self.node.get_time(), from_sec=True)
-            transform.header.frame_id = frame_id
-            transform.child_frame_id = child_frame_id
+        transform = tf2_ros.TransformStamped()
+        transform.header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
+        transform.header.frame_id = frame_id
+        transform.child_frame_id = child_frame_id
 
-            transform.transform.translation.x = pose.position.x
-            transform.transform.translation.y = pose.position.y
-            transform.transform.translation.z = pose.position.z
+        transform.transform.translation.x = pose.position.x
+        transform.transform.translation.y = pose.position.y
+        transform.transform.translation.z = pose.position.z
 
-            transform.transform.rotation.x = pose.orientation.x
-            transform.transform.rotation.y = pose.orientation.y
-            transform.transform.rotation.z = pose.orientation.z
-            transform.transform.rotation.w = pose.orientation.w
+        transform.transform.rotation.x = pose.orientation.x
+        transform.transform.rotation.y = pose.orientation.y
+        transform.transform.rotation.z = pose.orientation.z
+        transform.transform.rotation.w = pose.orientation.w
 
-            self._tf_broadcaster.sendTransform(transform)
+        self._tf_broadcaster.sendTransform(transform)
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -161,7 +164,7 @@ class Sensor(Actor):
                         float(self.sensor_tick_time)
                 self.queue.put(carla_sensor_data)
             else:
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), carla_sensor_data.timestamp)
                 self.sensor_data_updated(carla_sensor_data)
 
     @abstractmethod
@@ -187,7 +190,7 @@ class Sensor(Actor):
                                           carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
+                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), frame)
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -204,7 +207,7 @@ class Sensor(Actor):
                         self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
                                                                        self.get_id(), frame))
                         self.publish_tf(trans.carla_transform_to_ros_pose(
-                            carla_sensor_data.transform))
+                            carla_sensor_data.transform), timestamp)
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:

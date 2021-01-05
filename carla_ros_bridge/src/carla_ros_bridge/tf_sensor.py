@@ -62,6 +62,6 @@ class TFSensor(PseudoActor):
         """
         self.parent.get_prefix()
         self._tf_broadcaster.sendTransform(TransformStamped(
-            header=self.get_msg_header("map"),
+            header=self.get_msg_header("map", timestamp=timestamp),
             child_frame_id=self.parent.get_prefix(),
             transform=self.parent.get_current_ros_transform()))
