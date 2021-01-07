@@ -47,6 +47,8 @@ class Lidar(Sensor):
                                                "/point_cloud",
                                                PointCloud2,
                                                queue_size=10)
+
+        self.channels = int(self.carla_actor.attributes.get('channels'))
         self.listen()
 
     # pylint: disable=arguments-differ
@@ -71,29 +73,18 @@ class Lidar(Sensor):
         lidar_data = numpy.reshape(
             lidar_data, (int(lidar_data.shape[0] / 4), 4))
 
-        channels = float(self.carla_actor.attributes.get('channels'))
-        lower_fov = float(self.carla_actor.attributes.get('lower_fov'))
-        upper_fov = float(self.carla_actor.attributes.get('upper_fov'))
+        ring = None
 
-        norm = numpy.linalg.norm(lidar_data[:, :3], 2, axis=1)
-        pitch = numpy.arcsin(lidar_data[:, 2] / norm)
+        for i in range(self.channels):
+            current_ring_points_count = carla_lidar_measurement.get_point_count(i)
+            ring = numpy.vstack((ring, numpy.full((current_ring_points_count, 1), i)))
 
-        fov_down = lower_fov / 180.0 * numpy.pi
-        fov = (abs(lower_fov) + abs(upper_fov)) / 180.0 * numpy.pi
-
-        ring = (pitch + abs(fov_down)) / fov
-        ring *= channels
-        ring = numpy.floor(ring)
-        ring = numpy.minimum(channels - 1, ring)
-        ring = numpy.maximum(0, ring).astype(numpy.uint16)
-        ring = ring.reshape(-1, 1)
+        ring = numpy.delete(ring, 0, axis=0)
+        lidar_data = numpy.hstack((lidar_data, ring))
 
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
-
-        lidar_data = lidar_data.tolist()
-        [lidar_data[i].insert(4, *ring[i]) for i in range(len(lidar_data))]
 
         point_cloud_msg = create_cloud(header, fields, lidar_data)
         self.lidar_publisher.publish(point_cloud_msg)
