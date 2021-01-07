@@ -74,7 +74,7 @@ class ObjectSensor(PseudoActor):
         ros_objects = ObjectArray(header=self.get_msg_header("map"))
         for actor_id in self.actor_list.keys():
             # currently only Vehicles and Walkers are added to the object array
-            if self.parent is None or self.parent.uid == actor_id:
+            if self.parent is None or self.parent.uid != actor_id:
                 actor = self.actor_list[actor_id]
                 if isinstance(actor, Vehicle):
                     ros_objects.objects.append(actor.get_object_info())
