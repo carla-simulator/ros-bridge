@@ -50,8 +50,9 @@ class ObjectSensor(PseudoActor):
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(ObjectSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.object_publisher)
 
     @staticmethod
     def get_blueprint_name():

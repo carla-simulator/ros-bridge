@@ -200,14 +200,12 @@ class EgoVehicle(Vehicle):
         :return:
         """
         self.node.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
-        destroy_subscription(self.control_subscriber)
-        self.control_subscriber = None
-        destroy_subscription(self.enable_autopilot_subscriber)
-        self.enable_autopilot_subscriber = None
-        destroy_subscription(self.control_override_subscriber)
-        self.control_override_subscriber = None
-        destroy_subscription(self.manual_control_subscriber)
-        self.manual_control_subscriber = None
+        self.node.destroy_subscription(self.control_subscriber)
+        self.node.destroy_subscription(self.enable_autopilot_subscriber)
+        self.node.destroy_subscription(self.control_override_subscriber)
+        self.node.destroy_subscription(self.manual_control_subscriber)
+        self.node.destroy_publisher(self.vehicle_status_publisher)
+        self.node.destroy_publisher(self.vehicle_info_publisher)
         Vehicle.destroy(self)
 
     def control_command_override(self, enable):

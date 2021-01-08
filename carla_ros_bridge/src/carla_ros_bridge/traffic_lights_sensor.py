@@ -61,8 +61,10 @@ class TrafficLightsSensor(PseudoActor):
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.traffic_lights_info_publisher)
+        self.node.destroy_publisher(self.traffic_lights_status_publisher)
 
     @staticmethod
     def get_blueprint_name():

@@ -84,6 +84,15 @@ if ROS_VERSION == 1:
         def destroy(self):
             pass
 
+        def destroy_service(self, service):
+            service.shutdown()
+
+        def destroy_subscription(self, subscription):
+            subscription.unregister()
+
+        def destroy_publisher(self, publisher):
+            publisher.unregister()
+
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if name.startswith('/'):
                 raise RuntimeError("Only private parameters are supported.")
@@ -188,9 +197,6 @@ elif ROS_VERSION == 2:
 
     def ros_shutdown():
         rclpy.shutdown()
-
-    def destroy_subscription(subscription):
-        subscription.destroy()
 
     def logdebug(log):
         rclpy.logging.get_logger("default").debug(log)

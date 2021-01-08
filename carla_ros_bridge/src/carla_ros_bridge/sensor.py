@@ -14,6 +14,7 @@ import ctypes
 import os
 import struct
 import sys
+from threading import Lock
 try:
     import queue
 except ImportError:
@@ -89,6 +90,7 @@ class Sensor(Actor):
         self.next_data_expected_time = None
         self.sensor_tick_time = None
         self.is_event_sensor = is_event_sensor
+        self._callback_active = Lock()
         try:
             self.sensor_tick_time = float(carla_actor.attributes["sensor_tick"])
             node.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
@@ -103,7 +105,7 @@ class Sensor(Actor):
     def publish_tf(self, pose, timestamp):
         if self.synchronous_mode:
             if not self.relative_spawn_pose:
-                self.node.loginfo("SKIP {}".format(self.get_prefix()))
+                self.node.logwarn("{}: No relative spawn pose defined".format(self.get_prefix()))
                 return
             pose = self.relative_spawn_pose
             child_frame_id = self.get_prefix()
@@ -115,7 +117,6 @@ class Sensor(Actor):
         else:
             child_frame_id = self.get_prefix()
             frame_id = "map"
-        #self.node.logwarn("TF {} {} pose {}".format(self.get_prefix(), timestamp, pose))
 
         transform = tf2_ros.TransformStamped()
         transform.header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
@@ -145,7 +146,7 @@ class Sensor(Actor):
 
         :return:
         """
-        self.node.logdebug("Destroy Sensor(id={})".format(self.get_id()))
+        self._callback_active.acquire()
         if self.carla_actor.is_listening:
             self.carla_actor.stop()
         super(Sensor, self).destroy()
@@ -157,15 +158,16 @@ class Sensor(Actor):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        if ros_ok():
-            if self.synchronous_mode:
-                if self.sensor_tick_time:
-                    self.next_data_expected_time = carla_sensor_data.timestamp + \
-                        float(self.sensor_tick_time)
-                self.queue.put(carla_sensor_data)
-            else:
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), carla_sensor_data.timestamp)
-                self.sensor_data_updated(carla_sensor_data)
+        self._callback_active.acquire()        
+        if self.synchronous_mode:
+            if self.sensor_tick_time:
+                self.next_data_expected_time = carla_sensor_data.timestamp + \
+                    float(self.sensor_tick_time)
+            self.queue.put(carla_sensor_data)
+        else:
+            self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), carla_sensor_data.timestamp)
+            self.sensor_data_updated(carla_sensor_data)
+        self._callback_active.release()
 
     @abstractmethod
     def sensor_data_updated(self, carla_sensor_data):

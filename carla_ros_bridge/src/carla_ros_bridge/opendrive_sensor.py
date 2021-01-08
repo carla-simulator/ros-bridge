@@ -46,6 +46,10 @@ class OpenDriveSensor(PseudoActor):
         self.map_publisher = node.new_publisher(String, self.get_topic_prefix(),
                                                 qos_profile=QoSProfile(depth=10, durability=latch_on))
 
+    def destroy(self):
+        super(OpenDriveSensor, self).destroy()
+        self.node.destroy_publisher(self.map_publisher)
+
     @staticmethod
     def get_blueprint_name():
         """

@@ -71,6 +71,11 @@ class Camera(Sensor):
         self.camera_image_publisher = node.new_publisher(Image, self.get_topic_prefix() +
                                                          '/' + 'image')
 
+    def destroy(self):
+        super(Camera, self).destroy()
+        self.node.destroy_publisher(self.camera_info_publisher)
+        self.node.destroy_publisher(self.camera_image_publisher)
+
     def _build_camera_info(self):
         """
         Private function to compute camera info
@@ -111,7 +116,6 @@ class Camera(Sensor):
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
-
         self.camera_info_publisher.publish(cam_info)
         self.camera_image_publisher.publish(img_msg)
 
@@ -372,6 +376,10 @@ class DVSCamera(Camera):
                                                        '/events')
 
         self.listen()
+
+    def destroy(self):
+        super(DVSCamera, self).destroy()
+        self.node.destroy_publisher(self.dvs_camera_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_dvs_event_array):
