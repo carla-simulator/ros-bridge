@@ -31,7 +31,6 @@ import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
 import pkg_resources
-import random
 from rosgraph_msgs.msg import Clock
 
 import carla
@@ -46,11 +45,6 @@ from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
-import carla_common.transforms as trans
-
-# to generate a random spawning position or vehicles
-secure_random = random.SystemRandom()
-
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -106,6 +100,7 @@ class CarlaRosBridge(CompatibleNode):
 
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
+        self.synchronous_update_finished_event = Event()
 
         self.carla_settings = carla_world.get_settings()
         if not self.parameters["passive"]:
@@ -144,10 +139,7 @@ class CarlaRosBridge(CompatibleNode):
         self.debug_helper = DebugHelper(carla_world.debug, self)
 
         # Communication topics
-        if ROS_VERSION == 1:
-            self.clock_publisher = self.new_publisher(Clock, 'clock')
-        elif ROS_VERSION == 2:
-            self.clock_publisher = self.new_publisher(Clock, 'clock')
+        self.clock_publisher = self.new_publisher(Clock, 'clock')
 
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
@@ -194,81 +186,25 @@ class CarlaRosBridge(CompatibleNode):
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
                                    self.on_weather_changed, callback_group=self.callback_group)
 
-    def _spawn_actor(self, req):
-        if "*" in req.type:
-            blueprint = secure_random.choice(
-                self.carla_world.get_blueprint_library().filter(req.type))
-        else:
-            blueprint = self.carla_world.get_blueprint_library().find(req.type)
-        blueprint.set_attribute('role_name', req.id)
-        for attribute in req.attributes:
-            blueprint.set_attribute(attribute.key, attribute.value)
-        if req.random_pose is False:
-            transform = trans.ros_pose_to_carla_transform(req.transform)
-        else:
-            # get a random pose
-            spawn_points = self.carla_world.get_map().get_spawn_points()
-            transform = secure_random.choice(
-                spawn_points) if spawn_points else carla.Transform()
-
-        attach_to = None
-        if req.attach_to != 0:
-            attach_to = self.carla_world.get_actor(req.attach_to)
-            if attach_to is None:
-                raise IndexError("Parent actor {} not found".format(req.attach_to))
-
-        carla_actor = self.carla_world.spawn_actor(blueprint, transform, attach_to)
-        actor = self.actor_factory.create(
-            req.type, req.id, req.attach_to, req.transform, carla_actor)
-        return actor.uid
-
-    def _spawn_pseudo_actor(self, req):
-        actor = self.actor_factory.create(req.type, req.id, req.attach_to, req.transform)
-        return actor.uid
-
     def spawn_object(self, req, response=None):
         response = get_service_response(SpawnObject)
-        with self.actor_factory.spawn_lock:
-            try:
-                if "pseudo" in req.type:
-                    id_ = self._spawn_pseudo_actor(req)
-                else:
-                    id_ = self._spawn_actor(req)
-                self._registered_actors.append(id_)
-                response.id = id_
-            except Exception as e:
-                self.logwarn("Error spawning object '{}': {}".format(req.type, e))
-                response.id = -1
-                response.error_string = str(e)
+        try:
+            id_ = self.actor_factory.spawn_actor(req)
+            self._registered_actors.append(id_)
+            response.id = id_
+        except Exception as e:
+            self.logwarn("Error spawning object '{}': {}".format(req.type, e))
+            response.id = -1
+            response.error_string = str(e)
         return response
-
-    def _destroy_actor(self, uid):
-        if uid not in self.actor_factory.actors:
-            return False
-
-        # remove actors that have the actor to be removed as parent.
-        for actor in list(self.actor_factory.actors.values()):
-            if actor.parent is not None and actor.parent.uid == uid:
-                if actor.uid in self._registered_actors:
-                    success = self._destroy_actor(actor.uid)
-                    if not success:
-                        return False
-
-        actor = self.actor_factory.actors[uid]
-        if isinstance(actor, Actor):
-            actor.carla_actor.destroy()
-
-        self.actor_factory.destroy(uid)
-        if uid in self._registered_actors:
-            self._registered_actors.remove(uid)
-
-        return True
 
     def destroy_object(self, req, response=None):
         response = get_service_response(DestroyObject)
-        with self.actor_factory.spawn_lock:
-            response.success = self._destroy_actor(req.id)
-            return response
+        destroyed_actors = self.actor_factory.destroy_actor(req.id)
+        response.success = bool(destroyed_actors)
+        for actor in destroyed_actors:
+            if actor in self._registered_actors: self._registered_actors.remove(actor)
+        return response
 
     def get_blueprints(self, req):
         response = get_service_response(GetBlueprints)
@@ -336,6 +272,7 @@ class CarlaRosBridge(CompatibleNode):
         execution loop for synchronous mode
         """
         while not self.shutdown.is_set():
+            self.synchronous_update_finished_event.clear()
             self.process_run_state()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
@@ -353,10 +290,9 @@ class CarlaRosBridge(CompatibleNode):
             self.update_clock(world_snapshot.timestamp)
             self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(
                 frame))
-            with self.actor_factory.lock:
-                self._update(frame, world_snapshot.timestamp.elapsed_seconds)
+            self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             self.logdebug("Waiting for sensor data finished.")
-            self.actor_factory.update()
+            self.actor_factory.update_available_objects()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # wait for all ego vehicles to send a vehicle control command
@@ -366,6 +302,7 @@ class CarlaRosBridge(CompatibleNode):
                                      "Missing command from actor ids {}".format(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT,
                                          self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
+            self.synchronous_update_finished_event.set()
 
     def _carla_time_tick(self, carla_snapshot):
         """
@@ -382,14 +319,12 @@ class CarlaRosBridge(CompatibleNode):
         :return:
         """
         if not self.shutdown.is_set():
-            if self.actor_factory.lock.acquire(False):
-                if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
-                    self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
-                    self.update_clock(carla_snapshot.timestamp)
-                    self.status_publisher.set_frame(carla_snapshot.frame)
-                    self._update(carla_snapshot.frame,
-                                 carla_snapshot.timestamp.elapsed_seconds)
-                self.actor_factory.lock.release()
+            if self.timestamp_last_run < carla_snapshot.timestamp.elapsed_seconds:
+                self.timestamp_last_run = carla_snapshot.timestamp.elapsed_seconds
+                self.update_clock(carla_snapshot.timestamp)
+                self.status_publisher.set_frame(carla_snapshot.frame)
+                self._update(carla_snapshot.frame,
+                                carla_snapshot.timestamp.elapsed_seconds)
 
     def _update(self, frame_id, timestamp):
         """
@@ -422,10 +357,7 @@ class CarlaRosBridge(CompatibleNode):
         :return:
         """
         self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
-        if ROS_VERSION == 1:
-            self.clock_publisher.publish(Clock(self.ros_timestamp))
-        elif ROS_VERSION == 2:
-            self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
+        self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
 
     def destroy(self):
         """
@@ -435,21 +367,25 @@ class CarlaRosBridge(CompatibleNode):
         """
         # TODO fix if carla is not running
         self.loginfo("Shutting down...")
-        self.debug_helper.destroy()
         self.shutdown.set()
-        destroy_subscription(self.carla_weather_subscriber)
-        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
         if not self.sync_mode:
             if self.on_tick_id:
                 self.carla_world.remove_on_tick(self.on_tick_id)
             self.actor_factory.thread.join()
+        else:
+            self.synchronous_update_finished_event.wait()
+        self.loginfo("Object update finished.")
+        self.debug_helper.destroy()
+        self.status_publisher.destroy()
+        self.destroy_service(self.spawn_object_service)
+        self.destroy_service(self.destroy_object_service)
+        self.destroy_subscription(self.carla_weather_subscriber)
+        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
 
-        with self.actor_factory.spawn_lock:
-            # remove actors in reverse order to destroy parent actors first.
-            for uid in self._registered_actors[::-1]:
-                self._destroy_actor(uid)
+        for uid in self._registered_actors:
+            self.actor_factory.destroy_actor(uid)
+        self.actor_factory.update_available_objects()
         self.actor_factory.clear()
-
         super(CarlaRosBridge, self).destroy()
 
 

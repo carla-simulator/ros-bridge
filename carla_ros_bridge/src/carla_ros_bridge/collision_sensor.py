@@ -52,6 +52,10 @@ class CollisionSensor(Sensor):
                                                       self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(CollisionSensor, self).destroy()
+        self.node.destroy_publisher(self.collision_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, collision_event):
         """

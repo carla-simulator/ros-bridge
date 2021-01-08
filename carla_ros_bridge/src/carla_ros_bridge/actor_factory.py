@@ -9,7 +9,13 @@
 import time
 from threading import Thread, Lock
 import itertools
+from enum import Enum
 
+try:
+   import queue
+except ImportError:
+   import Queue as queue
+   
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
@@ -35,19 +41,38 @@ from carla_ros_bridge.actor_list_sensor import ActorListSensor
 from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
 from carla_ros_bridge.actor_control import ActorControl
 from carla_ros_bridge.sensor import Sensor
+import carla_common.transforms as trans
+import carla
+import numpy as np
+from geometry_msgs.msg import Pose, Quaternion, Point
+
+# to generate a random spawning position or vehicles
+import random
+secure_random = random.SystemRandom()
 
 
 class ActorFactory(object):
 
     TIME_BETWEEN_UPDATES = 0.1
 
+    class TaskType(Enum):
+        SPAWN_PSEUDO_ACTOR = 0
+        DESTROY_ACTOR = 1
+        SYNC = 2
+
     def __init__(self, node, world, sync_mode=False):
         self.node = node
         self.world = world
+        self.blueprint_lib = self.world.get_blueprint_library()
+        self.spawn_points = self.world.get_map().get_spawn_points()
         self.sync_mode = sync_mode
 
+        self._previous_actor_ids = []
         self.actors = {}
-        self._newly_spawned_actors = [] # actors that were spawned but are not yet available via world.get_actors()
+
+        self._task_queue = queue.Queue()
+        self._last_task = None
+        self._known_actor_ids = [] # used to immediately reply to spawn_actor/destroy_actor calls
 
         self.lock = Lock()
         self.spawn_lock = Lock()
@@ -59,7 +84,7 @@ class ActorFactory(object):
 
     def start(self):
         # create initially existing actors
-        self.update()
+        self.update_available_objects()
         self.thread.start()
 
     def _update_thread(self):
@@ -68,58 +93,156 @@ class ActorFactory(object):
         """
         while not self.node.shutdown.is_set():
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
-            with self.spawn_lock:
-                self.world.wait_for_tick()
-                self.update()
+            self.world.wait_for_tick()
+            self.update_available_objects()
 
-    def update(self):
+    def add_task(self, task):
+        if self._last_task != ActorFactory.TaskType.SYNC or task[0] != ActorFactory.TaskType.SYNC:
+            self._task_queue.put(task)
+            self._last_task = task[0]
+
+    def update_available_objects(self):
         """
         update the available actors
         """
         # get only carla actors
-        previous_actors = set([x.uid for x in self.actors.values() if isinstance(x, Actor)])
-        current_actors = set([x.id for x in self.world.get_actors()])
+        previous_actors = self._previous_actor_ids
+        current_actors = [x.id for x in self.world.get_actors()]
+        self._previous_actor_ids = current_actors
 
-        # create bridge objects for actors that were created from outside the bridge
-        new_actors = current_actors - previous_actors
+        new_actors = [x for x in current_actors if x not in previous_actors]
+        deleted_actors = [x for x in previous_actors if x not in current_actors]
+
+        # Actual creation/removal of objects
+        self.lock.acquire()
         for actor_id in new_actors:
             carla_actor = self.world.get_actor(actor_id)
-            self._create_carla_actor(carla_actor)
+            self._create_object_from_actor(carla_actor)
 
-        # remove bridge objects for actors that were deleted from outside the bridge
-        deleted_actors = previous_actors - current_actors
-        # world.get_actors() does not report the newly created actors until the next tick,
-        # therefore use newly_spawned_actors list to remove all actors from list, that were just created
-        if deleted_actors:
-            deleted_actors = [x for x in deleted_actors if x not in self._newly_spawned_actors]
         for actor_id in deleted_actors:
-            self.destroy(actor_id)
-        self._newly_spawned_actors.clear()
+            self._destroy_object(actor_id, delete_actor=False)
+
+        # update objects for pseudo actors here as they might have an carla actor as parent ######
+        with self.spawn_lock:
+            while not self._task_queue.empty():
+                task = self._task_queue.get()
+                if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR:
+                    pseudo_object = task[1]
+                    self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id, pseudo_object[1].attach_to, pseudo_object[1].transform)
+                elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
+                    actor_id = task[1]
+                    self._destroy_object(actor_id, delete_actor=True)
+                elif task[0] == ActorFactory.TaskType.SYNC:
+                    break
+        self.lock.release()
+
 
     def update_actor_states(self, frame_id, timestamp):
         """
         update the state of all known actors
         """
-        for actor_id in self.actors:
-            try:
-                self.actors[actor_id].update(frame_id, timestamp)
-            except RuntimeError as e:
-                self.node.logwarn("Update actor {}({}) failed: {}".format(
-                    self.actors[actor_id].__class__.__name__, actor_id, e))
-                continue
+        with self.lock:
+            for actor_id in self.actors:
+                try:
+                    self.actors[actor_id].update(frame_id, timestamp)
+                except RuntimeError as e:
+                    self.node.logwarn("Update actor {}({}) failed: {}".format(
+                        self.actors[actor_id].__class__.__name__, actor_id, e))
+                    continue
 
     def clear(self):
-        ids = self.actors.keys()
-        for id_ in list(ids):
-            self.destroy(id_)
+        for _, actor in self.actors.items():
+            actor.destroy() 
+        self.actors.clear()
 
-    def _create_carla_actor(self, carla_actor):
+    def spawn_actor(self, req):
+        """
+        spawns an object
+
+        No object instances are created here. Instead carla-actors are created, 
+        and pseudo objects are appended to a list to get created later.
+        """
+        with self.spawn_lock:
+            if "pseudo" in req.type:
+                #only allow spawning pseudo objects if parent actor already exists in carla
+                if req.attach_to != 0:
+                    carla_actor = self.world.get_actor(req.attach_to)
+                    if carla_actor is None:
+                        raise IndexError("Parent actor {} not found".format(req.attach_to))
+                id_ = next(self.id_gen)
+                self.add_task((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
+            else:
+                id_ = self._spawn_carla_actor(req)
+                self.add_task((ActorFactory.TaskType.SYNC, None))
+            self._known_actor_ids.append(id_)
+        return id_
+
+    def destroy_actor(self, uid):
+        with self.spawn_lock:
+            objects_to_destroy = set(self._destroy_actor(uid))
+            for obj in objects_to_destroy:
+                self.add_task((ActorFactory.TaskType.DESTROY_ACTOR, obj))
+        return objects_to_destroy
+
+    def _destroy_actor(self, uid):
+        objects_to_destroy = []
+        if uid in self._known_actor_ids:
+            objects_to_destroy.append(uid)
+            self._known_actor_ids.remove(uid)
+        
+        # remove actors that have the actor to be removed as parent.
+        for actor in list(self.actors.values()):
+            if actor.parent is not None and actor.parent.uid == uid:
+                objects_to_destroy.extend(self._destroy_actor(actor.uid))
+
+        return objects_to_destroy
+
+    def _spawn_carla_actor(self, req):
+        """
+        spawns an actor in carla
+        """
+        if "*" in req.type:
+            blueprint = secure_random.choice(
+                self.blueprint_lib.filter(req.type))
+        else:
+            blueprint = self.blueprint_lib.find(req.type)
+        blueprint.set_attribute('role_name', req.id)
+        for attribute in req.attributes:
+            blueprint.set_attribute(attribute.key, attribute.value)
+        if req.random_pose is False:
+            transform = trans.ros_pose_to_carla_transform(req.transform)
+        else:
+            # get a random pose
+            transform = secure_random.choice(
+                self.spawn_points) if self.spawn_points else carla.Transform()
+
+        attach_to = None
+        if req.attach_to != 0:
+            attach_to = self.world.get_actor(req.attach_to)
+            if attach_to is None:
+                raise IndexError("Parent actor {} not found".format(req.attach_to))
+
+        carla_actor = self.world.spawn_actor(blueprint, transform, attach_to)
+        return carla_actor.id
+
+
+    def _create_object_from_actor(self, carla_actor):
+        """
+        create a object for a given carla actor
+        Creates also the object for its parent, if not yet existing
+        """
         parent = None
+        relative_transform = None
         if carla_actor.parent:
             if carla_actor.parent.id in self.actors:
                 parent = self.actors[carla_actor.parent.id]
             else:
-                parent = self._create_carla_actor(carla_actor.parent)
+                parent = self._create_object_from_actor(carla_actor.parent)
+            # calculate relative transform
+            actor_transform_matrix = trans.ros_pose_to_transform_matrix(trans.carla_transform_to_ros_pose(carla_actor.get_transform()))
+            parent_transform_matrix = trans.ros_pose_to_transform_matrix(trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
+            relative_transform_matrix = np.matrix(parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
+            relative_transform = trans.transform_matrix_to_ros_pose(relative_transform_matrix)
 
         parent_id = 0
         if parent is not None:
@@ -128,45 +251,22 @@ class ActorFactory(object):
         name = carla_actor.attributes.get("role_name", "")
         if not name:
             name = str(carla_actor.id)
-        return self.create(carla_actor.type_id, name, parent_id, None, carla_actor)
+        obj = self._create_object(carla_actor.id, carla_actor.type_id, name, parent_id, relative_transform, carla_actor)
+        return obj
 
-    def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None):
-        with self.lock:
-            if carla_actor:
-                self._newly_spawned_actors.append(carla_actor.id)
-            # check that the actor is not already created.
-            if carla_actor is not None and carla_actor.id in self.actors:
-                return None
 
-            if attach_to != 0:
-                if attach_to not in self.actors:
-                    raise IndexError("Parent object {} not found".format(attach_to))
-                parent = self.actors[attach_to]
-            else:
-                parent = None
-
-            if carla_actor is not None:
-                uid = carla_actor.id
-            else:
-                uid = next(self.id_gen)
-
-            actor = self._create_object(uid, type_id, name, parent, spawn_pose, carla_actor)
-            self.actors[actor.uid] = actor
-
-            self.node.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
-
-            return actor
-
-    def destroy(self, actor_id):
-        with self.lock:
-            # check that the actor is not already removed.
-            if actor_id not in self.actors:
-                return
-
-            actor = self.actors.pop(actor_id)
-            actor.destroy()
-
-            self.node.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))
+    def _destroy_object(self, actor_id, delete_actor):
+        if actor_id not in self.actors:
+            return
+        actor = self.actors[actor_id]
+        del self.actors[actor_id]
+        carla_actor = None
+        if isinstance(actor, Actor):
+            carla_actor = actor.carla_actor
+        actor.destroy()
+        if carla_actor and delete_actor:
+            carla_actor.destroy()
+        self.node.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))
 
     def get_pseudo_sensor_types(self):
         pseudo_sensors = []
@@ -175,7 +275,19 @@ class ActorFactory(object):
                 pseudo_sensors.append(cls.get_blueprint_name())
         return pseudo_sensors
 
-    def _create_object(self, uid, type_id, name, parent, spawn_pose, carla_actor=None):
+    def _create_object(self, uid, type_id, name, attach_to, spawn_pose, carla_actor=None):
+        # check that the actor is not already created.
+        if carla_actor is not None and carla_actor.id in self.actors:
+            return None
+
+        if attach_to != 0:
+            if attach_to not in self.actors:
+                raise IndexError("Parent object {} not found".format(attach_to))
+            
+            parent = self.actors[attach_to]
+        else:
+            parent = None
+
 
         if type_id == TFSensor.get_blueprint_name():
             actor = TFSensor(uid=uid, name=name, parent=parent, node=self.node)
@@ -307,5 +419,8 @@ class ActorFactory(object):
             actor = Walker(uid, name, parent, self.node, carla_actor)
         else:
             actor = Actor(uid, name, parent, self.node, carla_actor)
+
+        self.actors[actor.uid] = actor
+        self.node.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
 
         return actor

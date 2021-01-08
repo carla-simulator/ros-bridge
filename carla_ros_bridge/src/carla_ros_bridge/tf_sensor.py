@@ -61,7 +61,16 @@ class TFSensor(PseudoActor):
         Function (override) to update this object.
         """
         self.parent.get_prefix()
+        
+        transform = None
+        try:
+            transform = self.parent.get_current_ros_transform()
+        except AttributeError:
+            # parent actor disappeared, do not send tf
+            self.node.logwarn("TFSensor could not publish transform. Actor {} not found".format(self.parent.uid))
+            return
+        
         self._tf_broadcaster.sendTransform(TransformStamped(
             header=self.get_msg_header("map", timestamp=timestamp),
             child_frame_id=self.parent.get_prefix(),
-            transform=self.parent.get_current_ros_transform()))
+            transform=transform))

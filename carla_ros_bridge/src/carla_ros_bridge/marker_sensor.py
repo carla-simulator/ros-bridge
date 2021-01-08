@@ -54,6 +54,7 @@ class MarkerSensor(PseudoActor):
         :return:
         """
         self.actor_list = None
+        self.node.destroy_publisher(self.marker_publisher)
         super(MarkerSensor, self).destroy()
 
     @staticmethod

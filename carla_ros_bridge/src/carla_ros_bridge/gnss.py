@@ -52,6 +52,10 @@ class Gnss(Sensor):
                                                  self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(Gnss, self).destroy()
+        self.node.destroy_publisher(self.gnss_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):
         """

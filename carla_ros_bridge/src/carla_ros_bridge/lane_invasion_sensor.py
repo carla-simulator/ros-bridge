@@ -52,6 +52,10 @@ class LaneInvasionSensor(Sensor):
                                                           self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(LaneInvasionSensor, self).destroy()
+        self.node.destroy_publisher(self.lane_invasion_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, lane_invasion_event):
         """

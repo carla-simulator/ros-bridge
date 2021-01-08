@@ -35,6 +35,7 @@ class CarlaStatusPublisher(object):
         self.synchronous_mode = synchronous_mode
         self.synchronous_mode_running = True
         self.fixed_delta_seconds = fixed_delta_seconds
+        self.node = node
         if self.fixed_delta_seconds is None:
             self.fixed_delta_seconds = 0.
         self.frame = 0
@@ -42,9 +43,12 @@ class CarlaStatusPublisher(object):
             callback_group = None
         elif ROS_VERSION == 2:
             callback_group = ReentrantCallbackGroup()
-        self.carla_status_publisher = node.new_publisher(CarlaStatus, "/carla/status",
+        self.carla_status_publisher = self.node.new_publisher(CarlaStatus, "/carla/status",
                                                          callback_group=callback_group)
         self.publish()
+
+    def destroy(self):
+        self.node.destroy_publisher(self.carla_status_publisher)
 
     def publish(self):
         """

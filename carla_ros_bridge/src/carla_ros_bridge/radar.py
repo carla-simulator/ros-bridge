@@ -53,6 +53,10 @@ class Radar(Sensor):
         self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(Radar, self).destroy()
+        self.node.destroy_publisher(self.radar_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):
         """

@@ -47,7 +47,6 @@ class WorldInfo(object):
 
         :return:
         """
-        self.logdebug("Destroying WorldInfo()")
         self.node.destroy_publisher(self.world_info_publisher)
         self.carla_map = None
 
