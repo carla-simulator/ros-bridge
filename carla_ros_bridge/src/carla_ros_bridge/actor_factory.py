@@ -12,10 +12,10 @@ import itertools
 from enum import Enum
 
 try:
-   import queue
+    import queue
 except ImportError:
-   import Queue as queue
-   
+    import Queue as queue
+
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.spectator import Spectator
 from carla_ros_bridge.traffic import Traffic, TrafficLight
@@ -72,7 +72,7 @@ class ActorFactory(object):
 
         self._task_queue = queue.Queue()
         self._last_task = None
-        self._known_actor_ids = [] # used to immediately reply to spawn_actor/destroy_actor calls
+        self._known_actor_ids = []  # used to immediately reply to spawn_actor/destroy_actor calls
 
         self.lock = Lock()
         self.spawn_lock = Lock()
@@ -128,14 +128,14 @@ class ActorFactory(object):
                 task = self._task_queue.get()
                 if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR:
                     pseudo_object = task[1]
-                    self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id, pseudo_object[1].attach_to, pseudo_object[1].transform)
+                    self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
+                                        pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
                     actor_id = task[1]
                     self._destroy_object(actor_id, delete_actor=True)
                 elif task[0] == ActorFactory.TaskType.SYNC:
                     break
         self.lock.release()
-
 
     def update_actor_states(self, frame_id, timestamp):
         """
@@ -152,7 +152,7 @@ class ActorFactory(object):
 
     def clear(self):
         for _, actor in self.actors.items():
-            actor.destroy() 
+            actor.destroy()
         self.actors.clear()
 
     def spawn_actor(self, req):
@@ -164,7 +164,7 @@ class ActorFactory(object):
         """
         with self.spawn_lock:
             if "pseudo" in req.type:
-                #only allow spawning pseudo objects if parent actor already exists in carla
+                # only allow spawning pseudo objects if parent actor already exists in carla
                 if req.attach_to != 0:
                     carla_actor = self.world.get_actor(req.attach_to)
                     if carla_actor is None:
@@ -189,7 +189,7 @@ class ActorFactory(object):
         if uid in self._known_actor_ids:
             objects_to_destroy.append(uid)
             self._known_actor_ids.remove(uid)
-        
+
         # remove actors that have the actor to be removed as parent.
         for actor in list(self.actors.values()):
             if actor.parent is not None and actor.parent.uid == uid:
@@ -225,7 +225,6 @@ class ActorFactory(object):
         carla_actor = self.world.spawn_actor(blueprint, transform, attach_to)
         return carla_actor.id
 
-
     def _create_object_from_actor(self, carla_actor):
         """
         create a object for a given carla actor
@@ -239,9 +238,12 @@ class ActorFactory(object):
             else:
                 parent = self._create_object_from_actor(carla_actor.parent)
             # calculate relative transform
-            actor_transform_matrix = trans.ros_pose_to_transform_matrix(trans.carla_transform_to_ros_pose(carla_actor.get_transform()))
-            parent_transform_matrix = trans.ros_pose_to_transform_matrix(trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
-            relative_transform_matrix = np.matrix(parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
+            actor_transform_matrix = trans.ros_pose_to_transform_matrix(
+                trans.carla_transform_to_ros_pose(carla_actor.get_transform()))
+            parent_transform_matrix = trans.ros_pose_to_transform_matrix(
+                trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
+            relative_transform_matrix = np.matrix(
+                parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
             relative_transform = trans.transform_matrix_to_ros_pose(relative_transform_matrix)
 
         parent_id = 0
@@ -251,9 +253,9 @@ class ActorFactory(object):
         name = carla_actor.attributes.get("role_name", "")
         if not name:
             name = str(carla_actor.id)
-        obj = self._create_object(carla_actor.id, carla_actor.type_id, name, parent_id, relative_transform, carla_actor)
+        obj = self._create_object(carla_actor.id, carla_actor.type_id, name,
+                                  parent_id, relative_transform, carla_actor)
         return obj
-
 
     def _destroy_object(self, actor_id, delete_actor):
         if actor_id not in self.actors:
@@ -283,11 +285,10 @@ class ActorFactory(object):
         if attach_to != 0:
             if attach_to not in self.actors:
                 raise IndexError("Parent object {} not found".format(attach_to))
-            
+
             parent = self.actors[attach_to]
         else:
             parent = None
-
 
         if type_id == TFSensor.get_blueprint_name():
             actor = TFSensor(uid=uid, name=name, parent=parent, node=self.node)

@@ -175,7 +175,7 @@ class ManualControl(CompatibleNode):
         """
         render the current image
         """
-        
+
         do_quit = self.controller.parse_events(game_clock)
         if do_quit:
             return
@@ -214,24 +214,25 @@ class KeyboardControl(object):
 
         self.vehicle_control_manual_override_publisher = \
             self.node.new_publisher(Bool,
-                               "/carla/{}/vehicle_control_manual_override".format(self.role_name),
-                               qos_profile=fast_latched_qos, callback_group=self.callback_group)
+                                    "/carla/{}/vehicle_control_manual_override".format(
+                                        self.role_name),
+                                    qos_profile=fast_latched_qos, callback_group=self.callback_group)
 
         self.vehicle_control_manual_override = False
 
         self.auto_pilot_enable_publisher = \
             self.node.new_publisher(Bool,
-                               "/carla/{}/enable_autopilot".format(self.role_name),
-                               qos_profile=fast_qos, callback_group=self.callback_group)
+                                    "/carla/{}/enable_autopilot".format(self.role_name),
+                                    qos_profile=fast_qos, callback_group=self.callback_group)
 
         self.vehicle_control_publisher = \
             self.node.new_publisher(CarlaEgoVehicleControl,
-                               "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
-                               qos_profile=fast_qos, callback_group=self.callback_group)
+                                    "/carla/{}/vehicle_control_cmd_manual".format(self.role_name),
+                                    qos_profile=fast_qos, callback_group=self.callback_group)
 
         self.carla_status_subscriber = self.node.create_subscriber(CarlaStatus, "/carla/status",
-                                                              self._on_new_carla_frame,
-                                                              callback_group=self.callback_group)
+                                                                   self._on_new_carla_frame,
+                                                                   callback_group=self.callback_group)
 
         self.set_autopilot(self._autopilot_enabled)
 
