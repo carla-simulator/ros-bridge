@@ -44,7 +44,7 @@ class CarlaStatusPublisher(object):
         elif ROS_VERSION == 2:
             callback_group = ReentrantCallbackGroup()
         self.carla_status_publisher = self.node.new_publisher(CarlaStatus, "/carla/status",
-                                                         callback_group=callback_group)
+                                                              callback_group=callback_group)
         self.publish()
 
     def destroy(self):

@@ -67,6 +67,7 @@ class OdometrySensor(PseudoActor):
             odometry.twist.twist = self.parent.get_current_ros_twist_rotated()
         except AttributeError:
             # parent actor disappeared, do not send tf
-            self.node.logwarn("OdometrySensor could not publish. parent actor {} not found".format(self.parent.uid))
+            self.node.logwarn(
+                "OdometrySensor could not publish. parent actor {} not found".format(self.parent.uid))
             return
         self.odometry_publisher.publish(odometry)

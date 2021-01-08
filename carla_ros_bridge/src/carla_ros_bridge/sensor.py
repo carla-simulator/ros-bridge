@@ -158,14 +158,15 @@ class Sensor(Actor):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        self._callback_active.acquire()        
+        self._callback_active.acquire()
         if self.synchronous_mode:
             if self.sensor_tick_time:
                 self.next_data_expected_time = carla_sensor_data.timestamp + \
                     float(self.sensor_tick_time)
             self.queue.put(carla_sensor_data)
         else:
-            self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), carla_sensor_data.timestamp)
+            self.publish_tf(trans.carla_transform_to_ros_pose(
+                carla_sensor_data.transform), carla_sensor_data.timestamp)
             self.sensor_data_updated(carla_sensor_data)
         self._callback_active.release()
 
@@ -192,7 +193,8 @@ class Sensor(Actor):
                                           carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform), frame)
+                self.publish_tf(trans.carla_transform_to_ros_pose(
+                    carla_sensor_data.transform), frame)
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return

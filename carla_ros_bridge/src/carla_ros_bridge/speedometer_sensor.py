@@ -65,7 +65,8 @@ class SpeedometerSensor(PseudoActor):
             transform = self.parent.carla_actor.get_transform()
         except AttributeError:
             # parent actor disappeared, do not send tf
-            self.node.logwarn("SpeedometerSensor could not publish. Parent actor {} not found".format(self.parent.uid))
+            self.node.logwarn(
+                "SpeedometerSensor could not publish. Parent actor {} not found".format(self.parent.uid))
             return
 
         vel_np = np.array([velocity.x, velocity.y, velocity.z])

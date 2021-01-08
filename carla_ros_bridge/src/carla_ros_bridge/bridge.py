@@ -203,7 +203,8 @@ class CarlaRosBridge(CompatibleNode):
         destroyed_actors = self.actor_factory.destroy_actor(req.id)
         response.success = bool(destroyed_actors)
         for actor in destroyed_actors:
-            if actor in self._registered_actors: self._registered_actors.remove(actor)
+            if actor in self._registered_actors:
+                self._registered_actors.remove(actor)
         return response
 
     def get_blueprints(self, req):
@@ -300,7 +301,7 @@ class CarlaRosBridge(CompatibleNode):
                     if not self._all_vehicle_control_commands_received.wait(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT):
                         self.logwarn("Timeout ({}s) while waiting for vehicle control commands. "
                                      "Missing command from actor ids {}".format(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT,
-                                         self._expected_ego_vehicle_control_command_ids))
+                                                                                self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
             self.synchronous_update_finished_event.set()
 
@@ -324,7 +325,7 @@ class CarlaRosBridge(CompatibleNode):
                 self.update_clock(carla_snapshot.timestamp)
                 self.status_publisher.set_frame(carla_snapshot.frame)
                 self._update(carla_snapshot.frame,
-                                carla_snapshot.timestamp.elapsed_seconds)
+                             carla_snapshot.timestamp.elapsed_seconds)
 
     def _update(self, frame_id, timestamp):
         """

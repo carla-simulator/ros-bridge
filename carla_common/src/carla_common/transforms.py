@@ -326,21 +326,24 @@ def ros_pose_to_carla_transform(ros_pose):
         ros_point_to_carla_location(ros_pose.position),
         ros_quaternion_to_carla_rotation(ros_pose.orientation))
 
+
 def transform_matrix_to_ros_pose(mat):
     """
     Convert a transform matrix to a ROS pose.
     """
-    quat = mat2quat(mat[:3,:3])
+    quat = mat2quat(mat[:3, :3])
     msg = Pose()
-    msg.position=Point(x=mat[0, 3], y=mat[1, 3], z=mat[2, 3])
-    msg.orientation=Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
+    msg.position = Point(x=mat[0, 3], y=mat[1, 3], z=mat[2, 3])
+    msg.orientation = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
     return msg
+
 
 def ros_pose_to_transform_matrix(msg):
     """
     Convert a ROS pose to a transform matrix
     """
     mat44 = numpy.eye(4)
-    mat44[:3,:3] = quat2mat([msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z])
+    mat44[:3, :3] = quat2mat([msg.orientation.w, msg.orientation.x,
+                              msg.orientation.y, msg.orientation.z])
     mat44[0:3, -1] = [msg.position.x, msg.position.y, msg.position.z]
     return mat44
