@@ -114,7 +114,7 @@ def generate_test_description():
     ])
     return ld
 
-TIMEOUT = 201
+TIMEOUT = 30
 
 class TestClock(unittest.TestCase):
 
@@ -229,7 +229,7 @@ class TestClock(unittest.TestCase):
             node = None
             ros_init()
             node = CompatibleNode('test_node')
-            msg = node.wait_for_one_message("/carla/ego_vehicle/imu", Imu, timeout=15)
+            msg = node.wait_for_one_message("/carla/ego_vehicle/imu", Imu, timeout=TIMEOUT)
             self.assertEqual(msg.header.frame_id, "ego_vehicle/imu")
             self.assertNotEqual(msg.linear_acceleration, 0.0)
             self.assertNotEqual(msg.angular_velocity, 0.0)
