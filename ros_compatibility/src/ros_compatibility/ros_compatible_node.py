@@ -154,6 +154,7 @@ if ROS_VERSION == 1:
             rospy.on_shutdown(handler)
 
 elif ROS_VERSION == 2:
+    import time
     from rclpy import Parameter
     from rclpy.exceptions import ROSInterruptException
     from rclpy.node import Node
@@ -288,18 +289,20 @@ elif ROS_VERSION == 2:
 
         def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
             s = None
-            spin_timeout = 0.5
-            loop_reps = -1
-            if timeout is not None:
-                loop_reps = timeout // spin_timeout + 1
             wfm = WaitForMessageHelper()
             try:
                 s = self.create_subscriber(topic_type, topic, wfm.callback, qos_profile=qos_profile)
-                while ros_ok() and wfm.msg is None:
-                    rclpy.spin_once(self, timeout_sec=spin_timeout)
-                    loop_reps = loop_reps - 1
-                    if loop_reps == 0:
-                        raise ROSException
+                if timeout is not None:
+                    timeout_t = time.time() + timeout
+                    while ros_ok() and wfm.msg is None:
+                        time.sleep(0.01)
+                        rclpy.spin_once(self, timeout_sec=0)
+                        if time.time() >= timeout_t:
+                            raise ROSException
+                else:
+                    while ros_ok() and wfm.msg is None:
+                        time.sleep(0.01)
+                        rclpy.spin_once(self, timeout_sec=0)
             finally:
                 if s is not None:
                     self.destroy_subscription(s)
