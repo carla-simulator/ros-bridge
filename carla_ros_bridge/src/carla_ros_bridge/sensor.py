@@ -23,7 +23,7 @@ except ImportError:
 import tf2_ros
 from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
-from ros_compatibility import ros_ok, ros_timestamp
+from ros_compatibility import ros_ok, ros_timestamp, ROSException
 from sensor_msgs.msg import PointCloud2, PointField
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -132,7 +132,11 @@ class Sensor(Actor):
         transform.transform.rotation.z = pose.orientation.z
         transform.transform.rotation.w = pose.orientation.w
 
-        self._tf_broadcaster.sendTransform(transform)
+        try:
+            self._tf_broadcaster.sendTransform(transform)
+        except ROSException:
+            if ros_ok():
+                self.node.logwarn("Sensor {} failed to send transform.".format(self.uid))
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -158,7 +162,9 @@ class Sensor(Actor):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        self._callback_active.acquire()
+        if not self._callback_active.acquire(False):
+            # if acquire fails, sensor is currently getting destroyed
+            return
         if self.synchronous_mode:
             if self.sensor_tick_time:
                 self.next_data_expected_time = carla_sensor_data.timestamp + \
@@ -167,7 +173,12 @@ class Sensor(Actor):
         else:
             self.publish_tf(trans.carla_transform_to_ros_pose(
                 carla_sensor_data.transform), carla_sensor_data.timestamp)
-            self.sensor_data_updated(carla_sensor_data)
+            try:
+                self.sensor_data_updated(carla_sensor_data)
+            except ROSException:
+                if ros_ok():
+                    self.node.logwarn(
+                        "Sensor {}: Error while executing sensor_data_updated().".format(self.uid))
         self._callback_active.release()
 
     @abstractmethod
