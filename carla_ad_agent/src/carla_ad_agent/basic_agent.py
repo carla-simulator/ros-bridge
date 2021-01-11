@@ -89,7 +89,7 @@ class BasicAgent(Agent):
             request.id = actor_id
             response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
-        except (ServiceException, ROSInterruptException, TypeError) as e:
+        except (ServiceException, ROSInterruptException, KeyboardInterrupt, TypeError) as e:
             if ros_ok():
                 self.node.logwarn("Service call failed: {}".format(e))
 

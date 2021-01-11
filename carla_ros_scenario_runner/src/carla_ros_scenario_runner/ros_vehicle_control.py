@@ -15,7 +15,7 @@ from nav_msgs.msg import Path
 import carla_common.transforms as trans
 from srunner.scenariomanager.actorcontrols.basic_control import BasicControl  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp, destroy_subscription
+from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -134,10 +134,10 @@ class RosVehicleControl(BasicControl):
         if self._carla_actor and self._carla_actor.is_alive:
             self._carla_actor = None
         if self._target_speed_publisher:
-            destroy_subscription(self._target_speed_publisher)
+            self.node.destroy_subscription(self._target_speed_publisher)
             self._target_speed_publisher = None
         if self._path_publisher:
-            destroy_subscription(self._path_publisher)
+            self.node.destroy_subscription(self._path_publisher)
             self._path_publisher = None
 
     def run_step(self):

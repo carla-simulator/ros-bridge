@@ -28,7 +28,10 @@ from ros_compatibility import (CompatibleNode,
                                ros_timestamp,
                                latch_on,
                                ros_init,
-                               get_service_response)
+                               get_service_response,
+                               loginfo,
+                               ROS_VERSION,
+                               ros_shutdown)
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans
@@ -266,12 +269,19 @@ def main(args=None):
     ros_init(args)
 
     try:
-        waypointConverter = CarlaToRosWaypointConverter()
-        waypointConverter.spin()
-        del waypointConverter
-
+        waypoint_converter = CarlaToRosWaypointConverter()
+        if ROS_VERSION == 1:
+            waypoint_converter.spin()
+        else:
+            spin_thread = threading.Thread(target=waypoint_converter.spin)
+            spin_thread.start()
+            spin_thread.join()
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
-        print("Done")
+        loginfo("Shutting down.")
+        waypoint_converter.destroy()
+        ros_shutdown()
 
 
 if __name__ == "__main__":

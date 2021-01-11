@@ -4,6 +4,9 @@ from threading import Thread, currentThread
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
 if ROS_VERSION == 1:
     import rospy
 elif ROS_VERSION == 2:
@@ -29,9 +32,6 @@ if ROS_VERSION == 1:
 
     def ros_shutdown():
         pass
-
-    def destroy_subscription(subscription):
-        subscription.unregister()
 
     def logdebug(log):
         rospy.logdebug(log)

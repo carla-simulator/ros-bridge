@@ -163,7 +163,7 @@ class Agent(object):
         try:
             response = self.node.call_service(self._get_waypoint_client, location)
             return response.waypoint
-        except (ServiceException, ROSInterruptException, TypeError) as e:
+        except (ServiceException, ROSInterruptException, KeyboardInterrupt, TypeError) as e:
             if ros_ok():
                 self.node.logwarn("Service call 'get_waypoint' failed: {}".format(e))
 
