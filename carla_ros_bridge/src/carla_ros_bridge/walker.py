@@ -16,9 +16,6 @@ from carla_ros_bridge.traffic_participant import TrafficParticipant
 from carla_msgs.msg import CarlaWalkerControl
 from carla import WalkerControl
 
-from ros_compatibility import destroy_subscription
-
-
 class Walker(TrafficParticipant):
 
     """

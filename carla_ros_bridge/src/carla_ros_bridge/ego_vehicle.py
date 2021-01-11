@@ -27,15 +27,10 @@ from carla_msgs.msg import (
 )
 
 from ros_compatibility import (
-    destroy_subscription,
     QoSProfile,
-    latch_on
+    latch_on,
+    ROS_VERSION
 )
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION not in (1, 2):
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
 
 if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error

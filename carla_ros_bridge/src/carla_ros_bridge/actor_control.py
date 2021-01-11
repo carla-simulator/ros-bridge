@@ -14,7 +14,6 @@ import carla_common.transforms as trans
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from geometry_msgs.msg import Pose, Twist
 from carla import Vector3D
-from ros_compatibility import destroy_subscription
 
 
 class ActorControl(PseudoActor):
@@ -59,10 +58,8 @@ class ActorControl(PseudoActor):
 
         :return:
         """
-        destroy_subscription(self.set_location_subscriber)
-        self.set_location_subscriber = None
-        destroy_subscription(self.twist_control_subscriber)
-        self.twist_control_subscriber = None
+        self.node.destroy_subscription(self.set_location_subscriber)
+        self.node.destroy_subscription(self.twist_control_subscriber)
         super(ActorControl, self).destroy()
 
     @staticmethod

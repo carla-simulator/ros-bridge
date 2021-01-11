@@ -15,7 +15,7 @@ from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import
 
 import carla
 from transforms3d.euler import quat2euler
-from ros_compatibility import CompatibleNode, destroy_subscription
+from ros_compatibility import CompatibleNode
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -47,8 +47,7 @@ class DebugHelper(object):
         """
         self.node.logdebug("Destroy DebugHelper")
         self.debug = None
-        destroy_subscription(self.marker_subscriber)
-        self.marker_subscriber = None
+        self.node.destroy_subscription(self.marker_subscriber)
 
     def on_marker(self, marker_array):
         """
