@@ -174,7 +174,8 @@ class ActorFactory(object):
                                  name=name,
                                  parent=parent,
                                  node=self.node,
-                                 actor_list=self.actors)
+                                 actor_list=self.actors,
+                                 world=self.world)
 
         elif type_id == ActorListSensor.get_blueprint_name():
             actor = ActorListSensor(uid=uid,

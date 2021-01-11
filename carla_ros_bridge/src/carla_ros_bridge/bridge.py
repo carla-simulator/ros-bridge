@@ -71,7 +71,7 @@ class CarlaRosBridge(CompatibleNode):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.10"
+    CARLA_VERSION = "0.9.11"
 
     def __init__(self, rospy_init=True, executor=None):
         """
