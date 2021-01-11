@@ -6,6 +6,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
+from ros_compatibility import ROS_VERSION
 import time
 from threading import Thread, Lock
 import itertools
@@ -97,9 +98,12 @@ class ActorFactory(object):
             self.update_available_objects()
 
     def add_task(self, task):
-        if self._last_task != ActorFactory.TaskType.SYNC or task[0] != ActorFactory.TaskType.SYNC:
+        if ROS_VERSION == 1:
             self._task_queue.put(task)
-            self._last_task = task[0]
+        else:
+            if self._last_task != ActorFactory.TaskType.SYNC or task[0] != ActorFactory.TaskType.SYNC:
+                self._task_queue.put(task)
+                self._last_task = task[0]
 
     def update_available_objects(self):
         """
