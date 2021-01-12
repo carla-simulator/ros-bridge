@@ -21,10 +21,8 @@ from ros_compatibility import (
     ROSInterruptException,
     QoSProfile,
     latch_on,
-    get_service_request)
-
-import os
-ROS_VERSION = int(os.environ['ROS_VERSION'])
+    get_service_request,
+    ROS_VERSION)
 
 if ROS_VERSION == 1:
     from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
@@ -165,7 +163,7 @@ class Agent(object):
             return response.waypoint
         except (ServiceException, ROSInterruptException, KeyboardInterrupt, TypeError) as e:
             if ros_ok():
-                self.node.logwarn("Service call 'get_waypoint' failed: {}".format(e))
+                self.node.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
 
     def _is_light_red_us_style(self, lights_list):  # pylint: disable=too-many-branches
         """

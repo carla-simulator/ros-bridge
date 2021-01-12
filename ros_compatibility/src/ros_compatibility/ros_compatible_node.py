@@ -138,7 +138,10 @@ if ROS_VERSION == 1:
             return rospy.Timer(rospy.Duration(timer_period_sec), callback)
 
         def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
-            return rospy.wait_for_message(topic, topic_type, timeout)
+            try:
+                return rospy.wait_for_message(topic, topic_type, timeout)
+            except rospy.ROSException as e:
+                raise ROSException(e)
 
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
             return rospy.Service(srv_name, srv_type, callback)

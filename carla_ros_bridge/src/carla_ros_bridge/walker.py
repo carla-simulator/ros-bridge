@@ -16,6 +16,7 @@ from carla_ros_bridge.traffic_participant import TrafficParticipant
 from carla_msgs.msg import CarlaWalkerControl
 from carla import WalkerControl
 
+
 class Walker(TrafficParticipant):
 
     """

@@ -22,10 +22,9 @@ from ros_compatibility import (
     ROSInterruptException,
     QoSProfile,
     latch_on,
-    get_service_request)
+    get_service_request,
+    ROS_VERSION)
 
-import os
-ROS_VERSION = int(os.environ['ROS_VERSION'])
 if ROS_VERSION == 1:
     from local_planner import LocalPlanner  # pylint: disable=relative-import
     from agent import Agent, AgentState  # pylint: disable=relative-import
