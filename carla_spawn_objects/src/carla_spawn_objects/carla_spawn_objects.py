@@ -24,7 +24,7 @@ from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
 from carla_msgs.msg import CarlaActorList
 
-
+import rclpy
 from transforms3d.euler import euler2quat
 from carla_msgs.srv import SpawnObject, DestroyObject
 
@@ -338,10 +338,7 @@ class CarlaSpawnObjects(CompatibleNode):
         for actor_id in self.vehicles_sensors:
             destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id = actor_id
-            try:
-                self.call_service(self.destroy_object_service, destroy_object_request)
-            except ServiceException as e:
-                self.logwarn(str(e))  # TODO: use logwarn_once
+            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
             self.loginfo("Object {} successfully destroyed.".format(actor_id))
         self.vehicles_sensors = []
 
@@ -349,10 +346,7 @@ class CarlaSpawnObjects(CompatibleNode):
         for actor_id in self.global_sensors:
             destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id = actor_id
-            try:
-                self.call_service(self.destroy_object_service, destroy_object_request)
-            except ServiceException as e:
-                self.logwarn(str(e))  # TODO: use logwarn_once
+            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
             self.loginfo("Object {} successfully destroyed.".format(actor_id))
         self.global_sensors = []
 
@@ -360,10 +354,7 @@ class CarlaSpawnObjects(CompatibleNode):
         for player_id in self.players:
             destroy_object_request = get_service_request(DestroyObject)
             destroy_object_request.id = player_id
-            try:
-                self.call_service(self.destroy_object_service, destroy_object_request)
-            except ServiceException as e:
-                self.logwarn(str(e))  # TODO: use logwarn_once
+            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
             self.loginfo("Object {} successfully destroyed.".format(player_id))
         self.players = []
 
@@ -384,26 +375,14 @@ def main(args=None):
         logerr("Could not initialize CarlaSpawnObjects. Shutting down.")
 
     if spawn_objects_node:
-        if ROS_VERSION == 1:
-            spawn_objects_node.on_shutdown(spawn_objects_node.destroy)
-            try:
-                spawn_objects_node.spawn_objects()
-            except (ROSInterruptException, ServiceException, KeyboardInterrupt):
-                spawn_objects_node.logwarn(
-                    "Spawning process has been interrupted. There might be actors that has not been destroyed properly")
-            except RuntimeError as e:
-                logfatal("Exception caught: {}".format(e))
+        try:
+            spawn_objects_node.spawn_objects()
             spawn_objects_node.spin()
-        else:
-            spin_thread = Thread(target=spawn_objects_node.spin)
+        except (ROSInterruptException, ServiceException, KeyboardInterrupt):
             try:
-                spin_thread.start()
-                spawn_objects_node.spawn_objects()
-                spin_thread.join()
-            except (ROSInterruptException, ServiceException, KeyboardInterrupt):
-                loginfo("Shutting down.")
                 spawn_objects_node.destroy()
-
+            except ServiceException:
+                spawn_objects_node.logwarn('Could not call destroy service on objects, the ros bridge is probably already shutdown')
     ros_shutdown()
 
 
