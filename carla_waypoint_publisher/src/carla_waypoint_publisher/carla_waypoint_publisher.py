@@ -244,9 +244,9 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         try:
             self.wait_for_one_message("/carla/world_info", CarlaWorldInfo,
                                       qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=10.0)
-        except ROSException:
-            self.logerr("Error while waiting for world info!")
-            sys.exit(1)
+        except ROSException as e:
+            self.logerr("Error while waiting for world info: {}".format(e))
+            raise e
 
         host = self.get_param("host", "127.0.0.1")
         port = self.get_param("port", 2000)
@@ -257,7 +257,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         carla_client = carla.Client(host=host, port=port)
         carla_client.set_timeout(timeout)
 
-        self.world = carla_client.get_world()
+        try:
+            self.world = carla_client.get_world()
+        except RuntimeError as e:
+            self.logerr("Error while connecting to Carla: {}".format(e))
+            raise e
 
         self.loginfo("Connected to Carla.")
 
@@ -268,6 +272,7 @@ def main(args=None):
     """
     ros_init(args)
 
+    waypoint_converter = None
     try:
         waypoint_converter = CarlaToRosWaypointConverter()
         if ROS_VERSION == 1:
@@ -276,11 +281,14 @@ def main(args=None):
             spin_thread = threading.Thread(target=waypoint_converter.spin)
             spin_thread.start()
             spin_thread.join()
+    except (RuntimeError, ROSException):
+        pass
     except KeyboardInterrupt:
         loginfo("User requested shut down.")
     finally:
         loginfo("Shutting down.")
-        waypoint_converter.destroy()
+        if waypoint_converter:
+            waypoint_converter.destroy()
         ros_shutdown()
 
 

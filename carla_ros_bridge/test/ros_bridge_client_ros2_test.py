@@ -32,7 +32,6 @@ from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWor
                             CarlaTrafficLightInfoList)
 
 
-
 def generate_test_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
@@ -114,13 +113,16 @@ def generate_test_description():
     ])
     return ld
 
+
 TIMEOUT = 30
+
 
 class TestClock(unittest.TestCase):
 
     """
     Handles testing of the all nodes
     """
+
     def test_clock(self):
         """
         Tests clock
@@ -144,7 +146,8 @@ class TestClock(unittest.TestCase):
             node = None
             ros_init()
             node = CompatibleNode('test_node')
-            msg = node.wait_for_one_message("/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus)
+            msg = node.wait_for_one_message(
+                "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus)
             self.assertNotEqual(msg.header, Header())  # todo: check frame-id
             self.assertNotEqual(msg.orientation, Quaternion())
         finally:
@@ -514,7 +517,7 @@ class TestClock(unittest.TestCase):
             node = CompatibleNode('test_node')
             msg = node.wait_for_one_message(
                 "/carla/traffic_lights/info", CarlaTrafficLightInfoList, timeout=TIMEOUT,
-                 qos_profile=QoSProfile(depth=10, durability=latch_on))
+                qos_profile=QoSProfile(depth=10, durability=latch_on))
             self.assertNotEqual(len(msg.traffic_lights), 0)
         finally:
             if node is not None:

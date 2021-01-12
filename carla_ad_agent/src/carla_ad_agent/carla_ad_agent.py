@@ -20,10 +20,11 @@ from ros_compatibility import (
     QoSProfile,
     ROSException,
     latch_on,
-    ros_init)
-
-import os
-ROS_VERSION = int(os.environ['ROS_VERSION'])
+    ros_init,
+    ROS_VERSION,
+    logwarn,
+    loginfo,
+    ros_shutdown)
 
 if ROS_VERSION == 1:
     import rospy
@@ -61,7 +62,7 @@ class CarlaAdAgent(CompatibleNode):
             vehicle_info = self.wait_for_one_message(
                 "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo,
                 qos_profile=QoSProfile(depth=1, durability=latch_on))
-            self.loginfo("Vehicle info recieved.")
+            self.loginfo("Vehicle info received.")
         except ROSException:
             self.logerr("Timeout while waiting for vehicle info!")
             sys.exit(1)
@@ -172,13 +173,16 @@ def main(args=None):
     """
     ros_init(args)
 
-    controller = CarlaAdAgent()
     try:
+        controller = CarlaAdAgent()
         controller.run()
-
+    except ROSInterruptException as e:
+        if ros_ok():
+            logwarn("ROS Error during exection: {}".format(e))
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
-        del controller
-        print("Done")
+        ros_shutdown()
 
 
 if __name__ == "__main__":

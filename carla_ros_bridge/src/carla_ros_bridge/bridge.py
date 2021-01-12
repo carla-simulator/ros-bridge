@@ -18,7 +18,8 @@ from ros_compatibility import (
     QoSProfile,
     latch_on,
     ros_init,
-    get_service_response)
+    get_service_response,
+    ROS_VERSION)
 
 try:
     import queue
@@ -44,8 +45,6 @@ from carla_ros_bridge.ego_vehicle import EgoVehicle
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error

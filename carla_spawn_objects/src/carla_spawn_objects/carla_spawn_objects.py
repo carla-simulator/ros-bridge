@@ -341,7 +341,7 @@ class CarlaSpawnObjects(CompatibleNode):
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
-                self.logwarn(str(e))#TODO: use logwarn_once
+                self.logwarn(str(e))  # TODO: use logwarn_once
             self.loginfo("Object {} successfully destroyed.".format(actor_id))
         self.vehicles_sensors = []
 
@@ -352,7 +352,7 @@ class CarlaSpawnObjects(CompatibleNode):
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
-                self.logwarn(str(e))#TODO: use logwarn_once
+                self.logwarn(str(e))  # TODO: use logwarn_once
             self.loginfo("Object {} successfully destroyed.".format(actor_id))
         self.global_sensors = []
 
@@ -363,7 +363,7 @@ class CarlaSpawnObjects(CompatibleNode):
             try:
                 self.call_service(self.destroy_object_service, destroy_object_request)
             except ServiceException as e:
-                self.logwarn(str(e))#TODO: use logwarn_once
+                self.logwarn(str(e))  # TODO: use logwarn_once
             self.loginfo("Object {} successfully destroyed.".format(player_id))
         self.players = []
 

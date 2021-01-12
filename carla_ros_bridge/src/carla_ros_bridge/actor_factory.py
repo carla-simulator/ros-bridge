@@ -72,7 +72,6 @@ class ActorFactory(object):
         self.actors = {}
 
         self._task_queue = queue.Queue()
-        self._last_task = None
         self._known_actor_ids = []  # used to immediately reply to spawn_actor/destroy_actor calls
 
         self.lock = Lock()
@@ -96,14 +95,6 @@ class ActorFactory(object):
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
             self.world.wait_for_tick()
             self.update_available_objects()
-
-    def add_task(self, task):
-        if ROS_VERSION == 1:
-            self._task_queue.put(task)
-        else:
-            if self._last_task != ActorFactory.TaskType.SYNC or task[0] != ActorFactory.TaskType.SYNC:
-                self._task_queue.put(task)
-                self._last_task = task[0]
 
     def update_available_objects(self):
         """
@@ -174,10 +165,10 @@ class ActorFactory(object):
                     if carla_actor is None:
                         raise IndexError("Parent actor {} not found".format(req.attach_to))
                 id_ = next(self.id_gen)
-                self.add_task((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self.add_task((ActorFactory.TaskType.SYNC, None))
+                self._task_queue.put((ActorFactory.TaskType.SYNC, None))
             self._known_actor_ids.append(id_)
         return id_
 
@@ -185,7 +176,7 @@ class ActorFactory(object):
         with self.spawn_lock:
             objects_to_destroy = set(self._destroy_actor(uid))
             for obj in objects_to_destroy:
-                self.add_task((ActorFactory.TaskType.DESTROY_ACTOR, obj))
+                self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, obj))
         return objects_to_destroy
 
     def _destroy_actor(self, uid):

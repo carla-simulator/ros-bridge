@@ -28,7 +28,7 @@ PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
   if (!this->get_parameter("role_name", roleName)) {
     roleName = "ego_vehicle";
   }
-  sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar/lidar1/point_cloud", 100, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1));
+  sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar", 100, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1));
 }
 
 void PclRecorderROS2::callback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud)
