@@ -154,7 +154,7 @@ if ROS_VERSION == 1:
                 print("Service call failed: %s" % e)
             return client
 
-        def call_service(self, client, req):
+        def call_service(self, client, req, timeout_ros2=None):
             try:
                 return client(req)
             except rospy.ServiceException as e:
@@ -332,8 +332,20 @@ elif ROS_VERSION == 2:
                 self.get_logger().info('service not available, waiting again...')
             return client
 
-        def call_service(self, client, req):
-            return client.call(req)
+        def call_service(self, client, req, timeout_ros2=None):
+            # uses the asynchronous call function but behaves like the synchronous call
+            # this is done because the basic synchronous call function doesn't raise
+            # an error when trying to call a service that is not alive anymore
+            future = client.call_async(req)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_ros2)
+            if future.done():
+                return future.result()
+            else:
+                if timeout_ros2 is not None:
+                    raise ServiceException(
+                        'Service did not return a response before timeout {}'.format(timeout_ros2))
+                else:
+                    raise ServiceException('Service did not return a response')
 
         def spin(self, executor=None):
             rclpy.spin(self, executor)
