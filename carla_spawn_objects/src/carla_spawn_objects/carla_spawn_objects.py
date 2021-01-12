@@ -18,7 +18,6 @@ finally ask for a random one to the spawn service.
 import os
 import math
 import json
-from threading import Thread
 
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
