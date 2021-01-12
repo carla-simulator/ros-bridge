@@ -23,7 +23,6 @@ from threading import Thread
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
 from carla_msgs.msg import CarlaActorList
-
 from transforms3d.euler import euler2quat
 from carla_msgs.srv import SpawnObject, DestroyObject
 
