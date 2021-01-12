@@ -342,7 +342,8 @@ elif ROS_VERSION == 2:
                 return future.result()
             else:
                 if timeout_ros2 is not None:
-                    raise ServiceException('Service did not return a response before timeout {}'.format(timeout_ros2))
+                    raise ServiceException(
+                        'Service did not return a response before timeout {}'.format(timeout_ros2))
                 else:
                     raise ServiceException('Service did not return a response')
 

@@ -382,7 +382,8 @@ def main(args=None):
             try:
                 spawn_objects_node.destroy()
             except ServiceException:
-                spawn_objects_node.logwarn('Could not call destroy service on objects, the ros bridge is probably already shutdown')
+                spawn_objects_node.logwarn(
+                    'Could not call destroy service on objects, the ros bridge is probably already shutdown')
     ros_shutdown()
 
 
