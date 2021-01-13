@@ -367,7 +367,7 @@ class HUD(object):
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.vehicle_info_subscriber = node.create_subscriber(
             CarlaEgoVehicleInfo, "/carla/{}/vehicle_info".format(self.role_name),
-            self.vehicle_info_updated, callback_group=self.callback_group)
+            self.vehicle_info_updated, callback_group=self.callback_group, qos_profile=QoSProfile(depth=10, durability=latch_on))
 
         self.latitude = 0
         self.longitude = 0
@@ -554,7 +554,7 @@ class HUD(object):
                     else:
                         rect_border = pygame.Rect((bar_h_offset, v_offset + 8), (bar_width, 6))
                         pygame.draw.rect(display, (255, 255, 255), rect_border, 1)
-                        if item[2] < 0.0:
+                        if item[2] <= 0.0:
                             f = (item[1] - item[2]) / (item[3] - item[2])
                             rect = pygame.Rect((bar_h_offset + int(f * (bar_width - 6)), v_offset + 8),
                                                (6, 6))
