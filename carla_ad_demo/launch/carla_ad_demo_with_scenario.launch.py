@@ -93,7 +93,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/objects.json',
-                'role_name_' + str(launch.substitutions.LaunchConfiguration('role_name')): launch.substitutions.LaunchConfiguration('role_name')
+                'role_name': launch.substitutions.LaunchConfiguration('role_name')
             }.items()
         ),
         launch.actions.IncludeLaunchDescription(

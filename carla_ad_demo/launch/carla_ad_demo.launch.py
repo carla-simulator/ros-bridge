@@ -6,6 +6,25 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 
+def launch_carla_spawn_object(context, *args, **kwargs):
+    # workaround to use launch argument 'role_name' as a part of the string used for the spawn_point param name
+    spawn_point_param_name = 'spawn_point_' + \
+        launch.substitutions.LaunchConfiguration('role_name').perform(context)
+
+    carla_spawn_objects_launch = launch.actions.IncludeLaunchDescription(
+        launch.launch_description_sources.PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory(
+                'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
+        ),
+        launch_arguments={
+            'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/sensors.json',
+            spawn_point_param_name: launch.substitutions.LaunchConfiguration('spawn_point')
+        }.items()
+    )
+
+    return [carla_spawn_objects_launch]
+
+
 def generate_launch_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
@@ -41,12 +60,8 @@ def generate_launch_description():
             default_value='ego_vehicle'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='vehicle_filter',
-            default_value='vehicle.tesla.model3'
-        ),
-        launch.actions.DeclareLaunchArgument(
             name='spawn_point',
-            default_value='127.4,195.4,0,0,0,180'
+            default_value='127.4,-195.4,2,0,0,180'
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
@@ -77,17 +92,7 @@ def generate_launch_description():
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()
         ),
-        launch.actions.IncludeLaunchDescription(
-            launch.launch_description_sources.PythonLaunchDescriptionSource(
-                os.path.join(get_package_share_directory(
-                    'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
-            ),
-            launch_arguments={
-                'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/sensors.json',
-                'role_name_' + str(launch.substitutions.LaunchConfiguration('role_name')): launch.substitutions.LaunchConfiguration('role_name'),
-                'spawn_point': launch.substitutions.LaunchConfiguration('spawn_point')
-            }.items()
-        ),
+        launch.actions.OpaqueFunction(function=launch_carla_spawn_object),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
