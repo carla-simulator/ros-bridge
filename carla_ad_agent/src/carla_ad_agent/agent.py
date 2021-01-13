@@ -122,15 +122,16 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        if self._vehicle_location is not None:
-            ego_vehicle_location = get_service_request(GetWaypoint)
-            ego_vehicle_location.location = self._vehicle_location
-        else:
-            ego_vehicle_location = self._vehicle_location
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
+
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
             if ros_ok():
-                self.node.logwarn("Could not get waypoint for ego vehicle.1")
+                self.node.logwarn("Could not get waypoint for ego vehicle.")
             return (False, None)
 
         for traffic_light in lights_list:
@@ -161,7 +162,7 @@ class Agent(object):
         try:
             response = self.node.call_service(self._get_waypoint_client, location)
             return response.waypoint
-        except (ServiceException, ROSInterruptException, KeyboardInterrupt, TypeError) as e:
+        except ServiceException as e:
             if ros_ok():
                 self.node.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
 
@@ -176,11 +177,12 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        if self._vehicle_location is not None:
-            ego_vehicle_location = get_service_request(GetWaypoint)
-            ego_vehicle_location.location = self._vehicle_location
-        else:
-            ego_vehicle_location = self._vehicle_location
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
+
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
             if ros_ok():
@@ -255,17 +257,16 @@ class Agent(object):
                    and False otherwise
                  - vehicle is the blocker object itself
         """
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
 
-        if self._vehicle_location is not None:
-            ego_vehicle_location = get_service_request(GetWaypoint)
-            ego_vehicle_location.location = self._vehicle_location
-        else:
-            ego_vehicle_location = self._vehicle_location
-
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
             if ros_ok():
-                self.node.logwarn("Could not get waypoint for ego vehicle.3")
+                self.node.logwarn("Could not get waypoint for ego vehicle.")
             return (False, None)
 
         for target_vehicle_id in vehicle_list:
@@ -312,5 +313,4 @@ class Agent(object):
         control.throttle = 0.0
         control.brake = 1.0
         control.hand_brake = False
-
         return control
