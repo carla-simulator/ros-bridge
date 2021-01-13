@@ -53,7 +53,6 @@ class CarlaAdAgent(CompatibleNode):
         self._route_assigned = False
         self._global_plan = None
         self._agent = None
-        self.on_shutdown(self._on_shutdown)
 
         # wait for ego vehicle
         vehicle_info = None
@@ -80,14 +79,6 @@ class CarlaAdAgent(CompatibleNode):
             QoSProfile(depth=1, durability=False))
         self._agent = BasicAgent(role_name, vehicle_info.id,  # pylint: disable=no-member
                                  self, avoid_risk)
-
-    def _on_shutdown(self):
-        """
-        callback on shutdown
-        """
-        self.loginfo("Shutting down, stopping ego vehicle...")
-        if self._agent:
-            self.vehicle_control_publisher.publish(self._agent.emergency_stop())
 
     def target_speed_updated(self, target_speed):
         """
@@ -154,14 +145,11 @@ class CarlaAdAgent(CompatibleNode):
                     control.steer = -control.steer
                     self.vehicle_control_publisher.publish(control)
             else:
-                try:
-                    if ROS_VERSION == 1:
-                        r.sleep()
-                    elif ROS_VERSION == 2:
-                        # TODO: use rclpy.Rate, not working yet
-                        time.sleep(1 / loop_frequency)
-                except ROSInterruptException:
-                    pass
+                if ROS_VERSION == 1:
+                    r.sleep()
+                elif ROS_VERSION == 2:
+                    # TODO: use rclpy.Rate, not working yet
+                    time.sleep(1 / loop_frequency)
 
 
 def main(args=None):
@@ -182,6 +170,8 @@ def main(args=None):
     except KeyboardInterrupt:
         loginfo("User requested shut down.")
     finally:
+        if controller._agent:
+            controller.vehicle_control_publisher.publish(controller._agent.emergency_stop())
         ros_shutdown()
 
 
