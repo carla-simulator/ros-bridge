@@ -66,7 +66,7 @@ class BasicAgent(Agent):
             self._vehicle_id_list = []
             self._lights_id_list = []
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
-                                                                  self.actors_updated, qos_profile=QoSProfile(depth=1, durability=latch_on), callback_group=cb_group)
+                                                                  self.actors_updated, callback_group=cb_group)
             self._objects = []
 
             self._objects_subscriber = self.node.create_subscriber(ObjectArray,
@@ -140,7 +140,6 @@ class BasicAgent(Agent):
             vehicle_state, vehicle = self._is_vehicle_hazard(  # pylint: disable=unused-variable
                 self._vehicle_id_list, self._objects)
             if vehicle_state:
-                #rospy.loginfo('=== Vehicle blocking ahead [{}])'.format(vehicle))
                 self._state = AgentState.BLOCKED_BY_VEHICLE
                 hazard_detected = True
 
@@ -148,8 +147,6 @@ class BasicAgent(Agent):
             light_state, traffic_light = self._is_light_red(  # pylint: disable=unused-variable
                 self._lights_id_list)
             if light_state:
-                #rospy.loginfo('=== Red Light ahead [{}])'.format(traffic_light))
-
                 self._state = AgentState.BLOCKED_RED_LIGHT
                 hazard_detected = True
 

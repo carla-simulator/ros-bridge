@@ -62,7 +62,8 @@ class Agent(object):
 
             self._traffic_lights = []
             self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
-                                                                           "/carla/traffic_lights", self.traffic_lights_updated)
+                                                                           "/carla/traffic_lights/status", self.traffic_lights_updated,
+                                                                           qos_profile=QoSProfile(depth=10, durability=latch_on))
 
             node.create_subscriber(CarlaWorldInfo,
                                    "/carla/world_info", self.world_info_updated, qos_profile=QoSProfile(depth=1, durability=latch_on))
