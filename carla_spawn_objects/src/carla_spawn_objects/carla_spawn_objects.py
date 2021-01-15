@@ -68,19 +68,15 @@ class CarlaSpawnObjects(CompatibleNode):
 
     def spawn_object(self, spawn_object_request):
         response_id = -1
-        try:
-            response = self.call_service(self.spawn_object_service, spawn_object_request)
-            response_id = response.id
-            if response_id != -1:
-                self.loginfo("Object (type='{}', id='{}') spawned successfully as {}.".format(
-                    spawn_object_request.type, spawn_object_request.id, response_id))
-            else:
-                self.logwarn("Error while spawning object (type='{}', id='{}').".format(
-                    spawn_object_request.type, spawn_object_request.id))
-                raise RuntimeError(response.error_string)
-        except ServiceException as e:
-            self.logwarn("Error while calling spawn_object(type='{}', id='{}'): {}".format(
-                spawn_object_request.type, spawn_object_request.id, e))
+        response = self.call_service(self.spawn_object_service, spawn_object_request)
+        response_id = response.id
+        if response_id != -1:
+            self.loginfo("Object (type='{}', id='{}') spawned successfully as {}.".format(
+                spawn_object_request.type, spawn_object_request.id, response_id))
+        else:
+            self.logwarn("Error while spawning object (type='{}', id='{}').".format(
+                spawn_object_request.type, spawn_object_request.id))
+            raise RuntimeError(response.error_string)
         return response_id
 
     def spawn_objects(self):
@@ -118,10 +114,7 @@ class CarlaSpawnObjects(CompatibleNode):
             raise RuntimeError("Parameter 'spawn_sensors_only' enabled, " +
                                "but 'sensor.pseudo.actor_list' is not instantiated, add it to your config file.")
 
-        try:
-            self.setup_sensors(global_sensors)
-        except RuntimeError as e:
-            raise RuntimeError("Setting up global sensors failed: {}".format(e))
+        self.setup_sensors(global_sensors)
 
         if self.spawn_sensors_only is True:
             # get vehicle id from topic /carla/actor_list for all vehicles listed in config file
@@ -131,10 +124,7 @@ class CarlaSpawnObjects(CompatibleNode):
                     if actor_info.type == vehicle["type"] and actor_info.rolename == vehicle["id"]:
                         vehicle["carla_id"] = actor_info.id
 
-        try:
-            self.setup_vehicles(vehicles)
-        except RuntimeError as e:
-            raise RuntimeError("Setting up vehicles failed: {}".format(e))
+        self.setup_vehicles(vehicles)
         self.loginfo("All objects spawned.")
 
     def setup_vehicles(self, vehicles):
@@ -330,30 +320,33 @@ class CarlaSpawnObjects(CompatibleNode):
         destroy all the players and sensors
         """
         self.loginfo("Destroying spawned objects...")
+        try:
+            # destroy vehicles sensors
+            for actor_id in self.vehicles_sensors:
+                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request.id = actor_id
+                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.loginfo("Object {} successfully destroyed.".format(actor_id))
+            self.vehicles_sensors = []
 
-        # destroy vehicles sensors
-        for actor_id in self.vehicles_sensors:
-            destroy_object_request = get_service_request(DestroyObject)
-            destroy_object_request.id = actor_id
-            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
-            self.loginfo("Object {} successfully destroyed.".format(actor_id))
-        self.vehicles_sensors = []
+            # destroy global sensors
+            for actor_id in self.global_sensors:
+                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request.id = actor_id
+                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.loginfo("Object {} successfully destroyed.".format(actor_id))
+            self.global_sensors = []
 
-        # destroy global sensors
-        for actor_id in self.global_sensors:
-            destroy_object_request = get_service_request(DestroyObject)
-            destroy_object_request.id = actor_id
-            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
-            self.loginfo("Object {} successfully destroyed.".format(actor_id))
-        self.global_sensors = []
-
-        # destroy player
-        for player_id in self.players:
-            destroy_object_request = get_service_request(DestroyObject)
-            destroy_object_request.id = player_id
-            self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
-            self.loginfo("Object {} successfully destroyed.".format(player_id))
-        self.players = []
+            # destroy player
+            for player_id in self.players:
+                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request.id = player_id
+                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.loginfo("Object {} successfully destroyed.".format(player_id))
+            self.players = []
+        except ServiceException:
+            self.logwarn(
+                'Could not call destroy service on objects, the ros bridge is probably already shutdown')
 
 # ==============================================================================
 # -- main() --------------------------------------------------------------------
@@ -372,15 +365,22 @@ def main(args=None):
         logerr("Could not initialize CarlaSpawnObjects. Shutting down.")
 
     if spawn_objects_node:
-        try:
+        if ROS_VERSION == 1:
+            spawn_objects_node.on_shutdown(spawn_objects_node.destroy)
+        try:	
             spawn_objects_node.spawn_objects()
-            spawn_objects_node.spin()
-        except (ROSInterruptException, ServiceException, KeyboardInterrupt):
             try:
+                spawn_objects_node.spin()
+            except (ROSInterruptException, ServiceException, KeyboardInterrupt):
+                pass
+        except (ROSInterruptException, ServiceException, KeyboardInterrupt):	
+            spawn_objects_node.logwarn(	
+                "Spawning process has been interrupted. There might be actors that have not been destroyed properly")
+        except RuntimeError as e:	
+            logfatal("Exception caught: {}".format(e))
+        finally:
+            if ROS_VERSION == 2:
                 spawn_objects_node.destroy()
-            except ServiceException:
-                spawn_objects_node.logwarn(
-                    'Could not call destroy service on objects, the ros bridge is probably already shutdown')
     ros_shutdown()
 
 

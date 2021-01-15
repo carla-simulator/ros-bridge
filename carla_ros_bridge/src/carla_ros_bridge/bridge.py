@@ -80,6 +80,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
+        self.bridge_is_initialized = Event()
 
     # pylint: disable=attribute-defined-outside-init
     def initialize_bridge(self, carla_world, params):
@@ -98,7 +99,6 @@ class CarlaRosBridge(CompatibleNode):
 
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
-        self.synchronous_update_finished_event = Event()
 
         self.carla_settings = carla_world.get_settings()
         if not self.parameters["passive"]:
@@ -183,17 +183,22 @@ class CarlaRosBridge(CompatibleNode):
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
                                    self.on_weather_changed, callback_group=self.callback_group)
+        self.bridge_is_initialized.set()
 
     def spawn_object(self, req, response=None):
         response = get_service_response(SpawnObject)
-        try:
-            id_ = self.actor_factory.spawn_actor(req)
-            self._registered_actors.append(id_)
-            response.id = id_
-        except Exception as e:
-            self.logwarn("Error spawning object '{}': {}".format(req.type, e))
+        if not self.shutdown.is_set():
+            try:
+                id_ = self.actor_factory.spawn_actor(req)
+                self._registered_actors.append(id_)
+                response.id = id_
+            except Exception as e:
+                self.logwarn("Error spawning object '{}': {}".format(req.type, e))
+                response.id = -1
+                response.error_string = str(e)
+        else:
             response.id = -1
-            response.error_string = str(e)
+            response.error_string = 'Bridge is shutting down, object will not be spawned.'
         return response
 
     def destroy_object(self, req, response=None):
@@ -270,8 +275,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         execution loop for synchronous mode
         """
-        while not self.shutdown.is_set():
-            self.synchronous_update_finished_event.clear()
+        while not self.shutdown.is_set() and ros_ok():
             self.process_run_state()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
@@ -301,7 +305,6 @@ class CarlaRosBridge(CompatibleNode):
                                      "Missing command from actor ids {}".format(CarlaRosBridge.VEHICLE_CONTROL_TIMEOUT,
                                                                                 self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
-            self.synchronous_update_finished_event.set()
 
     def _carla_time_tick(self, carla_snapshot):
         """
@@ -355,8 +358,9 @@ class CarlaRosBridge(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
-        self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
+        if ros_ok():
+            self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+            self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
 
     def destroy(self):
         """
@@ -364,7 +368,6 @@ class CarlaRosBridge(CompatibleNode):
 
         :return:
         """
-        # TODO fix if carla is not running
         self.loginfo("Shutting down...")
         self.shutdown.set()
         if not self.sync_mode:
@@ -372,7 +375,7 @@ class CarlaRosBridge(CompatibleNode):
                 self.carla_world.remove_on_tick(self.on_tick_id)
             self.actor_factory.thread.join()
         else:
-            self.synchronous_update_finished_event.wait()
+            self.synchronous_mode_update_thread.join()
         self.loginfo("Object update finished.")
         self.debug_helper.destroy()
         self.status_publisher.destroy()
@@ -472,7 +475,8 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        carla_bridge.destroy()
+        if carla_bridge.bridge_is_initialized.is_set():
+            carla_bridge.destroy()
         ros_shutdown()
         del carla_world
         del carla_client

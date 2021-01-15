@@ -56,15 +56,14 @@ class CarlaAdAgent(CompatibleNode):
 
         # wait for ego vehicle
         vehicle_info = None
-        try:
-            self.loginfo("Wait for vehicle info ...")
-            vehicle_info = self.wait_for_one_message(
-                "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo,
-                qos_profile=QoSProfile(depth=1, durability=latch_on))
-            self.loginfo("Vehicle info received.")
-        except ROSException:
-            self.logerr("Timeout while waiting for vehicle info!")
-            sys.exit(1)
+        self.loginfo("Wait for vehicle info ...")
+        vehicle_info = self.wait_for_one_message(
+            "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo,
+            qos_profile=QoSProfile(depth=1, durability=latch_on))
+        self.loginfo("Vehicle info received.")
+
+        self._agent = BasicAgent(role_name, vehicle_info.id,  # pylint: disable=no-member
+                                 self, avoid_risk)
 
         self._route_subscriber = self.create_subscriber(
             Path, "/carla/{}/waypoints".format(role_name), self.path_updated,
@@ -77,8 +76,6 @@ class CarlaAdAgent(CompatibleNode):
         self.vehicle_control_publisher = self.new_publisher(
             CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name),
             QoSProfile(depth=1, durability=False))
-        self._agent = BasicAgent(role_name, vehicle_info.id,  # pylint: disable=no-member
-                                 self, avoid_risk)
 
     def target_speed_updated(self, target_speed):
         """
@@ -160,17 +157,17 @@ def main(args=None):
     :return:
     """
     ros_init(args)
-
+    controller = None
     try:
         controller = CarlaAdAgent()
         controller.run()
-    except ROSInterruptException as e:
+    except (ROSInterruptException, ROSException) as e:
         if ros_ok():
             logwarn("ROS Error during exection: {}".format(e))
     except KeyboardInterrupt:
         loginfo("User requested shut down.")
     finally:
-        if controller._agent:
+        if controller is not None and controller._agent:
             controller.vehicle_control_publisher.publish(controller._agent.emergency_stop())
         ros_shutdown()
 
