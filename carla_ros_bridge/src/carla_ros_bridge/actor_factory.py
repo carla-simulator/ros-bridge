@@ -121,14 +121,14 @@ class ActorFactory(object):
         with self.spawn_lock:
             while not self._task_queue.empty():
                 task = self._task_queue.get()
-                if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR:
+                if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     pseudo_object = task[1]
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
                                         pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
                     actor_id = task[1]
                     self._destroy_object(actor_id, delete_actor=True)
-                elif task[0] == ActorFactory.TaskType.SYNC:
+                elif task[0] == ActorFactory.TaskType.SYNC and not self.node.shutdown.is_set():
                     break
         self.lock.release()
 

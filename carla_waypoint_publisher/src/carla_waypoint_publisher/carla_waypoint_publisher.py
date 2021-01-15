@@ -86,7 +86,6 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.goal_subscriber = self.create_subscriber(
             PoseStamped, "/carla/{}/goal".format(self.role_name), self.on_goal)
 
-        self._update_lock = threading.Lock()
 
         # use callback to wait for ego vehicle
         self.loginfo("Waiting for ego vehicle...")
@@ -170,38 +169,37 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         """
         Look for an carla actor with name 'ego_vehicle'
         """
-        with self._update_lock:
-            hero = None
-            for actor in self.world.get_actors():
-                if actor.attributes.get('role_name') == self.role_name:
-                    hero = actor
-                    break
+        hero = None
+        for actor in self.world.get_actors():
+            if actor.attributes.get('role_name') == self.role_name:
+                hero = actor
+                break
 
-            ego_vehicle_changed = False
-            if hero is None and self.ego_vehicle is not None:
-                ego_vehicle_changed = True
+        ego_vehicle_changed = False
+        if hero is None and self.ego_vehicle is not None:
+            ego_vehicle_changed = True
 
-            if not ego_vehicle_changed and hero is not None and self.ego_vehicle is None:
-                ego_vehicle_changed = True
+        if not ego_vehicle_changed and hero is not None and self.ego_vehicle is None:
+            ego_vehicle_changed = True
 
-            if not ego_vehicle_changed and hero is not None and \
-                    self.ego_vehicle is not None and hero.id != self.ego_vehicle.id:
-                ego_vehicle_changed = True
+        if not ego_vehicle_changed and hero is not None and \
+                self.ego_vehicle is not None and hero.id != self.ego_vehicle.id:
+            ego_vehicle_changed = True
 
-            if ego_vehicle_changed:
-                self.loginfo("Ego vehicle changed.")
-                self.ego_vehicle = hero
-                self.reroute()
-            elif self.ego_vehicle:
-                current_location = self.ego_vehicle.get_location()
-                if self.ego_vehicle_location:
-                    dx = self.ego_vehicle_location.x - current_location.x
-                    dy = self.ego_vehicle_location.y - current_location.y
-                    distance = math.sqrt(dx * dx + dy * dy)
-                    if distance > self.WAYPOINT_DISTANCE:
-                        self.loginfo("Ego vehicle was repositioned.")
-                        self.reroute()
-                self.ego_vehicle_location = current_location
+        if ego_vehicle_changed:
+            self.loginfo("Ego vehicle changed.")
+            self.ego_vehicle = hero
+            self.reroute()
+        elif self.ego_vehicle:
+            current_location = self.ego_vehicle.get_location()
+            if self.ego_vehicle_location:
+                dx = self.ego_vehicle_location.x - current_location.x
+                dy = self.ego_vehicle_location.y - current_location.y
+                distance = math.sqrt(dx * dx + dy * dy)
+                if distance > self.WAYPOINT_DISTANCE:
+                    self.loginfo("Ego vehicle was repositioned.")
+                    self.reroute()
+            self.ego_vehicle_location = current_location
 
     def calculate_route(self, goal):
         """
@@ -243,7 +241,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
             self.wait_for_one_message("/carla/world_info", CarlaWorldInfo,
-                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=10.0)
+                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=15.0)
         except ROSException as e:
             self.logerr("Error while waiting for world info: {}".format(e))
             raise e

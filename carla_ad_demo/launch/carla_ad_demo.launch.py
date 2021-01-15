@@ -41,7 +41,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2'
+            default_value='10'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
