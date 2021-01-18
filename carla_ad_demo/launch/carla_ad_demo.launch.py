@@ -71,6 +71,10 @@ def generate_launch_description():
             name='avoid_risk',
             default_value='True'
         ),
+        launch.actions.DeclareLaunchArgument(
+            name='sigterm_timeout',
+            default_value='15'
+        ),
         # TODO: adapt this to ROS2
         # launch_ros.actions.Node(
         #     package='rostopic',
