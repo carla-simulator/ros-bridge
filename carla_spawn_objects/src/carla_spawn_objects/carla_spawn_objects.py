@@ -283,8 +283,8 @@ class CarlaSpawnObjects(CompatibleNode):
                 continue
 
             except NameError:
-                self.logerr("Sensor rolename '{}' is only allowed to be used once.".format(
-                    sensor_spec['id']))
+                self.logerr("Sensor rolename '{}' is only allowed to be used once. The second one will be ignored.".format(
+                    sensor_id))
                 continue
 
     def create_spawn_point(self, x, y, z, roll, pitch, yaw):
