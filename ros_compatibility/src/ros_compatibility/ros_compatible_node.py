@@ -152,7 +152,7 @@ if ROS_VERSION == 1:
             else:
                 timeout = timeout_sec
             try:
-                rospy.wait_for_service(service_name, timeout=timeout)            
+                rospy.wait_for_service(service_name, timeout=timeout)
                 client = rospy.ServiceProxy(service_name, service)
             except rospy.ServiceException as e:
                 raise ServiceException(e)
