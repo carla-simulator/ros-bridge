@@ -146,12 +146,18 @@ if ROS_VERSION == 1:
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
             return rospy.Service(srv_name, srv_type, callback)
 
-        def create_service_client(self, service_name, service, callback_group=None):
-            rospy.wait_for_service(service_name)
+        def create_service_client(self, service_name, service, timeout_sec=None, callback_group=None):
+            if timeout_sec is not None:
+                timeout = timeout_sec * 1000
+            else:
+                timeout = timeout_sec
             try:
+                rospy.wait_for_service(service_name, timeout=timeout)            
                 client = rospy.ServiceProxy(service_name, service)
             except rospy.ServiceException as e:
-                print("Service call failed: %s" % e)
+                raise ServiceException(e)
+            except rospy.ROSException as e:
+                raise ROSException(e)
             return client
 
         def call_service(self, client, req, timeout_ros2=None):
@@ -326,11 +332,13 @@ elif ROS_VERSION == 2:
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
             return self.create_service(srv_type, srv_name, callback, callback_group=callback_group)
 
-        def create_service_client(self, service_name, service, callback_group=None):
+        def create_service_client(self, service_name, service, timeout_sec=None, callback_group=None):
             client = self.create_client(service, service_name, callback_group=callback_group)
-            while not client.wait_for_service(timeout_sec=1.0):
-                self.get_logger().info('service not available, waiting again...')
-            return client
+            status = client.wait_for_service(timeout_sec=timeout_sec)
+            if status is True:
+                return client
+            else:
+                raise ROSException("Timeout of {}sec while waiting for service".format(timeout_sec))
 
         def call_service(self, client, req, timeout_ros2=None):
             # uses the asynchronous call function but behaves like the synchronous call
