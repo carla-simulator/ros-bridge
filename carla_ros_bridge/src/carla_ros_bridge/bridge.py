@@ -80,7 +80,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
-        self.bridge_is_initialized = Event()
+        self.bridge_is_initialized = False
 
     # pylint: disable=attribute-defined-outside-init
     def initialize_bridge(self, carla_world, params):
@@ -183,7 +183,7 @@ class CarlaRosBridge(CompatibleNode):
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
                                    self.on_weather_changed, callback_group=self.callback_group)
-        self.bridge_is_initialized.set()
+        self.bridge_is_initialized = True
 
     def spawn_object(self, req, response=None):
         response = get_service_response(SpawnObject)
@@ -475,7 +475,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        if carla_bridge.bridge_is_initialized.is_set():
+        if carla_bridge.bridge_is_initialized is True:
             carla_bridge.destroy()
         ros_shutdown()
         del carla_world
