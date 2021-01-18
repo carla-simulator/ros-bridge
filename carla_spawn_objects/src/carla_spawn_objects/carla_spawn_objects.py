@@ -325,7 +325,8 @@ class CarlaSpawnObjects(CompatibleNode):
             for actor_id in self.vehicles_sensors:
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
-                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.call_service(self.destroy_object_service,
+                                  destroy_object_request, timeout_ros2=0.2)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.vehicles_sensors = []
 
@@ -333,7 +334,8 @@ class CarlaSpawnObjects(CompatibleNode):
             for actor_id in self.global_sensors:
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
-                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.call_service(self.destroy_object_service,
+                                  destroy_object_request, timeout_ros2=0.2)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.global_sensors = []
 
@@ -341,7 +343,8 @@ class CarlaSpawnObjects(CompatibleNode):
             for player_id in self.players:
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = player_id
-                self.call_service(self.destroy_object_service, destroy_object_request, timeout_ros2=0.2)
+                self.call_service(self.destroy_object_service,
+                                  destroy_object_request, timeout_ros2=0.2)
                 self.loginfo("Object {} successfully destroyed.".format(player_id))
             self.players = []
         except ServiceException:
@@ -367,16 +370,16 @@ def main(args=None):
     if spawn_objects_node:
         if ROS_VERSION == 1:
             spawn_objects_node.on_shutdown(spawn_objects_node.destroy)
-        try:	
+        try:
             spawn_objects_node.spawn_objects()
             try:
                 spawn_objects_node.spin()
             except (ROSInterruptException, ServiceException, KeyboardInterrupt):
                 pass
-        except (ROSInterruptException, ServiceException, KeyboardInterrupt):	
-            spawn_objects_node.logwarn(	
+        except (ROSInterruptException, ServiceException, KeyboardInterrupt):
+            spawn_objects_node.logwarn(
                 "Spawning process has been interrupted. There might be actors that have not been destroyed properly")
-        except RuntimeError as e:	
+        except RuntimeError as e:
             logfatal("Exception caught: {}".format(e))
         finally:
             if ROS_VERSION == 2:

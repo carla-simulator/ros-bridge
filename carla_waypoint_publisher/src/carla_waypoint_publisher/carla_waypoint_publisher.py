@@ -86,7 +86,6 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.goal_subscriber = self.create_subscriber(
             PoseStamped, "/carla/{}/goal".format(self.role_name), self.on_goal)
 
-
         # use callback to wait for ego vehicle
         self.loginfo("Waiting for ego vehicle...")
         self.on_tick = self.world.on_tick(self.find_ego_vehicle_actor)

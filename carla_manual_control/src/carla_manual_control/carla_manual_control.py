@@ -559,7 +559,8 @@ class HUD(object):
                             rect = pygame.Rect((bar_h_offset + int(f * (bar_width - 6)), v_offset + 8),
                                                (6, 6))
                         else:
-                            rect = pygame.Rect((bar_h_offset, v_offset + 8), (int(f * bar_width), 6))
+                            rect = pygame.Rect((bar_h_offset, v_offset + 8),
+                                               (int(f * bar_width), 6))
                         pygame.draw.rect(display, (255, 255, 255), rect)
                     item = item[0]
                 if item:  # At this point has to be a str.

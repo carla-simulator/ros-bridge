@@ -68,7 +68,8 @@ class BasicAgent(Agent):
 
             # the agent shouldn't start if it has no info about other actors and objects
             self.node.wait_for_one_message("/carla/actor_list", CarlaActorList, timeout=15.0)
-            self.node.wait_for_one_message("/carla/{}/objects".format(role_name), ObjectArray, timeout=15.0)
+            self.node.wait_for_one_message(
+                "/carla/{}/objects".format(role_name), ObjectArray, timeout=15.0)
 
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
                                                                   self.actors_updated, callback_group=cb_group)
