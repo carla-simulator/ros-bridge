@@ -28,6 +28,7 @@ if ROS_VERSION == 1:
     from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
 elif ROS_VERSION == 2:
     from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
+    from rclpy.callback_groups import ReentrantCallbackGroup
 
 
 class AgentState(Enum):

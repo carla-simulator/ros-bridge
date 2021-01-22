@@ -9,5 +9,10 @@
     <param name="role_name" value="$(arg role_name)" />
     <param name="avoid_risk" value="$(arg avoid_risk)" />
   </node>
+
+  <node pkg="carla_ad_agent" type="local_planner.py" name="local_planner_$(arg role_name)" output="screen">
+    <param name="role_name" value="$(arg role_name)" />
+    <remap from="/carla/$(arg role_name)/target_speed" to="/carla/$(arg role_name)/target_speed_to_pid"/>
+  </node>
 </launch>
 

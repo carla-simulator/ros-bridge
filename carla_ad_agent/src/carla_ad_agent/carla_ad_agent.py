@@ -49,9 +49,8 @@ class CarlaAdAgent(CompatibleNode):
         role_name = self.get_param("role_name", "ego_vehicle")
         avoid_risk = self.get_param("avoid_risk", True)
 
-        self._target_speed = self.get_param("target_speed", 20)
-        self._route_assigned = False
-        self._global_plan = None
+        self._target_speed = Float64()
+        self._target_speed.data = float(self.get_param("target_speed", 20))
         self._agent = None
 
         # wait for ego vehicle
@@ -62,91 +61,37 @@ class CarlaAdAgent(CompatibleNode):
             qos_profile=QoSProfile(depth=1, durability=latch_on))
         self.loginfo("Vehicle info received.")
 
-        self._agent = BasicAgent(role_name, vehicle_info.id,  # pylint: disable=no-member
-                                 self, avoid_risk)
-
-        self._route_subscriber = self.create_subscriber(
-            Path, "/carla/{}/waypoints".format(role_name), self.path_updated,
-            QoSProfile(depth=1, durability=True))
+        self._agent = BasicAgent(role_name, vehicle_info.id, self, avoid_risk)
 
         self._target_speed_subscriber = self.create_subscriber(
             Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated,
             QoSProfile(depth=1, durability=True))
-
-        self.vehicle_control_publisher = self.new_publisher(
-            CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name),
-            QoSProfile(depth=1, durability=False))
+        
+        self.speed_to_pid = self.new_publisher( Float64, "/carla/{}/target_speed_to_pid".format(role_name),
+            QoSProfile(depth=1, durability=True))
 
     def target_speed_updated(self, target_speed):
         """
         callback on new target speed
         """
         self.loginfo("New target speed received: {}".format(target_speed.data))
-        self._target_speed = target_speed.data
-
-    def path_updated(self, path):
-        """
-        callback on new route
-        """
-        self.loginfo("New plan with {} waypoints received.".format(len(path.poses)))
-        if self._agent:
-            self.vehicle_control_publisher.publish(self._agent.emergency_stop())
-        self._global_plan = path
-        self._route_assigned = False
+        self._target_speed = target_speed
 
     def run_step(self):
         """
         Execute one step of navigation.
         """
-        control = CarlaEgoVehicleControl()
-        control.steer = 0.0
-        control.throttle = 0.0
-        control.brake = 0.0
-        control.hand_brake = False
-
         if not self._agent:
             self.loginfo("Waiting for ego vehicle...")
-            return control
-
-        if not self._route_assigned and self._global_plan:
-            self.loginfo("Assigning plan...")
-            self._agent._local_planner.set_global_plan(  # pylint: disable=protected-access
-                self._global_plan.poses)
-            self._route_assigned = True
         else:
-            control, finished = self._agent.run_step(self._target_speed)
-            if finished:
-                self._global_plan = None
-                self._route_assigned = False
-
-        return control
-
-    def run(self):
-        """
-
-        Control loop
-
-        :return:
-        """
-        loop_frequency = 10
-
-        if ROS_VERSION == 1:
-            r = rospy.Rate(loop_frequency)
-
-        while ros_ok():
-            if ROS_VERSION == 2:
-                rclpy.spin_once(self)
-            if self._global_plan:
-                control = self.run_step()
-                if control:
-                    control.steer = -control.steer
-                    self.vehicle_control_publisher.publish(control)
+            hazard_detected = self._agent.run_step()
+            if hazard_detected:
+                stopping_speed = Float64()
+                stopping_speed.data = 0.0
+                self.speed_to_pid.publish(stopping_speed)
             else:
-                if ROS_VERSION == 1:
-                    r.sleep()
-                elif ROS_VERSION == 2:
-                    # TODO: use rclpy.Rate, not working yet
-                    time.sleep(1 / loop_frequency)
+                self.speed_to_pid.publish(self._target_speed)
+        return
 
 
 def main(args=None):
@@ -160,15 +105,21 @@ def main(args=None):
     controller = None
     try:
         controller = CarlaAdAgent()
-        controller.run()
+        while True:
+            time.sleep(0.05)
+            if ROS_VERSION == 2:
+                rclpy.spin_once(controller)
+            controller.run_step()
     except (ROSInterruptException, ROSException) as e:
         if ros_ok():
             logwarn("ROS Error during exection: {}".format(e))
     except KeyboardInterrupt:
         loginfo("User requested shut down.")
     finally:
-        if controller is not None and controller._agent:
-            controller.vehicle_control_publisher.publish(controller._agent.emergency_stop())
+        if controller is not None:
+            stopping_speed = Float64()
+            stopping_speed.data = 0.0
+            controller.speed_to_pid.publish(stopping_speed)
         ros_shutdown()
 
 

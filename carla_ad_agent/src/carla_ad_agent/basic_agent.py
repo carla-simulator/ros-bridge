@@ -50,13 +50,7 @@ class BasicAgent(Agent):
         self._current_pose = Pose()
         self._proximity_threshold = 10.0  # meters
         self._state = AgentState.NAVIGATING
-        args_lateral_dict = {
-            'K_P': 0.9,
-            'K_D': 0.0,
-            'K_I': 0.1}
-        self._local_planner = LocalPlanner(node=self.node, opt_dict={
-                                           'lateral_control_dict': args_lateral_dict})
-
+        
         if ROS_VERSION == 1:
             cb_group = None
         elif ROS_VERSION == 2:
@@ -68,8 +62,7 @@ class BasicAgent(Agent):
 
             # the agent shouldn't start if it has no info about other actors and objects
             self.node.wait_for_one_message("/carla/actor_list", CarlaActorList, timeout=15.0)
-            self.node.wait_for_one_message(
-                "/carla/{}/objects".format(role_name), ObjectArray, timeout=15.0)
+            self.node.wait_for_one_message("/carla/{}/objects".format(role_name), ObjectArray, timeout=15.0)
 
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
                                                                   self.actors_updated, callback_group=cb_group)
@@ -131,7 +124,7 @@ class BasicAgent(Agent):
         """
         self._objects = objects.objects
 
-    def run_step(self, target_speed):
+    def run_step(self):
         """
         Execute one step of navigation.
         :return: carla.VehicleControl
@@ -156,12 +149,7 @@ class BasicAgent(Agent):
                 self._state = AgentState.BLOCKED_RED_LIGHT
                 hazard_detected = True
 
-        if hazard_detected:
-            control = self.emergency_stop()
-        else:
+        if hazard_detected is False:
             self._state = AgentState.NAVIGATING
-            # standard local planner behavior
-            control, finished = self._local_planner.run_step(
-                target_speed, self._current_speed, self._current_pose)
 
-        return control, finished
+        return hazard_detected
