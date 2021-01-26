@@ -29,6 +29,9 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {
+                    'use_sim_time': True
+                },
+                {
                     'target_speed': launch.substitutions.LaunchConfiguration('target_speed')
                 },
                 {

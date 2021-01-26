@@ -10,9 +10,8 @@ A basic AD agent using CARLA waypoints
 """
 import sys
 import time
-from nav_msgs.msg import Path  # pylint: disable=import-error
 from std_msgs.msg import Float64  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleControl  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleInfo # pylint: disable=import-error
 from ros_compatibility import (
     CompatibleNode,
     ROSInterruptException,
@@ -56,19 +55,14 @@ class CarlaAdAgent(CompatibleNode):
         # wait for ego vehicle
         vehicle_info = None
         self.loginfo("Wait for vehicle info ...")
-        vehicle_info = self.wait_for_one_message(
-            "/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo,
-            qos_profile=QoSProfile(depth=1, durability=latch_on))
+        vehicle_info = self.wait_for_one_message("/carla/{}/vehicle_info".format(role_name), CarlaEgoVehicleInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
         self.loginfo("Vehicle info received.")
 
         self._agent = BasicAgent(role_name, vehicle_info.id, self, avoid_risk)
 
-        self._target_speed_subscriber = self.create_subscriber(
-            Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated,
-            QoSProfile(depth=1, durability=True))
+        self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
         
-        self.speed_to_pid = self.new_publisher( Float64, "/carla/{}/target_speed_to_pid".format(role_name),
-            QoSProfile(depth=1, durability=True))
+        self.speed_to_pid = self.new_publisher( Float64, "/carla/{}/target_speed_to_pid".format(role_name), QoSProfile(depth=1, durability=True))
 
     def target_speed_updated(self, target_speed):
         """
@@ -86,6 +80,7 @@ class CarlaAdAgent(CompatibleNode):
         else:
             hazard_detected = self._agent.run_step()
             if hazard_detected:
+                # stop, publish speed 0.0km/h
                 stopping_speed = Float64()
                 stopping_speed.data = 0.0
                 self.speed_to_pid.publish(stopping_speed)
@@ -106,7 +101,7 @@ def main(args=None):
     try:
         controller = CarlaAdAgent()
         while True:
-            time.sleep(0.05)
+            # time.sleep(0.01)
             if ROS_VERSION == 2:
                 rclpy.spin_once(controller)
             controller.run_step()
