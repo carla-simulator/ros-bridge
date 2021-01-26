@@ -14,7 +14,6 @@ from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-
 from carla_msgs.msg import CarlaActorList  # pylint: disable=import-error
 from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
 from geometry_msgs.msg import Pose  # pylint: disable=import-error
-from nav_msgs.msg import Odometry  # pylint: disable=import-error
 import math
 from ros_compatibility import (
     ros_ok,
@@ -26,11 +25,9 @@ from ros_compatibility import (
     ROS_VERSION)
 
 if ROS_VERSION == 1:
-    from local_planner import LocalPlanner  # pylint: disable=relative-import
     from agent import Agent, AgentState  # pylint: disable=relative-import
 elif ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
-    from carla_ad_agent.local_planner import LocalPlanner  # pylint: disable=relative-import
     from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
 
 
@@ -46,8 +43,6 @@ class BasicAgent(Agent):
         super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk, node)
         self.node = node
         self._avoid_risk = avoid_risk
-        self._current_speed = 0.0  # Km/h
-        self._current_pose = Pose()
         self._proximity_threshold = 10.0  # meters
         self._state = AgentState.NAVIGATING
         
@@ -59,23 +54,14 @@ class BasicAgent(Agent):
         if self._avoid_risk:
             self._vehicle_id_list = []
             self._lights_id_list = []
-
-            # the agent shouldn't start if it has no info about other actors and objects
-            self.node.wait_for_one_message("/carla/actor_list", CarlaActorList, timeout=15.0)
-            self.node.wait_for_one_message("/carla/{}/objects".format(role_name), ObjectArray, timeout=15.0)
-
+            self._objects = []
             self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
                                                                   self.actors_updated, callback_group=cb_group)
-            self._objects = []
-
             self._objects_subscriber = self.node.create_subscriber(ObjectArray,
                                                                    "/carla/{}/objects".format(role_name), self.objects_updated)
             self._get_actor_waypoint_client = self.node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
                 GetActorWaypoint, callback_group=cb_group)
-
-        self._odometry_subscriber = self.node.create_subscriber(Odometry,
-                                                                "/carla/{}/odometry".format(role_name), self.odometry_updated)
 
     def get_actor_waypoint(self, actor_id):
         """
@@ -90,16 +76,6 @@ class BasicAgent(Agent):
         except ServiceException as e:
             if ros_ok():
                 self.node.logwarn("Service call failed: {}".format(e))
-
-    def odometry_updated(self, odo):
-        """
-        callback on new odometry
-        """
-        self._current_speed = math.sqrt(odo.twist.twist.linear.x ** 2 +
-                                        odo.twist.twist.linear.y ** 2 +
-                                        odo.twist.twist.linear.z ** 2) * 3.6
-        self._current_pose = odo.pose.pose
-        super(BasicAgent, self).odometry_updated(odo)
 
     def actors_updated(self, actors):
         """

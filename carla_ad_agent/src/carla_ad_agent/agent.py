@@ -12,8 +12,10 @@ Base class for agent
 from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
+from nav_msgs.msg import Odometry
 from enum import Enum
 import math
+import time
 from transforms3d.euler import quat2euler
 from ros_compatibility import (
     ros_ok,
@@ -28,7 +30,7 @@ if ROS_VERSION == 1:
     from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
 elif ROS_VERSION == 2:
     from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
-    from rclpy.callback_groups import ReentrantCallbackGroup
+    from rclpy import spin_once
 
 
 class AgentState(Enum):
@@ -57,6 +59,15 @@ class Agent(object):
         self._vehicle_id = vehicle_id
         self._last_traffic_light = None
 
+        self._odometry_subscriber = self.node.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
+        # wait for first odometry update
+        self.node.logwarn('waiting for odo')
+        while self._vehicle_location is None:
+            time.sleep(0.05)
+            if ROS_VERSION == 2:
+                spin_once(node, timeout_sec=0)
+        self.node.logwarn('odo received')
+
         if avoid_risk:
             self._get_waypoint_client = node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
@@ -65,9 +76,8 @@ class Agent(object):
             self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
                                                                            "/carla/traffic_lights/status", self.traffic_lights_updated,
                                                                            qos_profile=QoSProfile(depth=10, durability=latch_on))
-
-            node.create_subscriber(CarlaWorldInfo,
-                                   "/carla/world_info", self.world_info_updated, qos_profile=QoSProfile(depth=1, durability=latch_on))
+            world_info = node.wait_for_one_message("/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
+            self._map_name = world_info.map_name
 
     def traffic_lights_updated(self, traffic_lights):
         """
@@ -75,13 +85,6 @@ class Agent(object):
         Only used if risk should be avoided.
         """
         self._traffic_lights = traffic_lights.traffic_lights
-
-    def world_info_updated(self, world_info):
-        """
-        callback on new world info
-        Only used if risk should be avoided.
-        """
-        self._map_name = world_info.map_name
 
     def odometry_updated(self, odo):
         """

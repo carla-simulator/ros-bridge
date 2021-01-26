@@ -154,7 +154,7 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
 
         previous_error = self.error
         self.error = _dot
-        self.error_integral = np.clip(self.error_integral + self.error, -40.0, 40.0) # restrict integral term to avoid integral windup
+        self.error_integral = np.clip(self.error_integral + self.error, -400.0, 400.0) # restrict integral term to avoid integral windup
         self.error_derivative = self.error - previous_error
         output = self._K_P * self.error + self._K_I * self.error_integral + self._K_D * self.error_derivative
         return np.clip(output, -1.0, 1.0)

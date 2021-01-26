@@ -13,7 +13,7 @@ low-level waypoint following based on PID controllers.
 from collections import deque
 from geometry_msgs.msg import PointStamped, Pose  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
-from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION
+from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION, ros_ok
 from nav_msgs.msg import Path
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64
@@ -53,6 +53,7 @@ class LocalPlanner(CompatibleNode):
 
         # ros parameters
         role_name = self.get_param("role_name", "ego_vehicle")
+        self.control_time_step = self.get_param("control_time_step", 0.05)
         args_lateral_dict = {}
         args_lateral_dict['K_P'] = self.get_param("Kp_lateral", 0.9)
         args_lateral_dict['K_I'] = self.get_param("Ki_lateral", 0.0)
@@ -60,7 +61,7 @@ class LocalPlanner(CompatibleNode):
         args_longitudinal_dict = {}
         args_longitudinal_dict['K_P'] = self.get_param("Kp_longitudinal", 0.206)
         args_longitudinal_dict['K_I'] = self.get_param("Ki_longitudinal", 0.0206)
-        args_longitudinal_dict['K_D'] = self.get_param("Kd_longitudinal", 0.9)
+        args_longitudinal_dict['K_D'] = self.get_param("Kd_longitudinal", 0.515)
 
         self.target_route_point = None
         self._vehicle_controller = None
@@ -75,7 +76,7 @@ class LocalPlanner(CompatibleNode):
         # subscribers
         self._odometry_subscriber = self.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
         self._path_subscriber = self.create_subscriber(Path, "/carla/{}/waypoints".format(role_name), self.path_updated, QoSProfile(depth=1, durability=True))
-        self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
+        # self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
 
         # publishers
         self._target_point_publisher = self.new_publisher(Marker, "/next_target", QoSProfile(depth=10, durability=False))
@@ -101,6 +102,7 @@ class LocalPlanner(CompatibleNode):
                                         new_pose.twist.twist.linear.y ** 2 +
                                         new_pose.twist.twist.linear.z ** 2) * 3.6
         self._current_pose = new_pose.pose.pose
+        self.logwarn(f'odo update: {new_pose.header.stamp}, speed: {self._current_speed}')
 
     def target_speed_updated(self, new_target_speed):
         self._target_speed = new_target_speed.data
@@ -126,26 +128,14 @@ class LocalPlanner(CompatibleNode):
             return
 
         if not self._waypoint_buffer and not self._waypoints_queue:
-            control = CarlaEgoVehicleControl()
-            control.steer = 0.0
-            control.throttle = 0.0
-            control.brake = 1.0
-            control.hand_brake = False
-            control.manual_gear_shift = False
-            self._control_cmd_publisher.publish(control)
+            self.emergency_stop()
             self.loginfo("Route finished. Waiting for a new one.")
             self.path_received = False
             return
         
         # When target speed is 0, brake
         if self._target_speed == 0.0:
-            control = CarlaEgoVehicleControl()
-            control.steer = 0.0
-            control.throttle = 0.0
-            control.brake = 1.0
-            control.hand_brake = False
-            control.manual_gear_shift = False
-            self._control_cmd_publisher.publish(control)
+            self.emergency_stop()
             return
 
         #   Buffering the waypoints
@@ -168,11 +158,23 @@ class LocalPlanner(CompatibleNode):
         target_point.scale.z = 0.2
         target_point.color.r = 255.0
         target_point.color.a = 1.0
+        target_point.id =232
+        self._target_point_publisher.publish(target_point)
+        # publish current pose as marker
+        target_point = Marker()
+        target_point.type = 0
+        target_point.header.frame_id = "map"
+        target_point.pose = self._current_pose
+        target_point.scale.x = 1.0
+        target_point.scale.y = 0.2
+        target_point.scale.z = 0.2
+        target_point.color.b = 255.0
+        target_point.color.a = 1.0
+        target_point.id =231
         self._target_point_publisher.publish(target_point)
 
         # move using PID controllers
-        control = self._vehicle_controller.run_step(
-            self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
+        control = self._vehicle_controller.run_step(self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
 
         self.f.write('{}, {}, {}, {}, {}, \n'.format(self.get_time(), self._target_speed, self._current_speed, control.throttle, self._vehicle_controller._lat_controller.error))
 
@@ -183,8 +185,7 @@ class LocalPlanner(CompatibleNode):
         min_distance = sampling_radius * self.MIN_DISTANCE_PERCENTAGE
 
         for i, route_point in enumerate(self._waypoint_buffer):
-            if distance_vehicle(
-                    route_point, self._current_pose.position) < min_distance:
+            if distance_vehicle(route_point, self._current_pose.position) < min_distance:
                 max_index = i
         if max_index >= 0:
             for i in range(max_index + 1):
@@ -218,7 +219,7 @@ def main(args=None):
         if ROS_VERSION == 1:
             local_planner.on_shutdown(local_planner.emergency_stop)
         local_planner.loginfo('Local planner is starting.')
-        update_timer = local_planner.new_timer(0.05, lambda timer_event=None: local_planner.run_step())
+        update_timer = local_planner.new_timer(local_planner.control_time_step, lambda timer_event=None: local_planner.run_step())
         local_planner.spin()
     except KeyboardInterrupt:
         pass
