@@ -385,19 +385,12 @@ class HUD(object):
         self.status_subscriber = node.create_subscriber(CarlaStatus, "/carla/status",
                                                         self.carla_status_updated,
                                                         callback_group=self.callback_group)
-        if ROS_VERSION == 2:
-            self.clock_subscriber = node.create_subscriber(Time, "/clock",
-                                                           self.clock_status_updated,
-                                                           callback_group=self.callback_group)
 
     def tick(self, clock):
         """
         tick method
         """
         self._notifications.tick(clock)
-
-    def clock_status_updated(self, clock_time):
-        self.time = clock_time
 
     def carla_status_updated(self, data):
         """
