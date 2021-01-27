@@ -357,7 +357,6 @@ class HUD(object):
         elif ROS_VERSION == 2:
             self.tf_buffer = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, node=self.node)
-            self.time = Time()
             self.callback_group = ReentrantCallbackGroup()
 
         self.vehicle_status_subscriber = node.create_subscriber(
