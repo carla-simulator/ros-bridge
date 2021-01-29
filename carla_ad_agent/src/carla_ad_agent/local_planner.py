@@ -71,12 +71,12 @@ class LocalPlanner(CompatibleNode):
         self.path_received = False
         self._current_speed = None
         self._current_pose = None
-        self._target_speed = 30.0
+        self._target_speed = 0.0
 
         # subscribers
         self._odometry_subscriber = self.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
         self._path_subscriber = self.create_subscriber(Path, "/carla/{}/waypoints".format(role_name), self.path_updated, QoSProfile(depth=1, durability=True))
-        # self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/target_speed".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
+        self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/speed_command".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
 
         # publishers
         self._target_point_publisher = self.new_publisher(Marker, "/next_target", QoSProfile(depth=10, durability=False))
@@ -92,7 +92,7 @@ class LocalPlanner(CompatibleNode):
             if ROS_VERSION == 2:
                 rclpy.spin_once(self, timeout_sec=0)
 
-        self.f = open('data.txt', 'w')
+        # self.f = open('data.txt', 'w')
 
     def odometry_updated(self, new_pose):
         """
@@ -102,7 +102,6 @@ class LocalPlanner(CompatibleNode):
                                         new_pose.twist.twist.linear.y ** 2 +
                                         new_pose.twist.twist.linear.z ** 2) * 3.6
         self._current_pose = new_pose.pose.pose
-        self.logwarn(f'odo update: {new_pose.header.stamp}, speed: {self._current_speed}')
 
     def target_speed_updated(self, new_target_speed):
         self._target_speed = new_target_speed.data
@@ -158,25 +157,12 @@ class LocalPlanner(CompatibleNode):
         target_point.scale.z = 0.2
         target_point.color.r = 255.0
         target_point.color.a = 1.0
-        target_point.id =232
-        self._target_point_publisher.publish(target_point)
-        # publish current pose as marker
-        target_point = Marker()
-        target_point.type = 0
-        target_point.header.frame_id = "map"
-        target_point.pose = self._current_pose
-        target_point.scale.x = 1.0
-        target_point.scale.y = 0.2
-        target_point.scale.z = 0.2
-        target_point.color.b = 255.0
-        target_point.color.a = 1.0
-        target_point.id =231
         self._target_point_publisher.publish(target_point)
 
         # move using PID controllers
         control = self._vehicle_controller.run_step(self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
 
-        self.f.write('{}, {}, {}, {}, {}, \n'.format(self.get_time(), self._target_speed, self._current_speed, control.throttle, self._vehicle_controller._lat_controller.error))
+        # self.f.write('{}, {}, {}, {}, {}, \n'.format(self.get_time(), self._target_speed, self._current_speed, control.throttle, self._vehicle_controller._lat_controller.error))
 
         # purge the queue of obsolete waypoints
         max_index = -1
@@ -230,7 +216,7 @@ def main(args=None):
                 update_timer.shutdown()
             else:
                 update_timer.destroy()
-        local_planner.f.close()
+        # local_planner.f.close()
         if ROS_VERSION == 2:
             local_planner.emergency_stop()
         local_planner.shutdown()
