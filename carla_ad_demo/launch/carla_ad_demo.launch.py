@@ -65,7 +65,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='30'
+            default_value='30.0'
         ),
         launch.actions.DeclareLaunchArgument(
             name='avoid_risk',
