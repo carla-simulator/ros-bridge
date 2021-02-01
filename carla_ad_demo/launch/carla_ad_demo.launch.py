@@ -17,7 +17,7 @@ def launch_carla_spawn_object(context, *args, **kwargs):
                 'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
         ),
         launch_arguments={
-            'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/sensors.json',
+            'objects_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/objects.json',
             spawn_point_param_name: launch.substitutions.LaunchConfiguration('spawn_point')
         }.items()
     )
