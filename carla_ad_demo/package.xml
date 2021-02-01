@@ -18,7 +18,6 @@
   
 
   <!-- ROS 2 DEPENDENCIES-->
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_python</buildtool_depend>
   <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
   <!-- ROS 1 DEPENDENCIES-->

@@ -19,7 +19,6 @@
   
   <!-- ROS 2 DEPENDENCIES-->
   <depend condition="$ROS_VERSION == 2">rclpy</depend>
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_python</buildtool_depend>
 
   <export>
     <build_type condition="$ROS_VERSION == 1">catkin</build_type>
