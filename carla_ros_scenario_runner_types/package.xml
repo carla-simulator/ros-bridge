@@ -16,7 +16,6 @@
 
   <depend condition="$ROS_VERSION == 2">builtin_interfaces</depend>
   
-  <exec_depend>message_runtime</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
 
   <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
