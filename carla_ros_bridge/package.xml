@@ -21,6 +21,7 @@
   <exec_depend>carla_manual_control</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>python-transforms3d-pip</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
   <exec_depend>ros_compatibility</exec_depend>
 
   <!-- ROS 2 DEPENDENCIES-->
