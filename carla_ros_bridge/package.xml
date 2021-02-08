@@ -21,17 +21,18 @@
   <exec_depend>carla_manual_control</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>python-transforms3d-pip</exec_depend>
-  <exec_depend>python3-opencv</exec_depend>
   <exec_depend>ros_compatibility</exec_depend>
 
   <!-- ROS 2 DEPENDENCIES-->
   <depend condition="$ROS_VERSION == 2">rclpy</depend>
+  <exec_depend condition="$ROS_VERSION == 2">python3-opencv</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">tf2_ros</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
   <!-- ROS 1 DEPENDENCIES-->
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <build_depend condition="$ROS_VERSION == 1">roslaunch</build_depend>
+  <exec_depend condition="$ROS_VERSION == 1">python-opencv</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">tf</exec_depend>
   <exec_depend condition="$ROS_VERSION == 1">tf2</exec_depend>
