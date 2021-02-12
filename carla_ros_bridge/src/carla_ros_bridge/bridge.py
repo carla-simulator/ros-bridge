@@ -450,7 +450,7 @@ def main(args=None):
 
         carla_world = carla_client.get_world()
 
-        if "town" in parameters:
+        if "town" in parameters and not parameters['passive']:
             if parameters["town"].endswith(".xodr"):
                 carla_bridge.loginfo(
                     "Loading opendrive world from file '{}'".format(parameters["town"]))
