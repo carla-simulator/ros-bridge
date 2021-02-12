@@ -102,7 +102,7 @@ class ApplicationRunner(object):
             raise KeyError("No arguments given!")
         executable = argument_list[0]
         log_fct("Executing: {}".format(" ".join(argument_list)))
-        process = pexpect.spawn(" ".join(argument_list), env=env, cwd=cwd)
+        process = pexpect.spawn(" ".join(argument_list), env=env, cwd=cwd, encoding='utf-8')
         #process.logfile_read = sys.stdout
         return process
 
