@@ -137,7 +137,7 @@ if ROS_VERSION == 1:
         def new_timer(self, timer_period_sec, callback):
             return rospy.Timer(rospy.Duration(timer_period_sec), callback)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
+        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None, executor=None):
             try:
                 return rospy.wait_for_message(topic, topic_type, timeout)
             except rospy.ROSException as e:
@@ -160,7 +160,7 @@ if ROS_VERSION == 1:
                 raise ROSException(e)
             return client
 
-        def call_service(self, client, req, timeout_ros2=None):
+        def call_service(self, client, req, timeout_ros2=None, executor=None):
             try:
                 return client(req)
             except rospy.ServiceException as e:
@@ -308,7 +308,7 @@ elif ROS_VERSION == 2:
         def new_timer(self, timer_period_sec, callback):
             return self.create_timer(timer_period_sec, callback)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
+        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None, executor=None):
             s = None
             wfm = WaitForMessageHelper()
             try:
@@ -317,13 +317,19 @@ elif ROS_VERSION == 2:
                     timeout_t = time.time() + timeout
                     while ros_ok() and wfm.msg is None:
                         time.sleep(0.01)
-                        rclpy.spin_once(self, timeout_sec=0)
+                        if executor is None:
+                            rclpy.spin_once(self, timeout_sec=0)
+                        else:
+                            executor.spin_once(timeout_sec=0)
                         if time.time() >= timeout_t:
                             raise ROSException
                 else:
                     while ros_ok() and wfm.msg is None:
                         time.sleep(0.01)
-                        rclpy.spin_once(self, timeout_sec=0)
+                        if executor is None:
+                            rclpy.spin_once(self, timeout_sec=0)
+                        else:
+                            executor.spin_once(timeout_sec=0)
             finally:
                 if s is not None:
                     self.destroy_subscription(s)
@@ -340,12 +346,15 @@ elif ROS_VERSION == 2:
             else:
                 raise ROSException("Timeout of {}sec while waiting for service".format(timeout_sec))
 
-        def call_service(self, client, req, timeout_ros2=None):
+        def call_service(self, client, req, timeout_ros2=None, executor=None):
             # uses the asynchronous call function but behaves like the synchronous call
             # this is done because the basic synchronous call function doesn't raise
             # an error when trying to call a service that is not alive anymore
             future = client.call_async(req)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_ros2)
+            if executor is None:
+                rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_ros2)
+            else:
+                executor.spin_until_future_complete(future, timeout_sec=timeout_ros2)
             if future.done():
                 return future.result()
             else:
