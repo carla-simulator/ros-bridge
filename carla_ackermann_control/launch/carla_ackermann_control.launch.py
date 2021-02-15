@@ -11,6 +11,10 @@ def generate_launch_description():
             name='role_name',
             default_value='ego_vehicle'
         ),
+        launch.actions.DeclareLaunchArgument(
+            name='control_loop_rate',
+            default_value='0.05'
+        ),
         launch_ros.actions.Node(
             package='carla_ackermann_control',
             executable='carla_ackermann_control_node',
@@ -19,7 +23,8 @@ def generate_launch_description():
             parameters=[
                 Path(get_package_share_directory('carla_ackermann_control'), "settings.yaml"),
                 {
-                    'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                    'role_name': launch.substitutions.LaunchConfiguration('role_name'),
+                    'control_loop_rate': launch.substitutions.LaunchConfiguration('control_loop_rate')
                 }
             ]
         )
