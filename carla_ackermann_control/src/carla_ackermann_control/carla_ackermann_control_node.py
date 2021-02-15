@@ -105,7 +105,7 @@ class CarlaAckermannControl(CompatibleNode):
             #     ]
             # )
 
-        self.control_loop_rate = 1.0 / 20  # 20Hz
+        self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
