@@ -21,7 +21,7 @@
 
 #include <carla_msgs/CarlaControl.h>
 #include <carla_ros_scenario_runner_types/ExecuteScenario.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Bool.h>
 #include <tf/transform_datatypes.h>
@@ -138,7 +138,7 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
     = mNodeHandle.subscribe("/carla/ego_vehicle/odometry", 1000, &CarlaControlPanel::egoVehicleOdometryChanged, this);
 
   mCameraPosePublisher
-    = mNodeHandle.advertise<geometry_msgs::PoseStamped>("carla/ego_vehicle/spectator_pose", 10, true);
+    = mNodeHandle.advertise<geometry_msgs::Pose>("carla/ego_vehicle/spectator_pose", 10, true);
 
   mEgoVehicleControlManualOverridePublisher
     = mNodeHandle.advertise<std_msgs::Bool>("/carla/ego_vehicle/vehicle_control_manual_override", 1, true);
@@ -177,17 +177,17 @@ void CarlaControlPanel::cameraPreRenderScene(Ogre::Camera *cam)
 void CarlaControlPanel::updateCameraPos()
 {
   auto frame = mViewController->subProp("Target Frame")->getValue();
+  geometry_msgs::Pose pose;
+  pose.position.x = mCameraCurrentPosition.x;
+  pose.position.y = mCameraCurrentPosition.y;
+  pose.position.z = mCameraCurrentPosition.z;
 
-  geometry_msgs::PoseStamped pose;
-  pose.header.frame_id = frame.toString().toStdString();
-  pose.header.stamp = ros::Time::now();
-  pose.pose.position.x = mCameraCurrentPosition.x;
-  pose.pose.position.y = mCameraCurrentPosition.y;
-  pose.pose.position.z = mCameraCurrentPosition.z;
-  pose.pose.orientation.x = mCameraCurrentOrientation.x;
-  pose.pose.orientation.y = mCameraCurrentOrientation.y;
-  pose.pose.orientation.z = mCameraCurrentOrientation.z;
-  pose.pose.orientation.w = mCameraCurrentOrientation.w;
+  mCameraCurrentOrientation = mCameraCurrentOrientation * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y);
+  mCameraCurrentOrientation = mCameraCurrentOrientation * Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
+  pose.orientation.x = mCameraCurrentOrientation.x;
+  pose.orientation.y = mCameraCurrentOrientation.y;
+  pose.orientation.z = mCameraCurrentOrientation.z;
+  pose.orientation.w = mCameraCurrentOrientation.w;
 
   mCameraPosePublisher.publish(pose);
 }

@@ -22,9 +22,14 @@ class TrafficLightsSensor(PseudoActor):
     a sensor that reports the state of all traffic lights
     """
 
-    def __init__(self, parent, node, actor_list):
+    def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying the sensor
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
@@ -33,20 +38,22 @@ class TrafficLightsSensor(PseudoActor):
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
 
-        super(TrafficLightsSensor, self).__init__(parent=parent,
-                                                  node=node,
-                                                  prefix="")
+        super(TrafficLightsSensor, self).__init__(uid=uid,
+                                                  name=name,
+                                                  parent=parent,
+                                                  node=node)
+
         self.actor_list = actor_list
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
         self.traffic_lights_info_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "traffic_lights_info",
+            self.get_topic_prefix() + "/info",
             CarlaTrafficLightInfoList,
             queue_size=10,
             latch=True)
         self.traffic_lights_status_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "traffic_lights",
+            self.get_topic_prefix() + "/status",
             CarlaTrafficLightStatusList,
             queue_size=10,
             latch=True)
@@ -58,6 +65,14 @@ class TrafficLightsSensor(PseudoActor):
         """
         self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
+
+    @staticmethod
+    def get_blueprint_name():
+        """
+        Get the blueprint identifier for the pseudo sensor
+        :return: name
+        """
+        return "sensor.pseudo.traffic_lights"
 
     def update(self, frame, timestamp):
         """

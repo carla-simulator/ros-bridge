@@ -22,21 +22,26 @@ class Traffic(Actor):
     Actor implementation details for traffic objects
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.Actor
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
         """
-        super(Traffic, self).__init__(carla_actor=carla_actor,
+        super(Traffic, self).__init__(uid=uid,
+                                      name=name,
                                       parent=parent,
                                       node=node,
-                                      prefix='traffic')
+                                      carla_actor=carla_actor)
 
 
 class TrafficLight(Actor):
@@ -45,21 +50,26 @@ class TrafficLight(Actor):
     Traffic implementation details for traffic lights
     """
 
-    def __init__(self, carla_actor, parent, node):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
-        :param carla_actor: carla actor object
-        :type carla_actor: carla.TrafficLight
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.TrafficLight
         """
-        super(TrafficLight, self).__init__(carla_actor=carla_actor,
+        super(TrafficLight, self).__init__(uid=uid,
+                                           name=name,
                                            parent=parent,
                                            node=node,
-                                           prefix='traffic.traffic_light')
+                                           carla_actor=carla_actor)
 
     def get_status(self):
         """
