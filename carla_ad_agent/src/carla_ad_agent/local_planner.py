@@ -79,7 +79,7 @@ class LocalPlanner(CompatibleNode):
         self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/speed_command".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
 
         # publishers
-        self._target_point_publisher = self.new_publisher(Marker, "/next_target", QoSProfile(depth=10, durability=False))
+        self._target_point_publisher = self.new_publisher(Marker, "/carla/{}/next_target".format(role_name), QoSProfile(depth=10, durability=False))
         self._control_cmd_publisher = self.new_publisher(CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name), QoSProfile(depth=1, durability=False))
 
         # initializing controller

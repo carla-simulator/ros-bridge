@@ -13,6 +13,8 @@ from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
 from enum import Enum
 import math
 import time
@@ -52,21 +54,21 @@ class Agent(object):
         """
         self.node = node
         self._proximity_threshold = 10.0  # meters
-        self._local_planner = None
         self._map_name = None
         self._vehicle_location = None
         self._vehicle_yaw = None
         self._vehicle_id = vehicle_id
         self._last_traffic_light = None
+        self._target_route_point = None
 
         self._odometry_subscriber = self.node.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
         # wait for first odometry update
-        self.node.logwarn('waiting for odo')
+        self.node.logwarn('Agent waiting for odometry  message')
         while self._vehicle_location is None:
             time.sleep(0.05)
             if ROS_VERSION == 2:
                 spin_once(node, timeout_sec=0)
-        self.node.logwarn('odo received')
+        self.node.logwarn('Odometry message received')
 
         if avoid_risk:
             self._get_waypoint_client = node.create_service_client(
@@ -76,6 +78,7 @@ class Agent(object):
             self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
                                                                            "/carla/traffic_lights/status", self.traffic_lights_updated,
                                                                            qos_profile=QoSProfile(depth=10, durability=latch_on))
+            self._target_point_subscriber = node.create_subscriber(Marker,"/carla/{}/next_target".format(role_name), self.target_point_updated)
             world_info = node.wait_for_one_message("/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
             self._map_name = world_info.map_name
 
@@ -85,6 +88,9 @@ class Agent(object):
         Only used if risk should be avoided.
         """
         self._traffic_lights = traffic_lights.traffic_lights
+
+    def target_point_updated(self, new_target_point):
+        self._target_route_point = new_target_point.pose.position
 
     def odometry_updated(self, odo):
         """
@@ -198,9 +204,9 @@ class Agent(object):
             # It is too late. Do not block the intersection! Keep going!
             return (False, None)
 
-        if self._local_planner.target_route_point is not None:
+        if self._target_route_point is not None:
             request = get_service_request(GetWaypoint)
-            request.location = self._local_planner.target_route_point.position
+            request.location = self._target_route_point
             target_waypoint = self.get_waypoint(request)
             if not target_waypoint:
                 if ros_ok():
