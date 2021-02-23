@@ -45,7 +45,7 @@ class BasicAgent(Agent):
         self._avoid_risk = avoid_risk
         self._proximity_threshold = 10.0  # meters
         self._state = AgentState.NAVIGATING
-        
+
         if ROS_VERSION == 1:
             cb_group = None
         elif ROS_VERSION == 2:
