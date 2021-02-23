@@ -29,10 +29,6 @@ def generate_launch_description():
             default_value='2'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='synchronous_mode',
-            default_value='True'
-        ),
-        launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
             default_value='False'
         ),
@@ -81,7 +77,7 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode'),
+                'synchronous_mode': 'True', # only synchronous mode is supported
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()

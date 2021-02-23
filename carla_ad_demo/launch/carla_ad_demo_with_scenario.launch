@@ -6,7 +6,6 @@
   <arg name="town" default="Town01"/> <!-- the carla town to load-->
   <arg name='timeout' default='10'/> <!-- the carla timeout for server communication -->
   <arg name='passive' default='False'/> <!-- enable/disable passive mode -->
-  <arg name='synchronous_mode' default='True'/> <!-- should the synchronous mode be used? Enable to get reproducible results independent of the system workload -->
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/><!-- should the ros bridge wait for a vehicle control command before proceeding with the next tick -->
   <arg name='fixed_delta_seconds' default='0.05'/><!-- frequency of the carla ticks -->
 
@@ -27,7 +26,7 @@
     <arg name='town' value='$(arg town)'/>
     <arg name='timeout' value='$(arg timeout)'/>
     <arg name='passive' value='$(arg passive)'/>
-    <arg name='synchronous_mode' value='$(arg synchronous_mode)'/>
+    <arg name='synchronous_mode' value='true'/><!-- only synchronous mode is supported -->
     <arg name='synchronous_mode_wait_for_vehicle_control_command' value='$(arg synchronous_mode_wait_for_vehicle_control_command)'/>
     <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>
   </include>

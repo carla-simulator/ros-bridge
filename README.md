@@ -1,11 +1,11 @@
-# ROS bridge for CARLA simulator
+# ROS/ROS2 bridge for CARLA simulator
 
 [![Actions Status](https://github.com/carla-simulator/ros-bridge/workflows/CI/badge.svg)](https://github.com/carla-simulator/ros-bridge)
 [![Build Status](https://travis-ci.com/carla-simulator/ros-bridge.svg?branch=master)](https://travis-ci.com/carla-simulator/ros-bridge)
 [![GitHub](https://img.shields.io/github/license/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/blob/master/LICENSE)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/carla-simulator/ros-bridge)](https://github.com/carla-simulator/ros-bridge/releases/latest)
 
-This ROS package aims at providing a simple ROS bridge for CARLA simulator.
+This ROS package aims at providing a simple ROS/ROS2 bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
@@ -16,7 +16,7 @@ This ROS package aims at providing a simple ROS bridge for CARLA simulator.
 - Provide Sensor Data (Lidar, Semantic lidar, Cameras (depth, segmentation, rgb, dvs), GNSS, Radar, IMU)
 - Provide Object Data (Transforms (via [tf](http://wiki.ros.org/tf)), Traffic light status, Visualization markers, Collision, Lane invasion)
 - Control AD Agents (Steer/Throttle/Brake)
-- Control CARLA (Support synchronous mode, Play/pause simulation, Set simulation parameters)
+- Control CARLA (Play/pause simulation, Set simulation parameters)
 
 ### Additional Functionality
 
@@ -38,108 +38,30 @@ For a quick overview, after following the [Setup section](#setup), please run th
 
 ## Setup
 
-### For Users
+ROS and ROS2 are supported by using separate implementations with a [common interface](ros_compatibility).
 
-First add the apt repository:
+Please follow the instructions:
 
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1AF1527DE64CB8D9
-    sudo add-apt-repository "deb [arch=amd64] http://dist.carla.org/carla $(lsb_release -sc) main"
-
-Then simply install the ROS bridge:
-
-    sudo apt-get update
-    sudo apt-get install carla-ros-bridge
-
-This will install carla-ros-bridge in /opt/carla-ros-bridge
-
-### For Developers
-
-    Create a catkin workspace and install carla_ros_bridge package
-
-    #setup folder structure
-    mkdir -p ~/carla-ros-bridge/catkin_ws/src
-    cd ~/carla-ros-bridge
-    git clone https://github.com/carla-simulator/ros-bridge.git
-    cd ros-bridge
-    git submodule update --init
-    cd ../catkin_ws/src
-    ln -s ../../ros-bridge
-    source /opt/ros/<kinetic or melodic or noetic>/setup.bash
-    cd ..
-
-    #install required ros-dependencies
-    rosdep update
-    rosdep install --from-paths src --ignore-src -r
-
-    #build
-    catkin_make
-
-For more information about configuring a ROS environment see
-<http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment>
-
-#### Using ROS2
-
-In development
-
-To test the ROS2 implementation, the rmw_fasrtps_cpp RMW implementation should be used. (default with ROS2 standard installation).
-
-## Start the ROS bridge
-
-First run the simulator (see carla documentation: <http://carla.readthedocs.io/en/latest/>)
-
-    # run carla in background
-    SDL_VIDEODRIVER=offscreen ./CarlaUE4.sh -opengl
-
-Wait a few seconds
-
-    export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg
-
-##### For Users
-
-    source /opt/carla-ros-bridge/<kinetic or melodic or noetic>/setup.bash
-
-##### For Developers
-
-    source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
-
-Start the ros bridge (choose one option):
-
-    # Option 1: start the ros bridge
-    roslaunch carla_ros_bridge carla_ros_bridge.launch
-
-    # Option 2: start the ros bridge together with an example ego vehicle
-    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
+* [ROS](README.ros.md)
+* [ROS2](README.ros2.md)
 
 ## Configuration
 
-### Settings file
-
-You can modify the ros bridge configuration by editing [carla_ros_bridge/config/settings.yaml](carla_ros_bridge/config/settings.yaml).
-
-If the rolename is within the list specified by ROS parameter `/carla/ego_vehicle/rolename`, the client is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
-
-### Launch file
-
 Certain parameters can be set within the launch file [carla_ros_bridge.launch](carla_ros_bridge/launch/carla_ros_bridge.launch).
 
-#### Map
+If the rolename is within the list specified by argument `ego_vehicle_role_name`, it is interpreted as an controllable ego vehicle and all relevant ROS topics are created.
+
+### Map
 
 The bridge is able to load a CARLA map by setting the launch-file parameter ```town```. Either specify an available CARLA Town (e.g. 'Town01') or a OpenDRIVE file (with ending '.xodr').
 
-#### Mode
+### Mode
 
-##### Default Mode
+The bridge should only be used in CARLA synchronous mode.
 
-In default mode (`synchronous_mode: false`) data is published:
+CAUTION: Only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
 
--   on every `world.on_tick()` callback
--   on every `sensor.listen()` callback
-
-##### Synchronous Mode
-
-CAUTION: In synchronous mode, only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
-
-In synchronous mode (`synchronous_mode: true`), the bridge waits for all sensor data that is expected within the current frame. This might slow down the overall simulation but ensures reproducible results.
+The bridge waits for all sensor data that is expected within the current frame to ensures reproducible results.
 
 Additionally you might set `synchronous_mode_wait_for_vehicle_control_command` to `true` to wait for a vehicle control command before executing the next tick.
 
