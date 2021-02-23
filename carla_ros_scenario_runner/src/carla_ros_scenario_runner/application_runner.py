@@ -104,7 +104,7 @@ class ApplicationRunner(object):
             executable = " ".join(argument_list)
         else:
             executable = argument_list
-            
+
         log_fct("Executing: " + executable)
         process = pexpect.spawn(executable, env=env, cwd=cwd, encoding='utf-8')
         #process.logfile_read = sys.stdout

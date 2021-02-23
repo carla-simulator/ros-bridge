@@ -61,7 +61,8 @@ class Agent(object):
         self._last_traffic_light = None
         self._target_route_point = None
 
-        self._odometry_subscriber = self.node.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
+        self._odometry_subscriber = self.node.create_subscriber(
+            Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
         # wait for first odometry update
         self.node.logwarn('Agent waiting for odometry  message')
         while self._vehicle_location is None:
@@ -78,8 +79,10 @@ class Agent(object):
             self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
                                                                            "/carla/traffic_lights/status", self.traffic_lights_updated,
                                                                            qos_profile=QoSProfile(depth=10, durability=latch_on))
-            self._target_point_subscriber = node.create_subscriber(Marker,"/carla/{}/next_target".format(role_name), self.target_point_updated)
-            world_info = node.wait_for_one_message("/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
+            self._target_point_subscriber = node.create_subscriber(
+                Marker, "/carla/{}/next_target".format(role_name), self.target_point_updated)
+            world_info = node.wait_for_one_message(
+                "/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
             self._map_name = world_info.map_name
 
     def traffic_lights_updated(self, traffic_lights):

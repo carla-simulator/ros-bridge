@@ -74,16 +74,22 @@ class LocalPlanner(CompatibleNode):
         self._target_speed = 0.0
 
         # subscribers
-        self._odometry_subscriber = self.create_subscriber(Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
-        self._path_subscriber = self.create_subscriber(Path, "/carla/{}/waypoints".format(role_name), self.path_updated, QoSProfile(depth=1, durability=True))
-        self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/speed_command".format(role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
+        self._odometry_subscriber = self.create_subscriber(
+            Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
+        self._path_subscriber = self.create_subscriber(
+            Path, "/carla/{}/waypoints".format(role_name), self.path_updated, QoSProfile(depth=1, durability=True))
+        self._target_speed_subscriber = self.create_subscriber(Float64, "/carla/{}/speed_command".format(
+            role_name), self.target_speed_updated, QoSProfile(depth=1, durability=True))
 
         # publishers
-        self._target_point_publisher = self.new_publisher(Marker, "/carla/{}/next_target".format(role_name), QoSProfile(depth=10, durability=False))
-        self._control_cmd_publisher = self.new_publisher(CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name), QoSProfile(depth=1, durability=False))
+        self._target_point_publisher = self.new_publisher(
+            Marker, "/carla/{}/next_target".format(role_name), QoSProfile(depth=10, durability=False))
+        self._control_cmd_publisher = self.new_publisher(
+            CarlaEgoVehicleControl, "/carla/{}/vehicle_control_cmd".format(role_name), QoSProfile(depth=1, durability=False))
 
         # initializing controller
-        self._vehicle_controller = VehiclePIDController(self, args_lateral=args_lateral_dict, args_longitudinal=args_longitudinal_dict)
+        self._vehicle_controller = VehiclePIDController(
+            self, args_lateral=args_lateral_dict, args_longitudinal=args_longitudinal_dict)
 
         # wait for required messages
         self.loginfo('Local planner waiting for a path and target speed...')
@@ -131,7 +137,7 @@ class LocalPlanner(CompatibleNode):
             self.loginfo("Route finished. Waiting for a new one.")
             self.path_received = False
             return
-        
+
         # When target speed is 0, brake
         if self._target_speed == 0.0:
             self.emergency_stop()
@@ -160,7 +166,8 @@ class LocalPlanner(CompatibleNode):
         self._target_point_publisher.publish(target_point)
 
         # move using PID controllers
-        control = self._vehicle_controller.run_step(self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
+        control = self._vehicle_controller.run_step(
+            self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
 
         # self.f.write('{}, {}, {}, {}, {}, \n'.format(self.get_time(), self._target_speed, self._current_speed, control.throttle, self._vehicle_controller._lat_controller.error))
 
@@ -205,7 +212,8 @@ def main(args=None):
         if ROS_VERSION == 1:
             local_planner.on_shutdown(local_planner.emergency_stop)
         local_planner.loginfo('Local planner is starting.')
-        update_timer = local_planner.new_timer(local_planner.control_time_step, lambda timer_event=None: local_planner.run_step())
+        update_timer = local_planner.new_timer(
+            local_planner.control_time_step, lambda timer_event=None: local_planner.run_step())
         local_planner.spin()
     except KeyboardInterrupt:
         pass
@@ -220,7 +228,6 @@ def main(args=None):
         if ROS_VERSION == 2:
             local_planner.emergency_stop()
         local_planner.shutdown()
-    
 
 
 if __name__ == "__main__":
