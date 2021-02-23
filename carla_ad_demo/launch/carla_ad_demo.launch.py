@@ -6,7 +6,7 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 
-def launch_carla_spawn_object(context, *args, **kwargs):
+def launch_carla_spawn_object(context, *args, **kwargs): #TODO find better solution
     # workaround to use launch argument 'role_name' as a part of the string used for the spawn_point param name
     spawn_point_param_name = 'spawn_point_' + \
         launch.substitutions.LaunchConfiguration('role_name').perform(context)
@@ -44,10 +44,6 @@ def generate_launch_description():
             default_value='10'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='synchronous_mode',
-            default_value='True'
-        ),
-        launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
             default_value='False'
         ),
@@ -75,12 +71,11 @@ def generate_launch_description():
             name='sigterm_timeout',
             default_value='15'
         ),
-        # TODO: adapt this to ROS2
-        # launch_ros.actions.Node(
-        #     package='rostopic',
-        #     executable='rostopic',
-        #     name='publish_goal'
-        # ),
+        launch.actions.ExecuteProcess( # TODO: required?
+            cmd=["ros2", "topic", "pub", "/carla/ego_vehicle/goal",
+                 "geometry_msgs/PoseStamped", "--qos-durability transient_local",
+                 "{ 'pose': { 'position': { 'x': 157.9, 'y': 29.8 }, 'orientation': { 'z': 0.70711, 'w': 0.70711 } } }'"]
+        ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
@@ -91,7 +86,7 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode'),
+                'synchronous_mode': 'True',
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()

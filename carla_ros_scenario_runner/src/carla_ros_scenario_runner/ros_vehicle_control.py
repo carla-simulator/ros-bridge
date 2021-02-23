@@ -15,7 +15,7 @@ from nav_msgs.msg import Path
 import carla_common.transforms as trans
 from srunner.scenariomanager.actorcontrols.basic_control import BasicControl  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp
+from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp, ros_init
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
