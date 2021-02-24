@@ -6,7 +6,7 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 
-def launch_carla_spawn_object(context, *args, **kwargs):  # TODO find better solution
+def launch_carla_spawn_object(context, *args, **kwargs):
     # workaround to use launch argument 'role_name' as a part of the string used for the spawn_point param name
     spawn_point_param_name = 'spawn_point_' + \
         launch.substitutions.LaunchConfiguration('role_name').perform(context)
