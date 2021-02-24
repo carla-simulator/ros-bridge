@@ -15,6 +15,8 @@ For a more comprehensive solution, have a look at [Autoware](https://www.autowar
 
 For risk avoidance, more subscriptions are required:
 
+| Topic                              | Type                | Description                 |
+| ---------------------------------- | ------------------- | --------------------------- |
 | `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs.CarlaEgoVehicleInfo](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleInfo.msg) |  Identify the carla actor id of the ego vehicle |
 | `/carla/<ROLE NAME>/objects` | [derived_object_msgs.ObjectArray](http://docs.ros.org/api/derived_object_msgs/html/msg/ObjectArray.html) | Information about other actors |
 | `/carla/actor_list` | [carla_msgs.CarlaActorList](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaActorList.msg) | Actor list |
