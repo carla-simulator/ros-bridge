@@ -75,6 +75,27 @@ def generate_launch_description():
                 },
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                },
+                {
+                    'Kp_lateral': launch.substitutions.LaunchConfiguration('Kp_lateral')
+                },
+                {
+                    'Ki_lateral': launch.substitutions.LaunchConfiguration('Ki_lateral')
+                },
+                {
+                    'Kd_lateral': launch.substitutions.LaunchConfiguration('Kd_lateral')
+                },
+                {
+                    'Kp_longitudinal': launch.substitutions.LaunchConfiguration('Kp_longitudinal')
+                },
+                {
+                    'Ki_longitudinal': launch.substitutions.LaunchConfiguration('Ki_longitudinal')
+                },
+                {
+                    'Kd_longitudinal': launch.substitutions.LaunchConfiguration('Kd_longitudinal')
+                },
+                {
+                    'control_time_step': launch.substitutions.LaunchConfiguration('control_time_step')
                 }
             ]
         )
