@@ -98,8 +98,6 @@ class LocalPlanner(CompatibleNode):
             if ROS_VERSION == 2:
                 rclpy.spin_once(self, timeout_sec=0)
 
-        # self.f = open('data.txt', 'w')
-
     def odometry_updated(self, new_pose):
         """
         callback on new odometry
@@ -169,8 +167,6 @@ class LocalPlanner(CompatibleNode):
         control = self._vehicle_controller.run_step(
             self._target_speed, self._current_speed, self._current_pose, self.target_route_point)
 
-        # self.f.write('{}, {}, {}, {}, {}, \n'.format(self.get_time(), self._target_speed, self._current_speed, control.throttle, self._vehicle_controller._lat_controller.error))
-
         # purge the queue of obsolete waypoints
         max_index = -1
 
@@ -224,7 +220,6 @@ def main(args=None):
                 update_timer.shutdown()
             else:
                 update_timer.destroy()
-        # local_planner.f.close()
         if ROS_VERSION == 2:
             local_planner.emergency_stop()
         local_planner.shutdown()

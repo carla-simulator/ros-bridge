@@ -21,7 +21,6 @@ if(${ROS_VERSION} EQUAL 1)
   install(PROGRAMS src/carla_ad_agent/carla_ad_agent.py
                    src/carla_ad_agent/local_planner.py
           DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-  message(${CATKIN_PACKAGE_BIN_DESTINATION})
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
