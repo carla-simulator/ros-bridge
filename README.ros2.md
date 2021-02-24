@@ -1,10 +1,10 @@
 # ROS2
 
-Currently supported: [Foxy](https://index.ros.org/doc/ros2/Releases/Release-Foxy-Fitzroy/)
+Currently supported: [ROS2 Foxy](https://index.ros.org/doc/ros2/Releases/Release-Foxy-Fitzroy/)
 
 # Setup
 
-Colcon and ROS2 Foxy needs to be installed on your system.
+Colcon and ROS2 Foxy need to be installed on your system.
 
     git clone https://github.com/carla-simulator/ros-bridge.git
     cd ros-bridge
@@ -17,27 +17,21 @@ For more information about configuring a ROS2 environment see
 
 ## Start the ROS bridge
 
-First run the simulator (see carla documentation: <http://carla.readthedocs.io/en/latest/>)
+First run the simulator (see CARLA documentation: <http://carla.readthedocs.io/en/latest/>)
 
     # run carla in background
     SDL_VIDEODRIVER=offscreen ./CarlaUE4.sh -opengl
 
-    # Add the 
+    # Add the carla modules to your python environment
     export CARLA_ROOT=<path-to-carla>
     export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:$CARLA_ROOT/PythonAPI/carla
 
-##### For Users
-
-    source /opt/carla-ros-bridge/<kinetic or melodic or noetic>/setup.bash
-
-##### For Developers
-
-    source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
+    source ./install/setup.bash
 
 Start the ros bridge (choose one option):
 
     # Option 1: start the ros bridge
-    roslaunch carla_ros_bridge carla_ros_bridge.launch
+    ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
 
     # Option 2: start the ros bridge together with an example ego vehicle
-    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
+    ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py
