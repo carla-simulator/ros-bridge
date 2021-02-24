@@ -28,3 +28,14 @@ For risk avoidance, more subscriptions are required:
 | Topic                              | Type                | Description                 |
 | ---------------------------------- | ------------------- | --------------------------- |
 | `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) | Vehicle control command |
+
+
+
+## Local Planner Node
+
+Internally, the CARLA AD Agent uses a separate node for [local planning](src/carla_ad_agent/local_planner.py).
+
+This is currently optimized for `vehicle.tesla.model3`, as it does not have any gear shift delays.
+
+The PID parameters were gathered by [Ziegler-Nichols method](https://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method).
+
