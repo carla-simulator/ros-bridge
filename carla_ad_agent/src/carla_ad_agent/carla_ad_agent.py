@@ -103,7 +103,7 @@ def main(args=None):
     controller = None
     try:
         controller = CarlaAdAgent()
-        while True:
+        while ros_ok():
             time.sleep(0.01)
             if ROS_VERSION == 2:
                 rclpy.spin_once(controller)
