@@ -82,8 +82,6 @@ class CarlaAckermannControl(CompatibleNode):
                 callback=self.reconfigure_pid_parameters,
             )
         if ROS_VERSION == 2:
-            # self.add_on_set_parameters_callback(self.reconfigure_pid_parameters) # works with ros2 foxy
-            # for ros2 eloquent, deprecated in ros2 foxy
             self.set_parameters_callback(self.reconfigure_pid_parameters)
 
         self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
