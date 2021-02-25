@@ -71,11 +71,6 @@ def generate_launch_description():
             name='sigterm_timeout',
             default_value='15'
         ),
-        launch.actions.ExecuteProcess(  # TODO: required?
-            cmd=["ros2", "topic", "pub", "/carla/ego_vehicle/goal",
-                 "geometry_msgs/PoseStamped", "--qos-durability transient_local",
-                 "{ 'pose': { 'position': { 'x': 157.9, 'y': 29.8 }, 'orientation': { 'z': 0.70711, 'w': 0.70711 } } }'"]
-        ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(

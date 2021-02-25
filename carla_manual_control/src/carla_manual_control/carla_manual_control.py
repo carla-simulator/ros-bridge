@@ -463,12 +463,7 @@ class HUD(object):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
 
-        # TODO
-        if ROS_VERSION == 1:
-            time = str(datetime.timedelta(seconds=float(rospy.get_rostime().to_sec())))[:10]
-        elif ROS_VERSION == 2:
-            time = str(datetime.timedelta(seconds=float(
-                self.node.get_clock().now().nanoseconds)/10**9))[:10]
+        time = str(datetime.timedelta(seconds=self.node.get_time()))[:10]
 
         if self.carla_status.fixed_delta_seconds:
             fps = 1 / self.carla_status.fixed_delta_seconds

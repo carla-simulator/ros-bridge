@@ -17,11 +17,6 @@
   <arg name="target_speed" default="30"/> <!-- target speed in km/h that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
 
-  <!-- Set fixed goal (actual route is still random) -->
-  <node pkg="rostopic" type="rostopic" name="publish_goal"
-      args="pub /carla/ego_vehicle/goal geometry_msgs/PoseStamped '{ 'pose': { 'position': { 'x': 157.9, 'y': 29.8, 'z': 0.0 }, 'orientation': { 'x': 0.0, 'y': 0.0, 'z': 0.70711, 'w': 0.70711 } } }' -l"/>
-
-  
   <!-- ===================================================== -->
 
   <!-- The ros bridge -->

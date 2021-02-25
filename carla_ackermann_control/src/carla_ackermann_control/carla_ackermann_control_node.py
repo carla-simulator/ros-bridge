@@ -85,25 +85,6 @@ class CarlaAckermannControl(CompatibleNode):
             # self.add_on_set_parameters_callback(self.reconfigure_pid_parameters) # works with ros2 foxy
             # for ros2 eloquent, deprecated in ros2 foxy
             self.set_parameters_callback(self.reconfigure_pid_parameters)
-            # TODO(hillekia@schaeffler.com): Enable stricter handling of node
-            # parameters, so they must be explicitly listed. This can be done by
-            # disabling the `automatically_declare_parameters_from_overrides`
-            # and `allow_undeclared_parameters` flags of `Node` and will prevent
-            # mistakes in the future.
-            #
-            # self.declare_parameters(
-            #     namespace="",
-            #     parameters=[
-            #         ("speed_Kp",),
-            #         ("speed_Ki",),
-            #         ("speed_Kd",),
-            #         ("accel_Kp",),
-            #         ("accel_Ki",),
-            #         ("accel_Kd",),
-            #         ("min_accel",),
-            #         ("role_name",),
-            #     ]
-            # )
 
         self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
