@@ -36,14 +36,4 @@ if(${ROS_VERSION} EQUAL 1)
     add_rostest(test/ros_bridge_client.test)
   endif()
 
-elseif(${ROS_VERSION} EQUAL 2)
-  find_package(ament_cmake REQUIRED)
-  find_package(rclpy REQUIRED)
-  ament_export_dependencies(rclpy)
-
-  # Install launch files.
-  install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
-
-  ament_package()
-
 endif()
