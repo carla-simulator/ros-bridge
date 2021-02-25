@@ -39,6 +39,12 @@ This will install carla-ros-bridge in /opt/carla-ros-bridge
 For more information about configuring a ROS environment see
 <http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment>
 
+#### Using ROS2
+
+In development
+
+To test the ROS2 implementation, the rmw_fasrtps_cpp RMW implementation should be used. (default with ROS2 standard installation).
+
 ## Start the ROS bridge
 
 First run the simulator (see carla documentation: <http://carla.readthedocs.io/en/latest/>)
@@ -46,8 +52,8 @@ First run the simulator (see carla documentation: <http://carla.readthedocs.io/e
     # run carla in background
     SDL_VIDEODRIVER=offscreen ./CarlaUE4.sh -opengl
 
-Wait a few seconds
-
+    # Add the carla modules to your python environment
+    export CARLA_ROOT=<path-to-carla>
     export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg
 
 ##### For Users
@@ -65,3 +71,12 @@ Start the ros bridge (choose one option):
 
     # Option 2: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
+
+## Testing
+
+To execute the tests, using catkin, use the following commands:
+    
+    # build
+    catkin_make -DCATKIN_ENABLE_TESTING=0
+    # run
+    rostest carla_ros_bridge ros_bridge_client.test

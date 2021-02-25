@@ -35,3 +35,12 @@ Start the ros bridge (choose one option):
 
     # Option 2: start the ros bridge together with an example ego vehicle
     ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py
+
+## Testing
+
+To execute the tests using colcon, use the following commands:
+
+    # build
+    colcon build --packages-up-to carla_ros_bridge
+    # run
+    launch_test carla_ros_bridge/test/ros_bridge_client_ros2_test.py

@@ -303,26 +303,6 @@ The following markers are supported in 'map'-frame:
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------- |
 | `/carla/debug_marker` (subscriber) | [visualization_msgs.MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) | draw markers in CARLA world |
 
-## Testing
-
-### ROS1 and catkin
-
-To execute the tests, using catkin and ROS1, use the following commands:
-    
-    # build
-    catkin_make -DCATKIN_ENABLE_TESTING=0
-    # run
-    rostest carla_ros_bridge ros_bridge_client.test
-
-### ROS2 and colcon
-
-To execute the tests using colcon and ROS2, use the following commands:
-
-    # build
-    colcon build --packages-up-to carla_ros_bridge
-    # run
-    launch_test ros-bridge/carla_ros_bridge/test/ros_bridge_client_ros2_test.py
-
 ## Troubleshooting
 
 ### ImportError: No module named carla
