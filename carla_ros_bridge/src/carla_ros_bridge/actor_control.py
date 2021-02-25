@@ -49,7 +49,6 @@ class ActorControl(PseudoActor):
         self.twist_control_subscriber = self.node.create_subscriber(Twist,
                                                                     self.get_topic_prefix() + "/set_target_velocity",
                                                                     self.on_twist)
-        self.parent = parent
 
     def destroy(self):
         """
