@@ -10,6 +10,7 @@ provide functions to control actors
 """
 
 import numpy
+import math
 import carla_common.transforms as trans
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from geometry_msgs.msg import Pose, Twist
@@ -48,6 +49,7 @@ class ActorControl(PseudoActor):
         self.twist_control_subscriber = self.node.create_subscriber(Twist,
                                                                     self.get_topic_prefix() + "/set_target_velocity",
                                                                     self.on_twist)
+        self.parent = parent
 
     def destroy(self):
         """
@@ -78,12 +80,12 @@ class ActorControl(PseudoActor):
         """
         Set angular/linear velocity (this does not respect vehicle dynamics)
         """
-        if not self.vehicle_control_override:
+        if not self.parent.vehicle_control_override:
             angular_velocity = Vector3D()
             angular_velocity.z = math.degrees(twist.angular.z)
 
-            rotation_matrix = transforms.carla_rotation_to_numpy_rotation_matrix(
-                self.carla_actor.get_transform().rotation)
+            rotation_matrix = trans.carla_rotation_to_numpy_rotation_matrix(
+                self.parent.carla_actor.get_transform().rotation)
             linear_vector = numpy.array([twist.linear.x, twist.linear.y, twist.linear.z])
             rotated_linear_vector = rotation_matrix.dot(linear_vector)
             linear_velocity = Vector3D()
@@ -93,5 +95,5 @@ class ActorControl(PseudoActor):
 
             self.node.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
-            self.carla_actor.set_target_velocity(linear_velocity)
-            self.carla_actor.set_target_angular_velocity(angular_velocity)
+            self.parent.carla_actor.set_target_velocity(linear_velocity)
+            self.parent.carla_actor.set_target_angular_velocity(angular_velocity)
