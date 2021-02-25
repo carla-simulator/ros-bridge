@@ -121,37 +121,40 @@ class ActorFactory(object):
         return self.create(carla_actor.type_id, name, parent_id, None, carla_actor)
 
     def create(self, type_id, name, attach_to, spawn_pose, carla_actor=None):
-        with self.lock:
+        #with self.lock:
             # check that the actor is not already created.
-            if carla_actor is not None and carla_actor.id in self.actors:
-                return None
+            #if carla_actor is not None and carla_actor.id in self.actors:
+            #    return None
 
-            if attach_to != 0:
-                if attach_to not in self.actors:
-                    raise IndexError("Parent object {} not found".format(attach_to))
-                parent = self.actors[attach_to]
-            else:
-                parent = None
+        if attach_to != 0:
+            if attach_to not in self.actors:
+                raise IndexError("Parent object {} not found".format(attach_to))
+            parent = self.actors[attach_to]
+        else:
+            parent = None
 
-            if carla_actor is not None:
-                uid = carla_actor.id
-            else:
-                uid = next(self.id_gen)
+        if carla_actor is not None:
+            uid = carla_actor.id
+        else:
+            uid = next(self.id_gen)
 
+        with self.lock:
             actor = self._create_object(uid, type_id, name, parent, spawn_pose, carla_actor)
             self.actors[actor.uid] = actor
 
             rospy.loginfo("Created {}(id={})".format(actor.__class__.__name__, actor.uid))
 
-            return actor
+        return actor
 
-    def destroy(self, actor_id):
+    def destroy(self, actor_id, destroy_carla_actor=False):
         with self.lock:
             # check that the actor is not already removed.
-            if actor_id not in self.actors:
-                return
+            #if actor_id not in self.actors:
+            #    return
 
             actor = self.actors.pop(actor_id)
+            if isinstance(actor, Actor) and destroy_carla_actor:
+                actor.carla_actor.destroy()
             actor.destroy()
 
             rospy.loginfo("Removed {}(id={})".format(actor.__class__.__name__, actor.uid))

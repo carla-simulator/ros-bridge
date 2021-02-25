@@ -6,14 +6,6 @@
             "id": "traffic_lights"
         },
         {
-            "type": "sensor.pseudo.objects",
-            "id": "objects"
-        },
-        {
-            "type": "sensor.pseudo.actor_list",
-            "id": "actor_list"
-        },
-        {
             "type": "sensor.pseudo.markers",
             "id": "markers"
         },
@@ -22,7 +14,7 @@
             "id": "map"
         },
         {
-            "type": "vehicle.*",
+            "type": "vehicle.audi.tt",
             "id": "ego_vehicle",
             "objects": 
             [
@@ -157,6 +149,14 @@
                     "id": "control"
                 }
             ]
+        },
+        {
+            "type": "sensor.pseudo.objects",
+            "id": "objects"
+        },
+        {
+            "type": "sensor.pseudo.actor_list",
+            "id": "actor_list"
         }
     ]
 }

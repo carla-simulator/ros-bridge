@@ -51,7 +51,7 @@ class CarlaRosBridge(object):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.10"
+    CARLA_VERSION = "0.9.11"
 
     def __init__(self, carla_world, params):
         """
@@ -205,11 +205,11 @@ class CarlaRosBridge(object):
                     if not success:
                         return False
 
-        actor = self.actor_factory.actors[uid]
-        if isinstance(actor, Actor):
-            actor.carla_actor.destroy()
+#        actor = self.actor_factory.actors[uid]
+#        if isinstance(actor, Actor):
+#            actor.carla_actor.destroy()
 
-        self.actor_factory.destroy(uid)
+        self.actor_factory.destroy(uid, destroy_carla_actor=True)
         if uid in self._registered_actors:
             self._registered_actors.remove(uid)
 
