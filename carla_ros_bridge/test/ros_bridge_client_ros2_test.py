@@ -148,7 +148,8 @@ class TestClock(unittest.TestCase):
             node = CompatibleNode('test_node')
             msg = node.wait_for_one_message(
                 "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus)
-            self.assertNotEqual(msg.header, Header())  # todo: check frame-id
+            self.assertNotEqual(msg.header, Header())
+            self.assertEqual(msg.header.frame_id, 'map')
             self.assertNotEqual(msg.orientation, Quaternion())
         finally:
             if node is not None:
