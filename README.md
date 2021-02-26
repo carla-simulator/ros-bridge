@@ -212,6 +212,17 @@ The tf data for the ego vehicle is published when this pseudo sensor is spawned.
 | ---------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>` | [carla_msgs.CarlaActorList](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaActorList.msg) | list of all carla actors |
 
+##### Actor Control Sensor
+
+This pseudo-sensor allows to control the position and velocity of the actor it is attached to (e.g. an ego_vehicle) by publishing pose and velocity within Pose and Twist datatypes.
+CAUTION: This control method does not respect the vehicle constraints. It allows movements impossible in the real world, like flying or rotating.
+Currently this sensor applies the complete linear vector, but only the yaw from angular vector.
+
+| Topic                        | Type                                                                                                     | Description                                      |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>/set_transform` | [geometry_msgs.Pose](https://docs.ros.org/en/api/geometry_msgs/html/msg/Pose.html) | transform to apply to the sensor's parent |
+| `/carla/[<PARENT ROLE NAME>]/<SENSOR ROLE NAME>/set_target_velocity` | [geometry_msgs.Twist](https://docs.ros.org/en/api/geometry_msgs/html/msg/Twist.html) | velocity (angular and linear) to apply to the sensor's parent |
+
 ### Ego Vehicle
 
 #### Control
@@ -239,26 +250,20 @@ Examples for a ego vehicle with role_name 'ego_vehicle':
 
 Max forward throttle:
 
+    # for ros1
      rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
+    # for ros2
+     ros2 topic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 0.0}" -r 10
 
 Max forward throttle with max steering to the right:
 
+    # for ros1
      rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
+    # for ros2
+     ros2 topic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`.
 Static information about the vehicle can be received via `/carla/<ROLE NAME>/vehicle_info`
-
-##### Additional way of controlling
-
-| Topic                                       | Type                                                                             |
-| ------------------------------------------- | -------------------------------------------------------------------------------- |
-| `/carla/<ROLE NAME>/twist_cmd` (subscriber) | [geometry_msgs.Twist](http://docs.ros.org/api/geometry_msgs/html/msg/Twist.html) |
-
-CAUTION: This control method does not respect the vehicle constraints. It allows movements impossible in the real world, like flying or rotating.
-
-You can also control the vehicle via publishing linear and angular velocity within a Twist datatype.
-
-Currently this method applies the complete linear vector, but only the yaw from angular vector.
 
 ##### Carla Ackermann Control
 
