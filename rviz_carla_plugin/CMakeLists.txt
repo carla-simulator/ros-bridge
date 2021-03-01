@@ -31,8 +31,6 @@ if(${ROS_VERSION} EQUAL 1)
 
   target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
-  target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
-
   install(
     TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
