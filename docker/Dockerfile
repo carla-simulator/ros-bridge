@@ -31,14 +31,12 @@ ENV PYTHONPATH=/opt/carla/PythonAPI/carla/dist/carla-$CARLA_VERSION-py$PYTHON_VE
 
 COPY carla_ackermann_control /opt/carla-ros-bridge/src/carla_ackermann_control
 COPY carla_common /opt/carla-ros-bridge/src/carla_common
-COPY carla_ego_vehicle /opt/carla-ros-bridge/src/carla_ego_vehicle
-COPY carla_infrastructure /opt/carla-ros-bridge/src/carla_infrastructure
+COPY carla_spawn_objects /opt/carla-ros-bridge/src/carla_spawn_objects
 COPY carla_manual_control /opt/carla-ros-bridge/src/carla_manual_control
 COPY carla_msgs /opt/carla-ros-bridge/src/carla_msgs
 COPY carla_ros_bridge /opt/carla-ros-bridge/src/carla_ros_bridge
 COPY carla_ros_scenario_runner /opt/carla-ros-bridge/src/carla_ros_scenario_runner
 COPY carla_ros_scenario_runner_types /opt/carla-ros-bridge/src/carla_ros_scenario_runner_types
-COPY carla_spectator_camera /opt/carla-ros-bridge/src/carla_spectator_camera
 COPY carla_twist_to_control /opt/carla-ros-bridge/src/carla_twist_to_control
 COPY carla_walker_agent /opt/carla-ros-bridge/src/carla_walker_agent
 COPY carla_waypoint_publisher /opt/carla-ros-bridge/src/carla_waypoint_publisher

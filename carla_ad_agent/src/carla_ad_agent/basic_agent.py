@@ -50,7 +50,8 @@ class BasicAgent(Agent):
                 "/carla/actor_list", CarlaActorList, self.actors_updated)
             self._objects = []
             self._objects_subscriber = rospy.Subscriber(
-                "/carla/{}/objects".format(role_name), ObjectArray, self.objects_updated)
+                "/carla/{}/objects".format(role_name), ObjectArray,
+                self.objects_updated)
             self._get_actor_waypoint_client = rospy.ServiceProxy(
                 '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
                 GetActorWaypoint)

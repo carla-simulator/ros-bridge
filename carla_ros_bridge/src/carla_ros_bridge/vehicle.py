@@ -13,6 +13,7 @@ Classes to handle Carla vehicles
 from std_msgs.msg import ColorRGBA
 from derived_object_msgs.msg import Object
 
+import carla_common.transforms as trans
 from carla_ros_bridge.traffic_participant import TrafficParticipant
 
 
@@ -22,22 +23,21 @@ class Vehicle(TrafficParticipant):
     Actor implementation details for vehicles
     """
 
-    def __init__(self, carla_actor, parent, node, prefix=None):
+    def __init__(self, uid, name, parent, node, carla_actor):
         """
         Constructor
 
-        :param carla_actor: carla vehicle actor object
-        :type carla_actor: carla.Vehicle
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identiying this object
+        :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
         :type node: carla_ros_bridge.CarlaRosBridge
-        :param prefix: the topic prefix to be used for this actor
-        :type prefix: string
+        :param carla_actor: carla vehicle actor object
+        :type carla_actor: carla.Vehicle
         """
-        if not prefix:
-            prefix = "vehicle/{:03}".format(carla_actor.id)
-
         self.classification = Object.CLASSIFICATION_CAR
         if 'object_type' in carla_actor.attributes:
             if carla_actor.attributes['object_type'] == 'car':
@@ -51,10 +51,11 @@ class Vehicle(TrafficParticipant):
             elif carla_actor.attributes['object_type'] == 'other':
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
 
-        super(Vehicle, self).__init__(carla_actor=carla_actor,
+        super(Vehicle, self).__init__(uid=uid,
+                                      name=name,
                                       parent=parent,
                                       node=node,
-                                      prefix=prefix)
+                                      carla_actor=carla_actor)
 
     def get_marker_color(self):  # pylint: disable=no-self-use
         """
@@ -68,6 +69,19 @@ class Vehicle(TrafficParticipant):
         color.g = 0
         color.b = 0
         return color
+
+    def get_marker_pose(self):
+        """
+        Function to return the pose for vehicles.
+
+        :return: the pose of the vehicle
+        :rtype: geometry_msgs.msg.Pose
+        """
+        # Moving pivot point from the bottom (CARLA) to the center (ROS) of the bounding box.
+        extent = self.carla_actor.bounding_box.extent
+        marker_transform = self.carla_actor.get_transform()
+        marker_transform.location -= marker_transform.get_up_vector() * extent.z
+        return trans.carla_transform_to_ros_pose(marker_transform)
 
     def get_classification(self):
         """
