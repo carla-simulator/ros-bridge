@@ -33,6 +33,9 @@ if ROS_VERSION == 1:
     def ros_shutdown():
         pass
 
+    def ros_on_shutdown(handler):
+        rospy.on_shutdown(handler)
+
     def logdebug(log):
         rospy.logdebug(log)
 
@@ -187,6 +190,8 @@ elif ROS_VERSION == 2:
     from builtin_interfaces.msg import Time
 
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+    def dummy_handler(): pass
+    shutdown_handler = dummy_handler
 
     def ros_init(args=None):
         rclpy.init(args=args)
@@ -205,7 +210,12 @@ elif ROS_VERSION == 2:
         return rclpy.ok()
 
     def ros_shutdown():
+        shutdown_handler()
         rclpy.shutdown()
+
+    def ros_on_shutdown(handler):
+        global shutdown_handler
+        shutdown_handler = handler
 
     def logdebug(log):
         rclpy.logging.get_logger("default").debug(log)
