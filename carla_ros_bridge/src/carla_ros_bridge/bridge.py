@@ -64,7 +64,7 @@ class CarlaRosBridge(CompatibleNode):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.11"
+    CARLA_VERSION = "0.9.10"
 
     # in synchronous mode, if synchronous_mode_wait_for_vehicle_control_command is True,
     # wait for this time until a next tick is triggered.
