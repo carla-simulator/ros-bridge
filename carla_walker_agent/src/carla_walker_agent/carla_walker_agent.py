@@ -27,7 +27,6 @@ if ROS_VERSION == 1:
     import rospy
 elif ROS_VERSION == 2:
     import time
-    import rclpy
     import threading
 
 

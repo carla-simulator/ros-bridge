@@ -50,8 +50,8 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         if ROS_VERSION == 1:
             self.loginfo("Wait for vehicle info...")
             try:
-                vehicle_info = rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
-                                                      CarlaEgoVehicleInfo)
+                rospy.wait_for_message("/carla/{}/vehicle_info".format(role_name),
+                                       CarlaEgoVehicleInfo)
             except ROSInterruptException as e:
                 if ros_ok:
                     raise e

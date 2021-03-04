@@ -1,5 +1,7 @@
 # ROS
 
+## Setup
+
 ### For Users
 
 First add the apt repository:
@@ -50,11 +52,11 @@ First run the simulator (see carla documentation: <http://carla.readthedocs.io/e
     export CARLA_ROOT=<path-to-carla>
     export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg
 
-##### For Users
+### For Users
 
     source /opt/carla-ros-bridge/<kinetic or melodic or noetic>/setup.bash
 
-##### For Developers
+### For Developers
 
     source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
 

@@ -13,7 +13,6 @@ from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
 from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from enum import Enum
 import math
@@ -22,7 +21,6 @@ from transforms3d.euler import quat2euler
 from ros_compatibility import (
     ros_ok,
     ServiceException,
-    ROSInterruptException,
     QoSProfile,
     latch_on,
     get_service_request,

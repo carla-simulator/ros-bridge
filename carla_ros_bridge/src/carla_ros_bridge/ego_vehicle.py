@@ -15,8 +15,6 @@ import os
 from std_msgs.msg import Bool  # pylint: disable=import-error
 from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 from carla import VehicleControl
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
 
 from carla_msgs.msg import (
@@ -31,9 +29,6 @@ from ros_compatibility import (
     latch_on,
     ROS_VERSION
 )
-
-if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
 class EgoVehicle(Vehicle):
