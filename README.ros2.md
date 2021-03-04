@@ -2,7 +2,7 @@
 
 Currently supported: [ROS2 Foxy](https://index.ros.org/doc/ros2/Releases/Release-Foxy-Fitzroy/)
 
-# Setup
+## Setup
 
 Colcon and ROS2 Foxy need to be installed on your system.
 

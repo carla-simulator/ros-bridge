@@ -16,9 +16,6 @@ try:
     import queue
 except ImportError:
     import Queue as queue
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
 from carla_ros_scenario_runner_types.srv import ExecuteScenario
 from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
 from carla_ros_scenario_runner.application_runner import ApplicationStatus  # pylint: disable=relative-import
@@ -51,7 +48,6 @@ except ImportError:
     sys.exit(1)
 
 if ROS_VERSION == 2:
-    import rclpy
     import threading
 
 

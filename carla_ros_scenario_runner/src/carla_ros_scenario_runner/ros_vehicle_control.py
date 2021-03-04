@@ -25,7 +25,6 @@ if ROS_VERSION == 1:
     import roslaunch
 elif ROS_VERSION == 2:
     from carla_ros_scenario_runner.application_runner import ApplicationRunner
-    import rclpy
 
 
 class RosVehicleControl(BasicControl):

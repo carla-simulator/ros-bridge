@@ -6,7 +6,6 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
-from ros_compatibility import ROS_VERSION
 import time
 from threading import Thread, Lock
 import itertools
@@ -45,7 +44,6 @@ from carla_ros_bridge.sensor import Sensor
 import carla_common.transforms as trans
 import carla
 import numpy as np
-from geometry_msgs.msg import Pose, Quaternion, Point
 
 # to generate a random spawning position or vehicles
 import random
@@ -154,7 +152,7 @@ class ActorFactory(object):
         """
         spawns an object
 
-        No object instances are created here. Instead carla-actors are created, 
+        No object instances are created here. Instead carla-actors are created,
         and pseudo objects are appended to a list to get created later.
         """
         with self.spawn_lock:

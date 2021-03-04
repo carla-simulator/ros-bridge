@@ -9,7 +9,6 @@
 """
 Control Carla ego vehicle by using AckermannDrive messages
 """
-import os
 import sys
 import datetime
 import numpy
@@ -29,10 +28,7 @@ if ROS_VERSION == 1:
     from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
     from dynamic_reconfigure.server import Server
 if ROS_VERSION == 2:
-    import rclpy
-    from rclpy.parameter import Parameter
     from rcl_interfaces.msg import SetParametersResult
-    from typing import Sequence
 
 
 class CarlaAckermannControl(CompatibleNode):

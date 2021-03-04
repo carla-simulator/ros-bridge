@@ -15,7 +15,6 @@ from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import
 
 import carla
 from transforms3d.euler import quat2euler
-from ros_compatibility import CompatibleNode
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 

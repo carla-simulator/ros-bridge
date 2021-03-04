@@ -1,6 +1,5 @@
 # pylint: disable=import-error
 import os
-from threading import Thread, currentThread
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
@@ -15,7 +14,6 @@ else:
     raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
 
 if ROS_VERSION == 1:
-    import tf.transformations as trans
 
     latch_on = True
 

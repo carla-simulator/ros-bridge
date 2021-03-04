@@ -27,7 +27,6 @@ try:
 except ImportError:
     import Queue as queue
 
-import os
 import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
@@ -49,7 +48,6 @@ from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
 
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error
-    from carla_msgs.srv import SpawnObjectResponse, DestroyObjectResponse, GetBlueprintsResponse
 elif ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error

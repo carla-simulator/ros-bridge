@@ -16,7 +16,7 @@ else
                          ros-$ROS_VERSION-rospy-message-converter
                          ros-$ROS_VERSION-pcl-ros"
 fi
-echo ADDITIONAL PACKAGES $ADDITIONAL_PACKAGES
+echo "ADDITIONAL PACKAGES $ADDITIONAL_PACKAGES"
 
 sudo apt update
 sudo apt-get install --no-install-recommends -y \

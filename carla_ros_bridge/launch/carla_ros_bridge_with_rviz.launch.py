@@ -1,5 +1,4 @@
 import os
-import sys
 
 import launch
 import launch_ros.actions

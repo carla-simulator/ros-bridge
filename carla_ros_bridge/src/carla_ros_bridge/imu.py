@@ -7,8 +7,6 @@
 Classes to handle Carla imu sensor
 """
 
-import math
-
 from sensor_msgs.msg import Imu
 
 from carla_ros_bridge.sensor import Sensor
