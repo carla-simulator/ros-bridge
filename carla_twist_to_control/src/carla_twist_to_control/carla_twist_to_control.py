@@ -11,6 +11,8 @@ use max wheel steer angle
 """
 from ros_compatibility import (
     CompatibleNode,
+    QoSProfile,
+    latch_on,
     ros_ok,
     ROSException,
     ROSInterruptException,
@@ -57,7 +59,8 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
                     sys.exit(0)
 
         self.create_subscriber(CarlaEgoVehicleInfo,
-                               "/carla/{}/vehicle_info".format(role_name), self.update_vehicle_info)
+                               "/carla/{}/vehicle_info".format(role_name), self.update_vehicle_info,
+                               qos_profile=QoSProfile(depth=1, durability=latch_on))
 
         self.create_subscriber(Twist, "/carla/{}/twist".format(role_name), self.twist_received)
 
