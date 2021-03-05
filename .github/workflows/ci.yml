@@ -47,14 +47,15 @@ jobs:
       ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
+        #with:
+        #  submodules: true
       - name: Setup
         run: |
           #sudo apt-get update && sudo apt-get install wget unzip -y
           #TODO: replace ros2 with master
           #rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
           #unzip ros2.zip -d carla_msgs && rm ros2.zip
+          git submodule update --init
           packaging/install_dependencies.sh
       - name: ROS2 Build, Test, Lint
         if: matrix.ros-version == 'foxy'
