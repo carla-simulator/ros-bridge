@@ -89,6 +89,11 @@ jobs:
             ros_distro: melodic
             ros_python_version: 2
             ros_version: 1
+
+            - docker_image: noetic-robot
+            ros_distro: noetic
+            ros_python_version: 3
+            ros_version: 1
     container:
       image: ros:${{ matrix.docker_image }}
     env:

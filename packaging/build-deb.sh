@@ -15,10 +15,8 @@ if [ "$ROS_PYTHON_VERSION" = "3" ]; then
     PYTHON_SUFFIX=3
 fi
 
-sudo apt update
+${SCRIPT_DIR}/install_dependencies.sh
 sudo apt-get install --no-install-recommends -y \
-    python$PYTHON_SUFFIX-osrf-pycommon \
-    python$PYTHON_SUFFIX-catkin-tools \
     rsync \
     build-essential \
     dh-make
