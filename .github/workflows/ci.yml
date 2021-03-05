@@ -46,16 +46,13 @@ jobs:
       ROS_VERSION: ${{ matrix.ros_version }}
       ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
     steps:
-      - uses: actions/checkout@v2
-        # TODO cleaner solution but currently not working because git version is below 2.18
-        # with:
-        #   submodules: true
+      # We currently cannot use checkout@v2 because git version on ros images is below 2.18
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: true
       - name: Setup
         run: |
-          sudo apt-get update && sudo apt-get install wget unzip -y
-          #TODO: replace ros2 with master
-          rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
-          unzip ros2.zip -d carla_msgs && rm ros2.zip
           packaging/install_dependencies.sh
       - name: ROS2 Build, Test, Lint
         if: ${{ matrix.ros_version == 2 }}
@@ -83,24 +80,28 @@ jobs:
         #  make pylint
         # TODO enable pylint
 
-  # debian:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - docker_image: melodic-robot
-  #           ros_distro: melodic
-  #           ros_python_version: 2
-  #           ros_version: 1
-  #   container:
-  #     image: ros:${{ matrix.docker_image }}
-  #   env:
-  #     SCENARIO_RUNNER_PATH: ""
-  #     DEBIAN_FRONTEND: "noninteractive"
-  #     ROS_DISTRO: ${{ matrix.ros_distro }}
-  #     ROS_VERSION: ${{ matrix.ros_version }}
-  #     ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Build Debian Package
-  #       run: make deb
+  debian:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - docker_image: melodic-robot
+            ros_distro: melodic
+            ros_python_version: 2
+            ros_version: 1
+    container:
+      image: ros:${{ matrix.docker_image }}
+    env:
+      SCENARIO_RUNNER_PATH: ""
+      DEBIAN_FRONTEND: "noninteractive"
+      ROS_DISTRO: ${{ matrix.ros_distro }}
+      ROS_VERSION: ${{ matrix.ros_version }}
+      ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
+    steps:
+      # We currently cannot use checkout@v2 because git version on ros images is below 2.18
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Build Debian Package
+        run: make deb
