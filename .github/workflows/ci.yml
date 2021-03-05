@@ -51,11 +51,10 @@ jobs:
         #  submodules: true
       - name: Setup
         run: |
-          #sudo apt-get update && sudo apt-get install wget unzip -y
+          sudo apt-get update && sudo apt-get install wget unzip -y
           #TODO: replace ros2 with master
-          #rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
-          #unzip ros2.zip -d carla_msgs && rm ros2.zip
-          git submodule update --init
+          rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
+          unzip ros2.zip -d carla_msgs && rm ros2.zip
           packaging/install_dependencies.sh
       - name: ROS2 Build, Test, Lint
         if: matrix.ros-version == 'foxy'
