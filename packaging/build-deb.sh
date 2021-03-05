@@ -15,7 +15,7 @@ if [ "$ROS_PYTHON_VERSION" = "3" ]; then
     PYTHON_SUFFIX=3
 fi
 
-${SCRIPT_DIR}/install_dependencies.sh
+sudo apt update
 sudo apt-get install --no-install-recommends -y \
     rsync \
     build-essential \
