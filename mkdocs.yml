@@ -1,0 +1,26 @@
+site_name: CARLA Simulator
+repo_url: https://github.com/carla-simulator/ros-bridge
+docs_dir: docs
+edit_uri: 'edit/master/docs/'
+theme: readthedocs
+extra_css: [extra.css]
+
+nav:
+- Home: 'index.md'
+- Getting started:
+  - Install ROS Bridge for ROS 1: 'ros_installation_ros1.md'
+  - Install ROS Bridge for ROS 2: 'ros_installation_ros2.md'
+  - The ROS bridge package: 'run_ros.md'
+- ROS Bridge Packages:
+  - Carla Spawn Objects: 'carla_spawn_objects.md'
+  - Carla Manual Control: 'carla_manual_control.md'
+  - Carla Ackermann Control: 'carla_ackermann_control.md'
+  - RVIZ Plugin: 'rviz_plugin.md'
+  - RQT Plugin: 'rqt_plugin.md'
+- References:
+  - CARLA messages reference: 'ros_msgs.md'
+  - Launchfiles reference: 'ros_launchfiles.md'
+
+
+markdown_extensions:
+  - admonition
