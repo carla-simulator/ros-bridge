@@ -34,7 +34,7 @@ jobs:
             ros_version: 1
 
           - docker_image: foxy
-            ros_distro: melodic
+            ros_distro: foxy
             ros_python_version: 3
             ros_version: 2
     container:
@@ -57,7 +57,7 @@ jobs:
           unzip ros2.zip -d carla_msgs && rm ros2.zip
           packaging/install_dependencies.sh
       - name: ROS2 Build, Test, Lint
-        if: matrix.ros-version == 'foxy'
+        if: ${{ matrix.ros_version == 2 }}
         shell: bash
         run: |
           source /opt/ros/$(rosversion -d)/setup.bash
@@ -65,7 +65,7 @@ jobs:
           # colcon test && colcon test-result
           source install/setup.bash
       - name: ROS1 Build, Test, Lint
-        if: matrix.ros-version != 'foxy'
+        if: ${{ matrix.ros_version == 1 }}
         shell: bash
         run: |
           mkdir -p $GITHUB_WORKSPACE/../catkin_ws/src
