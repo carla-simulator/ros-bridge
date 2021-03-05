@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-echo "$ROS_VERSION"
-echo "$ROS_DISTRO"
-echo "$ROS_PYTHON_VERSION"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_SUFFIX=""
 if [ "$ROS_PYTHON_VERSION" = "3" ]; then

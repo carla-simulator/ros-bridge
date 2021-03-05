@@ -84,14 +84,22 @@ jobs:
 
   debian:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic-robot, noetic-robot, foxy]
+        include:
+          - docker_image: melodic-robot
+            ros_distro: melodic
+            ros_python_version: 2
+            ros_version: 1
+    container:
+      image: ros:${{ matrix.docker_image }}
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
+      ROS_DISTRO: ${{ matrix.ros_distro }}
+      ROS_VERSION: ${{ matrix.ros_version }}
+      ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
     steps:
       - uses: actions/checkout@v2
       - name: Build Debian Package
-        run: packaging/build-deb.sh
+        run: make deb
