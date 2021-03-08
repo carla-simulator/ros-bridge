@@ -10,7 +10,8 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='rviz2',
             executable='rviz2',
-            name='rviz2'
+            name='rviz2',
+            arguments=['-d', os.path.join(get_package_share_directory('carla_ros_bridge'), 'config', 'carla_default_rviz2.cfg.rviz')]
         ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
