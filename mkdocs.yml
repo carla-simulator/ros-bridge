@@ -12,9 +12,12 @@ nav:
   - Install ROS Bridge for ROS 2: 'ros_installation_ros2.md'
   - The ROS bridge package: 'run_ros.md'
 - ROS Bridge Packages:
-  - Carla Spawn Objects: 'carla_spawn_objects.md'
-  - Carla Manual Control: 'carla_manual_control.md'
-  - Carla Ackermann Control: 'carla_ackermann_control.md'
+  - CARLA Spawn Objects: 'carla_spawn_objects.md'
+  - CARLA Manual Control: 'carla_manual_control.md'
+  - CARLA Ackermann Control: 'carla_ackermann_control.md'
+  - CARLA Waypoint Publisher: 'carla_waypoint.md'
+  - CARLA AD Agent: 'carla_ad_agent.md'
+  - CARLA AD Demo: 'carla_ad_demo.md'
   - RVIZ Plugin: 'rviz_plugin.md'
   - RQT Plugin: 'rqt_plugin.md'
 - References:
