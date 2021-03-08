@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROS_VERSION=$(rosversion -d)
-if [ "$ROS_VERSION" = "noetic" -o "$ROS_VERSION" = "foxy" ]; then
+PYTHON_SUFFIX=""
+if [ "$ROS_PYTHON_VERSION" = "3" ]; then
     PYTHON_SUFFIX=3
-else
-    PYTHON_SUFFIX=""
 fi
 
-if [ "$ROS_VERSION" = "foxy" ]; then
-    ADDITIONAL_PACKAGES="ros-$ROS_VERSION-rviz2"
+if [ "$ROS_VERSION" = "2" ]; then
+    ADDITIONAL_PACKAGES="ros-$ROS_DISTRO-rviz2"
 else
-    ADDITIONAL_PACKAGES="ros-$ROS_VERSION-rviz
-                         ros-$ROS_VERSION-opencv-apps
-                         ros-$ROS_VERSION-rospy-message-converter
-                         ros-$ROS_VERSION-pcl-ros"
+    ADDITIONAL_PACKAGES="ros-$ROS_DISTRO-rviz
+                         ros-$ROS_DISTRO-opencv-apps
+                         ros-$ROS_DISTRO-rospy-message-converter
+                         ros-$ROS_DISTRO-pcl-ros"
 fi
 echo "ADDITIONAL PACKAGES $ADDITIONAL_PACKAGES"
 
@@ -27,14 +25,14 @@ sudo apt-get install --no-install-recommends -y \
     python$PYTHON_SUFFIX-catkin-pkg-modules \
     python$PYTHON_SUFFIX-rosdep \
     python$PYTHON_SUFFIX-wstool \
-    ros-$ROS_VERSION-ackermann-msgs \
-    ros-$ROS_VERSION-derived-object-msgs \
-    ros-$ROS_VERSION-cv-bridge \
-    ros-$ROS_VERSION-vision-opencv \
-    ros-$ROS_VERSION-rqt-image-view \
-    ros-$ROS_VERSION-rqt-gui-py \
+    ros-$ROS_DISTRO-ackermann-msgs \
+    ros-$ROS_DISTRO-derived-object-msgs \
+    ros-$ROS_DISTRO-cv-bridge \
+    ros-$ROS_DISTRO-vision-opencv \
+    ros-$ROS_DISTRO-rqt-image-view \
+    ros-$ROS_DISTRO-rqt-gui-py \
     qt5-default \
-    ros-$ROS_VERSION-pcl-conversions \
+    ros-$ROS_DISTRO-pcl-conversions \
     $ADDITIONAL_PACKAGES
 
 pip$PYTHON_SUFFIX install -r $SCRIPT_DIR/../requirements.txt

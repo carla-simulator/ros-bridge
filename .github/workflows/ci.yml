@@ -6,75 +6,108 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Check
-      run: make check_format
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Check
+        run: make check_format
 
   ros:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic-robot, noetic-robot, foxy]
+        include:
+          - docker_image: melodic-robot
+            ros_distro: melodic
+            ros_python_version: 2
+            ros_version: 1
+
+          - docker_image: noetic-robot
+            ros_distro: noetic
+            ros_python_version: 3
+            ros_version: 1
+
+          - docker_image: foxy
+            ros_distro: foxy
+            ros_python_version: 3
+            ros_version: 2
+    container:
+      image: ros:${{ matrix.docker_image }}
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
+      ROS_DISTRO: ${{ matrix.ros_distro }}
+      ROS_VERSION: ${{ matrix.ros_version }}
+      ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
     steps:
-    - uses: actions/checkout@v2
-    # TODO cleaner solution but currently not working because git version is below 2.18
-    #   with:
-    #     submodules: true
-    - name: Setup
-      run: |
-        sudo apt-get update && sudo apt-get install wget unzip -y
-        #TODO: replace ros2 with master
-        rm -rf carla_msgs && wget https://github.com/carla-simulator/ros-carla-msgs/archive/ros2.zip
-        unzip ros2.zip -d carla_msgs && rm ros2.zip
-        packaging/install_dependencies.sh
-    - name: ROS2 Build, Test, Lint
-      if: matrix.ros-version == 'foxy'
-      shell: bash
-      run: |
-        source /opt/ros/$(rosversion -d)/setup.bash
-        colcon build --continue-on-error
-        # colcon test && colcon test-result
-        source install/setup.bash
-    - name: ROS1 Build, Test, Lint
-      if: matrix.ros-version != 'foxy'
-      shell: bash
-      run: |
-        mkdir -p $GITHUB_WORKSPACE/../catkin_ws/src
-        cd $GITHUB_WORKSPACE/../catkin_ws/src
-        ln -s $GITHUB_WORKSPACE
-        cd ..
-        catkin init
-        source /opt/ros/$(rosversion -d)/setup.bash
-        cd $GITHUB_WORKSPACE/../catkin_ws &&
-        catkin build --summarize --no-status --force-color
-        catkin run_tests --no-status --force-color && catkin_test_results
-        source devel/setup.bash
-        cd $GITHUB_WORKSPACE
-      #  make pylint
-      # TODO enable pylint
+      # We currently cannot use checkout@v2 because git version on ros images is below 2.18
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Setup
+        run: packaging/install_dependencies.sh
+      - name: ROS2 Build, Test, Lint
+        if: ${{ matrix.ros_version == 2 }}
+        shell: bash
+        run: |
+          source /opt/ros/$(rosversion -d)/setup.bash
+          colcon build --continue-on-error
+          # colcon test && colcon test-result
+          source install/setup.bash
+      - name: ROS1 Build, Test, Lint
+        if: ${{ matrix.ros_version == 1 }}
+        shell: bash
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/../catkin_ws/src
+          cd $GITHUB_WORKSPACE/../catkin_ws/src
+          ln -s $GITHUB_WORKSPACE
+          cd ..
+          catkin init
+          source /opt/ros/$(rosversion -d)/setup.bash
+          cd $GITHUB_WORKSPACE/../catkin_ws &&
+          catkin build --summarize --no-status --force-color
+          catkin run_tests --no-status --force-color && catkin_test_results
+          source devel/setup.bash
+          cd $GITHUB_WORKSPACE
+        #  make pylint
+        # TODO enable pylint
 
   debian:
     runs-on: ubuntu-latest
-    container: ros:${{ matrix.ros-version }}
     strategy:
       matrix:
-        ros-version: [melodic-robot, noetic-robot, foxy]
+        include:
+          - docker_image: melodic-robot
+            ros_distro: melodic
+            ros_python_version: 2
+            ros_version: 1
+
+          - docker_image: noetic-robot
+            ros_distro: noetic
+            ros_python_version: 3
+            ros_version: 1
+    container:
+      image: ros:${{ matrix.docker_image }}
     env:
       SCENARIO_RUNNER_PATH: ""
       DEBIAN_FRONTEND: "noninteractive"
+      ROS_DISTRO: ${{ matrix.ros_distro }}
+      ROS_VERSION: ${{ matrix.ros_version }}
+      ROS_PYTHON_VERSION: ${{ matrix.ros_python_version }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Build Debian Package
-      run: packaging/build-deb.sh
+      # We currently cannot use checkout@v2 because git version on ros images is below 2.18
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Setup
+        run: packaging/install_dependencies.sh
+      - name: Build Debian Package
+        run: make deb

@@ -15,3 +15,6 @@ check_format:
 
 pylint:
 	$(PY_FILES) | xargs pylint --rcfile=.pylintrc
+
+deb:
+	./packaging/build-deb.sh
