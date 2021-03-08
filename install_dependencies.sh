@@ -44,4 +44,4 @@ sudo apt-get install --no-install-recommends -y \
     $ADDITIONAL_PACKAGES
 
 pip$PYTHON_SUFFIX install --upgrade pip$PYTHON_SUFFIX
-pip$PYTHON_SUFFIX install -r $SCRIPT_DIR/../requirements.txt
+pip$PYTHON_SUFFIX install -r $SCRIPT_DIR/requirements.txt

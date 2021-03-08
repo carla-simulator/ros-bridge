@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 1
           submodules: true
       - name: Setup
-        run: packaging/install_dependencies.sh
+        run: install_dependencies.sh
       - name: ROS2 Build, Test, Lint
         if: ${{ matrix.ros_version == 2 }}
         shell: bash
@@ -108,6 +108,6 @@ jobs:
           fetch-depth: 1
           submodules: true
       - name: Setup
-        run: packaging/install_dependencies.sh
+        run: install_dependencies.sh
       - name: Build Debian Package
         run: make deb
