@@ -32,4 +32,8 @@ shift $((OPTIND-1))
 
 echo "Using $DOCKER_IMAGE_NAME:$TAG"
 
-docker run -it --rm "$DOCKER_IMAGE_NAME:$TAG" "$@"
+docker run \
+    -it --rm \
+    --privileged \
+    --net=host \
+    "$DOCKER_IMAGE_NAME:$TAG" "$@"
