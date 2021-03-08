@@ -23,7 +23,6 @@ elif ROS_VERSION == 2:
         packages=[package_name],
         data_files=[('share/ament_index/resource_index/packages', ['resource/' + package_name]),
                     ('share/' + package_name, ['package.xml']),
-                    ('share/' + package_name + '/config', ['config/carla_default_rviz2.cfg.rviz']),
                     (os.path.join('share', package_name), glob('launch/*.launch.py')),
                     (os.path.join('share', package_name + '/test'), glob('test/test_objects.json'))],
         install_requires=['setuptools'],
