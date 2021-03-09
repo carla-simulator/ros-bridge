@@ -17,7 +17,6 @@
   <arg name='passive' default=''/>
 
   <!-- Synchronous mode-->
-  <arg name='synchronous_mode' default='False'/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/>
   <arg name='fixed_delta_seconds' default='0.05'/>
 
@@ -28,7 +27,6 @@
     <arg name='town' value='$(arg town)'/>
     <arg name='timeout' value='$(arg timeout)'/>
     <arg name='passive' value='$(arg passive)'/>
-    <arg name='synchronous_mode' value='$(arg synchronous_mode)'/>
     <arg name='synchronous_mode_wait_for_vehicle_control_command' value='$(arg synchronous_mode_wait_for_vehicle_control_command)'/>
     <arg name='fixed_delta_seconds' value='$(arg fixed_delta_seconds)'/>
   </include>
