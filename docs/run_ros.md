@@ -143,6 +143,10 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 <br>
 
+!!! Note
+    When using `debug_marker`, be aware that markers may affect the data published by sensors. Supported markers include: arrow (specified by two points), points, cube and line strip.
+<br>
+
 #### Publications
 
 | Topic | Type | Description |
