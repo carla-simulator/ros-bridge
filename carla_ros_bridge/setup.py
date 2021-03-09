@@ -36,4 +36,6 @@ elif ROS_VERSION == 2:
             'console_scripts': ['bridge = carla_ros_bridge.bridge:main'],
         },
         package_dir={'': 'src'},
+        package_data={'': ['CARLA_VERSION']},
+        include_package_data=True
     )
