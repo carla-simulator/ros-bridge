@@ -55,7 +55,7 @@ The [CARLA AD demo](carla_ad_demo.md) uses the Waypoint Publisher to plan a rout
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ego vehicle name>/waypoints` | [nav_msgs.Path](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | Publishes the calculated route |
+| `/carla/<ego vehicle name>/waypoints` | [nav_msgs/Path](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | Publishes the calculated route |
 
 <br>
 
@@ -63,7 +63,7 @@ The [CARLA AD demo](carla_ad_demo.md) uses the Waypoint Publisher to plan a rout
 
 | Service | Type | Description |
 |-------|------|-------------|
-| `/carla_waypoint_publisher/<ego vehicle name>/get_waypoint` | [carla_waypoint_types.GetWaypoint](https://github.com/carla-simulator/ros-bridge/blob/ros2/carla_waypoint_types/srv/GetWaypoint.srv) | Get the waypoint for a specific location |
-| `/carla_waypoint_publisher/<ego vehicle name>/get_actor_waypoint` | [carla_waypoint_types.GetActorWaypoint](https://github.com/carla-simulator/ros-bridge/blob/ros2/carla_waypoint_types/srv/GetActorWaypoint.srv) | Get the waypoint for an actor id |
+| `/carla_waypoint_publisher/<ego vehicle name>/get_waypoint` | [carla_waypoint_types/GetWaypoint](https://github.com/carla-simulator/ros-bridge/blob/ros2/carla_waypoint_types/srv/GetWaypoint.srv) | Get the waypoint for a specific location |
+| `/carla_waypoint_publisher/<ego vehicle name>/get_actor_waypoint` | [carla_waypoint_types/GetActorWaypoint](https://github.com/carla-simulator/ros-bridge/blob/ros2/carla_waypoint_types/srv/GetActorWaypoint.srv) | Get the waypoint for an actor id |
 
 <br>

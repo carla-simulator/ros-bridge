@@ -137,8 +137,8 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/debug_marker` | [visualization_msgs.MarkerArray](https://docs.ros.org/en/api/visualization_msgs/html/msg/MarkerArray.html) | Draws markers in the CARLA world. |
-| `/carla/weather_control` | [carla_msgs.CarlaWeatherParameters](https://github.com/carla-simulator/ros-carla-msgs/blob/master/msg/CarlaWeatherParameters.msg) | Set the CARLA weather parameters |
+| `/carla/debug_marker` | [visualization_msgs/MarkerArray](https://docs.ros.org/en/api/visualization_msgs/html/msg/MarkerArray.html) | Draws markers in the CARLA world. |
+| `/carla/weather_control` | [carla_msgs/CarlaWeatherParameters](https://github.com/carla-simulator/ros-carla-msgs/blob/master/msg/CarlaWeatherParameters.msg) | Set the CARLA weather parameters |
 | `/clock` | [rosgraph_msgs/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
 
 <br>
@@ -147,7 +147,7 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/status` | [carla_msgs.CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
+| `/carla/status` | [carla_msgs/CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
 | `/carla/world_info` | [carla_msgs/CarlaWorldInfo](ros_msgs.md#carlaworldinfomsg) | Information about the current CARLA map. |
 | `/clock` | [rosgraph_msgs/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
 | `/rosout` | [rosgraph_msgs/Log](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Log.html) | ROS logging. |
@@ -158,11 +158,9 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/destroy_object` | [](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/DestroyObject.srv) | Destroys an object |
-| `/carla/get_blueprints` | [](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/GetBlueprints.srv) | Gets blueprints |
-| `/carla/spawn_object` | [](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/SpawnObject.srv) | Spawn an object |
-| `/carla_ros_bridge/get_loggers` | []() |  |
-| `/carla_ros_bridge/set_logger_level` | []() | |
+| `/carla/destroy_object` | [carla_msgs/DestroyObject.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/DestroyObject.srv) | Destroys an object |
+| `/carla/get_blueprints` | [carla_msgs/GetBlueprints.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/GetBlueprints.srv) | Gets blueprints |
+| `/carla/spawn_object` | [carla_msgs/SpawnObject.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/SpawnObject.srv) | Spawn an object |
 
 ---
 

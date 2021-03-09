@@ -66,11 +66,11 @@ __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/status` | [carla_msgs.CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
-| `/carla/ego_vehicle/vehicle_status` | [carla_msgs.CarlaEgoVehicleStatus](ros_msgs.md#carlaegovehiclestatusmsg) | Display the current state of the ego vehicle |
-| `/carla/ego_vehicle/odometry` | [nav_msgs.Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Display the current pose of the ego vehicle |
-| `/scenario_runner/status` | [carla_ros_scenario_runner_types.CarlaScenarioRunnerStatus](ros_msgs.md#carlascenariorunnerstatusmsg) | Visualize the scenario runner status |
-| `/carla/available_scenarios` | [carla_ros_scenario_runner_types.CarlaScenarioList](ros_msgs.md#carlascenariolistmsg) | Provides a list of scenarios to execute (disabled in combo box)|
+| `/carla/status` | [carla_msgs/CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
+| `/carla/ego_vehicle/vehicle_status` | [carla_msgs/CarlaEgoVehicleStatus](ros_msgs.md#carlaegovehiclestatusmsg) | Display the current state of the ego vehicle |
+| `/carla/ego_vehicle/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Display the current pose of the ego vehicle |
+| `/scenario_runner/status` | [carla_ros_scenario_runner_types/CarlaScenarioRunnerStatus](ros_msgs.md#carlascenariorunnerstatusmsg) | Visualize the scenario runner status |
+| `/carla/available_scenarios` | [carla_ros_scenario_runner_types/CarlaScenarioList](ros_msgs.md#carlascenariolistmsg) | Provides a list of scenarios to execute (disabled in combo box)|
 
 <br>
 
@@ -78,10 +78,10 @@ __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/control` | [carla_msgs.CarlaControl](ros_msgs.md#carlacontrolmsg) | Play/pause/step CARLA |
-| `/carla/ego_vehicle/spectator_pose` | [geometry_msgs.PoseStamped](https://docs.ros.org/en/api/geometry_msgs/html/msg/PoseStamped.html) | Publish the current pose of the RVIZ camera view |
-| `/carla/ego_vehicle/vehicle_control_manual_override` | [std_msgs.Bool](https://docs.ros.org/en/api/std_msgs/html/msg/Bool.html) | Enable/disable vehicle control override |
-| `/carla/ego_vehicle/twist` | [geometry_msgs.Twist](https://docs.ros.org/en/api/geometry_msgs/html/msg/Twist.html) | The twist command, created via mouse |
+| `/carla/control` | [carla_msgs/CarlaControl](ros_msgs.md#carlacontrolmsg) | Play/pause/step CARLA |
+| `/carla/ego_vehicle/spectator_pose` | [geometry_msgs/PoseStamped](https://docs.ros.org/en/api/geometry_msgs/html/msg/PoseStamped.html) | Publish the current pose of the RVIZ camera view |
+| `/carla/ego_vehicle/vehicle_control_manual_override` | [std_msgs/Bool](https://docs.ros.org/en/api/std_msgs/html/msg/Bool.html) | Enable/disable vehicle control override |
+| `/carla/ego_vehicle/twist` | [geometry_msgs/Twist](https://docs.ros.org/en/api/geometry_msgs/html/msg/Twist.html) | The twist command, created via mouse |
 
 <br>
 
@@ -89,6 +89,6 @@ __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/scenario_runner/execute_scenario` | [carla_ros_scenario_runner_types.ExecuteScenario](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ros_scenario_runner_types/srv/ExecuteScenario.srv) | Execute the selected scenario |
+| `/scenario_runner/execute_scenario` | [carla_ros_scenario_runner_types/ExecuteScenario](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ros_scenario_runner_types/srv/ExecuteScenario.srv) | Execute the selected scenario |
 
 <br>
