@@ -1,6 +1,6 @@
 # RVIZ Carla Plugin
 
-The RVIZ plugin provides a visualization tool based on the [RVIZ](https://wiki.ros.org/rviz) ROS package.
+The [RVIZ plugin](https://github.com/carla-simulator/ros-bridge/tree/master/rviz_carla_plugin) provides a visualization tool based on the [RVIZ](https://wiki.ros.org/rviz) ROS package.
 
 - [__Run ROS bridge with RVIZ__](#run-ros-bridge-with-rviz)
 - [__Features of the RVIZ plugin__](#features-of-the-rviz-plugin)

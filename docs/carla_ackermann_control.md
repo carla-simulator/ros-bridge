@@ -1,6 +1,6 @@
 # Carla Ackermann Control
 
-The `carla_ackermann_control` package is used to control a CARLA vehicle with [Ackermann messages][ackermanncontrolmsg]. The package converts the Ackermann messages into [CarlaEgoVehicleControl][carlaegovehiclecontrolmsg] messages. It reads vehicle information from CARLA and passes that information to a Python based PID controller called `simple-pid` to control the acceleration and velocity.
+The [`carla_ackermann_control` package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ackermann_control) is used to control a CARLA vehicle with [Ackermann messages][ackermanncontrolmsg]. The package converts the Ackermann messages into [CarlaEgoVehicleControl][carlaegovehiclecontrolmsg] messages. It reads vehicle information from CARLA and passes that information to a Python based PID controller called `simple-pid` to control the acceleration and velocity.
 
 [ackermanncontrolmsg]: https://docs.ros.org/en/api/ackermann_msgs/html/msg/AckermannDrive.html
 [carlaegovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#carlaegovehiclecontrolmsg

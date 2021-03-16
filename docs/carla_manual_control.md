@@ -1,6 +1,6 @@
 # Carla Manual Control
 
-This package is a ROS only version of the [`manual_control.py`][manualcontrol] script that comes packaged with CARLA. All data is received via ROS topics. 
+The [CARLA manual control package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_manual_control) is a ROS only version of the [`manual_control.py`][manualcontrol] script that comes packaged with CARLA. All data is received via ROS topics. 
 
 [manualcontrol]: https://github.com/carla-simulator/carla/blob/master/PythonAPI/examples/manual_control.py
 

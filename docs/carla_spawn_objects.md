@@ -1,6 +1,6 @@
 # Carla Spawn Objects
 
-The `carla_spawn_objects` package is used to spawn actors (vehicles, sensors, walkers) and to attach sensors to them.
+The [`carla_spawn_objects` package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_spawn_objects) is used to spawn actors (vehicles, sensors, walkers) and to attach sensors to them.
 
 - [__Configuration and sensor setup__](#configuration-and-sensor-setup)
     - [Create the configuration](#create-the-configuration)

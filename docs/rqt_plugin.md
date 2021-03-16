@@ -1,6 +1,6 @@
 # RQT Carla Plugin
 
-The RQT plugin is a simple interface for pausing, playing and controlling the steps of a simulation. To use it, execute the following command with the ROS-bridge running in synchronous mode:
+The [RQT plugin](https://github.com/carla-simulator/ros-bridge/tree/master/rqt_carla_control) is a simple interface for pausing, playing and controlling the steps of a simulation. To use it, execute the following command with the ROS-bridge running in synchronous mode:
 
 ```
        rqt --standalone rqt_carla_control

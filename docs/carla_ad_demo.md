@@ -1,6 +1,6 @@
 # CARLA AD Demo
 
-The AD demo is an example package that provides everything needed to launch a CARLA ROS environment with an AD vehicle. 
+The [AD demo](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ad_demo) is an example package that provides everything needed to launch a CARLA ROS environment with an AD vehicle. 
 
 - [__Before you begin__](#before-you-begin)
 - [__Run the demo__](#run-the-demo)

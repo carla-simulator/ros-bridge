@@ -1,6 +1,6 @@
 # CARLA AD Agent
 
-The CARLA AD agent is an AD agent that can follow a given route, avoids crashes with other vehicles and respects the state of traffic lights by accessing ground truth data. It is used by the [CARLA AD demo](carla_ad_demo.md) to provide an example of how the ROS bridge can be used.
+The [CARLA AD agent](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ad_agent) is an AD agent that can follow a given route, avoids crashes with other vehicles and respects the state of traffic lights by accessing ground truth data. It is used by the [CARLA AD demo](carla_ad_demo.md) to provide an example of how the ROS bridge can be used.
 
 - [__Local Planner Node__](#local-planner-node)
 - [__Publications and subscriptions__](#publications-and-subscriptions)
