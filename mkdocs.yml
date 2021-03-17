@@ -18,6 +18,7 @@ nav:
   - CARLA Waypoint Publisher: 'carla_waypoint.md'
   - CARLA AD Agent: 'carla_ad_agent.md'
   - CARLA AD Demo: 'carla_ad_demo.md'
+  - CARLA ROS Scenario Runner: 'carla_ros_scenario_runner.md'
   - RVIZ Plugin: 'rviz_plugin.md'
   - RQT Plugin: 'rqt_plugin.md'
 - References:
