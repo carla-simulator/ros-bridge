@@ -70,7 +70,6 @@ class EgoVehicle(Vehicle):
                                                          "/vehicle_info",
                                                          qos_profile=QoSProfile(depth=10, durability=latch_on))
 
-        # only subscribe to control topics if passive mode is not activated
         self.control_subscriber = node.create_subscriber(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd",
