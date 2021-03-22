@@ -6,10 +6,16 @@ Currently supported: [ROS2 Foxy](https://index.ros.org/doc/ros2/Releases/Release
 
 Colcon and ROS2 Foxy need to be installed on your system.
 
-    git clone https://github.com/carla-simulator/ros-bridge.git
-    cd ros-bridge
-    git submodule update --init
+    #setup folder structure
+    mkdir -p ~/carla-ros-bridge && cd ~/carla-ros-bridge
+    git clone --recurse-submodules https://github.com/carla-simulator/ros-bridge.git src/ros-bridge
     source /opt/ros/foxy/setup.bash
+
+    #install required ros-dependencies
+    rosdep update
+    rosdep install --from-paths src --ignore-src -r
+
+    #build
     colcon build
 
 For more information about configuring a ROS2 environment see
