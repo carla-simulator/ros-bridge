@@ -70,27 +70,25 @@ class EgoVehicle(Vehicle):
                                                          "/vehicle_info",
                                                          qos_profile=QoSProfile(depth=10, durability=latch_on))
 
-        # only subscribe to control topics if passive mode is not activated
-        if not node.parameters["passive"]:
-            self.control_subscriber = node.create_subscriber(
-                CarlaEgoVehicleControl,
-                self.get_topic_prefix() + "/vehicle_control_cmd",
-                lambda data: self.control_command_updated(data, manual_override=False))
+        self.control_subscriber = node.create_subscriber(
+            CarlaEgoVehicleControl,
+            self.get_topic_prefix() + "/vehicle_control_cmd",
+            lambda data: self.control_command_updated(data, manual_override=False))
 
-            self.manual_control_subscriber = node.create_subscriber(
-                CarlaEgoVehicleControl,
-                self.get_topic_prefix() + "/vehicle_control_cmd_manual",
-                lambda data: self.control_command_updated(data, manual_override=True))
+        self.manual_control_subscriber = node.create_subscriber(
+            CarlaEgoVehicleControl,
+            self.get_topic_prefix() + "/vehicle_control_cmd_manual",
+            lambda data: self.control_command_updated(data, manual_override=True))
 
-            self.control_override_subscriber = node.create_subscriber(
-                Bool,
-                self.get_topic_prefix() + "/vehicle_control_manual_override",
-                self.control_command_override, QoSProfile(depth=1, durability=True))
+        self.control_override_subscriber = node.create_subscriber(
+            Bool,
+            self.get_topic_prefix() + "/vehicle_control_manual_override",
+            self.control_command_override, QoSProfile(depth=1, durability=True))
 
-            self.enable_autopilot_subscriber = node.create_subscriber(
-                Bool,
-                self.get_topic_prefix() + "/enable_autopilot",
-                self.enable_autopilot_updated)
+        self.enable_autopilot_subscriber = node.create_subscriber(
+            Bool,
+            self.get_topic_prefix() + "/enable_autopilot",
+            self.enable_autopilot_updated)
 
     def get_marker_color(self):
         """

@@ -33,6 +33,7 @@
     <param name="synchronous_mode_wait_for_vehicle_control_command" value="$(arg synchronous_mode_wait_for_vehicle_control_command)"/>
     <param name="fixed_delta_seconds" value="$(arg fixed_delta_seconds)"/>
     <param name="town" value="$(arg town)"/>
+    <param name="ego_vehicle_role_name" value="$(arg ego_vehicle_role_name)"/>
   </node>
     
 </launch>

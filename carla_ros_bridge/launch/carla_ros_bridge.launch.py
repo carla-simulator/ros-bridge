@@ -37,7 +37,7 @@ def generate_launch_description():
             default_value='Town01'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='ego_vehicle_role_names',
+            name='ego_vehicle_role_name',
             default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2",
                            "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]
         ),
@@ -77,7 +77,7 @@ def generate_launch_description():
                     'town': launch.substitutions.LaunchConfiguration('town')
                 },
                 {
-                    'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_names')
+                    'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_name')
                 }
             ]
         )
