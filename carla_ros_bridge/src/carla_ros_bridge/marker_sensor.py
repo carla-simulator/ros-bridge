@@ -9,8 +9,6 @@
 handle a marker sensor
 """
 
-import rospy
-
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.traffic_participant import TrafficParticipant
 
@@ -47,9 +45,8 @@ class MarkerSensor(PseudoActor):
                                            node=node)
         self.actor_list = actor_list
 
-        self.marker_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                MarkerArray,
-                                                queue_size=10)
+        self.marker_publisher = node.new_publisher(MarkerArray,
+                                                   self.get_topic_prefix())
 
     def destroy(self):
         """
@@ -57,6 +54,7 @@ class MarkerSensor(PseudoActor):
         :return:
         """
         self.actor_list = None
+        self.node.destroy_publisher(self.marker_publisher)
         super(MarkerSensor, self).destroy()
 
     @staticmethod

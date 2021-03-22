@@ -10,9 +10,8 @@
 Class to handle the carla map
 """
 
-import rospy
-
 from carla_msgs.msg import CarlaWorldInfo
+from ros_compatibility import QoSProfile, latch_on
 
 
 class WorldInfo(object):
@@ -21,22 +20,23 @@ class WorldInfo(object):
     Publish the map
     """
 
-    def __init__(self, carla_world):
+    def __init__(self, carla_world, node):
         """
         Constructor
 
         :param carla_world: carla world object
         :type carla_world: carla.World
+        :param node: node-handle
+        :type node: CompatibleNode
         """
-
+        self.node = node
         self.carla_map = carla_world.get_map()
 
         self.map_published = False
 
-        self.world_info_publisher = rospy.Publisher("/carla/world_info",
-                                                    CarlaWorldInfo,
-                                                    queue_size=10,
-                                                    latch=True)
+        self.world_info_publisher = node.new_publisher(CarlaWorldInfo,
+                                                       "/carla/world_info",
+                                                       qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     def destroy(self):
         """
@@ -47,7 +47,7 @@ class WorldInfo(object):
 
         :return:
         """
-        rospy.logdebug("Destroying WorldInfo()")
+        self.node.destroy_publisher(self.world_info_publisher)
         self.carla_map = None
 
     def update(self, frame, timestamp):

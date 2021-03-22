@@ -35,7 +35,7 @@ class RssSensor(Actor):
         :param relative_spawn_pose: the spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         """

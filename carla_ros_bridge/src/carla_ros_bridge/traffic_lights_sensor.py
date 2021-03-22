@@ -9,12 +9,13 @@
 a sensor that reports the state of all traffic lights
 """
 
-import rospy
-
-from carla_msgs.msg import CarlaTrafficLightStatusList,\
+from carla_msgs.msg import (
+    CarlaTrafficLightStatusList,
     CarlaTrafficLightInfoList
+)
 from carla_ros_bridge.traffic import TrafficLight
 from carla_ros_bridge.pseudo_actor import PseudoActor
+from ros_compatibility import QoSProfile, latch_on
 
 
 class TrafficLightsSensor(PseudoActor):
@@ -33,7 +34,7 @@ class TrafficLightsSensor(PseudoActor):
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param actor_list: current list of actors
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
@@ -47,24 +48,23 @@ class TrafficLightsSensor(PseudoActor):
         self.traffic_light_status = CarlaTrafficLightStatusList()
         self.traffic_light_actors = []
 
-        self.traffic_lights_info_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "/info",
+        self.traffic_lights_info_publisher = node.new_publisher(
             CarlaTrafficLightInfoList,
-            queue_size=10,
-            latch=True)
-        self.traffic_lights_status_publisher = rospy.Publisher(
-            self.get_topic_prefix() + "/status",
+            self.get_topic_prefix() + "/info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.traffic_lights_status_publisher = node.new_publisher(
             CarlaTrafficLightStatusList,
-            queue_size=10,
-            latch=True)
+            self.get_topic_prefix() + "/status",
+            qos_profile=QoSProfile(depth=10, durability=latch_on))
 
     def destroy(self):
         """
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.traffic_lights_info_publisher)
+        self.node.destroy_publisher(self.traffic_lights_status_publisher)
 
     @staticmethod
     def get_blueprint_name():

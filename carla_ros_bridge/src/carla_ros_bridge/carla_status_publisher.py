@@ -9,19 +9,25 @@
 """
 report the carla status
 """
+import os
 
-import rospy
+from carla_msgs.msg import CarlaStatus  # pylint: disable=import-error
 
-from carla_msgs.msg import CarlaStatus
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
+if ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
 class CarlaStatusPublisher(object):
-
     """
     report the carla status
     """
 
-    def __init__(self, synchronous_mode, fixed_delta_seconds):
+    def __init__(self, synchronous_mode, fixed_delta_seconds, node):
         """
         Constructor
 
@@ -29,12 +35,20 @@ class CarlaStatusPublisher(object):
         self.synchronous_mode = synchronous_mode
         self.synchronous_mode_running = True
         self.fixed_delta_seconds = fixed_delta_seconds
+        self.node = node
         if self.fixed_delta_seconds is None:
-            self.fixed_delta_seconds = 0
+            self.fixed_delta_seconds = 0.
         self.frame = 0
-        self.carla_status_publisher = rospy.Publisher(
-            "/carla/status", CarlaStatus, queue_size=10, latch=True)
+        if ROS_VERSION == 1:
+            callback_group = None
+        elif ROS_VERSION == 2:
+            callback_group = ReentrantCallbackGroup()
+        self.carla_status_publisher = self.node.new_publisher(CarlaStatus, "/carla/status",
+                                                              callback_group=callback_group)
         self.publish()
+
+    def destroy(self):
+        self.node.destroy_publisher(self.carla_status_publisher)
 
     def publish(self):
         """

@@ -1,5 +1,5 @@
-carla:
-  ackermann_control:
+carla_ackermann_control:
+  ros__parameters:
     # override the default values of the pid speed controller
     # (only relevant for ackermann control mode) 
     speed_Kp: 0.05  # min: 0, max: 1.

@@ -9,7 +9,6 @@
 handle a speedometer sensor
 """
 
-import rospy
 import numpy as np
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
@@ -42,9 +41,12 @@ class SpeedometerSensor(PseudoActor):
                                                 parent=parent,
                                                 node=node)
 
-        self.speedometer_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                     Float32,
-                                                     queue_size=10)
+        self.speedometer_publisher = node.new_publisher(Float32,
+                                                        self.get_topic_prefix())
+
+    def destroy(self):
+        super(SpeedometerSensor, self).destroy()
+        self.node.destroy_publisher(self.speedometer_publisher)
 
     @staticmethod
     def get_blueprint_name():
@@ -58,8 +60,14 @@ class SpeedometerSensor(PseudoActor):
         """
         Function (override) to update this object.
         """
-        velocity = self.parent.carla_actor.get_velocity()
-        transform = self.parent.carla_actor.get_transform()
+        try:
+            velocity = self.parent.carla_actor.get_velocity()
+            transform = self.parent.carla_actor.get_transform()
+        except AttributeError:
+            # parent actor disappeared, do not send tf
+            self.node.logwarn(
+                "SpeedometerSensor could not publish. Parent actor {} not found".format(self.parent.uid))
+            return
 
         vel_np = np.array([velocity.x, velocity.y, velocity.z])
         pitch = np.deg2rad(transform.rotation.pitch)
@@ -71,4 +79,4 @@ class SpeedometerSensor(PseudoActor):
         ])
         speed = np.dot(vel_np, orientation)
 
-        self.speedometer_publisher.publish(Float32(speed))
+        self.speedometer_publisher.publish(Float32(data=speed))

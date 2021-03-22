@@ -16,11 +16,20 @@ try:
     import queue
 except ImportError:
     import Queue as queue
-import rospy
-from carla_ros_scenario_runner_types.srv import ExecuteScenario, ExecuteScenarioResponse
+from carla_ros_scenario_runner_types.srv import ExecuteScenario
 from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
-from application_runner import ApplicationStatus  # pylint: disable=relative-import
-from scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
+from carla_ros_scenario_runner.application_runner import ApplicationStatus  # pylint: disable=relative-import
+from carla_ros_scenario_runner.scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
+
+from ros_compatibility import (
+    CompatibleNode,
+    QoSProfile,
+    ros_ok,
+    ros_init,
+    get_service_response,
+    ros_shutdown,
+    loginfo,
+    ROS_VERSION)
 
 # Check Python dependencies of scenario runner
 try:
@@ -38,18 +47,30 @@ except ImportError:
         Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH.")
     sys.exit(1)
 
+if ROS_VERSION == 2:
+    import threading
 
-class CarlaRosScenarioRunner(object):
+
+class CarlaRosScenarioRunner(CompatibleNode):
     """
     Execute scenarios via ros service
     """
 
-    def __init__(self, host, port, scenario_runner_path, wait_for_ego):
+    def __init__(self):
         """
         Constructor
         """
-        self._status_publisher = rospy.Publisher(
-            "/scenario_runner/status", CarlaScenarioRunnerStatus, queue_size=1, latch=True)
+        super(CarlaRosScenarioRunner, self).__init__('carla_ros_scenario_runner')
+
+        role_name = self.get_param("role_name", "ego_vehicle")
+        scenario_runner_path = self.get_param("scenario_runner_path", "")
+        wait_for_ego = self.get_param("wait_for_ego", "True")
+        host = self.get_param("host", "localhost")
+        port = self.get_param("port", 2000)
+
+        self._status_publisher = self.new_publisher(
+            CarlaScenarioRunnerStatus, "/scenario_runner/status",
+            qos_profile=QoSProfile(depth=1, durability=1))
         self.scenario_runner_status_updated(ApplicationStatus.STOPPED)
         self._scenario_runner = ScenarioRunnerRunner(
             scenario_runner_path,
@@ -59,20 +80,20 @@ class CarlaRosScenarioRunner(object):
             self.scenario_runner_status_updated,
             self.scenario_runner_log)
         self._request_queue = queue.Queue()
-        self._execute_scenario_service = rospy.Service(
-            '/scenario_runner/execute_scenario', ExecuteScenario, self.execute_scenario)
+        self._execute_scenario_service = self.new_service(
+            ExecuteScenario, '/scenario_runner/execute_scenario', self.execute_scenario)
 
     def scenario_runner_log(self, log):  # pylint: disable=no-self-use
         """
         Callback for application logs
         """
-        rospy.logwarn("[SC]{}".format(log))
+        self.logwarn("[SC]{}".format(log))
 
     def scenario_runner_status_updated(self, status):
         """
         Executed from application runner whenever the status changed
         """
-        rospy.loginfo("Status updated to {}".format(status))
+        self.loginfo("Status updated to {}".format(status))
         val = CarlaScenarioRunnerStatus.STOPPED
         if status == ApplicationStatus.STOPPED:
             val = CarlaScenarioRunnerStatus.STOPPED
@@ -88,16 +109,16 @@ class CarlaRosScenarioRunner(object):
         status.status = val
         self._status_publisher.publish(status)
 
-    def execute_scenario(self, req):
+    def execute_scenario(self, req, response=None):
         """
         Execute a scenario
         """
-        rospy.loginfo("Scenario Execution requested...")
+        self.loginfo("Scenario Execution requested...")
 
-        response = ExecuteScenarioResponse()
+        response = get_service_response(ExecuteScenario)
         response.result = True
         if not os.path.isfile(req.scenario.scenario_file):
-            rospy.logwarn("Requested scenario file not existing {}".format(
+            self.logwarn("Requested scenario file not existing {}".format(
                 req.scenario.scenario_file))
             response.result = False
         else:
@@ -111,19 +132,19 @@ class CarlaRosScenarioRunner(object):
         :return:
         """
         current_req = None
-        while not rospy.is_shutdown():
+        while ros_ok():
             if current_req:
                 if self._scenario_runner.is_running():
-                    rospy.loginfo("Scenario Runner currently running. Shutting down.")
+                    self.loginfo("Scenario Runner currently running. Shutting down.")
                     self._scenario_runner.shutdown()
-                    rospy.loginfo("Scenario Runner stopped.")
-                rospy.loginfo("Executing scenario {}...".format(current_req.name))
+                    self.loginfo("Scenario Runner stopped.")
+                self.loginfo("Executing scenario {}...".format(current_req.name))
 
                 # execute scenario
                 scenario_executed = self._scenario_runner.execute_scenario(
                     current_req.scenario_file)
                 if not scenario_executed:
-                    rospy.logwarn("Unable to execute scenario.")
+                    self.logwarn("Unable to execute scenario.")
                 current_req = None
             else:
                 try:
@@ -131,30 +152,39 @@ class CarlaRosScenarioRunner(object):
                 except queue.Empty:
                     # no new request
                     pass
+
         if self._scenario_runner.is_running():
-            rospy.loginfo("Scenario Runner currently running. Shutting down.")
+            self.loginfo("Scenario Runner currently running. Shutting down.")
             self._scenario_runner.shutdown()
 
 
-def main():
+def main(args=None):
     """
 
     main function
 
     :return:
     """
-    rospy.init_node('carla_ros_scenario_runner', anonymous=True)
-    scenario_runner_path = rospy.get_param("~scenario_runner_path", "")
-    wait_for_ego = rospy.get_param("~wait_for_ego", "True")
-    host = rospy.get_param("~host", "localhost")
-    port = rospy.get_param("~port", 2000)
-    scenario_runner = CarlaRosScenarioRunner(
-        host, port, scenario_runner_path, wait_for_ego)
+    ros_init(args)
+
+    scenario_runner = CarlaRosScenarioRunner()
+
+    if ROS_VERSION == 2:
+        spin_thread = threading.Thread(target=scenario_runner.spin, daemon=True)
+        spin_thread.start()
+
     try:
         scenario_runner.run()
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
+        if scenario_runner._scenario_runner.is_running():
+            scenario_runner.loginfo("Scenario Runner still running. Shutting down.")
+            scenario_runner._scenario_runner.shutdown()
         del scenario_runner
-        rospy.loginfo("Done.")
+        ros_shutdown()
+        if ROS_VERSION == 2:
+            spin_thread.join()
 
 
 if __name__ == "__main__":

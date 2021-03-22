@@ -30,7 +30,7 @@ class Spectator(Actor):
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         """

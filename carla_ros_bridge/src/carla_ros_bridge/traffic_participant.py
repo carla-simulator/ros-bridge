@@ -10,13 +10,10 @@
 Classes to handle Carla traffic participants
 """
 
-import rospy
-
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
-
 from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
 
@@ -38,7 +35,7 @@ class TrafficParticipant(Actor):
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         """
@@ -110,9 +107,9 @@ class TrafficParticipant(Actor):
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
-        color.r = 0
-        color.g = 0
-        color.b = 255
+        color.r = 0.
+        color.g = 0.
+        color.b = 255.
         return color
 
     def get_marker_pose(self):

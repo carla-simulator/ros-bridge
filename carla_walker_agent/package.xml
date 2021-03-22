@@ -1,18 +1,27 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>carla_walker_agent</name>
   <version>0.0.1</version>
   <description>The carla_walker_agent package</description>
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>roslaunch</build_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>topic_tools</exec_depend>
+
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>carla_msgs</exec_depend>
+
+  <!-- ROS 1 DEPENDENCIES-->
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <build_depend condition="$ROS_VERSION == 1">rospy</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">roslaunch</build_depend>
+  <build_export_depend condition="$ROS_VERSION == 1">rospy</build_export_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">topic_tools</exec_depend>
+  
+  <!-- ROS 2 DEPENDENCIES-->
+  <depend condition="$ROS_VERSION == 2">rclpy</depend>
+
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
   </export>
 </package>

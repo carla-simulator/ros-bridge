@@ -11,7 +11,7 @@ Tool functions to calculate vehicle physics
 
 import math
 
-from tf.transformations import euler_from_quaternion
+from transforms3d.euler import quat2euler
 
 
 def get_vehicle_lay_off_engine_acceleration(vehicle_info):
@@ -182,9 +182,9 @@ def get_slope_force(vehicle_info, vehicle_status):
     :return: slope force [N, >0 uphill, <0 downhill]
     :rtype: float64
     """
-    dummy_roll, pitch, dummy_yaw = euler_from_quaternion(
-        [vehicle_status.orientation.x, vehicle_status.orientation.y,
-         vehicle_status.orientation.z, vehicle_status.orientation.w])
+    dummy_roll, pitch, dummy_yaw = quat2euler(
+        [vehicle_status.orientation.w, vehicle_status.orientation.x,
+         vehicle_status.orientation.y, vehicle_status.orientation.z])
     slope_force = get_acceleration_of_gravity(
         vehicle_info) * get_vehicle_mass(vehicle_info) * math.sin(-pitch)
     return slope_force

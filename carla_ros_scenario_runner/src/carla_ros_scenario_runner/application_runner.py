@@ -9,7 +9,7 @@ import os
 from enum import Enum
 from threading import Thread, Event
 from datetime import datetime, timedelta
-import pexpect
+import pexpect  # pylint: disable=import-error
 
 
 class ApplicationStatus(Enum):
@@ -100,12 +100,15 @@ class ApplicationRunner(object):
         """
         if not argument_list:
             raise KeyError("No arguments given!")
-        executable = argument_list[0]
-        if not os.path.isfile(executable):
-            raise KeyError("The executable {} does not exist".format(executable))
-        log_fct("Executing: {}".format(" ".join(argument_list)))
-        process = pexpect.spawn(" ".join(argument_list), env=env, cwd=cwd)
+        if not isinstance(argument_list, str):
+            executable = " ".join(argument_list)
+        else:
+            executable = argument_list
+
+        log_fct("Executing: " + executable)
+        process = pexpect.spawn(executable, env=env, cwd=cwd, encoding='utf-8')
         #process.logfile_read = sys.stdout
+
         return process
 
     def run(self, process, shutdown_requested_event, ready_string, status_updated_fct, log_fct):  # pylint: disable=no-self-use,too-many-arguments
@@ -132,7 +135,7 @@ class ApplicationRunner(object):
                 process.expect(".*\n", timeout=0.1)
                 log_fct(process.after.strip())
                 if not signaled_running:
-                    if process.after.find(ready_string) != -1:
+                    if str(process.after).find(ready_string) != -1:
                         status_updated_fct(ApplicationStatus.RUNNING)
                         log_fct("Application is ready.")
                         signaled_running = True

@@ -10,15 +10,11 @@
 Classes to handle Carla Radar
 """
 
-import rospy
-
 import numpy as np
 
 from sensor_msgs.msg import PointCloud2, PointField
 
-from sensor_msgs.point_cloud2 import create_cloud
-
-from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.sensor import Sensor, create_cloud
 
 
 class Radar(Sensor):
@@ -40,7 +36,7 @@ class Radar(Sensor):
         :param relative_spawn_pose: the spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -54,10 +50,12 @@ class Radar(Sensor):
                                     carla_actor=carla_actor,
                                     synchronous_mode=synchronous_mode)
 
-        self.radar_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                               PointCloud2,
-                                               queue_size=10)
+        self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(Radar, self).destroy()
+        self.node.destroy_publisher(self.radar_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):
@@ -66,16 +64,17 @@ class Radar(Sensor):
         :param carla_radar_measurement: carla Radar measurement object
         :type carla_radar_measurement: carla.RadarMeasurement
         """
-        fields = [PointField('x', 0, PointField.FLOAT32, 1),
-                  PointField('y', 4, PointField.FLOAT32, 1),
-                  PointField('z', 8, PointField.FLOAT32, 1),
-                  PointField('Range', 12, PointField.FLOAT32, 1),
-                  PointField('Velocity', 16, PointField.FLOAT32, 1),
-                  PointField('AzimuthAngle', 20, PointField.FLOAT32, 1),
-                  PointField('ElevationAngle', 28, PointField.FLOAT32, 1)]
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='Range', offset=12, datatype=PointField.FLOAT32, count=1),
+            PointField(name='Velocity', offset=16, datatype=PointField.FLOAT32, count=1),
+            PointField(name='AzimuthAngle', offset=20, datatype=PointField.FLOAT32, count=1),
+            PointField(name='ElevationAngle', offset=28, datatype=PointField.FLOAT32, count=1)]
         points = []
         for detection in carla_radar_measurement:
-            points.append([detection.depth * np.cos(-detection.azimuth) * np.cos(detection.altitude),
+            points.append([detection.depth * np.cos(detection.azimuth) * np.cos(-detection.altitude),
                            detection.depth * np.sin(-detection.azimuth) *
                            np.cos(detection.altitude),
                            detection.depth * np.sin(detection.altitude),

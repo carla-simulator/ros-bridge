@@ -9,8 +9,6 @@
 handle a object sensor
 """
 
-import rospy
-
 from derived_object_msgs.msg import ObjectArray
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.walker import Walker
@@ -34,7 +32,7 @@ class ObjectSensor(PseudoActor):
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param actor_list: current list of actors
         :type actor_list: map(carla-actor-id -> python-actor-object)
         """
@@ -44,17 +42,17 @@ class ObjectSensor(PseudoActor):
                                            parent=parent,
                                            node=node)
         self.actor_list = actor_list
-        self.object_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                ObjectArray,
-                                                queue_size=10)
+        self.object_publisher = node.new_publisher(ObjectArray,
+                                                   self.get_topic_prefix())
 
     def destroy(self):
         """
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(ObjectSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.object_publisher)
 
     @staticmethod
     def get_blueprint_name():

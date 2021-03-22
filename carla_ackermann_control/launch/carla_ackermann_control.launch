@@ -1,9 +1,11 @@
 <!-- -->
 <launch>
   <arg name="role_name" default="ego_vehicle" />
-  <rosparam file="$(find carla_ackermann_control)/config/settings.yaml" command="load" />
+  <arg name="control_loop_rate" default="0.05" />
 
   <node pkg="carla_ackermann_control" type="carla_ackermann_control_node.py" name="carla_ackermann_control_$(arg role_name)" output="screen">
     <param name="role_name" value="$(arg role_name)" />
+    <param name="control_loop_rate" value="$(arg control_loop_rate)" />
+    <rosparam file="$(find carla_ackermann_control)/config/settings.ros1.yaml" command="load" />
   </node>
 </launch>

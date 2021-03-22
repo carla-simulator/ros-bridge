@@ -12,21 +12,26 @@ Control Carla ego vehicle by using AckermannDrive messages
 import sys
 import datetime
 import numpy
-import rospy
 
-from simple_pid import PID
-
-from dynamic_reconfigure.server import Server
-from ackermann_msgs.msg import AckermannDrive
+from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ackermann_control.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
-from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig  # pylint: disable=no-name-in-module,import-error
-import carla_control_physics as phys  # pylint: disable=relative-import
+from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
+
+from ros_compatibility import CompatibleNode, QoSProfile, ros_init, ROS_VERSION
+from carla_ackermann_control import carla_control_physics as phys
+
+from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
+
+if ROS_VERSION == 1:
+    from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
+    from dynamic_reconfigure.server import Server
+if ROS_VERSION == 2:
+    from rcl_interfaces.msg import SetParametersResult
 
 
-class CarlaAckermannControl(object):
+class CarlaAckermannControl(CompatibleNode):
 
     """
     Convert ackermann_drive messages to carla VehicleCommand with a PID controller
@@ -37,11 +42,49 @@ class CarlaAckermannControl(object):
         Constructor
 
         """
-        self.control_loop_rate = rospy.Rate(10)  # 10Hz
+        super(CarlaAckermannControl, self).__init__(
+            "carla_ackermann_control", rospy_init=True
+        )
+
+        # PID controller
+        # the controller has to run with the simulation time, not with real-time
+        #
+        # To prevent "float division by zero" within PID controller initialize it with
+        # a previous point in time (the error happens because the time doesn't
+        # change between initialization and first call, therefore dt is 0)
+        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
+            lambda: self.get_time() - 0.1)
+
+        # we might want to use a PID controller to reach the final target speed
+        self.speed_controller = PID(Kp=self.get_param("speed_Kp", alternative_value=0.05),
+                                    Ki=self.get_param("speed_Ki", alternative_value=0.),
+                                    Kd=self.get_param("speed_Kd", alternative_value=0.5),
+                                    sample_time=0.05,
+                                    output_limits=(-1., 1.))
+        self.accel_controller = PID(Kp=self.get_param("accel_Kp", alternative_value=0.05),
+                                    Ki=self.get_param("accel_Ki", alternative_value=0.),
+                                    Kd=self.get_param("accel_Kd", alternative_value=0.05),
+                                    sample_time=0.05,
+                                    output_limits=(-1, 1))
+
+        # use the correct time for further calculations
+        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
+            lambda: self.get_time())
+
+        if ROS_VERSION == 1:
+            self.reconfigure_server = Server(
+                EgoVehicleControlParameterConfig,
+                namespace="",
+                callback=self.reconfigure_pid_parameters,
+            )
+        if ROS_VERSION == 2:
+            self.set_parameters_callback(self.reconfigure_pid_parameters)
+
+        self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
-        self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
+        self.role_name = self.get_param('role_name', 'ego_vehicle')
         # control info
         self.info = EgoVehicleControlInfo()
 
@@ -56,7 +99,7 @@ class CarlaAckermannControl(object):
         self.info.target.jerk = 0.
 
         # current values
-        self.info.current.time_sec = rospy.get_rostime().to_sec()
+        self.info.current.time_sec = self.get_time()
         self.info.current.speed = 0.
         self.info.current.speed_abs = 0.
         self.info.current.accel = 0.
@@ -78,122 +121,112 @@ class CarlaAckermannControl(object):
         self.info.output.reverse = False
         self.info.output.hand_brake = True
 
-        # PID controller
-        # the controller has to run with the simulation time, not with real-time
-        #
-        # To prevent "float division by zero" within PID controller initialize it with
-        # a previous point in time (the error happens because the time doesn't
-        # change between initialization and first call, therefore dt is 0)
-        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: rospy.get_rostime().to_sec() - 0.1)
-
-        # we might want to use a PID controller to reach the final target speed
-        self.speed_controller = PID(Kp=0.0,
-                                    Ki=0.0,
-                                    Kd=0.0,
-                                    sample_time=0.05,
-                                    output_limits=(-1., 1.))
-        self.accel_controller = PID(Kp=0.0,
-                                    Ki=0.0,
-                                    Kd=0.0,
-                                    sample_time=0.05,
-                                    output_limits=(-1, 1))
-
-        # use the correct time for further calculations
-        sys.modules['simple_pid.PID']._current_time = (       # pylint: disable=protected-access
-            lambda: rospy.get_rostime().to_sec())
-
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/speed_Kp",
-            rospy.get_param("/carla/ackermann_control/speed_Kp", 0.05))
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/speed_Ki",
-            rospy.get_param("/carla/ackermann_control/speed_Ki", 0.00))
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/speed_Kd",
-            rospy.get_param("/carla/ackermann_control/speed_Kd", 0.50))
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/accel_Kp",
-            rospy.get_param("/carla/ackermann_control/accel_Kp", 0.05))
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/accel_Ki",
-            rospy.get_param("/carla/ackermann_control/accel_Ki", 0.00))
-        rospy.set_param(
-            "/carla/" + self.role_name + "/ackermann_control/accel_Kd",
-            rospy.get_param("/carla/ackermann_control/accel_Kd", 0.05))
-
-        self.reconfigure_server = Server(
-            EgoVehicleControlParameterConfig,
-            namespace="/carla/" + self.role_name + "/ackermann_control",
-            callback=(lambda config, level: CarlaAckermannControl.reconfigure_pid_parameters(
-                self, config, level)))
-
         # ackermann drive commands
-        self.control_subscriber = rospy.Subscriber(
+        self.control_subscriber = self.create_subscriber(
+            AckermannDrive,
             "/carla/" + self.role_name + "/ackermann_cmd",
-            AckermannDrive, self.ackermann_command_updated)
+            self.ackermann_command_updated
+        )
 
         # current status of the vehicle
-        self.vehicle_status_subscriber = rospy.Subscriber(
+        self.vehicle_status_subscriber = self.create_subscriber(
+            CarlaEgoVehicleStatus,
             "/carla/" + self.role_name + "/vehicle_status",
-            CarlaEgoVehicleStatus, self.vehicle_status_updated)
+            self.vehicle_status_updated,
+        )
 
         # vehicle info
-        self.vehicle_info_subscriber = rospy.Subscriber(
+        self.vehicle_info_subscriber = self.create_subscriber(
+            CarlaEgoVehicleInfo,
             "/carla/" + self.role_name + "/vehicle_info",
-            CarlaEgoVehicleInfo, self.vehicle_info_updated)
+            self.vehicle_info_updated,
+        )
 
         # to send command to carla
-        self.carla_control_publisher = rospy.Publisher(
+        self.carla_control_publisher = self.new_publisher(
+            CarlaEgoVehicleControl,
             "/carla/" + self.role_name + "/vehicle_control_cmd",
-            CarlaEgoVehicleControl, queue_size=1)
+            qos_profile=QoSProfile(depth=1))
 
         # report controller info
-        self.control_info_publisher = rospy.Publisher(
+        self.control_info_publisher = self.new_publisher(
+            EgoVehicleControlInfo,
             "/carla/" + self.role_name + "/ackermann_control/control_info",
-            EgoVehicleControlInfo, queue_size=1)
+            qos_profile=QoSProfile(depth=1))
 
-    def destroy(self):
-        """
-        Function (override) to destroy this object.
+    if ROS_VERSION == 1:
 
-        Terminate ROS subscription on AckermannDrive commands.
-        Finish the PID controllers.
-        Destroy the reconfiguration server
+        def reconfigure_pid_parameters(self, ego_vehicle_control_parameter, _level):
+            """
+            Callback for dynamic reconfigure call to set the PID parameters
 
-        :return:
-        """
-        self.control_subscriber = None
-        self.speed_controller = None
-        self.accel_controller = None
-        # first cleanup the server (otherwise leaves a mess behind ;-)
-        self.reconfigure_server.set_service.shutdown()
-        self.reconfigure_server = None
+            :param ego_vehicle_control_parameter:
+            :type ego_vehicle_control_parameter: \
+                carla_ackermann_control.cfg.EgoVehicleControlParameterConfig
 
-    def reconfigure_pid_parameters(self, ego_vehicle_control_parameter, _level):
-        """
-        Callback for dynamic reconfigure call to set the PID parameters
+            """
+            self.loginfo("Reconfigure Request:  "
+                         "speed ({speed_Kp}, {speed_Ki}, {speed_Kd}), "
+                         "accel ({accel_Kp}, {accel_Ki}, {accel_Kd})"
+                         "".format(**ego_vehicle_control_parameter))
+            self.speed_controller.tunings = (
+                ego_vehicle_control_parameter['speed_Kp'],
+                ego_vehicle_control_parameter['speed_Ki'],
+                ego_vehicle_control_parameter['speed_Kd'],
+            )
+            self.accel_controller.tunings = (
+                ego_vehicle_control_parameter['accel_Kp'],
+                ego_vehicle_control_parameter['accel_Ki'],
+                ego_vehicle_control_parameter['accel_Kd'],
+            )
+            return ego_vehicle_control_parameter
 
-        :param ego_vehicle_control_parameter:
-        :type ego_vehicle_control_parameter: \
-            carla_ackermann_control.cfg.EgoVehicleControlParameterConfig
+    if ROS_VERSION == 2:
+        # annotations not supported in Python 2 (ROS1)
+        # def reconfigure_pid_parameters(  # pylint: disable=function-redefined	        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
+        #     self, params: Sequence[Parameter]
+        # ) -> SetParametersResult:
+        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
+            """Check and update the node's parameters."""
+            param_values = {p.name: p.value for p in params}
 
-        """
-        rospy.loginfo("Reconfigure Request:  "
-                      "speed ({speed_Kp}, {speed_Ki}, {speed_Kd}),"
-                      "accel ({accel_Kp}, {accel_Ki}, {accel_Kd}),"
-                      "".format(**ego_vehicle_control_parameter))
-        self.speed_controller.tunings = (
-            ego_vehicle_control_parameter['speed_Kp'],
-            ego_vehicle_control_parameter['speed_Ki'],
-            ego_vehicle_control_parameter['speed_Kd']
-        )
-        self.accel_controller.tunings = (
-            ego_vehicle_control_parameter['accel_Kp'],
-            ego_vehicle_control_parameter['accel_Ki'],
-            ego_vehicle_control_parameter['accel_Kd']
-        )
-        return ego_vehicle_control_parameter
+            pid_param_names = {
+                "speed_Kp",
+                "speed_Ki",
+                "speed_Kd",
+                "accel_Kp",
+                "accel_Ki",
+                "accel_Kd",
+            }
+            common_names = pid_param_names.intersection(param_values.keys())
+            if not common_names:
+                # No work do to
+                return SetParametersResult(successful=True)
+
+            if any(p.value is None for p in params):
+                return SetParametersResult(
+                    successful=False, reason="Parameter must have a value assigned"
+                )
+
+            self.speed_controller.tunings = (
+                param_values.get("speed_Kp", self.speed_controller.Kp),
+                param_values.get("speed_Ki", self.speed_controller.Ki),
+                param_values.get("speed_Kd", self.speed_controller.Kd),
+            )
+            self.accel_controller.tunings = (
+                param_values.get("accel_Kp", self.accel_controller.Kp),
+                param_values.get("accel_Ki", self.accel_controller.Ki),
+                param_values.get("accel_Kd", self.accel_controller.Kd),
+            )
+
+            self.loginfo(
+                "Reconfigure Request:  speed ({}, {}, {}), accel ({}, {}, {})".format(
+                    self.speed_controller.tunings[0], self.speed_controller.tunings[1], self.speed_controller.tunings[2],
+                    self.accel_controller.tunings[0], self.accel_controller.tunings[1], self.accel_controller.tunings[2]
+                )
+            )
+
+            return SetParametersResult(successful=True)
 
     def vehicle_status_updated(self, vehicle_status):
         """
@@ -227,7 +260,7 @@ class CarlaAckermannControl(object):
             self.vehicle_info)
         self.info.restrictions.max_decel = phys.get_vehicle_max_deceleration(
             self.vehicle_info)
-        self.info.restrictions.min_accel = rospy.get_param('/carla/ackermann_control/min_accel', 1.)
+        self.info.restrictions.min_accel = self.get_param('min_accel', 1.)
         # clipping the pedal in both directions to the same range using the usual lower
         # border: the max_accel to ensure the the pedal target is in symmetry to zero
         self.info.restrictions.max_pedal = min(
@@ -254,7 +287,7 @@ class CarlaAckermannControl(object):
         """
         self.info.target.steering_angle = -target_steering_angle
         if abs(self.info.target.steering_angle) > self.info.restrictions.max_steering_angle:
-            rospy.logerr("Max steering angle reached, clipping value")
+            self.logerr("Max steering angle reached, clipping value")
             self.info.target.steering_angle = numpy.clip(
                 self.info.target.steering_angle,
                 -self.info.restrictions.max_steering_angle,
@@ -265,7 +298,7 @@ class CarlaAckermannControl(object):
         set target speed
         """
         if abs(target_speed) > self.info.restrictions.max_speed:
-            rospy.logerr("Max speed reached, clipping value")
+            self.logerr("Max speed reached, clipping value")
             self.info.target.speed = numpy.clip(
                 target_speed, -self.info.restrictions.max_speed, self.info.restrictions.max_speed)
         else:
@@ -331,12 +364,12 @@ class CarlaAckermannControl(object):
             self.info.status.status = "standing"
             if self.info.target.speed < 0:
                 if not self.info.output.reverse:
-                    rospy.loginfo(
+                    self.loginfo(
                         "VehicleControl: Change of driving direction to reverse")
                     self.info.output.reverse = True
             elif self.info.target.speed > 0:
                 if self.info.output.reverse:
-                    rospy.loginfo(
+                    self.loginfo(
                         "VehicleControl: Change of driving direction to forward")
                     self.info.output.reverse = False
             if self.info.target.speed_abs < full_stop_epsilon:
@@ -355,10 +388,10 @@ class CarlaAckermannControl(object):
             # requrest for change of driving direction
             # first we have to come to full stop before changing driving
             # direction
-            rospy.loginfo("VehicleControl: Request change of driving direction."
-                          " v_current={} v_desired={}"
-                          " Set desired speed to 0".format(self.info.current.speed,
-                                                           self.info.target.speed))
+            self.loginfo("VehicleControl: Request change of driving direction."
+                         " v_current={} v_desired={}"
+                         " Set desired speed to 0".format(self.info.current.speed,
+                                                          self.info.target.speed))
             self.set_target_speed(0.)
 
     def run_speed_control_loop(self):
@@ -393,8 +426,8 @@ class CarlaAckermannControl(object):
 
         if self.speed_controller.auto_mode:
             self.speed_controller.setpoint = self.info.target.speed_abs
-            self.info.status.speed_control_accel_delta = self.speed_controller(
-                self.info.current.speed_abs)
+            self.info.status.speed_control_accel_delta = float(self.speed_controller(
+                self.info.current.speed_abs))
 
             # clipping borders
             clipping_lower_border = -target_accel_abs
@@ -417,8 +450,8 @@ class CarlaAckermannControl(object):
         """
         # setpoint of the acceleration controller is the output of the speed controller
         self.accel_controller.setpoint = self.info.status.speed_control_accel_target
-        self.info.status.accel_control_pedal_delta = self.accel_controller(
-            self.info.current.accel)
+        self.info.status.accel_control_pedal_delta = float(self.accel_controller(
+            self.info.current.accel))
         # @todo: we might want to scale by making use of the the abs-jerk value
         # If the jerk input is big, then the trajectory input expects already quick changes
         # in the acceleration; to respect this we put an additional proportional factor on top
@@ -496,7 +529,7 @@ class CarlaAckermannControl(object):
 
         :return:
         """
-        current_time_sec = rospy.get_rostime().to_sec()
+        current_time_sec = self.get_time()
         delta_time = current_time_sec - self.info.current.time_sec
         current_speed = self.vehicle_status.velocity
         if delta_time > 0:
@@ -516,30 +549,26 @@ class CarlaAckermannControl(object):
         :return:
         """
 
-        while not rospy.is_shutdown():
+        def loop(timer_event=None):
             self.update_current_values()
             self.vehicle_control_cycle()
             self.send_ego_vehicle_control_info_msg()
-            try:
-                self.control_loop_rate.sleep()
-            except rospy.ROSInterruptException:
-                pass
+
+        self.new_timer(self.control_loop_rate, loop)
+        self.spin()
 
 
-def main():
+def main(args=None):
     """
 
     main function
 
     :return:
     """
-    rospy.init_node('carla_ackermann_control', anonymous=True)
+    ros_init(args)
+
     controller = CarlaAckermannControl()
-    try:
-        controller.run()
-    finally:
-        del controller
-        rospy.loginfo("Done")
+    controller.run()
 
 
 if __name__ == "__main__":

@@ -9,8 +9,6 @@
 handle a odom sensor
 """
 
-import rospy
-
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from nav_msgs.msg import Odometry
@@ -43,9 +41,12 @@ class OdometrySensor(PseudoActor):
                                              parent=parent,
                                              node=node)
 
-        self.odometry_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                  Odometry,
-                                                  queue_size=10)
+        self.odometry_publisher = node.new_publisher(Odometry,
+                                                     self.get_topic_prefix())
+
+    def destroy(self):
+        super(OdometrySensor, self).destroy()
+        self.node.destroy_publisher(self.odometry_publisher)
 
     @staticmethod
     def get_blueprint_name():
@@ -61,6 +62,12 @@ class OdometrySensor(PseudoActor):
         """
         odometry = Odometry(header=self.parent.get_msg_header("map"))
         odometry.child_frame_id = self.parent.get_prefix()
-        odometry.pose.pose = self.parent.get_current_ros_pose()
-        odometry.twist.twist = self.parent.get_current_ros_twist_rotated()
+        try:
+            odometry.pose.pose = self.parent.get_current_ros_pose()
+            odometry.twist.twist = self.parent.get_current_ros_twist_rotated()
+        except AttributeError:
+            # parent actor disappeared, do not send tf
+            self.node.logwarn(
+                "OdometrySensor could not publish. parent actor {} not found".format(self.parent.uid))
+            return
         self.odometry_publisher.publish(odometry)

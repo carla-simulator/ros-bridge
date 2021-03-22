@@ -11,10 +11,9 @@
 from collections import deque
 import math
 import numpy as np
-import rospy
-from tf.transformations import euler_from_quaternion
-from geometry_msgs.msg import Point
-from carla_msgs.msg import CarlaEgoVehicleControl
+from transforms3d.euler import quat2euler
+from geometry_msgs.msg import Point  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 
 
 class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
@@ -23,7 +22,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
     to perform the low level control a vehicle from client side
     """
 
-    def __init__(self, args_lateral=None, args_longitudinal=None):
+    def __init__(self, node, args_lateral=None, args_longitudinal=None):
         """
         :param vehicle: actor to apply to local planner logic onto
         :param args_lateral: dictionary of arguments to set the lateral PID controller using
@@ -42,9 +41,9 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         if not args_longitudinal:
             args_longitudinal = {'K_P': 1.0, 'K_D': 0.0, 'K_I': 0.0}
 
+        self.node = node
         self._lon_controller = PIDLongitudinalController(**args_longitudinal)
         self._lat_controller = PIDLateralController(**args_lateral)
-        self._last_control_time = rospy.get_time()
 
     def run_step(self, target_speed, current_speed, current_pose, waypoint):
         """
@@ -53,17 +52,12 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
 
         :param target_speed: desired vehicle speed
         :param waypoint: target location encoded as a waypoint
-        :return: distance (in meters) to the waypoint
+        :return: control signal (throttle and steering)
         """
-        current_time = rospy.get_time()
-        dt = current_time-self._last_control_time
-        if dt == 0.0:
-            dt = 0.000001
         control = CarlaEgoVehicleControl()
-        throttle = self._lon_controller.run_step(target_speed, current_speed, dt)
-        steering = self._lat_controller.run_step(current_pose, waypoint, dt)
-        self._last_control_time = current_time
-        control.steer = steering
+        throttle = self._lon_controller.run_step(target_speed, current_speed)
+        steering = self._lat_controller.run_step(current_pose, waypoint)
+        control.steer = -steering
         control.throttle = throttle
         control.brake = 0.0
         control.hand_brake = False
@@ -87,9 +81,11 @@ class PIDLongitudinalController(object):  # pylint: disable=too-few-public-metho
         self._K_P = K_P
         self._K_D = K_D
         self._K_I = K_I
-        self._e_buffer = deque(maxlen=30)
+        self.error = 0.0
+        self.error_integral = 0.0
+        self.error_derivative = 0.0
 
-    def run_step(self, target_speed, current_speed, dt):
+    def run_step(self, target_speed, current_speed):
         """
         Estimate the throttle of the vehicle based on the PID equations
 
@@ -97,17 +93,13 @@ class PIDLongitudinalController(object):  # pylint: disable=too-few-public-metho
         :param current_speed: current speed of the vehicle in Km/h
         :return: throttle control in the range [0, 1]
         """
-        _e = (target_speed - current_speed)
-        self._e_buffer.append(_e)
-
-        if len(self._e_buffer) >= 2:
-            _de = (self._e_buffer[-1] - self._e_buffer[-2]) / dt
-            _ie = sum(self._e_buffer) * dt
-        else:
-            _de = 0.0
-            _ie = 0.0
-
-        return np.clip((self._K_P * _e) + (self._K_D * _de / dt) + (self._K_I * _ie * dt), 0.0, 1.0)
+        previous_error = self.error
+        self.error = target_speed - current_speed
+        # restrict integral term to avoid integral windup
+        self.error_integral = np.clip(self.error_integral + self.error, -40.0, 40.0)
+        self.error_derivative = self.error - previous_error
+        output = self._K_P * self.error + self._K_I * self.error_integral + self._K_D * self.error_derivative
+        return np.clip(output, 0.0, 1.0)
 
 
 class PIDLateralController(object):  # pylint: disable=too-few-public-methods
@@ -126,8 +118,11 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
         self._K_D = K_D
         self._K_I = K_I
         self._e_buffer = deque(maxlen=10)
+        self.error = 0.0
+        self.error_integral = 0.0
+        self.error_derivative = 0.0
 
-    def run_step(self, current_pose, waypoint, dt):
+    def run_step(self, current_pose, waypoint):
         """
         Estimate the steering angle of the vehicle based on the PID equations
 
@@ -137,12 +132,12 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
         """
         v_begin = current_pose.position
         quaternion = (
+            current_pose.orientation.w,
             current_pose.orientation.x,
             current_pose.orientation.y,
-            current_pose.orientation.z,
-            current_pose.orientation.w
+            current_pose.orientation.z
         )
-        _, _, yaw = euler_from_quaternion(quaternion)
+        _, _, yaw = quat2euler(quaternion)
         v_end = Point()
         v_end.x = v_begin.x + math.cos(yaw)
         v_end.y = v_begin.y + math.sin(yaw)
@@ -158,13 +153,10 @@ class PIDLateralController(object):  # pylint: disable=too-few-public-methods
         if _cross[2] < 0:
             _dot *= -1.0
 
-        self._e_buffer.append(_dot)
-        if len(self._e_buffer) >= 2:
-            _de = (self._e_buffer[-1] - self._e_buffer[-2]) / dt
-            _ie = sum(self._e_buffer) * dt
-        else:
-            _de = 0.0
-            _ie = 0.0
-
-        return np.clip((self._K_P * _dot) + (self._K_D * _de /
-                                             dt) + (self._K_I * _ie * dt), -1.0, 1.0)
+        previous_error = self.error
+        self.error = _dot
+        # restrict integral term to avoid integral windup
+        self.error_integral = np.clip(self.error_integral + self.error, -400.0, 400.0)
+        self.error_derivative = self.error - previous_error
+        output = self._K_P * self.error + self._K_I * self.error_integral + self._K_D * self.error_derivative
+        return np.clip(output, -1.0, 1.0)

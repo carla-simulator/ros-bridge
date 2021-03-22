@@ -10,9 +10,7 @@
 Base Classes to handle Actor objects
 """
 
-import numpy as np
-from geometry_msgs.msg import TransformStamped
-
+from geometry_msgs.msg import TransformStamped  # pylint: disable=import-error
 from carla_ros_bridge.pseudo_actor import PseudoActor
 import carla_common.transforms as trans
 
@@ -34,7 +32,7 @@ class Actor(PseudoActor):
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         """
@@ -62,6 +60,16 @@ class Actor(PseudoActor):
         :rtype: geometry_msgs.msg.Pose
         """
         return trans.carla_transform_to_ros_pose(
+            self.carla_actor.get_transform())
+
+    def get_current_ros_transform(self):
+        """
+        Function to provide the current ROS pose
+
+        :return: the ROS pose of this actor
+        :rtype: geometry_msgs.msg.Pose
+        """
+        return trans.carla_transform_to_ros_transform(
             self.carla_actor.get_transform())
 
     def get_current_ros_twist_rotated(self):
@@ -104,34 +112,3 @@ class Actor(PseudoActor):
         :rtype: int64
         """
         return self.carla_actor_id
-
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function to provide the current ROS transform
-
-        :return: the ROS transfrom
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = TransformStamped()
-        if frame_id:
-            tf_msg.header = self.get_msg_header(frame_id)
-        else:
-            tf_msg.header = self.get_msg_header("map")
-        if child_frame_id:
-            tf_msg.child_frame_id = child_frame_id
-        else:
-            tf_msg.child_frame_id = self.get_prefix()
-        if transform:
-            tf_msg.transform = transform
-        else:
-            tf_msg.transform = trans.carla_transform_to_ros_transform(
-                self.carla_actor.get_transform())
-        return tf_msg
-
-    def publish_transform(self, ros_transform_msg):
-        """
-        Helper function to send a ROS tf message of this child
-
-        :return:
-        """
-        self.node.publish_tf_message(ros_transform_msg)
