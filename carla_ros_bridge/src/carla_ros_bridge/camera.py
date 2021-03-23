@@ -33,7 +33,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, is_event_sensor=False):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -56,7 +56,8 @@ class Camera(Sensor):
                                      relative_spawn_pose=relative_spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor,
-                                     synchronous_mode=synchronous_mode)
+                                     synchronous_mode=synchronous_mode,
+                                     is_event_sensor=is_event_sensor)
 
         if self.__class__.__name__ == "Camera":
             self.node.logwarn("Created Unsupported Camera Actor"
@@ -368,7 +369,8 @@ class DVSCamera(Camera):
                                         relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
-                                        synchronous_mode=synchronous_mode)
+                                        synchronous_mode=synchronous_mode,
+                                        is_event_sensor=True)
 
         self._dvs_events = None
         self.dvs_camera_publisher = node.new_publisher(PointCloud2,
