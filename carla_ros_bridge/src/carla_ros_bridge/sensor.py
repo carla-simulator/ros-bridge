@@ -193,7 +193,7 @@ class Sensor(Actor):
         raise NotImplementedError(
             "This function has to be implemented by the derived classes")
 
-    def _update_synchronous_event_sensor(self, frame):
+    def _update_synchronous_event_sensor(self, frame, timestamp):
         while True:
             try:
                 carla_sensor_data = self.queue.get(block=False)
@@ -205,7 +205,7 @@ class Sensor(Actor):
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
                 self.publish_tf(trans.carla_transform_to_ros_pose(
-                    carla_sensor_data.transform), frame)
+                    carla_sensor_data.transform), timestamp)
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -240,7 +240,7 @@ class Sensor(Actor):
     def update(self, frame, timestamp):
         if self.synchronous_mode:
             if self.is_event_sensor:
-                self._update_synchronous_event_sensor(frame)
+                self._update_synchronous_event_sensor(frame, timestamp)
             else:
                 self._update_synchronous_sensor(frame, timestamp)
 
