@@ -16,6 +16,13 @@ Then simply install the ROS bridge:
 
 This will install carla-ros-bridge in /opt/carla-ros-bridge
 
+#### Note
+Currently, the debian package is only available for ROS melodic. Please, follow the Developer intructions if you want to use any other supported distribution.
+
+To check the different bridge versions available in the apt repository run:
+
+    apt-cache madison carla-ros-bridge
+
 ### For Developers
 
     Create a catkin workspace and install carla_ros_bridge package
