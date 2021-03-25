@@ -30,7 +30,7 @@ To check the different bridge versions available in the apt repository run:
     #setup folder structure
     mkdir -p ~/carla-ros-bridge/catkin_ws/src
     cd ~/carla-ros-bridge
-    git clone https://github.com/carla-simulator/ros-bridge.git
+    git clone --recurse-submodules https://github.com/carla-simulator/ros-bridge.git
     cd ros-bridge
     git submodule update --init
     cd ../catkin_ws/src
@@ -78,7 +78,7 @@ Start the ros bridge (choose one option):
 ## Testing
 
 To execute the tests, using catkin, use the following commands:
-    
+
     # build
     catkin_make -DCATKIN_ENABLE_TESTING=0
     # run
