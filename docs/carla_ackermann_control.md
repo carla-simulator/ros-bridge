@@ -5,18 +5,9 @@ The [`carla_ackermann_control` package](https://github.com/carla-simulator/ros-b
 [ackermanncontrolmsg]: https://docs.ros.org/en/api/ackermann_msgs/html/msg/AckermannDrive.html
 [carlaegovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#carlaegovehiclecontrolmsg
 
-- [__Install the PID controller library__](#install-the-pid-controller-library)
 - [__Configuration__](#configuration)
 - [__Available Topics__](#available-topics)
 - [__Testing control messages__](#testing-control-messages)
----
-
-### Install the PID controller library
-
-Install the PID controller:
-```
-python3 -m pip install simple-pid
-```
 
 ---
 
