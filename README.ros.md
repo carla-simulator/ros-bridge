@@ -36,15 +36,10 @@ Create a catkin workspace and install carla_ros_bridge package
 
 ```shell
 # setup folder structure
-mkdir -p ~/carla-ros-bridge/catkin_ws/src
-cd ~/carla-ros-bridge
-git clone https://github.com/carla-simulator/ros-bridge.git
-cd ros-bridge
-git submodule update --init
-cd ../catkin_ws/src
-ln -s ../../ros-bridge
+mkdir -p ~/carla-ros-bridge/catkin_ws/src && cd ~/carla-ros-bridge
+git clone --recurse-submodules https://github.com/carla-simulator/ros-bridge.git catkin_ws/src/ros-bridge
 source /opt/ros/<kinetic or melodic or noetic>/setup.bash
-cd ..
+cd catkin_ws
 
 # install required ros-dependencies
 rosdep update
