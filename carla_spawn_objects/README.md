@@ -30,25 +30,27 @@ Sensors, attached to vehicles or not, can be defined via a json file. `carla_spa
 
 The format is defined like that:
 
-    { "actors" = [
-                    {
-                    "type": "<SENSOR-TYPE>",
-                    "id": "<NAME>",
-                    "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    <ADDITIONAL-SENSOR-ATTRIBUTES>
-                    },
-                    {
-                    "type": "<VEHICLE-TYPE>",
-                    "id": "<VEHICLE-NAME>",
-                    "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "sensors": 
-                        [
-                            <SENSORS-TO-ATTACH-TO-VEHICLE>    
-                        ]
-                    }
-        ...
-                 ]
-    }
+```json
+{ "actors" = [
+                {
+                "type": "<SENSOR-TYPE>",
+                "id": "<NAME>",
+                "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                <ADDITIONAL-SENSOR-ATTRIBUTES>
+                },
+                {
+                "type": "<VEHICLE-TYPE>",
+                "id": "<VEHICLE-NAME>",
+                "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                "sensors":
+                    [
+                        <SENSORS-TO-ATTACH-TO-VEHICLE>
+                    ]
+                }
+    ...
+                ]
+}
+```
 
 Define sensors with their attributes as described in the Carla Documentation about [Cameras and Sensors](https://github.com/carla-simulator/carla/blob/master/Docs/cameras_and_sensors.md).
 
