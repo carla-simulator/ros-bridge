@@ -10,8 +10,6 @@
 Classes to handle Carla gnsss
 """
 
-import rospy
-
 from sensor_msgs.msg import NavSatFix
 
 from carla_ros_bridge.sensor import Sensor
@@ -36,7 +34,7 @@ class Gnss(Sensor):
         :param relative_spawn_pose: the relative spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -50,10 +48,13 @@ class Gnss(Sensor):
                                    carla_actor=carla_actor,
                                    synchronous_mode=synchronous_mode)
 
-        self.gnss_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                              NavSatFix,
-                                              queue_size=10)
+        self.gnss_publisher = node.new_publisher(NavSatFix,
+                                                 self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(Gnss, self).destroy()
+        self.node.destroy_publisher(self.gnss_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_gnss_measurement):

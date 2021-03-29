@@ -6,14 +6,15 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 """
-provide functions to control actors 
+provide functions to control actors
 """
 
-import rospy
 import numpy
+import math
 import carla_common.transforms as trans
 from carla_ros_bridge.pseudo_actor import PseudoActor
 from geometry_msgs.msg import Pose, Twist
+from carla import Vector3D
 
 
 class ActorControl(PseudoActor):
@@ -41,14 +42,13 @@ class ActorControl(PseudoActor):
                                            parent=parent,
                                            node=node)
 
-        self.set_location_subscriber = rospy.Subscriber(self.get_topic_prefix() +
-                                                        "/set_transform",
-                                                        Pose,
-                                                        self.on_pose)
+        self.set_location_subscriber = self.node.create_subscriber(Pose,
+                                                                   self.get_topic_prefix() + "/set_transform",
+                                                                   self.on_pose)
 
-        self.twist_control_subscriber = rospy.Subscriber(
-            self.get_topic_prefix() + "/set_target_velocity",
-            Twist, self.on_twist)
+        self.twist_control_subscriber = self.node.create_subscriber(Twist,
+                                                                    self.get_topic_prefix() + "/set_target_velocity",
+                                                                    self.on_twist)
 
     def destroy(self):
         """
@@ -59,10 +59,8 @@ class ActorControl(PseudoActor):
 
         :return:
         """
-        self.set_location_subscriber.unregister()
-        self.set_location_subscriber = None
-        self.twist_control_subscriber.unregister()
-        self.twist_control_subscriber = None
+        self.node.destroy_subscription(self.set_location_subscriber)
+        self.node.destroy_subscription(self.twist_control_subscriber)
         super(ActorControl, self).destroy()
 
     @staticmethod
@@ -81,12 +79,12 @@ class ActorControl(PseudoActor):
         """
         Set angular/linear velocity (this does not respect vehicle dynamics)
         """
-        if not self.vehicle_control_override:
+        if not self.parent.vehicle_control_override:
             angular_velocity = Vector3D()
             angular_velocity.z = math.degrees(twist.angular.z)
 
-            rotation_matrix = transforms.carla_rotation_to_numpy_rotation_matrix(
-                self.carla_actor.get_transform().rotation)
+            rotation_matrix = trans.carla_rotation_to_numpy_rotation_matrix(
+                self.parent.carla_actor.get_transform().rotation)
             linear_vector = numpy.array([twist.linear.x, twist.linear.y, twist.linear.z])
             rotated_linear_vector = rotation_matrix.dot(linear_vector)
             linear_velocity = Vector3D()
@@ -94,7 +92,7 @@ class ActorControl(PseudoActor):
             linear_velocity.y = -rotated_linear_vector[1]
             linear_velocity.z = rotated_linear_vector[2]
 
-            rospy.logdebug("Set velocity linear: {}, angular: {}".format(
+            self.node.logdebug("Set velocity linear: {}, angular: {}".format(
                 linear_velocity, angular_velocity))
-            self.carla_actor.set_target_velocity(linear_velocity)
-            self.carla_actor.set_target_angular_velocity(angular_velocity)
+            self.parent.carla_actor.set_target_velocity(linear_velocity)
+            self.parent.carla_actor.set_target_angular_velocity(angular_velocity)

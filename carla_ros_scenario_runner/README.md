@@ -16,7 +16,7 @@ Please have a look at the [example scenario](https://github.com/carla-simulator/
         </Properties>
     </Controller>
 
-By this section within the openscenario definition, an instance of `carla_ad_agent` is launched (i.e. `roslaunch <launch-package> <launch> ..` is executed). Any aditional `<Property>` is appened as ros parameter (name:=value).
+By this section within the openscenario definition, an instance of `carla_ad_agent` is launched (i.e. `roslaunch <launch-package> <launch> ..` is executed). Any additional `<Property>` is appened as ros parameter (name:=value).
 
 ## Setup
 
@@ -32,14 +32,25 @@ The environment variables are forwarded to scenario_runner, therefore set them t
 
     export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
 
+### Using ROS1
+
 To run the ROS node:
 
     roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_runner_path:=<path_to_scenario_runner>
 
-To run a scenario from commandline:
+To run a scenario from command line:
 
     rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
 
+### Using ROS2
+
+To run the ROS node:
+
+    ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py scenario_runner_path:=<path_to_scenario_runner>
+
+To run a scenario from command line:
+
+    ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
 
 ## Available services
 
@@ -47,13 +58,8 @@ To run a scenario from commandline:
 | ----------------------------------------------------------- | ----------- | -------------------------------------------------------------------- |
 | `/scenario_runner/execute_scenario` | Execute a scenario. If another scenario is currently running, it gets stopped. | [carla_ros_scenario_runner_types.ExecuteScenario](../carla_ros_scenario_runner_types/srv/ExecuteScenario.srv) |
 
-
 ## Available topics
-
 
 | Topic                                 | Description | Type                                                                 |
 | ------------------------------------- | ----------- | -------------------------------------------------------------------- |
 | `/scenario_runner/status`     | The current status of the scenario runner execution (e.g. used by the [rviz_carla_plugin](../rviz_carla_plugin)) | [carla_ros_scenario_runner_types.CarlaScenarioRunnerStatus](../carla_ros_scenario_runner_types/msg/CarlaScenarioRunnerStatus.msg) |
-
-
-

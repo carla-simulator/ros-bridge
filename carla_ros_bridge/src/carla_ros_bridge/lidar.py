@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 #
+# Copyright (c) 2018, Willow Garage, Inc.
 # Copyright (c) 2018-2019 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
@@ -10,14 +11,11 @@
 Classes to handle Carla lidars
 """
 
-import rospy
-
 import numpy
 
-from sensor_msgs.point_cloud2 import create_cloud
 from sensor_msgs.msg import PointCloud2, PointField
 
-from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.sensor import Sensor, create_cloud
 
 
 class Lidar(Sensor):
@@ -39,7 +37,7 @@ class Lidar(Sensor):
         :param relative_spawn_pose: the spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -53,10 +51,13 @@ class Lidar(Sensor):
                                     carla_actor=carla_actor,
                                     synchronous_mode=synchronous_mode)
 
-        self.lidar_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                               PointCloud2,
-                                               queue_size=10)
+        self.lidar_publisher = node.new_publisher(PointCloud2,
+                                                  self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(Lidar, self).destroy()
+        self.node.destroy_publisher(self.lidar_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -68,17 +69,17 @@ class Lidar(Sensor):
         """
         header = self.get_msg_header()
         fields = [
-            PointField('x', 0, PointField.FLOAT32, 1),
-            PointField('y', 4, PointField.FLOAT32, 1),
-            PointField('z', 8, PointField.FLOAT32, 1),
-            PointField('intensity', 12, PointField.FLOAT32, 1),
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
         ]
 
         lidar_data = numpy.fromstring(
             bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
         lidar_data = numpy.reshape(
             lidar_data, (int(lidar_data.shape[0] / 4), 4))
-        # we take the oposite of y axis
+        # we take the opposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
         point_cloud_msg = create_cloud(header, fields, lidar_data)
@@ -104,7 +105,7 @@ class SemanticLidar(Sensor):
         :param relative_spawn_pose: the spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -118,11 +119,14 @@ class SemanticLidar(Sensor):
                                             carla_actor=carla_actor,
                                             synchronous_mode=synchronous_mode)
 
-        self.semantic_lidar_publisher = rospy.Publisher(
-            self.get_topic_prefix(),
+        self.semantic_lidar_publisher = node.new_publisher(
             PointCloud2,
-            queue_size=10)
+            self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(SemanticLidar, self).destroy()
+        self.node.destroy_publisher(self.semantic_lidar_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
@@ -134,12 +138,12 @@ class SemanticLidar(Sensor):
         """
         header = self.get_msg_header()
         fields = [
-            PointField('x', 0, PointField.FLOAT32, 1),
-            PointField('y', 4, PointField.FLOAT32, 1),
-            PointField('z', 8, PointField.FLOAT32, 1),
-            PointField('CosAngle', 12, PointField.FLOAT32, 1),
-            PointField('ObjIdx', 16, PointField.UINT32, 1),
-            PointField('ObjTag', 20, PointField.UINT32, 1),
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='CosAngle', offset=12, datatype=PointField.FLOAT32, count=1),
+            PointField(name='ObjIdx', offset=16, datatype=PointField.UINT32, count=1),
+            PointField(name='ObjTag', offset=20, datatype=PointField.UINT32, count=1)
         ]
 
         lidar_data = numpy.fromstring(bytes(carla_lidar_measurement.raw_data),

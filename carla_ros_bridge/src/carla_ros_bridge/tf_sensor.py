@@ -9,11 +9,12 @@
 handle a tf sensor
 """
 
-import rospy
-
+import tf2_ros
+import os
 from carla_ros_bridge.pseudo_actor import PseudoActor
+from geometry_msgs.msg import TransformStamped
 
-import tf
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
 class TFSensor(PseudoActor):
@@ -41,7 +42,10 @@ class TFSensor(PseudoActor):
                                        parent=parent,
                                        node=node)
 
-        self.tf_broadcaster = tf.TransformBroadcaster()
+        if ROS_VERSION == 1:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        elif ROS_VERSION == 2:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     @staticmethod
     def get_blueprint_name():
@@ -55,10 +59,18 @@ class TFSensor(PseudoActor):
         """
         Function (override) to update this object.
         """
-        pose = self.parent.get_current_ros_pose()
-        position = pose.position
-        orientation = pose.orientation
-        self.tf_broadcaster.sendTransform(
-            (position.x, position.y, position.z),
-            (orientation.x, orientation.y, orientation.z, orientation.w),
-            rospy.Time.now(), self.parent.get_prefix(), "map")
+        self.parent.get_prefix()
+
+        transform = None
+        try:
+            transform = self.parent.get_current_ros_transform()
+        except AttributeError:
+            # parent actor disappeared, do not send tf
+            self.node.logwarn(
+                "TFSensor could not publish transform. Actor {} not found".format(self.parent.uid))
+            return
+
+        self._tf_broadcaster.sendTransform(TransformStamped(
+            header=self.get_msg_header("map", timestamp=timestamp),
+            child_frame_id=self.parent.get_prefix(),
+            transform=transform))

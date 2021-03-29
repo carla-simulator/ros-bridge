@@ -14,7 +14,7 @@ ROS Node to convert [AckermannDrive](http://docs.ros.org/api/ackermann_msgs/html
 
 Initial parameters can be set via [configuration file](config/settings.yaml).
 
-It is possible to modify the parameters during runtime via ROS dynamic reconfigure.
+In ROS1, it is possible to modify the parameters during runtime via the `dynamic reconfigure` package.
 
 ## Available Topics
 

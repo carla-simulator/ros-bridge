@@ -10,15 +10,23 @@ BasicAgent implements a basic agent that navigates scenes to reach a given
 target destination. This agent respects traffic lights and other vehicles.
 """
 
+from carla_waypoint_types.srv import GetActorWaypoint  # pylint: disable=import-error
+from carla_msgs.msg import CarlaActorList  # pylint: disable=import-error
+from derived_object_msgs.msg import ObjectArray  # pylint: disable=import-error
 import math
-import rospy
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose
-from derived_object_msgs.msg import ObjectArray
-from carla_msgs.msg import CarlaActorList
-from agent import Agent, AgentState  # pylint: disable=relative-import
-from local_planner import LocalPlanner  # pylint: disable=relative-import
-from carla_waypoint_types.srv import GetActorWaypoint
+from ros_compatibility import (
+    ros_ok,
+    ServiceException,
+    QoSProfile,
+    latch_on,
+    get_service_request,
+    ROS_VERSION)
+
+if ROS_VERSION == 1:
+    from agent import Agent, AgentState  # pylint: disable=relative-import
+elif ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
+    from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
 
 
 class BasicAgent(Agent):
@@ -27,37 +35,31 @@ class BasicAgent(Agent):
     target destination. This agent respects traffic lights and other vehicles.
     """
 
-    def __init__(self, role_name, ego_vehicle_id, avoid_risk=True):
+    def __init__(self, role_name, ego_vehicle_id, node, avoid_risk=True):
         """
         """
-        super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk)
-
+        super(BasicAgent, self).__init__(role_name, ego_vehicle_id, avoid_risk, node)
+        self.node = node
         self._avoid_risk = avoid_risk
-        self._current_speed = 0.0  # Km/h
-        self._current_pose = Pose()
         self._proximity_threshold = 10.0  # meters
         self._state = AgentState.NAVIGATING
-        args_lateral_dict = {
-            'K_P': 0.9,
-            'K_D': 0.0,
-            'K_I': 0.1}
-        self._local_planner = LocalPlanner(opt_dict={'lateral_control_dict': args_lateral_dict})
+
+        if ROS_VERSION == 1:
+            cb_group = None
+        elif ROS_VERSION == 2:
+            cb_group = ReentrantCallbackGroup()
 
         if self._avoid_risk:
             self._vehicle_id_list = []
             self._lights_id_list = []
-            self._actors_subscriber = rospy.Subscriber(
-                "/carla/actor_list", CarlaActorList, self.actors_updated)
             self._objects = []
-            self._objects_subscriber = rospy.Subscriber(
-                "/carla/{}/objects".format(role_name), ObjectArray,
-                self.objects_updated)
-            self._get_actor_waypoint_client = rospy.ServiceProxy(
+            self._actors_subscriber = self.node.create_subscriber(CarlaActorList, "/carla/actor_list",
+                                                                  self.actors_updated, callback_group=cb_group)
+            self._objects_subscriber = self.node.create_subscriber(ObjectArray,
+                                                                   "/carla/{}/objects".format(role_name), self.objects_updated)
+            self._get_actor_waypoint_client = self.node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(role_name),
-                GetActorWaypoint)
-
-        self._odometry_subscriber = rospy.Subscriber(
-            "/carla/{}/odometry".format(role_name), Odometry, self.odometry_updated)
+                GetActorWaypoint, callback_group=cb_group)
 
     def get_actor_waypoint(self, actor_id):
         """
@@ -65,21 +67,13 @@ class BasicAgent(Agent):
         Only used if risk should be avoided.
         """
         try:
-            response = self._get_actor_waypoint_client(actor_id)
+            request = get_service_request(GetActorWaypoint)
+            request.id = actor_id
+            response = self.node.call_service(self._get_actor_waypoint_client, request)
             return response.waypoint
-        except (rospy.ServiceException, rospy.ROSInterruptException) as e:
-            if not rospy.is_shutdown:
-                rospy.logwarn("Service call failed: {}".format(e))
-
-    def odometry_updated(self, odo):
-        """
-        callback on new odometry
-        """
-        self._current_speed = math.sqrt(odo.twist.twist.linear.x ** 2 +
-                                        odo.twist.twist.linear.y ** 2 +
-                                        odo.twist.twist.linear.z ** 2) * 3.6
-        self._current_pose = odo.pose.pose
-        super(BasicAgent, self).odometry_updated(odo)
+        except ServiceException as e:
+            if ros_ok():
+                self.node.logwarn("Service call failed: {}".format(e))
 
     def actors_updated(self, actors):
         """
@@ -104,7 +98,7 @@ class BasicAgent(Agent):
         """
         self._objects = objects.objects
 
-    def run_step(self, target_speed):
+    def run_step(self):
         """
         Execute one step of navigation.
         :return: carla.VehicleControl
@@ -119,7 +113,6 @@ class BasicAgent(Agent):
             vehicle_state, vehicle = self._is_vehicle_hazard(  # pylint: disable=unused-variable
                 self._vehicle_id_list, self._objects)
             if vehicle_state:
-                #rospy.loginfo('=== Vehicle blocking ahead [{}])'.format(vehicle))
                 self._state = AgentState.BLOCKED_BY_VEHICLE
                 hazard_detected = True
 
@@ -127,17 +120,10 @@ class BasicAgent(Agent):
             light_state, traffic_light = self._is_light_red(  # pylint: disable=unused-variable
                 self._lights_id_list)
             if light_state:
-                #rospy.loginfo('=== Red Light ahead [{}])'.format(traffic_light))
-
                 self._state = AgentState.BLOCKED_RED_LIGHT
                 hazard_detected = True
 
-        if hazard_detected:
-            control = self.emergency_stop()
-        else:
+        if hazard_detected is False:
             self._state = AgentState.NAVIGATING
-            # standard local planner behavior
-            control, finished = self._local_planner.run_step(
-                target_speed, self._current_speed, self._current_pose)
 
-        return control, finished
+        return hazard_detected

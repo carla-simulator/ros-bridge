@@ -8,10 +8,14 @@
 """
 Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
-
-from std_msgs.msg import Header
-import rospy
 import numpy as np
+from std_msgs.msg import Header
+
+from ros_compatibility import (
+    ros_timestamp,
+    QoSProfile,
+    latch_on
+)
 
 
 class PseudoActor(object):
@@ -30,8 +34,10 @@ class PseudoActor(object):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.PseudoActor
+        :param prefix: the topic prefix to be used for this actor
+        :type prefix: string
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         """
         self.uid = uid
         self.name = name
@@ -71,10 +77,10 @@ class PseudoActor(object):
             header.frame_id = frame_id
         else:
             header.frame_id = self.get_prefix()
-        if timestamp:
-            header.stamp = rospy.Time.from_sec(timestamp)
-        else:
-            header.stamp = self.node.ros_timestamp
+
+        if not timestamp:
+            timestamp = self.node.get_time()
+        header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
         return header
 
     def get_prefix(self):

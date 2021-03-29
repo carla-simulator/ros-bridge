@@ -9,14 +9,28 @@
 Base class for agent
 """
 
+from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
+from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
+from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
+from nav_msgs.msg import Odometry
+from visualization_msgs.msg import Marker
 from enum import Enum
 import math
-import rospy
-from tf.transformations import euler_from_quaternion
-from misc import is_within_distance_ahead, compute_magnitude_angle  # pylint: disable=relative-import
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus,\
-    CarlaTrafficLightStatusList, CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypoint
+import time
+from transforms3d.euler import quat2euler
+from ros_compatibility import (
+    ros_ok,
+    ServiceException,
+    QoSProfile,
+    latch_on,
+    get_service_request,
+    ROS_VERSION)
+
+if ROS_VERSION == 1:
+    from misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
+elif ROS_VERSION == 2:
+    from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
+    from rclpy import spin_once
 
 
 class AgentState(Enum):
@@ -33,30 +47,41 @@ class Agent(object):
     Base class for agent
     """
 
-    def __init__(self, role_name, vehicle_id, avoid_risk):
+    def __init__(self, role_name, vehicle_id, avoid_risk, node):
         """
         """
+        self.node = node
         self._proximity_threshold = 10.0  # meters
-        self._local_planner = None
         self._map_name = None
         self._vehicle_location = None
         self._vehicle_yaw = None
         self._vehicle_id = vehicle_id
         self._last_traffic_light = None
+        self._target_route_point = None
+
+        self._odometry_subscriber = self.node.create_subscriber(
+            Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
+        # wait for first odometry update
+        self.node.logwarn('Agent waiting for odometry  message')
+        while self._vehicle_location is None:
+            time.sleep(0.05)
+            if ROS_VERSION == 2:
+                spin_once(node, timeout_sec=0)
+        self.node.logwarn('Odometry message received')
 
         if avoid_risk:
-            rospy.wait_for_service('/carla_waypoint_publisher/{}/get_waypoint'.format(role_name))
-
-            self._get_waypoint_client = rospy.ServiceProxy(
+            self._get_waypoint_client = node.create_service_client(
                 '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
 
             self._traffic_lights = []
-            self._traffic_light_status_subscriber = rospy.Subscriber(
-                "/carla/traffic_lights/status",
-                CarlaTrafficLightStatusList, self.traffic_lights_updated)
-
-            self._world_info_subscriber = rospy.Subscriber(
-                "/carla/world_info", CarlaWorldInfo, self.world_info_updated)
+            self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
+                                                                           "/carla/traffic_lights/status", self.traffic_lights_updated,
+                                                                           qos_profile=QoSProfile(depth=10, durability=latch_on))
+            self._target_point_subscriber = node.create_subscriber(
+                Marker, "/carla/{}/next_target".format(role_name), self.target_point_updated)
+            world_info = node.wait_for_one_message(
+                "/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
+            self._map_name = world_info.map_name
 
     def traffic_lights_updated(self, traffic_lights):
         """
@@ -65,12 +90,8 @@ class Agent(object):
         """
         self._traffic_lights = traffic_lights.traffic_lights
 
-    def world_info_updated(self, world_info):
-        """
-        callback on new world info
-        Only used if risk should be avoided.
-        """
-        self._map_name = world_info.map_name
+    def target_point_updated(self, new_target_point):
+        self._target_route_point = new_target_point.pose.position
 
     def odometry_updated(self, odo):
         """
@@ -78,12 +99,12 @@ class Agent(object):
         """
         self._vehicle_location = odo.pose.pose.position
         quaternion = (
+            odo.pose.pose.orientation.w,
             odo.pose.pose.orientation.x,
             odo.pose.pose.orientation.y,
-            odo.pose.pose.orientation.z,
-            odo.pose.pose.orientation.w
+            odo.pose.pose.orientation.z
         )
-        _, _, self._vehicle_yaw = euler_from_quaternion(quaternion)
+        _, _, self._vehicle_yaw = quat2euler(quaternion)
 
     def _is_light_red(self, lights_list):
         """
@@ -113,11 +134,16 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        ego_vehicle_location = self._vehicle_location
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
+
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
-            if not rospy.is_shutdown():
-                rospy.logwarn("Could not get waypoint for ego vehicle.")
+            if ros_ok():
+                self.node.logwarn("Could not get waypoint for ego vehicle.")
             return (False, None)
 
         for traffic_light in lights_list:
@@ -125,7 +151,7 @@ class Agent(object):
             if object_waypoint.road_id != ego_vehicle_waypoint.road_id or \
                     object_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
                 continue
-            if is_within_distance_ahead(object_waypoint.pose.position, ego_vehicle_location,
+            if is_within_distance_ahead(object_waypoint.pose.position, ego_vehicle_location.location,
                                         math.degrees(self._vehicle_yaw),
                                         self._proximity_threshold):
                 traffic_light_state = CarlaTrafficLightStatus.RED
@@ -143,14 +169,14 @@ class Agent(object):
         Helper to get waypoint for location via ros service.
         Only used if risk should be avoided.
         """
-        if rospy.is_shutdown():
+        if not ros_ok():
             return None
         try:
-            response = self._get_waypoint_client(location)
+            response = self.node.call_service(self._get_waypoint_client, location)
             return response.waypoint
-        except (rospy.ServiceException, rospy.ROSInterruptException) as e:
-            if not rospy.is_shutdown():
-                rospy.logwarn("Service call 'get_waypoint' failed: {}".format(e))
+        except ServiceException as e:
+            if ros_ok():
+                self.node.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
 
     def _is_light_red_us_style(self, lights_list):  # pylint: disable=too-many-branches
         """
@@ -163,22 +189,29 @@ class Agent(object):
                  - traffic_light is the object itself or None if there is no
                    red traffic light affecting us
         """
-        ego_vehicle_location = self._vehicle_location
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
+
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
-            if not rospy.is_shutdown():
-                rospy.logwarn("Could not get waypoint for ego vehicle.")
+            if ros_ok():
+                self.node.logwarn("Could not get waypoint for ego vehicle.")
             return (False, None)
 
         if ego_vehicle_waypoint.is_junction:
             # It is too late. Do not block the intersection! Keep going!
             return (False, None)
 
-        if self._local_planner.target_route_point is not None:
-            target_waypoint = self.get_waypoint(self._local_planner.target_route_point.position)
+        if self._target_route_point is not None:
+            request = get_service_request(GetWaypoint)
+            request.location = self._target_route_point
+            target_waypoint = self.get_waypoint(request)
             if not target_waypoint:
-                if not rospy.is_shutdown():
-                    rospy.logwarn("Could not get waypoint for target route point.")
+                if ros_ok():
+                    self.node.logwarn("Could not get waypoint for target route point.")
                 return (False, None)
             if target_waypoint.is_junction:
                 min_angle = 180.0
@@ -187,7 +220,7 @@ class Agent(object):
                 for traffic_light in lights_list:
                     loc = traffic_light[1]
                     magnitude, angle = compute_magnitude_angle(loc.pose.position,
-                                                               ego_vehicle_location,
+                                                               ego_vehicle_location.location,
                                                                math.degrees(self._vehicle_yaw))
                     if magnitude < 60.0 and angle < min(25.0, min_angle):
                         sel_magnitude = magnitude
@@ -207,7 +240,7 @@ class Agent(object):
                             state = status.state
                             break
                     if state is None:
-                        rospy.logwarn(
+                        self.node.logwarn(
                             "Couldn't get state of traffic light {}".format(
                                 sel_traffic_light))
                         return (False, None)
@@ -236,13 +269,16 @@ class Agent(object):
                    and False otherwise
                  - vehicle is the blocker object itself
         """
+        if self._vehicle_location is None:
+            # no available self location yet
+            return (False, None)
 
-        ego_vehicle_location = self._vehicle_location
-
+        ego_vehicle_location = get_service_request(GetWaypoint)
+        ego_vehicle_location.location = self._vehicle_location
         ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
         if not ego_vehicle_waypoint:
-            if not rospy.is_shutdown():
-                rospy.logwarn("Could not get waypoint for ego vehicle.")
+            if ros_ok():
+                self.node.logwarn("Could not get waypoint for ego vehicle.")
             return (False, None)
 
         for target_vehicle_id in vehicle_list:
@@ -257,18 +293,19 @@ class Agent(object):
                     break
 
             if not target_vehicle_location:
-                rospy.logwarn("Location of vehicle {} not found".format(target_vehicle_id))
+                self.node.logwarn("Location of vehicle {} not found".format(target_vehicle_id))
                 continue
 
             # if the object is not in our lane it's not an obstacle
-            target_vehicle_waypoint = self.get_waypoint(target_vehicle_location.position)
+            request = get_service_request(GetWaypoint)
+            request.location = target_vehicle_location.position
+            target_vehicle_waypoint = self.get_waypoint(request)
             if not target_vehicle_waypoint:
-                if not rospy.is_shutdown():
-                    rospy.logwarn("Could not get waypoint for target vehicle.")
+                if ros_ok():
+                    self.node.logwarn("Could not get waypoint for target vehicle.")
                 return (False, None)
             if target_vehicle_waypoint.road_id != ego_vehicle_waypoint.road_id or \
                     target_vehicle_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
-                #rospy.loginfo("Vehicle {} is not in our lane".format(target_vehicle_id))
                 continue
 
             if is_within_distance_ahead(target_vehicle_location.position, self._vehicle_location,
@@ -288,5 +325,4 @@ class Agent(object):
         control.throttle = 0.0
         control.brake = 1.0
         control.hand_brake = False
-
         return control

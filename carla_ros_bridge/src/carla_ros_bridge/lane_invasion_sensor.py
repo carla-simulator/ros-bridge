@@ -10,8 +10,6 @@
 Classes to handle lane invasion events
 """
 
-import rospy
-
 from carla_ros_bridge.sensor import Sensor
 from carla_msgs.msg import CarlaLaneInvasionEvent
 
@@ -35,7 +33,7 @@ class LaneInvasionSensor(Sensor):
         :param relative_spawn_pose: the spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -50,10 +48,13 @@ class LaneInvasionSensor(Sensor):
                                                  synchronous_mode=synchronous_mode,
                                                  is_event_sensor=True)
 
-        self.lane_invasion_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                                       CarlaLaneInvasionEvent,
-                                                       queue_size=10)
+        self.lane_invasion_publisher = node.new_publisher(CarlaLaneInvasionEvent,
+                                                          self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(LaneInvasionSensor, self).destroy()
+        self.node.destroy_publisher(self.lane_invasion_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, lane_invasion_event):

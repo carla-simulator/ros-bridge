@@ -3,23 +3,10 @@ project(carla_ackermann_control)
 
 # Find catkin macros and libraries
 find_package(
-  catkin REQUIRED
-  COMPONENTS message_generation
-             rospy
-             std_msgs
-             ackermann_msgs
-             dynamic_reconfigure
-             carla_msgs
-             roslaunch)
+  catkin REQUIRED COMPONENTS rospy std_msgs ackermann_msgs dynamic_reconfigure
+                             carla_msgs roslaunch)
 
 catkin_python_setup()
-
-add_message_files(
-  FILES EgoVehicleControlCurrent.msg EgoVehicleControlInfo.msg
-  EgoVehicleControlMaxima.msg EgoVehicleControlStatus.msg
-  EgoVehicleControlTarget.msg)
-
-generate_messages(DEPENDENCIES std_msgs carla_msgs)
 
 generate_dynamic_reconfigure_options(config/EgoVehicleControlParameter.cfg)
 

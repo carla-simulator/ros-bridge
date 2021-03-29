@@ -13,16 +13,15 @@ from abc import abstractmethod
 
 import math
 import numpy
-
-import rospy
-import tf
+import os
 from cv_bridge import CvBridge
-from sensor_msgs.point_cloud2 import create_cloud
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
 
 import carla
-from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.sensor import Sensor, create_cloud
 import carla_common.transforms as trans
+
+ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 
 class Camera(Sensor):
@@ -34,7 +33,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, is_event_sensor=False):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -44,10 +43,8 @@ class Camera(Sensor):
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
-        :param relative_spawn_pose: the relative spawn pose of this
-        :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -59,24 +56,26 @@ class Camera(Sensor):
                                      relative_spawn_pose=relative_spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor,
-                                     synchronous_mode=synchronous_mode)
+                                     synchronous_mode=synchronous_mode,
+                                     is_event_sensor=is_event_sensor)
 
         if self.__class__.__name__ == "Camera":
-            rospy.logwarn("Created Unsupported Camera Actor"
-                          "(id={}, type={}, attributes={})".format(self.get_id(),
-                                                                   self.carla_actor.type_id,
-                                                                   self.carla_actor.attributes))
+            self.node.logwarn("Created Unsupported Camera Actor"
+                              "(id={}, type={}, attributes={})".format(self.get_id(),
+                                                                       self.carla_actor.type_id,
+                                                                       self.carla_actor.attributes))
         else:
             self._build_camera_info()
 
-        self.camera_info_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                     '/camera_info',
-                                                     CameraInfo,
-                                                     queue_size=10)
+        self.camera_info_publisher = node.new_publisher(CameraInfo, self.get_topic_prefix() +
+                                                        '/camera_info')
+        self.camera_image_publisher = node.new_publisher(Image, self.get_topic_prefix() +
+                                                         '/' + 'image')
 
-        self.camera_image_publisher = rospy.Publisher(self.get_topic_prefix() + '/' + 'image',
-                                                      Image,
-                                                      queue_size=10)
+    def destroy(self):
+        super(Camera, self).destroy()
+        self.node.destroy_publisher(self.camera_info_publisher)
+        self.node.destroy_publisher(self.camera_image_publisher)
 
     def _build_camera_info(self):
         """
@@ -86,7 +85,7 @@ class Camera(Sensor):
         """
         camera_info = CameraInfo()
         # store info without header
-        camera_info.header = None
+        camera_info.header = self.get_msg_header()
         camera_info.width = int(self.carla_actor.attributes['image_size_x'])
         camera_info.height = int(self.carla_actor.attributes['image_size_y'])
         camera_info.distortion_model = 'plumb_bob'
@@ -95,10 +94,17 @@ class Camera(Sensor):
         fx = camera_info.width / (
             2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
         fy = fx
-        camera_info.K = [fx, 0, cx, 0, fy, cy, 0, 0, 1]
-        camera_info.D = [0, 0, 0, 0, 0]
-        camera_info.R = [1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0]
-        camera_info.P = [fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1.0, 0]
+        if ROS_VERSION == 1:
+            camera_info.K = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+            camera_info.D = [0.0, 0.0, 0.0, 0.0, 0.0]
+            camera_info.R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            camera_info.P = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+        elif ROS_VERSION == 2:
+            # pylint: disable=assigning-non-slot
+            camera_info.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+            camera_info.d = [0.0, 0.0, 0.0, 0.0, 0.0]
+            camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+            camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         self._camera_info = camera_info
 
     # pylint: disable=arguments-differ
@@ -111,33 +117,8 @@ class Camera(Sensor):
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
-
         self.camera_info_publisher.publish(cam_info)
         self.camera_image_publisher.publish(img_msg)
-
-    def get_ros_transform(self, transform=None, frame_id=None, child_frame_id=None):
-        """
-        Function (override) to modify the tf messages sent by this camera.
-
-        The camera transformation has to be altered to look at the same axis
-        as the opencv projection in order to get easy depth cloud for RGBD camera
-
-        :return: the filled tf message
-        :rtype: geometry_msgs.msg.TransformStamped
-        """
-        tf_msg = super(Camera, self).get_ros_transform(transform, frame_id, child_frame_id)
-        rotation = tf_msg.transform.rotation
-        quat = [rotation.x, rotation.y, rotation.z, rotation.w]
-        quat_swap = tf.transformations.quaternion_from_matrix(
-            [[0, 0, 1, 0],
-             [-1, 0, 0, 0],
-             [0, -1, 0, 0],
-             [0, 0, 0, 1]])
-        quat = tf.transformations.quaternion_multiply(quat, quat_swap)
-
-        tf_msg.transform.rotation = trans.numpy_quaternion_to_ros_quaternion(
-            quat)
-        return tf_msg
 
     def get_ros_image(self, carla_camera_data):
         """
@@ -145,7 +126,7 @@ class Camera(Sensor):
         """
         if ((carla_camera_data.height != self._camera_info.height) or
                 (carla_camera_data.width != self._camera_info.width)):
-            rospy.logerr(
+            self.node.logerr(
                 "Camera{} received image not matching configuration".format(self.get_prefix()))
         image_data_array, encoding = self.get_carla_image_data_array(
             carla_camera_data)
@@ -187,7 +168,7 @@ class RgbCamera(Camera):
         :param relative_spawn_pose: the relative spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -242,7 +223,7 @@ class DepthCamera(Camera):
         :param relative_spawn_pose: the relative spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -319,7 +300,7 @@ class SemanticSegmentationCamera(Camera):
         :param relative_spawn_pose: the relative spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -376,7 +357,7 @@ class DVSCamera(Camera):
         :param relative_spawn_pose: the relative spawn pose of this
         :type relative_spawn_pose: geometry_msgs.Pose
         :param node: node-handle
-        :type node: carla_ros_bridge.CarlaRosBridge
+        :type node: CompatibleNode
         :param carla_actor: carla actor object
         :type carla_actor: carla.Actor
         :param synchronous_mode: use in synchronous mode?
@@ -388,15 +369,19 @@ class DVSCamera(Camera):
                                         relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
-                                        synchronous_mode=synchronous_mode)
+                                        synchronous_mode=synchronous_mode,
+                                        is_event_sensor=True)
 
         self._dvs_events = None
-        self.dvs_camera_publisher = rospy.Publisher(self.get_topic_prefix() +
-                                                    '/events',
-                                                    PointCloud2,
-                                                    queue_size=10)
+        self.dvs_camera_publisher = node.new_publisher(PointCloud2,
+                                                       self.get_topic_prefix() +
+                                                       '/events')
 
         self.listen()
+
+    def destroy(self):
+        super(DVSCamera, self).destroy()
+        self.node.destroy_publisher(self.dvs_camera_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_dvs_event_array):
@@ -410,10 +395,10 @@ class DVSCamera(Camera):
 
         header = self.get_msg_header(timestamp=carla_dvs_event_array.timestamp)
         fields = [
-            PointField('x', 0, PointField.UINT16, 1),
-            PointField('y', 2, PointField.UINT16, 1),
-            PointField('t', 4, PointField.FLOAT64, 1),
-            PointField('pol', 12, PointField.INT8, 1),
+            PointField(name='x', offset=0, datatype=PointField.UINT16, count=1),
+            PointField(name='y', offset=2, datatype=PointField.UINT16, count=1),
+            PointField(name='t', offset=4, datatype=PointField.FLOAT64, count=1),
+            PointField(name='pol', offset=12, datatype=PointField.INT8, count=1)
         ]
 
         dvs_events_msg = create_cloud(header, fields, self._dvs_events.tolist())

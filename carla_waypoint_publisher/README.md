@@ -21,9 +21,9 @@ To run it:
 
 ## Set a goal
 
-The goal is either read from the ROS topic `/carla/<ROLE NAME>/goal`, if available, or a fixed spawnpoint is used.
+The goal is either read from the ROS topic `/carla/<ROLE NAME>/goal`, if available, or a fixed spawn point is used.
 
-The prefered way of setting a goal is to click '2D Nav Goal' in RVIZ.
+The preferred way of setting a goal is to click '2D Nav Goal' in RVIZ.
 
 ![set goal](../docs/images/rviz_set_start_goal.png)
 
@@ -34,7 +34,6 @@ The calculated route is published:
 | Topic                                 | Type                                                                 |
 | ------------------------------------- | -------------------------------------------------------------------- |
 | `/carla/<ego vehicle name>/waypoints` | [nav_msgs.Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) |
-
 
 ## Available services
 

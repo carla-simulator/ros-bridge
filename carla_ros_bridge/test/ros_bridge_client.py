@@ -50,7 +50,8 @@ class TestClock(unittest.TestCase):
         rospy.init_node('test_node', anonymous=True)
         msg = rospy.wait_for_message(
             "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus, timeout=TIMEOUT)
-        self.assertNotEqual(msg.header, Header())  # todo: check frame-id
+        self.assertNotEqual(msg.header, Header())
+        self.assertEqual(msg.header.frame_id, 'map')
         self.assertNotEqual(msg.orientation, Quaternion())
 
     def test_vehicle_info(self):

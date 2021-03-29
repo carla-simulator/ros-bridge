@@ -27,12 +27,9 @@ By using the drive-widget from the [RVIZ Visualization Tutorials](https://github
 
 By using [carla_ros_scenario_runner](../carla_ros_scenario_runner), it is possible to trigger scenarios from within RVIZ.
 
-
 ### Play/Pause the simulation (if started in synchronous mode)
 
 Similar to the [rqt CARLA plugin](../rqt_carla_plugin), it's possible to control the CARLA world, if synchronous mode is active.
-
-
 
 ## Topics
 

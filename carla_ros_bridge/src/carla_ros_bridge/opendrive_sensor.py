@@ -9,12 +9,11 @@
 handle a opendrive sensor
 """
 
-import rospy
-import numpy as np
-
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
 from std_msgs.msg import String
+
+from ros_compatibility import QoSProfile, latch_on
 
 
 class OpenDriveSensor(PseudoActor):
@@ -44,10 +43,12 @@ class OpenDriveSensor(PseudoActor):
                                               node=node)
         self.carla_map = carla_map
         self._map_published = False
-        self.map_publisher = rospy.Publisher(self.get_topic_prefix(),
-                                             String,
-                                             queue_size=10,
-                                             latch=True)
+        self.map_publisher = node.new_publisher(String, self.get_topic_prefix(),
+                                                qos_profile=QoSProfile(depth=10, durability=latch_on))
+
+    def destroy(self):
+        super(OpenDriveSensor, self).destroy()
+        self.node.destroy_publisher(self.map_publisher)
 
     @staticmethod
     def get_blueprint_name():
@@ -62,5 +63,5 @@ class OpenDriveSensor(PseudoActor):
         Function (override) to update this object.
         """
         if not self._map_published:
-            self.map_publisher.publish(String(self.carla_map.to_opendrive()))
+            self.map_publisher.publish(String(data=self.carla_map.to_opendrive()))
             self._map_published = True

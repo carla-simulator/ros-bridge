@@ -3,7 +3,7 @@
 The node `carla_manual_control` is a ROS-only version of the Carla `manual_control.py`. All data is received
 via ROS topics.
 
-## Prerequistes
+## Prerequisites
 
 To be able to use `carla_manual_control`, some sensors need to be attached to the ego vehicle:
 

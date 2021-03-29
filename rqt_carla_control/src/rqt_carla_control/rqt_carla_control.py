@@ -8,16 +8,21 @@
 """
 RQT Plugin to control CARLA
 """
-import os
-import rospy
-import rospkg
-
-from qt_gui.plugin import Plugin
-from python_qt_binding import loadUi
-from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
+from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
 from python_qt_binding.QtGui import QPixmap, QIcon  # pylint: disable=no-name-in-module, import-error
+from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
+from python_qt_binding import loadUi  # pylint: disable=import-error
+from qt_gui.plugin import Plugin  # pylint: disable=import-error
+from ros_compatibility import CompatibleNode, QoSProfile
+import os
 
-from carla_msgs.msg import CarlaControl, CarlaStatus
+ROS_VERSION = int(os.environ['ROS_VERSION'])
+if ROS_VERSION == 1:
+    import rospkg
+elif ROS_VERSION == 2:
+    from rclpy.callback_groups import ReentrantCallbackGroup
+    from ament_index_python.packages import get_package_share_directory
+    import threading
 
 
 class CarlaControlPlugin(Plugin):
@@ -34,8 +39,18 @@ class CarlaControlPlugin(Plugin):
         self.setObjectName('CARLA Control')
 
         self._widget = QWidget()
-        ui_file = os.path.join(rospkg.RosPack().get_path(
-            'rqt_carla_control'), 'resource', 'CarlaControl.ui')
+
+        self._node = CompatibleNode('rqt_carla_control_node', rospy_init=False)
+
+        if ROS_VERSION == 1:
+            package_share_dir = rospkg.RosPack().get_path('rqt_carla_control')
+            self.callback_group = None
+        elif ROS_VERSION == 2:
+            package_share_dir = get_package_share_directory('rqt_carla_control')
+            self.callback_group = ReentrantCallbackGroup()
+
+        ui_file = os.path.join(package_share_dir, 'resource', 'CarlaControl.ui')
+
         loadUi(ui_file, self._widget)
         self._widget.setObjectName('CarlaControl')
         if context.serial_number() > 1:
@@ -44,19 +59,20 @@ class CarlaControlPlugin(Plugin):
 
         self.pause_icon = QIcon(
             QPixmap(os.path.join(
-                rospkg.RosPack().get_path('rqt_carla_control'), 'resource', 'pause.png')))
+                package_share_dir, 'resource', 'pause.png')))
         self.play_icon = QIcon(
             QPixmap(os.path.join(
-                rospkg.RosPack().get_path('rqt_carla_control'), 'resource', 'play.png')))
+                package_share_dir, 'resource', 'play.png')))
         self._widget.pushButtonStepOnce.setIcon(
             QIcon(QPixmap(os.path.join(
-                rospkg.RosPack().get_path('rqt_carla_control'), 'resource', 'step_once.png'))))
+                package_share_dir, 'resource', 'step_once.png'))))
 
         self.carla_status = None
-        self.carla_status_subscriber = rospy.Subscriber(
-            "/carla/status", CarlaStatus, self.carla_status_changed)
-        self.carla_control_publisher = rospy.Publisher(
-            "/carla/control", CarlaControl, queue_size=10)
+        self.carla_status_subscriber = self._node.create_subscriber(
+            CarlaStatus, "/carla/status", self.carla_status_changed, callback_group=self.callback_group)
+
+        self.carla_control_publisher = self._node.new_publisher(
+            CarlaControl, "/carla/control", QoSProfile(depth=10, durability=False))
 
         self._widget.pushButtonPlayPause.setDisabled(True)
         self._widget.pushButtonStepOnce.setDisabled(True)
@@ -65,6 +81,10 @@ class CarlaControlPlugin(Plugin):
         self._widget.pushButtonStepOnce.clicked.connect(self.step_once)
 
         context.add_widget(self._widget)
+
+        if ROS_VERSION == 2:
+            spin_thread = threading.Thread(target=self._node.spin, daemon=True)
+            spin_thread.start()
 
     def toggle_play_pause(self):
         """
@@ -102,4 +122,4 @@ class CarlaControlPlugin(Plugin):
         """
         shutdown plugin
         """
-        self.carla_control_publisher.unregister()
+        self._node.destroy_subscription(self.carla_control_publisher)

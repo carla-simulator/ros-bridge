@@ -1,16 +1,28 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>carla_waypoint_publisher</name>
   <version>0.0.0</version>
   <description>The carla_waypoint_publisher package</description>
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roslaunch</build_depend>
-  <build_depend>rospy</build_depend>
+
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>carla_waypoint_types</exec_depend>
-  <exec_depend>rospy</exec_depend>
+  <exec_depend>ros_compatibility</exec_depend>
+
+  <!-- ROS 1 DEPENDENCIES-->
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <build_depend condition="$ROS_VERSION == 1">roslaunch</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rospy</build_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
+
+  <!-- ROS 2 DEPENDENCIES-->
+  <depend condition="$ROS_VERSION == 2">rclpy</depend>
+  
+
+
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
   </export>
 </package>
