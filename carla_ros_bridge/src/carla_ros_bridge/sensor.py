@@ -102,7 +102,7 @@ class Sensor(Actor):
         elif ROS_VERSION == 2:
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
-    def publish_tf(self, pose, timestamp):
+    def get_ros_transform(self, pose, timestamp):
         if self.synchronous_mode:
             if not self.relative_spawn_pose:
                 self.node.logwarn("{}: No relative spawn pose defined".format(self.get_prefix()))
@@ -132,6 +132,10 @@ class Sensor(Actor):
         transform.transform.rotation.z = pose.orientation.z
         transform.transform.rotation.w = pose.orientation.w
 
+        return transform
+
+    def publish_tf(self, pose, timestamp):
+        transform = self.get_ros_transform(pose, timestamp)
         try:
             self._tf_broadcaster.sendTransform(transform)
         except ROSException:
