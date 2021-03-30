@@ -14,6 +14,7 @@ from ros_compatibility import (
     CompatibleNode,
     ros_ok,
     ros_shutdown,
+    ros_on_shutdown,
     ros_timestamp,
     QoSProfile,
     latch_on,
@@ -48,7 +49,6 @@ from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
 
 if ROS_VERSION == 1:
     import rospy  # pylint: disable=import-error
-    from carla_msgs.srv import SpawnObjectResponse, DestroyObjectResponse, GetBlueprintsResponse
 elif ROS_VERSION == 2:
     import rclpy  # pylint: disable=import-error
     from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
@@ -63,7 +63,8 @@ class CarlaRosBridge(CompatibleNode):
     Carla Ros bridge
     """
 
-    CARLA_VERSION = "0.9.10"
+    with open(os.path.join(os.path.dirname(__file__), "CARLA_VERSION")) as f:
+        CARLA_VERSION = f.read()[:-1]
 
     # in synchronous mode, if synchronous_mode_wait_for_vehicle_control_command is True,
     # wait for this time until a next tick is triggered.
@@ -80,13 +81,14 @@ class CarlaRosBridge(CompatibleNode):
         """
         super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
         self.executor = executor
-        self.bridge_is_initialized = False
 
     # pylint: disable=attribute-defined-outside-init
     def initialize_bridge(self, carla_world, params):
         """
         Initialize the bridge
         """
+        ros_on_shutdown(self.destroy)
+
         self.parameters = params
         self.carla_world = carla_world
 
@@ -183,7 +185,6 @@ class CarlaRosBridge(CompatibleNode):
         self.carla_weather_subscriber = \
             self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
                                    self.on_weather_changed, callback_group=self.callback_group)
-        self.bridge_is_initialized = True
 
     def spawn_object(self, req, response=None):
         response = get_service_response(SpawnObject)
@@ -415,7 +416,7 @@ def main(args=None):
     parameters['port'] = carla_bridge.get_param('port', 2000)
     parameters['timeout'] = carla_bridge.get_param('timeout', 2)
     parameters['passive'] = carla_bridge.get_param('passive', False)
-    parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', False)
+    parameters['synchronous_mode'] = carla_bridge.get_param('synchronous_mode', True)
     parameters['synchronous_mode_wait_for_vehicle_control_command'] = carla_bridge.get_param(
         'synchronous_mode_wait_for_vehicle_control_command', False)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
@@ -475,8 +476,6 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        if carla_bridge.bridge_is_initialized is True:
-            carla_bridge.destroy()
         ros_shutdown()
         del carla_world
         del carla_client

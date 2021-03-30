@@ -23,10 +23,11 @@ if(${ROS_VERSION} EQUAL 1)
   install(PROGRAMS src/carla_ros_bridge/bridge.py
           DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
+  install(FILES src/carla_ros_bridge/CARLA_VERSION
+          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
   install(FILES test/ros_bridge_client.test
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-  install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)

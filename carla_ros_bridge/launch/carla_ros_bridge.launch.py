@@ -1,9 +1,5 @@
-import os
-import sys
-
 import launch
 import launch_ros.actions
-from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
@@ -26,11 +22,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode',
-            default_value='False'
+            default_value='True'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
-            default_value='True'
+            default_value='False'
         ),
         launch.actions.DeclareLaunchArgument(
             name='fixed_delta_seconds',
@@ -41,7 +37,7 @@ def generate_launch_description():
             default_value='Town01'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='ego_vehicle_role_names',
+            name='ego_vehicle_role_name',
             default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2",
                            "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]
         ),
@@ -81,7 +77,7 @@ def generate_launch_description():
                     'town': launch.substitutions.LaunchConfiguration('town')
                 },
                 {
-                    'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_names')
+                    'ego_vehicle_role_name': launch.substitutions.LaunchConfiguration('ego_vehicle_role_name')
                 }
             ]
         )

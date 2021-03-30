@@ -1,5 +1,4 @@
 import os
-import sys
 
 import launch
 import launch_ros.actions
@@ -77,7 +76,6 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'synchronous_mode': 'True',  # only synchronous mode is supported
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()

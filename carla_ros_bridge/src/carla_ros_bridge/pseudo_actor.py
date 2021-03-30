@@ -12,7 +12,6 @@ import numpy as np
 from std_msgs.msg import Header
 
 from ros_compatibility import (
-    CompatibleNode,
     ros_timestamp,
     QoSProfile,
     latch_on

@@ -2,7 +2,6 @@
 
 This node converts a [geometry_msgs.Twist](http://docs.ros.org/api/geometry_msgs/html/msg/Twist.html) to [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg)
 
-
 ## Subscriptions
 
 | Topic                              | Type                | Description                 |

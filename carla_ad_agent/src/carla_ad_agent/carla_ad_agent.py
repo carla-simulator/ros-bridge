@@ -26,7 +26,6 @@ from ros_compatibility import (
     ros_shutdown)
 
 if ROS_VERSION == 1:
-    import rospy
     # TODO: different ways to import the carla_ad_agent submodules (e.g. carla_ad_agent.basic_agent) between ros1 and ros2 shouldn't be necessary
     from basic_agent import BasicAgent
 elif ROS_VERSION == 2:

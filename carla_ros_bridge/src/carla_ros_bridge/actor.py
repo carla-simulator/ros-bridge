@@ -11,8 +11,6 @@ Base Classes to handle Actor objects
 """
 
 from geometry_msgs.msg import TransformStamped  # pylint: disable=import-error
-from visualization_msgs.msg import Marker  # pylint: disable=import-error
-from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 from carla_ros_bridge.pseudo_actor import PseudoActor
 import carla_common.transforms as trans
 

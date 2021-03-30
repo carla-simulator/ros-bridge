@@ -46,13 +46,11 @@ from ros_compatibility import (
     loginfo,
     logwarn,
     ROS_VERSION)
-import os
 import datetime
 import math
 import numpy
 
 if ROS_VERSION == 1:
-    import rospy
     from rospy import Time
     from tf import LookupException
     from tf import ConnectivityException
@@ -68,8 +66,8 @@ elif ROS_VERSION == 2:
     from tf2_ros import ConnectivityException
     from tf2_ros import ExtrapolationException
     import tf2_ros
-    from rclpy.qos import QoSProfile, QoSDurabilityPolicy
-    from threading import Thread, Lock, Event
+    from rclpy.qos import QoSProfile
+    from threading import Thread
     from builtin_interfaces.msg import Time
 else:
     raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")

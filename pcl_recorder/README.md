@@ -1,6 +1,6 @@
 # Point Cloud Map Creation
 
-Create pointcloud maps for Carla Levels.
+Create point cloud maps for Carla Levels.
 
 The point clouds are created by driving around with an ego vehicle, using the autopilot functionality within the Carla PythonAPI.
 

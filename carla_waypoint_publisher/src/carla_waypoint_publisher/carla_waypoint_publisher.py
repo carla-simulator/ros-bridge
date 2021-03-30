@@ -20,7 +20,6 @@ Additionally, services are provided to interface CARLA waypoints.
 import math
 import sys
 import threading
-import os
 
 from ros_compatibility import (CompatibleNode,
                                QoSProfile,

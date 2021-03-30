@@ -11,13 +11,11 @@ low-level waypoint following based on PID controllers.
 """
 
 from collections import deque
-from geometry_msgs.msg import PointStamped, Pose  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
-from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION, ros_ok
+from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION
 from nav_msgs.msg import Path
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64
-from threading import Thread
 import time
 import math
 from visualization_msgs.msg import Marker

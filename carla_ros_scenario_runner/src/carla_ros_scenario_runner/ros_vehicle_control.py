@@ -25,7 +25,6 @@ if ROS_VERSION == 1:
     import roslaunch
 elif ROS_VERSION == 2:
     from carla_ros_scenario_runner.application_runner import ApplicationRunner
-    import rclpy
 
 
 class RosVehicleControl(BasicControl):
@@ -118,7 +117,7 @@ class RosVehicleControl(BasicControl):
         super(RosVehicleControl, self).update_waypoints(waypoints, start_time)
         self.node.loginfo("{}: Waypoints changed.".format(self._role_name))
         path = Path()
-        path.header.stamp = ros_timestamp(sec=self.node.get_time, from_sec=True)
+        path.header.stamp = ros_timestamp(sec=self.node.get_time(), from_sec=True)
         path.header.frame_id = "map"
         for wpt in waypoints:
             print(wpt)

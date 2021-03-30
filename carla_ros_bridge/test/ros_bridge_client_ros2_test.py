@@ -6,10 +6,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 import os
-import sys
 import unittest
-
-import ament_index_python
 
 import launch
 import launch.actions
@@ -26,7 +23,7 @@ from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2, Imu
 from geometry_msgs.msg import Quaternion, Vector3, Pose
 from nav_msgs.msg import Odometry
 from derived_object_msgs.msg import ObjectArray
-from visualization_msgs.msg import Marker, MarkerArray
+from visualization_msgs.msg import MarkerArray
 from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo,
                             CarlaActorList, CarlaTrafficLightStatusList,
                             CarlaTrafficLightInfoList)

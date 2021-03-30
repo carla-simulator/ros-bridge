@@ -7,6 +7,7 @@ It avoids crashs with other vehicles and respects the state of the traffic light
 For a more comprehensive solution, have a look at [Autoware](https://www.autoware.ai/).
 
 ## Subscriptions
+
 | Topic                              | Type                | Description                 |
 | ---------------------------------- | ------------------- | --------------------------- |
 | `/carla/<ROLE NAME>/waypoints` | [nav_msgs.Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) | Route to follow |
@@ -29,8 +30,6 @@ For risk avoidance, more subscriptions are required:
 | ---------------------------------- | ------------------- | --------------------------- |
 | `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs.CarlaEgoVehicleControl](https://github.com/carla-simulator/ros-carla-msgs/tree/master/msg/CarlaEgoVehicleControl.msg) | Vehicle control command |
 
-
-
 ## Local Planner Node
 
 Internally, the CARLA AD Agent uses a separate node for [local planning](src/carla_ad_agent/local_planner.py).
@@ -38,4 +37,3 @@ Internally, the CARLA AD Agent uses a separate node for [local planning](src/car
 This is currently optimized for `vehicle.tesla.model3`, as it does not have any gear shift delays.
 
 The PID parameters were gathered by [Ziegler-Nichols method](https://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method).
-

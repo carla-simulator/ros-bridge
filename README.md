@@ -9,7 +9,7 @@ This ROS package aims at providing a simple ROS/ROS2 bridge for CARLA simulator.
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-**This version requires CARLA 0.9.10**
+**This version requires CARLA 0.9.11**
 
 ## Features
 
@@ -57,13 +57,22 @@ The bridge is able to load a CARLA map by setting the launch-file parameter ```t
 
 ### Mode
 
-The bridge should only be used in CARLA synchronous mode.
+The bridge operates by default in CARLA synchronous mode, waiting for all sensor data that is expected within the current frame to ensure reproducible results. The bridge should only be used in this mode.
 
-CAUTION: Only the ros-bridge is allowed to tick. Other CARLA clients must passively wait.
-
-The bridge waits for all sensor data that is expected within the current frame to ensures reproducible results.
+**CAUTION**: In synchronous mode, only one CARLA client is allowed to tick. The ROS bridge will by default be the only client allowed to tick the CARLA server unless passive mode is enabled. Enabling passive mode will make the ROS bridge step back and allow another client to tick the CARLA server.
 
 Additionally you might set `synchronous_mode_wait_for_vehicle_control_command` to `true` to wait for a vehicle control command before executing the next tick.
+
+The usage of the asynchronous mode is discouraged. Users may enable this mode running the bridge in the following way:
+
+```sh
+# ROS1
+roslaunch carla_ros_bridge carla_ros_bridge.launch synchronous_mode:=False
+
+# ROS2
+ros2 launch carla_ros_bridge carla_ros_bridge.launch.py synchronous_mode:=False
+```
+
 
 ###### Control Synchronous Mode
 
