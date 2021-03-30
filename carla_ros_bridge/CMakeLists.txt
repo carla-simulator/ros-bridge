@@ -20,8 +20,8 @@ if(${ROS_VERSION} EQUAL 1)
 
   include_directories(${catkin_INCLUDE_DIRS})
 
-  install(PROGRAMS src/carla_ros_bridge/bridge.py
-          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  catkin_install_python(PROGRAMS src/carla_ros_bridge/bridge.py
+                        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   install(FILES src/carla_ros_bridge/CARLA_VERSION
           DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
