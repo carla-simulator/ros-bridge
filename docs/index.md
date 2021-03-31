@@ -32,4 +32,3 @@ The ROS bridge boasts the following features:
 
 - [__ROS Sensors__](ros_sensors.md)
 - [__ROS messages__](ros_msgs.md)
-- [__ROS launchfiles__](ros_launchfiles.md)
