@@ -27,15 +27,15 @@ __ 1.__ Make sure you have CARLA runing. Start the ROS bridge:
 
 ```sh
         # ROS 1
-        roslaunch carla_ros_bridge carla_ros_bridge.launch 
+        roslaunch carla_ros_bridge carla_ros_bridge.launch
 
         # ROS 2
         ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
 ```
 
 __2.__ Spawn objects:
-        
-```sh        
+
+```sh
         # ROS 1
         roslaunch carla_spawn_objects carla_spawn_objects.launch
 
