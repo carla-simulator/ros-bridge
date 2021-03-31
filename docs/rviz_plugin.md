@@ -15,7 +15,7 @@ The [RVIZ plugin](https://github.com/carla-simulator/ros-bridge/tree/master/rviz
 
 ![ros_rviz](images/ros_rviz.png)
 
-The RVIZ plugin expects an ego vehicle named `ego_vehicle`. To see an example of ROS-bridge working with RVIZ, execute the following the commands with a CARLA server running:
+The RVIZ plugin expects an ego vehicle named `ego_vehicle`. To see an example of ROS-bridge working with RVIZ, execute the following commands with a CARLA server running:
 
 __1.__ Start the ROS bridge with RVIZ enabled:
 
