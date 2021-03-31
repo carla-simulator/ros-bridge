@@ -29,22 +29,22 @@ Objects and their attached sensors are defined through a `.json` file. The defau
 You can find an example in the [ros-bridge repository][objectsjson] as well as follow this outline to create your own configuration and sensor setup:
 
 ```json
-{   
-"objects": 
+{
+"objects":
     [
         {
             "type": "<SENSOR-TYPE>",
             "id": "<NAME>",
             "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
             <ADDITIONAL-SENSOR-ATTRIBUTES>
-        },       
+        },
         {
             "type": "<VEHICLE-TYPE>",
             "id": "<VEHICLE-NAME>",
             "spawn_point": {"x": -11.1, "y": 138.5, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": -178.7},
-            "sensors": 
+            "sensors":
                 [
-                <SENSORS-TO-ATTACH-TO-VEHICLE>    
+                <SENSORS-TO-ATTACH-TO-VEHICLE>
                 ]
         }
         ...
@@ -56,7 +56,7 @@ You can find an example in the [ros-bridge repository][objectsjson] as well as f
 !!! Note
     Remember when directly defining positions that ROS uses a [right hand system](https://www.ros.org/reps/rep-0103.html#chirality)
 
-All sensor attributes are defined as described in the [blueprint library](https://carla.readthedocs.io/en/latest/bp_library/). 
+All sensor attributes are defined as described in the [blueprint library](https://carla.readthedocs.io/en/latest/bp_library/).
 
 [objectsjson]: https://github.com/carla-simulator/ros-bridge/blob/master/carla_spawn_objects/config/objects.json
 
@@ -80,7 +80,7 @@ All sensor attributes are defined as described in the [blueprint library](https:
             {
             "type": "vehicle.*",
             "id": "ego_vehicle",
-            "spawn_point": {"x": -11.1, "y": 138.5, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": -178.7},        
+            "spawn_point": {"x": -11.1, "y": 138.5, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": -178.7},
             }
 
 ### Respawning vehicles
@@ -92,13 +92,13 @@ A vehicle can be respawned to a different location during a simulation by publis
         {
         "type": "vehicle.*",
         "id": "ego_vehicle",
-        "sensors": 
+        "sensors":
         [
             {
             "type": "actor.pseudo.control",
             "id": "control"
             }
-        ]                
+        ]
         }
 
 2. Launch the `set_inital_pose` node, passing the `<CONTROLLER_ID>` as an argument to the ROS parameter `controller_id` (default = 'control'):
@@ -126,7 +126,7 @@ Sensors can be attached to an already existing vehicle. To do so:
         {
             "type": "sensor.pseudo.actor_list",
             "id": "actor_list"
-        },                
+        },
 
 2. Define the rest of the sensors as required.
 3. Launch the node with the `spawn_sensors_only` parameter set to True. This will check if an actor with the same `id` and `type` as the one specified in the `.json` file is already active and if so, attach the sensors to this actor.
