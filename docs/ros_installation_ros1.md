@@ -135,7 +135,7 @@ __4.__ Start the ROS bridge. Use any of the different launch files available to 
     # Option 1: start the ros bridge
     roslaunch carla_ros_bridge carla_ros_bridge.launch
 
-    # Option 3: start the ros bridge together with an example ego vehicle
+    # Option 2: start the ros bridge together with an example ego vehicle
     roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
 ```
 
