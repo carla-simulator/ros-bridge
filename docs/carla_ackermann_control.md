@@ -6,8 +6,10 @@ The [`carla_ackermann_control` package](https://github.com/carla-simulator/ros-b
 [carlaegovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#carlaegovehiclecontrolmsg
 
 - [__Configuration__](#configuration)
-- [__Available Topics__](#available-topics)
 - [__Testing control messages__](#testing-control-messages)
+- [__ROS API__](#ros-api)
+    - [Subscriptions](#subscriptions)
+    - [Publications](#publications)
 
 ---
 
@@ -17,19 +19,6 @@ Parameters can be set both initially in a [configuration file][ackermanconfig] a
 
 [ackermanconfig]: https://github.com/carla-simulator/ros-bridge/blob/master/carla_ackermann_control/config/settings.yaml
 [rosdynamicreconfig]: https://wiki.ros.org/dynamic_reconfigure
-
----
-
-### Available topics
-
-|Topic|Type|Description|
-|--|--|--|
-|`/carla/<ROLE NAME>/ackermann_cmd` | [ackermann_msgs.AckermannDrive][ackermanncontrolmsg] | __Subscriber__ for steering commands |
-| `/carla/<ROLE NAME>/ackermann_control/control_info` | [carla_ackermann_control.EgoVehicleControlInfo][egovehiclecontrolmsg] | The current values used within the controller (useful for debugging) |
-
-[egovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#egovehiclecontrolinfomsg
-
-<br>
 
 ---
 
@@ -58,3 +47,25 @@ rostopic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{st
 ros2 topic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 1.22, steering_angle_velocity: 0.0, speed: 10, acceleration: 0.0, jerk: 0.0}" -r 10
 
 ```
+
+---
+
+### ROS API
+
+#### Subscriptions
+
+|Topic|Type|Description|
+|--|--|--|
+|`/carla/<ROLE NAME>/ackermann_cmd` | [ackermann_msgs.AckermannDrive][ackermanncontrolmsg] | __Subscriber__ for steering commands |
+
+<br>
+
+#### Publications
+
+|Topic|Type|Description|
+|--|--|--|
+| `/carla/<ROLE NAME>/ackermann_control/control_info` | [carla_ackermann_control.EgoVehicleControlInfo][egovehiclecontrolmsg] | The current values used within the controller (useful for debugging) |
+
+[egovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#egovehiclecontrolinfomsg
+
+<br>

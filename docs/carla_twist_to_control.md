@@ -2,7 +2,8 @@
 
 The [`carla_twist_to_control` package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_twist_to_control) converts a [geometry_msgs.Twist](https://docs.ros.org/en/api/geometry_msgs/html/msg/Twist.html) to [carla_msgs.CarlaEgoVehicleControl](ros_msgs.md#carlaegovehiclecontrolmsg).
 
-## Subscriptions and publications
+---
+## ROS API
 
 ### Subscriptions
 

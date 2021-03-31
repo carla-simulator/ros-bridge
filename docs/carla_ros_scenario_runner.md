@@ -5,9 +5,9 @@ The [CARLA ROS Scenario Runner package](https://github.com/carla-simulator/ros-b
 - [__Before you begin__](#before-you-begin)
 - [__Using ROS Scenario Runner__](#using-ros-scenario-runner)
 - [__Run ROS Scenario Runner__](#run-ros-scenario-runner)
-- [__Services and topics__](#services-and-topics)
+- [__ROS API__](#ros-api)
     - [Services](#services)
-    - [Topics](#topics)
+    - [Publications](#publications)
 
 ---
 
@@ -74,7 +74,7 @@ ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_ty
 
 ---
 
-## Services and topics
+## ROS API
 
 ### Services
 
@@ -84,7 +84,7 @@ ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_ty
 
 <br>
 
-### Topics
+### Publications
 
 | Topic | Type | Description |
 |-------|------|-------------|

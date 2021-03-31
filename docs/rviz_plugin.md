@@ -4,7 +4,7 @@ The [RVIZ plugin](https://github.com/carla-simulator/ros-bridge/tree/master/rviz
 
 - [__Run ROS bridge with RVIZ__](#run-ros-bridge-with-rviz)
 - [__Features of the RVIZ plugin__](#features-of-the-rviz-plugin)
-- [__RVIZ plugin subscriptions, publications and services__](#rviz-plugin-subscriptions-publications-and-services)
+- [__ROS API__](#ros-api)
     - [Subscriptions](#subscriptions)
     - [Publications](#publications)
     - [Services](#services)
@@ -60,7 +60,7 @@ __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B
 
 ---
 
-## RVIZ plugin subscriptions, publications and services
+## ROS API
 
 #### Subscriptions
 

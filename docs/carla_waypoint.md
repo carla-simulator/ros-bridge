@@ -6,7 +6,7 @@ The [CARLA Waypoint Publisher](https://github.com/carla-simulator/ros-bridge/tre
 - [__Run the Waypoint Publisher__](#run-the-waypoint-publisher)
     - [Set a goal](#set-a-goal)
 - [__Using the Waypoint Publisher__](#using-the-waypoint-publisher)
-- [__Publications and services__](#publications-and-services)
+- [__ROS API__](#ros-api)
     - [Publications](#publications)
     - [Services](#services)
 ---
@@ -49,7 +49,7 @@ The [CARLA AD demo](carla_ad_demo.md) uses the Waypoint Publisher to plan a rout
 
 ---
 
-## Publications and services
+## ROS API
 
 #### Publications
 
