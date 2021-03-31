@@ -1,6 +1,6 @@
 # Carla ROS Scenario Runner
 
-The [CARLA ROS Scenario Runner package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ros_scenario_runner) is a wrapper to execute [OpenScenarios](https://www.asam.net/standards/detail/openscenario/) with the CARLA [Scenario Runner](https://github.com/carla-simulator/scenario_runner) via ROS. 
+The [CARLA ROS Scenario Runner package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ros_scenario_runner) is a wrapper to execute [OpenScenarios](https://www.asam.net/standards/detail/openscenario/) with the CARLA [Scenario Runner](https://github.com/carla-simulator/scenario_runner) via ROS.
 
 - [__Before you begin__](#before-you-begin)
 - [__Using ROS Scenario Runner__](#using-ros-scenario-runner)
@@ -23,7 +23,7 @@ sudo apt install python-pexpect
 
 ## Using ROS Scenario Runner
 
-The ROS Scenario Runer is best used from within the [`rviz_carla_plugin`](rviz_plugin.md).  
+The ROS Scenario Runner is best used from within the [`rviz_carla_plugin`](rviz_plugin.md).
 
 !!! Note
     It is currently not supported to change the map. Each scenario will need to use the currently active map.
@@ -46,13 +46,7 @@ The above code example shows an instance of [`carla_ad_agent`](carla_ad_agent.md
 
 ## Run ROS Scenario Runner
 
-__1.__ Export the environment variables:
-
-```sh
-export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
-```
-
-__2.__ Run the ROS Scenario Runner package:
+__1.__ Run the ROS Scenario Runner package:
 
 ```sh
 # ROS 1
@@ -62,7 +56,7 @@ roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_ru
 ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py scenario_runner_path:=<path_to_scenario_runner>
 ```
 
-__3.__ Run a scenario:
+__2.__ Run a scenario:
 
 ```sh
 # ROS 1
