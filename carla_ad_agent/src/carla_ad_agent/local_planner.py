@@ -23,12 +23,10 @@ from visualization_msgs.msg import Marker
 import os
 ROS_VERSION = int(os.environ['ROS_VERSION'])
 
-if ROS_VERSION == 1:
-    from vehicle_pid_controller import VehiclePIDController
-    from misc import distance_vehicle
-elif ROS_VERSION == 2:
-    from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
-    from carla_ad_agent.misc import distance_vehicle
+from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
+from carla_ad_agent.misc import distance_vehicle
+
+if ROS_VERSION == 2:
     import rclpy
 
 

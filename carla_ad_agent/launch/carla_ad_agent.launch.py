@@ -46,7 +46,7 @@ def generate_launch_description():
         ),
         launch_ros.actions.Node(
             package='carla_ad_agent',
-            executable='carla_ad_agent',
+            executable='ad_agent',
             name=['carla_ad_agent_', launch.substitutions.LaunchConfiguration('role_name')],
             output='screen',
             parameters=[

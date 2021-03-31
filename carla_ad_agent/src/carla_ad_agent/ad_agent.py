@@ -25,12 +25,10 @@ from ros_compatibility import (
     loginfo,
     ros_shutdown)
 
-if ROS_VERSION == 1:
-    # TODO: different ways to import the carla_ad_agent submodules (e.g. carla_ad_agent.basic_agent) between ros1 and ros2 shouldn't be necessary
-    from basic_agent import BasicAgent
-elif ROS_VERSION == 2:
+from carla_ad_agent.basic_agent import BasicAgent
+
+if ROS_VERSION == 2:
     import rclpy
-    from carla_ad_agent.basic_agent import BasicAgent
 
 
 class CarlaAdAgent(CompatibleNode):

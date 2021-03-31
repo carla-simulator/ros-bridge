@@ -22,11 +22,10 @@ from ros_compatibility import (
     get_service_request,
     ROS_VERSION)
 
-if ROS_VERSION == 1:
-    from agent import Agent, AgentState  # pylint: disable=relative-import
-elif ROS_VERSION == 2:
+from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
+
+if ROS_VERSION == 2:
     from rclpy.callback_groups import ReentrantCallbackGroup
-    from carla_ad_agent.agent import Agent, AgentState  # pylint: disable=relative-import
 
 
 class BasicAgent(Agent):
