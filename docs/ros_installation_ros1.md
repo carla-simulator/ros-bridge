@@ -121,7 +121,14 @@ __1.__ Start a CARLA server according to the installation method used to install
     make launch
 ```
 
-__2.__ Add the source path for the ROS bridge workspace according to the installation method of the ROS bridge. This should be done in every terminal each time you want to run the ROS bridge: 
+__2.__ Add the correct CARLA modules to your Python path:
+
+```sh
+        export CARLA_ROOT=<path-to-carla>
+        export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:$CARLA_ROOT/PythonAPI/carla
+```
+
+__3.__ Add the source path for the ROS bridge workspace according to the installation method of the ROS bridge. This should be done in every terminal each time you want to run the ROS bridge: 
 
 ```sh
     # For debian installation of ROS bridge. Change the command according to your installed version of ROS.
@@ -134,7 +141,7 @@ __2.__ Add the source path for the ROS bridge workspace according to the install
 !!! Important
     The source path can be set permanently, but it will cause conflict when working with another workspace.  
 
-__3.__ Start the ROS bridge. Use any of the different launch files available to check the installation: 
+__4.__ Start the ROS bridge. Use any of the different launch files available to check the installation: 
 
 ```sh
     # Option 1: start the ros bridge

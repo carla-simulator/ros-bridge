@@ -10,14 +10,9 @@ The [AD demo](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ad
 
 ## Before you begin
 
-Make sure your Python path is configured correctly to point to the correct version of CARLA:
+Install [Scenario Runner](https://carla-scenariorunner.readthedocs.io/en/latest/getting_scenariorunner/) and follow the Scenario Runner ["Getting Started" tutorial](https://github.com/carla-simulator/scenario_runner/blob/master/Docs/getting_started.md) to verify that it's working. 
 
-```sh
-export PYTHONPATH=$PYTHONPATH:<path_to_carla>/PythonAPI/carla-<carla_version_and_arch>.egg:<path_to_carla>/PythonAPI/carla/
-```
-
-You will need to install [Scenario Runner ](https://carla-scenariorunner.readthedocs.io/en/latest/getting_scenariorunner/). Follow the 
-Scenario Runner ["Getting Started" tutorial](https://github.com/carla-simulator/scenario_runner/blob/master/Docs/getting_started.md) to verify that it's working. Set an environment variable to find it:
+Set an environment variable to find the Scenario Runner installation:
 
 ```sh
 export SCENARIO_RUNNER_PATH=<path_to_scenario_runner>
