@@ -2,22 +2,12 @@
 
 The [CARLA Waypoint Publisher](https://github.com/carla-simulator/ros-bridge/tree/master/carla_waypoint_publisher) makes waypoint calculations available to the ROS context and provides services to query CARLA waypoints. To find out more about waypoints, see the CARLA [documentation](https://carla.readthedocs.io/en/latest/core_map/#navigation-in-carla).
 
-- [__Before you begin__](#before-you-begin)
 - [__Run the Waypoint Publisher__](#run-the-waypoint-publisher)
     - [Set a goal](#set-a-goal)
 - [__Using the Waypoint Publisher__](#using-the-waypoint-publisher)
 - [__ROS API__](#ros-api)
     - [Publications](#publications)
     - [Services](#services)
----
-
-## Before you begin
-
-The Waypoint Publisher requires some functionality of the Python API that is not included in the Python `.egg` file. To include this functionality, extend your Python path with the following command:
-
-```sh
-export PYTHONPATH=$PYTHONPATH:<path-to-carla>/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:<path-to-carla>/PythonAPI/carla/
-```
 
 ---
 
