@@ -25,9 +25,9 @@ The command to run depends on whether you installed ROS via the Debian package o
 
 ```sh
     # For debian installation of ROS bridge. Change the command according to your installed version of ROS.
-    source /opt/carla-ros-bridge/<kinetic/melodic/noetic>/setup.bash
+    source /opt/carla-ros-bridge/<melodic/noetic>/setup.bash
 
-    # For GitHub repository installation of ROS bridge 
+    # For GitHub repository installation of ROS bridge
     source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
 ```
 
@@ -60,16 +60,16 @@ There are other launchfiles that combine the above functionality of starting the
 
 Configuration settings can be modified in [`ros-bridge/carla_ros_bridge/config/settings.yaml`](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ros_bridge/config/settings.yaml). The following settings are available:
 
-* __use_sim_time__: This should be set to __True__ to ensure that ROS is using simulation time rather than system time. This parameter will synchronize the ROS [`/clock`][ros_clock] topic with CARLA simulation time. 
-*  __host and port__: Network settings to connect to CARLA using a Python client.  
+* __use_sim_time__: This should be set to __True__ to ensure that ROS is using simulation time rather than system time. This parameter will synchronize the ROS [`/clock`][ros_clock] topic with CARLA simulation time.
+*  __host and port__: Network settings to connect to CARLA using a Python client.
 * __timeout__: Time to wait for a successful connection to the server.
-* __passive__: Passive mode is for use in scynchronous mode. When enabled, the ROS bridge will take a backseat and another client __must__ tick the world. ROS bridge will wait for all expected data from all sensors to be received. 
+* __passive__: Passive mode is for use in scynchronous mode. When enabled, the ROS bridge will take a backseat and another client __must__ tick the world. ROS bridge will wait for all expected data from all sensors to be received.
 *  __synchronous_mode__:
-	*  __If false (default)__: Data is published on every `world.on_tick()` and every `sensor.listen()` callback.  
-	*  __If true__: ROS bridge waits for all the sensor messages expected before the next tick. This might slow down the overall simulation but ensures reproducible results.  
-*  __synchronous_mode_wait_for_vehicle_control_command__: In synchronous mode, pauses the tick until a vehicle control is completed. 
-*  __fixed_delta_seconds__: Simulation time (delta seconds) between simulation steps. __It must be lower than 0.1__. Take a look at the [documentation](https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/) to learn more about this.  
-*  __ego_vehicle__: Role names to identify ego vehicles. Relevant topics will be created so these vehicles will be able to be controlled from ROS.  
+	*  __If false (default)__: Data is published on every `world.on_tick()` and every `sensor.listen()` callback.
+	*  __If true__: ROS bridge waits for all the sensor messages expected before the next tick. This might slow down the overall simulation but ensures reproducible results.
+*  __synchronous_mode_wait_for_vehicle_control_command__: In synchronous mode, pauses the tick until a vehicle control is completed.
+*  __fixed_delta_seconds__: Simulation time (delta seconds) between simulation steps. __It must be lower than 0.1__. Take a look at the [documentation](https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/) to learn more about this.
+*  __ego_vehicle__: Role names to identify ego vehicles. Relevant topics will be created so these vehicles will be able to be controlled from ROS.
 
 [ros_clock]: https://wiki.ros.org/Clock
 
@@ -83,8 +83,8 @@ When running multiple clients in synchronous mode, only one client is allowed to
 
 If the ROS bridge is not in passive mode (ROS bridge is the one ticking the world), then there are two ways to send step controls to the server:
 
-- Send a message to the topic `/carla/control` with a [`carla_msgs.CarlaControl`](ros_msgs.md#carlacontrolmsg) message. 
-- Use the [Control rqt plugin](rqt_plugin.md). This plugin launches a new window with a simple interface. It is then used to manage the steps and publish in the `/carla/control` topic. To use it, run the following command with CARLA in synchronous mode:  
+- Send a message to the topic `/carla/control` with a [`carla_msgs.CarlaControl`](ros_msgs.md#carlacontrolmsg) message.
+- Use the [Control rqt plugin](rqt_plugin.md). This plugin launches a new window with a simple interface. It is then used to manage the steps and publish in the `/carla/control` topic. To use it, run the following command with CARLA in synchronous mode:
 ```sh
     rqt --standalone rqt_carla_control
 ```
@@ -122,7 +122,7 @@ __2.__ In another terminal, publish to the topic `/carla/<ROLE NAME>/vehicle_con
 
     # for ros2
     ros2 topic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
-    
+
 ```
 
 The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`. Static information about the vehicle can be received via `/carla/<ROLE NAME>/vehicle_info`.
@@ -167,10 +167,3 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 | `/carla/spawn_object` | [carla_msgs/SpawnObject.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/SpawnObject.srv) | Spawn an object |
 
 ---
-
-
-
-
-
-
- 
