@@ -20,31 +20,41 @@ The RVIZ plugin expects an ego vehicle named `ego_vehicle`. To see an example of
 __1.__ Start the ROS bridge with RVIZ enabled:
 
 ```sh
-        # ROS 1
-        roslaunch carla_ros_bridge carla_ros_bridge_with_rviz.launch
+# ROS 1
+roslaunch carla_ros_bridge carla_ros_bridge.launch
 
-        # ROS 2
-        ros2 launch carla_ros_bridge carla_ros_bridge_with_rviz.launch.py
+# ROS 2
+ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
+```
+
+__2.__ Start RVIZ:
+
+```sh
+# ROS 1
+rosrun rviz rviz
+
+# ROS 2
+ros2 run rviz2 rviz2
 ```
 
 __2.__ Spawn an ego vehicle with the `carla_spawn_objects` package:
 
 ```sh
-        # ROS 1
-        roslaunch carla_spawn_objects carla_spawn_objects.launch
+# ROS 1
+roslaunch carla_spawn_objects carla_spawn_objects.launch
 
-        # ROS 2
-        ros2 launch carla_spawn_objects carla_spawn_objects.launch.py
+# ROS 2
+ros2 launch carla_spawn_objects carla_spawn_objects.launch.py
 ```
 
 __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B` to enable manual steering):
 
 ```sh
-        # ROS 1
-        roslaunch carla_manual_control carla_manual_control.launch
+# ROS 1
+roslaunch carla_manual_control carla_manual_control.launch
 
-        # ROS 2
-        ros2 launch carla_manual_control carla_manual_control.launch.py
+# ROS 2
+ros2 launch carla_manual_control carla_manual_control.launch.py
 ```
 
 ---
