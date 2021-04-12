@@ -53,7 +53,7 @@ class CarlaWalkerAgent(CompatibleNode):
 
         # wait for ros bridge to create relevant topics
         try:
-            self.wait_for_one_message(
+            self.wait_for_message(
                 "/carla/{}/odometry".format(role_name), Odometry)
         except ROSInterruptException as e:
             if not ros_ok:

@@ -109,14 +109,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         carla_waypoint = self.map.get_waypoint(carla_position)
 
         response = get_service_response(GetWaypoint)
-        response.waypoint.pose.position.x = carla_waypoint.transform.location.x
-        response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
-        response.waypoint.pose.position.z = carla_waypoint.transform.location.z
+        response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
         response.waypoint.is_junction = carla_waypoint.is_junction
         response.waypoint.road_id = carla_waypoint.road_id
         response.waypoint.section_id = carla_waypoint.section_id
         response.waypoint.lane_id = carla_waypoint.lane_id
-        #self.logwarn("Get waypoint {}".format(response.waypoint.pose.position))
         return response
 
     def get_actor_waypoint(self, req, response=None):
@@ -238,7 +235,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo,
+            self.wait_for_message("/carla/world_info", CarlaWorldInfo,
                                       qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=15.0)
         except ROSException as e:
             self.logerr("Error while waiting for world info: {}".format(e))

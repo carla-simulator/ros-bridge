@@ -68,7 +68,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
     def spawn_object(self, spawn_object_request):
         response_id = -1
-        response = self.call_service(self.spawn_object_service, spawn_object_request)
+        response = self.call_service(self.spawn_object_service, spawn_object_request, spin_until_response_received=True)
         response_id = response.id
         if response_id != -1:
             self.loginfo("Object (type='{}', id='{}') spawned successfully as {}.".format(
@@ -118,7 +118,7 @@ class CarlaSpawnObjects(CompatibleNode):
 
         if self.spawn_sensors_only is True:
             # get vehicle id from topic /carla/actor_list for all vehicles listed in config file
-            actor_info_list = self.wait_for_one_message("/carla/actor_list", CarlaActorList)
+            actor_info_list = self.wait_for_message("/carla/actor_list", CarlaActorList)
             for vehicle in vehicles:
                 for actor_info in actor_info_list.actors:
                     if actor_info.type == vehicle["type"] and actor_info.rolename == vehicle["id"]:
@@ -326,7 +326,7 @@ class CarlaSpawnObjects(CompatibleNode):
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5)
+                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.vehicles_sensors = []
 
@@ -335,7 +335,7 @@ class CarlaSpawnObjects(CompatibleNode):
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5)
+                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.global_sensors = []
 
@@ -344,7 +344,7 @@ class CarlaSpawnObjects(CompatibleNode):
                 destroy_object_request = get_service_request(DestroyObject)
                 destroy_object_request.id = player_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5)
+                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(player_id))
             self.players = []
         except ServiceException:

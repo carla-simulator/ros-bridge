@@ -9,30 +9,27 @@
 Base class for agent
 """
 
-from carla_waypoint_types.srv import GetWaypoint  # pylint: disable=import-error
-from carla_msgs.msg import CarlaTrafficLightStatusList, CarlaWorldInfo  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaTrafficLightStatus  # pylint: disable=import-error
-from nav_msgs.msg import Odometry
-from visualization_msgs.msg import Marker
-from enum import Enum
+import enum
 import math
-import time
-from transforms3d.euler import quat2euler
+
+import carla
+
 from ros_compatibility import (
+    CompatibleNode,
     ros_ok,
     ServiceException,
-    QoSProfile,
-    latch_on,
-    get_service_request,
-    ROS_VERSION)
+    get_service_request)
 
-from carla_ad_agent.misc import is_within_distance_ahead, compute_magnitude_angle   # pylint: disable=relative-import
+import carla_common.transforms as trans
 
-if ROS_VERSION == 2:
-    from rclpy import spin_once
+from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaTrafficLightStatus
+from carla_waypoint_types.srv import GetWaypoint
+from derived_object_msgs.msg import Object
+
+from carla_ad_agent.misc import is_within_distance_ahead  # pylint: disable=relative-import
 
 
-class AgentState(Enum):
+class AgentState(enum.Enum):
     """
     AGENT_STATE represents the possible states of a roaming agent
     """
@@ -41,287 +38,177 @@ class AgentState(Enum):
     BLOCKED_RED_LIGHT = 3
 
 
-class Agent(object):
+class Agent(CompatibleNode):
     """
     Base class for agent
     """
 
-    def __init__(self, role_name, vehicle_id, avoid_risk, node):
-        """
-        """
-        self.node = node
-        self._proximity_threshold = 10.0  # meters
-        self._map_name = None
-        self._vehicle_location = None
-        self._vehicle_yaw = None
-        self._vehicle_id = vehicle_id
-        self._last_traffic_light = None
-        self._target_route_point = None
+    OBJECT_VEHICLE_CLASSIFICATION = [
+        Object.CLASSIFICATION_CAR,
+        Object.CLASSIFICATION_BIKE,
+        Object.CLASSIFICATION_MOTORCYCLE,
+        Object.CLASSIFICATION_TRUCK,
+        Object.CLASSIFICATION_OTHER_VEHICLE
+    ]
 
-        self._odometry_subscriber = self.node.create_subscriber(
-            Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
-        # wait for first odometry update
-        self.node.logwarn('Agent waiting for odometry  message')
-        while self._vehicle_location is None:
-            time.sleep(0.05)
-            if ROS_VERSION == 2:
-                spin_once(node, timeout_sec=0)
-        self.node.logwarn('Odometry message received')
+    def __init__(self, name="agent"):
+        super(Agent, self).__init__(name)
 
-        if avoid_risk:
-            self._get_waypoint_client = node.create_service_client(
-                '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name), GetWaypoint)
+        self._proximity_tlight_threshold = 10.0  # meters
+        self._proximity_vehicle_threshold = 12.0  # meters
 
-            self._traffic_lights = []
-            self._traffic_light_status_subscriber = node.create_subscriber(CarlaTrafficLightStatusList,
-                                                                           "/carla/traffic_lights/status", self.traffic_lights_updated,
-                                                                           qos_profile=QoSProfile(depth=10, durability=latch_on))
-            self._target_point_subscriber = node.create_subscriber(
-                Marker, "/carla/{}/next_target".format(role_name), self.target_point_updated)
-            world_info = node.wait_for_one_message(
-                "/carla/world_info", CarlaWorldInfo, qos_profile=QoSProfile(depth=1, durability=latch_on))
-            self._map_name = world_info.map_name
+        role_name = self.get_param("role_name", "ego_vehicle")
+        vehicle_info = self.wait_for_message(
+            "/carla/{}/vehicle_info".format(role_name),
+            CarlaEgoVehicleInfo)
+        self._ego_vehicle_id = vehicle_info.id
 
-    def traffic_lights_updated(self, traffic_lights):
-        """
-        callback on new traffic light list
-        Only used if risk should be avoided.
-        """
-        self._traffic_lights = traffic_lights.traffic_lights
-
-    def target_point_updated(self, new_target_point):
-        self._target_route_point = new_target_point.pose.position
-
-    def odometry_updated(self, odo):
-        """
-        callback on new odometry
-        """
-        self._vehicle_location = odo.pose.pose.position
-        quaternion = (
-            odo.pose.pose.orientation.w,
-            odo.pose.pose.orientation.x,
-            odo.pose.pose.orientation.y,
-            odo.pose.pose.orientation.z
-        )
-        _, _, self._vehicle_yaw = quat2euler(quaternion)
-
-    def _is_light_red(self, lights_list):
-        """
-        Method to check if there is a red light affecting us. This version of
-        the method is compatible with both European and US style traffic lights.
-
-        :param lights_list: list containing TrafficLight objects
-        :return: a tuple given by (bool_flag, traffic_light), where
-                 - bool_flag is True if there is a traffic light in RED
-                   affecting us and False otherwise
-                 - traffic_light is the object itself or None if there is no
-                   red traffic light affecting us
-        """
-        if self._map_name == 'Town01' or self._map_name == 'Town02':
-            return self._is_light_red_europe_style(lights_list)
-        else:
-            return self._is_light_red_us_style(lights_list)
-
-    def _is_light_red_europe_style(self, lights_list):
-        """
-        This method is specialized to check European style traffic lights.
-
-        :param lights_list: list containing TrafficLight objects
-        :return: a tuple given by (bool_flag, traffic_light), where
-                 - bool_flag is True if there is a traffic light in RED
-                  affecting us and False otherwise
-                 - traffic_light is the object itself or None if there is no
-                   red traffic light affecting us
-        """
-        if self._vehicle_location is None:
-            # no available self location yet
-            return (False, None)
-
-        ego_vehicle_location = get_service_request(GetWaypoint)
-        ego_vehicle_location.location = self._vehicle_location
-        ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
-        if not ego_vehicle_waypoint:
-            if ros_ok():
-                self.node.logwarn("Could not get waypoint for ego vehicle.")
-            return (False, None)
-
-        for traffic_light in lights_list:
-            object_waypoint = traffic_light[1]
-            if object_waypoint.road_id != ego_vehicle_waypoint.road_id or \
-                    object_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
-                continue
-            if is_within_distance_ahead(object_waypoint.pose.position, ego_vehicle_location.location,
-                                        math.degrees(self._vehicle_yaw),
-                                        self._proximity_threshold):
-                traffic_light_state = CarlaTrafficLightStatus.RED
-                for status in self._traffic_lights:
-                    if status.id == traffic_light[0]:
-                        traffic_light_state = status.state
-                        break
-                if traffic_light_state == CarlaTrafficLightStatus.RED:
-                    return (True, traffic_light[0])
-
-        return (False, None)
+        self._get_waypoint_client = self.create_service_client(
+            '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name),
+            GetWaypoint)
 
     def get_waypoint(self, location):
         """
-        Helper to get waypoint for location via ros service.
-        Only used if risk should be avoided.
+        Helper method to get a waypoint for a location.
+
+        :param location: location request
+        :type location: geometry_msgs/Point
+        :return: waypoint of the requested location
+        :rtype: carla_msgs/Waypoint
         """
         if not ros_ok():
             return None
         try:
-            response = self.node.call_service(self._get_waypoint_client, location)
+            request = get_service_request(GetWaypoint)
+            request.location = location
+            response = self.call_service(self._get_waypoint_client, request)
             return response.waypoint
         except ServiceException as e:
             if ros_ok():
-                self.node.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
+                self.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
 
-    def _is_light_red_us_style(self, lights_list):  # pylint: disable=too-many-branches
+    def run_step():
         """
-        This method is specialized to check US style traffic lights.
-
-        :param lights_list: list containing TrafficLight objects
-        :return: a tuple given by (bool_flag, traffic_light), where
-                 - bool_flag is True if there is a traffic light in RED
-                   affecting us and False otherwise
-                 - traffic_light is the object itself or None if there is no
-                   red traffic light affecting us
+        Executes one step of navigation.
         """
-        if self._vehicle_location is None:
-            # no available self location yet
-            return (False, None)
+        raise NotImplementedError
 
-        ego_vehicle_location = get_service_request(GetWaypoint)
-        ego_vehicle_location.location = self._vehicle_location
-        ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
-        if not ego_vehicle_waypoint:
-            if ros_ok():
-                self.node.logwarn("Could not get waypoint for ego vehicle.")
-            return (False, None)
-
-        if ego_vehicle_waypoint.is_junction:
-            # It is too late. Do not block the intersection! Keep going!
-            return (False, None)
-
-        if self._target_route_point is not None:
-            request = get_service_request(GetWaypoint)
-            request.location = self._target_route_point
-            target_waypoint = self.get_waypoint(request)
-            if not target_waypoint:
-                if ros_ok():
-                    self.node.logwarn("Could not get waypoint for target route point.")
-                return (False, None)
-            if target_waypoint.is_junction:
-                min_angle = 180.0
-                sel_magnitude = 0.0  # pylint: disable=unused-variable
-                sel_traffic_light = None
-                for traffic_light in lights_list:
-                    loc = traffic_light[1]
-                    magnitude, angle = compute_magnitude_angle(loc.pose.position,
-                                                               ego_vehicle_location.location,
-                                                               math.degrees(self._vehicle_yaw))
-                    if magnitude < 60.0 and angle < min(25.0, min_angle):
-                        sel_magnitude = magnitude
-                        sel_traffic_light = traffic_light[0]
-                        min_angle = angle
-
-                if sel_traffic_light is not None:
-                    # print('=== Magnitude = {} | Angle = {} | ID = {}'.format(
-                    #     sel_magnitude, min_angle, sel_traffic_light))
-
-                    if self._last_traffic_light is None:
-                        self._last_traffic_light = sel_traffic_light
-
-                    state = None
-                    for status in self._traffic_lights:
-                        if status.id == sel_traffic_light:
-                            state = status.state
-                            break
-                    if state is None:
-                        self.node.logwarn(
-                            "Couldn't get state of traffic light {}".format(
-                                sel_traffic_light))
-                        return (False, None)
-
-                    if state == CarlaTrafficLightStatus.RED:
-                        return (True, self._last_traffic_light)
-                else:
-                    self._last_traffic_light = None
-
-        return (False, None)
-
-    def _is_vehicle_hazard(self, vehicle_list, objects):
+    def _is_vehicle_hazard(self, ego_vehicle_pose, objects):
         """
-        Check if a given vehicle is an obstacle in our way. To this end we take
-        into account the road and lane the target vehicle is on and run a
-        geometry test to check if the target vehicle is under a certain distance
-        in front of our ego vehicle.
+        Checks whether there is a vehicle hazard.
 
-        WARNING: This method is an approximation that could fail for very large
-         vehicles, which center is actually on a different lane but their
-         extension falls within the ego vehicle lane.
+        This method only takes into account vehicles. Pedestrians are other types of obstacles are
+        ignored.
 
-        :param vehicle_list: list of potential obstacle to check
+        :param ego_vehicle_pose: current ego vehicle pose
+        :type ego_vehicle_pose: geometry_msgs/Pose
+        :param objects: list of objects
+        :type objects: derived_object_msgs/ObjectArray
         :return: a tuple given by (bool_flag, vehicle), where
                  - bool_flag is True if there is a vehicle ahead blocking us
                    and False otherwise
-                 - vehicle is the blocker object itself
+                 - vehicle is the blocker vehicle id
         """
-        if self._vehicle_location is None:
-            # no available self location yet
-            return (False, None)
 
-        ego_vehicle_location = get_service_request(GetWaypoint)
-        ego_vehicle_location.location = self._vehicle_location
-        ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_location)
-        if not ego_vehicle_waypoint:
-            if ros_ok():
-                self.node.logwarn("Could not get waypoint for ego vehicle.")
-            return (False, None)
+        ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_pose.position)
+        ego_vehicle_transform = trans.ros_pose_to_carla_transform(ego_vehicle_pose)
 
-        for target_vehicle_id in vehicle_list:
+        for target_vehicle_id, target_vehicle_object in objects.items():
+
+            # take into account only vehicles
+            if target_vehicle_object.classification not in self.OBJECT_VEHICLE_CLASSIFICATION:
+                continue
+
             # do not account for the ego vehicle
-            if target_vehicle_id == self._vehicle_id:
+            if target_vehicle_id == self._ego_vehicle_id:
                 continue
 
-            target_vehicle_location = None
-            for elem in objects:
-                if elem.id == target_vehicle_id:
-                    target_vehicle_location = elem.pose
-                    break
-
-            if not target_vehicle_location:
-                self.node.logwarn("Location of vehicle {} not found".format(target_vehicle_id))
+            target_vehicle_waypoint = self.get_waypoint(target_vehicle_object.pose.position)
+            if target_vehicle_waypoint is None:
                 continue
+            target_vehicle_transform = trans.ros_pose_to_carla_transform(target_vehicle_object.pose)
 
             # if the object is not in our lane it's not an obstacle
-            request = get_service_request(GetWaypoint)
-            request.location = target_vehicle_location.position
-            target_vehicle_waypoint = self.get_waypoint(request)
-            if not target_vehicle_waypoint:
-                if ros_ok():
-                    self.node.logwarn("Could not get waypoint for target vehicle.")
-                return (False, None)
             if target_vehicle_waypoint.road_id != ego_vehicle_waypoint.road_id or \
                     target_vehicle_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
                 continue
 
-            if is_within_distance_ahead(target_vehicle_location.position, self._vehicle_location,
-                                        math.degrees(self._vehicle_yaw),
-                                        self._proximity_threshold):
+            if is_within_distance_ahead(target_vehicle_transform,
+                                        ego_vehicle_transform,
+                                        self._proximity_vehicle_threshold):
                 return (True, target_vehicle_id)
 
         return (False, None)
 
-    def emergency_stop(self):  # pylint: disable=no-self-use
+    def _is_light_red(self, ego_vehicle_pose, lights_status, lights_info):
         """
-        Send an emergency stop command to the vehicle
-        :return:
+        Checks if there is a red light affecting us. This version of the method is compatible with
+        both European and US style traffic lights.
+        
+        :param ego_vehicle_pose: current ego vehicle pose
+        :type ego_vehicle_pose: geometry_msgs/Pose
+
+        :param lights_status: list containing all traffic light status.
+        :type lights_status: carla_msgs/CarlaTrafficLightStatusList
+
+        :param lights_info: list containing all traffic light info.
+        :type lights_info: lis.
+
+        :return: a tuple given by (bool_flag, traffic_light), where
+                 - bool_flag is True if there is a traffic light in RED
+                   affecting us and False otherwise
+                 - traffic_light is the traffic light id or None if there is no
+                   red traffic light affecting us.
         """
-        control = CarlaEgoVehicleControl()
-        control.steer = 0.0
-        control.throttle = 0.0
-        control.brake = 1.0
-        control.hand_brake = False
-        return control
+        ego_vehicle_waypoint = self.get_waypoint(ego_vehicle_pose.position)
+        ego_vehicle_transform = trans.ros_pose_to_carla_transform(ego_vehicle_pose)
+
+        for light_id in lights_status.keys():
+            object_location = self._get_trafficlight_trigger_location(lights_info[light_id])
+            object_location = trans.carla_location_to_ros_point(object_location)
+            object_waypoint = self.get_waypoint(object_location)
+            if object_waypoint is None:
+                continue
+            object_transform = trans.ros_pose_to_carla_transform(object_waypoint.pose)
+ 
+            if object_waypoint.road_id != ego_vehicle_waypoint.road_id:
+                continue
+
+            ve_dir = ego_vehicle_transform.get_forward_vector()
+            wp_dir = object_transform.get_forward_vector()
+
+            dot_ve_wp = ve_dir.x * wp_dir.x + ve_dir.y * wp_dir.y + ve_dir.z * wp_dir.z
+
+            if dot_ve_wp < 0:
+                continue
+
+            if is_within_distance_ahead(object_transform,
+                                        ego_vehicle_transform,
+                                        self._proximity_tlight_threshold):
+                if lights_status[light_id].state == CarlaTrafficLightStatus.RED or \
+                    lights_status[light_id].state == CarlaTrafficLightStatus.YELLOW:
+                    return (True, light_id)
+
+        return (False, None)
+
+    def _get_trafficlight_trigger_location(self, light_info):  # pylint: disable=no-self-use
+
+        def rotate_point(point, radians):
+            """
+            rotate a given point by a given angle
+            """
+            rotated_x = math.cos(radians) * point.x - math.sin(radians) * point.y
+            rotated_y = math.sin(radians) * point.x + math.cos(radians) * point.y
+
+            return carla.Vector3D(rotated_x, rotated_y, point.z)
+
+        base_transform = trans.ros_pose_to_carla_transform(light_info.transform)
+        base_rot = base_transform.rotation.yaw
+        area_loc = base_transform.transform(
+            trans.ros_point_to_carla_location(light_info.trigger_volume.center))
+        area_ext = light_info.trigger_volume.size
+
+        point = rotate_point(carla.Vector3D(0, 0, area_ext.z / 2.0), math.radians(base_rot))
+        point_location = area_loc + carla.Location(x=point.x, y=point.y)
+
+        return carla.Location(point_location.x, point_location.y, point_location.z)

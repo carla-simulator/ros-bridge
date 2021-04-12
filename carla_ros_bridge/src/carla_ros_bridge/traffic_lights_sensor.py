@@ -45,12 +45,11 @@ class TrafficLightsSensor(PseudoActor):
                                                   node=node)
 
         self.actor_list = actor_list
-        self.traffic_light_status = CarlaTrafficLightStatusList()
-        self.traffic_light_actors = []
 
         self.traffic_lights_info_publisher = node.new_publisher(
             CarlaTrafficLightInfoList,
-            self.get_topic_prefix() + "/info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+            self.get_topic_prefix() + "/info",
+            qos_profile=QoSProfile(depth=10, durability=latch_on))
         self.traffic_lights_status_publisher = node.new_publisher(
             CarlaTrafficLightStatusList,
             self.get_topic_prefix() + "/status",
@@ -78,21 +77,14 @@ class TrafficLightsSensor(PseudoActor):
         """
         Get the state of all known traffic lights
         """
-        traffic_light_status = CarlaTrafficLightStatusList()
-        traffic_light_actors = []
+        traffic_light_info_msg = CarlaTrafficLightInfoList()
+        traffic_light_status_msg = CarlaTrafficLightStatusList()
+
         for actor_id in self.actor_list:
             actor = self.actor_list[actor_id]
             if isinstance(actor, TrafficLight):
-                traffic_light_actors.append(actor)
-                traffic_light_status.traffic_lights.append(actor.get_status())
+                traffic_light_info_msg.traffic_lights.append(actor.get_info())
+                traffic_light_status_msg.traffic_lights.append(actor.get_status())
 
-        if traffic_light_actors != self.traffic_light_actors:
-            self.traffic_light_actors = traffic_light_actors
-            traffic_light_info_list = CarlaTrafficLightInfoList()
-            for traffic_light in traffic_light_actors:
-                traffic_light_info_list.traffic_lights.append(traffic_light.get_info())
-            self.traffic_lights_info_publisher.publish(traffic_light_info_list)
-
-        if traffic_light_status != self.traffic_light_status:
-            self.traffic_light_status = traffic_light_status
-            self.traffic_lights_status_publisher.publish(traffic_light_status)
+        self.traffic_lights_info_publisher.publish(traffic_light_info_msg)
+        self.traffic_lights_status_publisher.publish(traffic_light_status_msg)

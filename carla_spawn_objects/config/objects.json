@@ -22,7 +22,7 @@
             "id": "map"
         },
         {
-            "type": "vehicle.*",
+            "type": "vehicle.tesla.model3",
             "id": "ego_vehicle",
             "sensors": 
             [
