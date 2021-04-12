@@ -9,7 +9,7 @@ The `carla_ros_bridge` package is the main package needed to run the basic ROS b
 - [__Configuring CARLA settings__](#configuring-carla-settings)
 - [__Using the ROS bridge in synchronous mode__](#using-the-ros-bridge-in-synchronous-mode)
 - [__Ego vehicle control__](#ego-vehicle-control)
-- [__ROS bridge subscriptions, publications and services__](#ros-bridge-subscriptions-publications-and-services)
+- [__ROS API__](#ros-api)
     - [Subscriptions](#subscriptions)
     - [Publications](#publications)
     - [Services](#services)
@@ -21,7 +21,7 @@ The ROS bridge supports both ROS 1 and ROS 2 using separate implementations with
 
 #### Prepare ROS 1 environment:
 
-The command to run depends on whether you installed ROS via the Debian package or via the source build. You will also need to change the ROS version in the path for the Debian option:
+The command to run depends on whether you installed the ROS bridge via the Debian package or via the source build. You will also need to change the ROS version in the path for the Debian option:
 
 ```sh
     # For debian installation of ROS bridge. Change the command according to your installed version of ROS.
@@ -52,32 +52,39 @@ Once you have set your ROS environment and have a CARLA server running, you will
 There are other launchfiles that combine the above functionality of starting the ROS bridge at the same time as starting other packges or plugins:
 
 - `carla_ros_bridge_with_example_ego_vehicle.launch` (ROS 1) and `carla_ros_bridge_with_example_ego_vehicle.launch.py` (ROS 2) start the ROS bridge along with the [`carla_spawn_objects`](carla_spawn_objects.md) and [`carla_manual_control`](carla_manual_control.md) packages.
-- `carla_ros_bridge_with_rviz.launch` (ROS 1) and `carla_ros_bridge_with_rviz.launch.py` (ROS 2) start the ROS bridge along with the [RVIZ plugin](rviz_plugin.md).
 
 ---
 
 ## Configuring CARLA settings
 
-Configuration settings can be modified in [`ros-bridge/carla_ros_bridge/config/settings.yaml`](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ros_bridge/config/settings.yaml). The following settings are available:
+Configurations should be set either within the launchfile or passed as an argument when running the file from the command line, for example:
+
+
+```sh
+roslaunch carla_ros_bridge carla_ros_bridge.launch passive:=True
+```
+
+The following settings are available:
 
 * __use_sim_time__: This should be set to __True__ to ensure that ROS is using simulation time rather than system time. This parameter will synchronize the ROS [`/clock`][ros_clock] topic with CARLA simulation time.
 *  __host and port__: Network settings to connect to CARLA using a Python client.
 * __timeout__: Time to wait for a successful connection to the server.
 * __passive__: Passive mode is for use in scynchronous mode. When enabled, the ROS bridge will take a backseat and another client __must__ tick the world. ROS bridge will wait for all expected data from all sensors to be received.
 *  __synchronous_mode__:
-	*  __If false (default)__: Data is published on every `world.on_tick()` and every `sensor.listen()` callback.
-	*  __If true__: ROS bridge waits for all the sensor messages expected before the next tick. This might slow down the overall simulation but ensures reproducible results.
+	*  __If false__: Data is published on every `world.on_tick()` and every `sensor.listen()` callback.
+	*  __If true (default)__: ROS bridge waits for all the sensor messages expected before the next tick. This might slow down the overall simulation but ensures reproducible results.
 *  __synchronous_mode_wait_for_vehicle_control_command__: In synchronous mode, pauses the tick until a vehicle control is completed.
 *  __fixed_delta_seconds__: Simulation time (delta seconds) between simulation steps. __It must be lower than 0.1__. Take a look at the [documentation](https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/) to learn more about this.
 *  __ego_vehicle__: Role names to identify ego vehicles. Relevant topics will be created so these vehicles will be able to be controlled from ROS.
+* __town__: Either use an available CARLA town (eg. 'town01') or an OpenDRIVE file (ending in `.xodr`).
 
 [ros_clock]: https://wiki.ros.org/Clock
-
-Most of the above parameters as well as others such as `town` and `rosbag_fname` can also be set within the launchfile `carla_ros_bridge.launch` or passed as an argument when running the file from the command line. When specifying a town, either use an available CARLA town (eg. 'town01') or an OpenDRIVE file (ending in `.xodr`).
 
 ---
 
 ## Using the ROS bridge in synchronous mode
+
+The ROS bridge operates in synchronous mode by default. It will wait for all sensor data that is expected within the current frame to ensure reproducible results. 
 
 When running multiple clients in synchronous mode, only one client is allowed to tick the world. The ROS bridge will by default be the only client allowed to tick the world unless passive mode is enabled. Enabling passive mode in [`ros-bridge/carla_ros_bridge/config/settings.yaml`](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ros_bridge/config/settings.yaml) will make the ROS bridge step back and allow another client to tick the world. __Another client must tick the world, otherwise CARLA will freeze.__
 
@@ -131,7 +138,7 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 ---
 
-## ROS bridge subscriptions, publications and services
+## ROS API
 
 #### Subscriptions
 

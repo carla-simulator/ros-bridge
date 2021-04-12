@@ -10,7 +10,7 @@ This section is a guide on how to install the ROS bridge on Linux for use with R
 - [__Testing__](#testing)
 
 !!! Important
-    ROS is still [experimental](http://wiki.ros.org/noetic/Installation) for Windows. It has only been tested for Linux systems.
+    The ROS bridge has not yet been tested in Windows.
 
 ---
 ## Before you begin
