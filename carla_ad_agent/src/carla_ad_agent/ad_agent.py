@@ -60,7 +60,7 @@ class CarlaAdAgent(Agent):
         self.data_lock = threading.Lock()
 
         self._ego_vehicle_pose = None
-        self._objects = []
+        self._objects = {}
         self._lights_status = {}
         self._lights_info = {}
 
