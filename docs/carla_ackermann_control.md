@@ -15,7 +15,7 @@ The [`carla_ackermann_control` package](https://github.com/carla-simulator/ros-b
 
 ### Configuration
 
-Parameters can be set both initially in a [configuration file][ackermanconfig] and during runtime via ROS [dynamic reconfigure][rosdynamicreconfig]. 
+Parameters can be set both initially in a [configuration file][ackermanconfig] when using both ROS 1 and ROS 2 and during runtime via ROS [dynamic reconfigure][rosdynamicreconfig] in ROS 1. 
 
 [ackermanconfig]: https://github.com/carla-simulator/ros-bridge/blob/master/carla_ackermann_control/config/settings.yaml
 [rosdynamicreconfig]: https://wiki.ros.org/dynamic_reconfigure
