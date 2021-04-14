@@ -19,10 +19,11 @@ nav:
   - CARLA AD Agent: 'carla_ad_agent.md'
   - CARLA AD Demo: 'carla_ad_demo.md'
   - CARLA ROS Scenario Runner: 'carla_ros_scenario_runner.md'
-  - Carla Twist to Control: 'carla_twist_to_control.md'
+  - CARLA Twist to Control: 'carla_twist_to_control.md'
   - RVIZ Plugin: 'rviz_plugin.md'
   - RQT Plugin: 'rqt_plugin.md'
 - References:
+  - CARLA sensor reference: 'ros_sensors.md'
   - CARLA messages reference: 'ros_msgs.md'
 
 markdown_extensions:
