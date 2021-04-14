@@ -22,6 +22,7 @@ nav:
   - CARLA Twist to Control: 'carla_twist_to_control.md'
   - RVIZ Plugin: 'rviz_plugin.md'
   - RQT Plugin: 'rqt_plugin.md'
+  - PCL Recorder: 'pcl_recorder.md'
 - References:
   - CARLA sensor reference: 'ros_sensors.md'
   - CARLA messages reference: 'ros_msgs.md'

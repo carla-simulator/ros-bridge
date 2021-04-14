@@ -34,6 +34,7 @@ The ROS bridge boasts the following features:
 - [__CARLA Twist to Control__](carla_twist_to_control.md) - Convert twist controls to CARLA vehicle controls
 - [__RVIZ plugin__](rviz_plugin.md) - An RVIZ plugin to visualize/control CARLA
 - [__RQT Plugin__](rqt_plugin.md) - A RQT plugin to control CARLA
+- [__PCL Recorder__](pcl_recorder.md) - Create point cloud maps from data captured from simulations
 
 ## Explore the reference material
 
