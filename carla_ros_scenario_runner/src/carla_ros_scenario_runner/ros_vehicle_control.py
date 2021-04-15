@@ -41,6 +41,10 @@ class RosVehicleControl(BasicControl):
             elif ROS_VERSION == 2:
                 logging.get_logger("pre_logger").error("Invalid role_name!")
 
+        self._path_topic_name = "waypoints"
+        if "path_topic_name" in args:
+            self._path_topic_name = args["path_topic_name"]
+
         self.node = CompatibleNode('ros_agent_{}'.format(self._role_name))
 
         self._current_target_speed = None
@@ -52,7 +56,7 @@ class RosVehicleControl(BasicControl):
             QoSProfile(depth=1, durability=True))
 
         self._path_publisher = self.node.new_publisher(
-            Path, "/carla/{}/waypoints".format(self._role_name),
+            Path, "/carla/{}/{}".format(self._role_name, self._path_topic_name),
             QoSProfile(depth=1, durability=True))
 
         if "launch" in args and "launch-package" in args:
@@ -69,7 +73,7 @@ class RosVehicleControl(BasicControl):
             # add additional launch parameters
             launch_parameters = []
             for key, value in args.items():
-                if not key == "launch" and not key == "launch-package":
+                if not key == "launch" and not key == "launch-package" and not key == "path_topic_name":
                     launch_parameters.append('{}:={}'.format(key, value))
                     cli_args.append('{}:={}'.format(key, value))
 
