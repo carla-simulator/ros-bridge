@@ -1,6 +1,6 @@
 # Point Cloud Map Creation
 
-The PCL recorder package allows you to create point cloud maps from CARLA maps.
+The [PCL recorder package](https://github.com/carla-simulator/ros-bridge/tree/master/pcl_recorder) allows you to create point cloud maps from CARLA maps.
 
 ---
 

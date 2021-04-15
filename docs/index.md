@@ -18,9 +18,14 @@ The ROS bridge boasts the following features:
 - [__Installing ROS bridge for ROS 1__](ros_installation_ros1.md)
 - [__Installing ROS bridge for ROS 2__](ros_installation_ros2.md)
 
+---
+
 ## Learn about the main ROS bridge package
 
 - [__CARLA ROS bridge__](run_ros.md) - The main package required to run the ROS bridge
+- [__ROS Compatiblity Node__](ros_compatibility.md) - The interface that allows the same API to call either ROS 1 or ROS 2 functions
+
+---
 
 ## Learn about the additional ROS bridge packages
 
@@ -35,6 +40,8 @@ The ROS bridge boasts the following features:
 - [__RVIZ plugin__](rviz_plugin.md) - An RVIZ plugin to visualize/control CARLA
 - [__RQT Plugin__](rqt_plugin.md) - A RQT plugin to control CARLA
 - [__PCL Recorder__](pcl_recorder.md) - Create point cloud maps from data captured from simulations
+
+---
 
 ## Explore the reference material
 
