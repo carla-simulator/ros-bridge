@@ -150,9 +150,9 @@ class EgoVehicle(Vehicle):
                                         [wheel.position.z/100.0],
                                         [1.0]])
                 wheel_pos_in_ego_vehicle = numpy.matmul(inv_T, wheel_pos_in_map)
-                wheel_info.position.x = wheel_pos_in_ego_vehicle[0]
-                wheel_info.position.y = -wheel_pos_in_ego_vehicle[1]
-                wheel_info.position.z = wheel_pos_in_ego_vehicle[2]
+                wheel_info.position.x = float(wheel_pos_in_ego_vehicle[0])
+                wheel_info.position.y = float(-wheel_pos_in_ego_vehicle[1])
+                wheel_info.position.z = float(wheel_pos_in_ego_vehicle[2])
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
