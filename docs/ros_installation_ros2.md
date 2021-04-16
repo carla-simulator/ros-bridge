@@ -19,7 +19,7 @@ You will need to fulfill the following software requirements before using the RO
 - Install ROS:
     - [__ROS 2 Foxy__](https://docs.ros.org/en/foxy/Installation.html) — For Ubuntu 20.04 (Focal)
 - Additional ROS packages may be required depending on your needs. [rviz](https://wiki.ros.org/rviz) is highly recommended to visualize ROS data.
-- CARLA 0.9.7 or later — Previous versions are not compatible with the ROS bridge. Follow the [quick start installation](https://carla.readthedocs.io/en/latest/start_quickstart/) or make the build for [Linux](https://carla.readthedocs.io/en/latest/build_linux/). It is recommended to match the ROS bridge version to the CARLA version when possible.
+- CARLA 0.9.11 or later — Previous versions are not compatible with the ROS bridge. Follow the [quick start installation](https://carla.readthedocs.io/en/latest/start_quickstart/) or make the build for [Linux](https://carla.readthedocs.io/en/latest/build_linux/). It is recommended to match the ROS bridge version to the CARLA version when possible.
 
 ---
 
