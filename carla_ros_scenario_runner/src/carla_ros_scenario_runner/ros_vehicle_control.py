@@ -69,7 +69,7 @@ class RosVehicleControl(BasicControl):
             # add additional launch parameters
             launch_parameters = []
             for key, value in args.items():
-                if not key == "launch" and not key == "launch-package" and not key == "path_topic_name":
+                if not key == "launch" and not key == "launch-package":
                     launch_parameters.append('{}:={}'.format(key, value))
                     cli_args.append('{}:={}'.format(key, value))
 
