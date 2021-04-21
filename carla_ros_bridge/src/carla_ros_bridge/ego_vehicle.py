@@ -145,10 +145,10 @@ class EgoVehicle(Vehicle):
                 wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
 
                 inv_T = numpy.array(self.carla_actor.get_transform().get_inverse_matrix(), dtype=float)
-                wheel_pos_in_map = numpy.array([[wheel.position.x/100.0],
-                                        [wheel.position.y/100.0],
-                                        [wheel.position.z/100.0],
-                                        [1.0]])
+                wheel_pos_in_map = numpy.array([wheel.position.x/100.0,
+                                        wheel.position.y/100.0,
+                                        wheel.position.z/100.0,
+                                        1.0])
                 wheel_pos_in_ego_vehicle = numpy.matmul(inv_T, wheel_pos_in_map)
                 wheel_info.position.x = wheel_pos_in_ego_vehicle[0]
                 wheel_info.position.y = -wheel_pos_in_ego_vehicle[1]
