@@ -85,13 +85,13 @@ class CarlaAdAgent(Agent):
                 CarlaTrafficLightStatusList,
                 "/carla/traffic_lights/status",
                 self.traffic_light_status_cb,
-                qos_profile=QoSProfile(depth=10)
+                qos_profile=QoSProfile(depth=10, durability=latch_on)
             )
             self._traffic_light_info_subscriber = self.create_subscriber(
                 CarlaTrafficLightInfoList,
                 "/carla/traffic_lights/info",
                 self.traffic_light_info_cb,
-                qos_profile=QoSProfile(depth=10)
+                qos_profile=QoSProfile(depth=10, durability=latch_on)
             )
 
     def odometry_cb(self, odometry_msg):
