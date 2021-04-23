@@ -26,7 +26,6 @@ class TrafficLightsSensor(PseudoActor):
     def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
-
         :param uid: unique identifier for this object
         :type uid: int
         :param name: name identiying the sensor

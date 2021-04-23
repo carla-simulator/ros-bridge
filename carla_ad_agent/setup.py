@@ -33,7 +33,7 @@ elif ROS_VERSION == 2:
         description='CARLA ROS2 AD agent',
         license='MIT',
         entry_points={
-            'console_scripts': ['carla_ad_agent = carla_ad_agent.carla_ad_agent:main',
+            'console_scripts': ['ad_agent = carla_ad_agent.ad_agent:main',
                                 'local_planner = carla_ad_agent.local_planner:main',
                                 'testing_waypoints = carla_ad_agent.testing_waypoints:main'],
         },
