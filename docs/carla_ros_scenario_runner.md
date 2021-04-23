@@ -36,6 +36,7 @@ An example scenario is found [here](https://github.com/carla-simulator/ros-bridg
         <Property name="module" value="carla_ros_scenario_runner.ros_vehicle_control" />
         <Property name="launch" value="carla_ad_agent.launch"/>
         <Property name="launch-package" value="carla_ad_agent"/>
+        <Property name="path_topic_name" value="waypoints"/>
     </Properties>
 </Controller>
 ```
@@ -83,5 +84,12 @@ ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_ty
 | Topic | Type | Description |
 |-------|------|-------------|
 | `/scenario_runner/status` | [`carla_ros_scenario_runner_types.CarlaScenarioRunnerStatus`](https://github.com/carla-simulator/ros-bridge/blob/ros2/carla_ros_scenario_runner_types/msg/CarlaScenarioRunnerStatus.msg) | The current status of the scenario runner execution (used by the [rviz_carla_plugin](rviz_plugin.md)) |
+
+
+The controller `ros_vehicle_control` provides the following topics:
+| Topic | Type | Description |
+|-------|------|-------------|
+| `/carla/<ROLE NAME>/waypoints` | [`nav_msgs.Path`](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | the path defined within the scenario. Note: The topic name can be changed by modifying the parameter `path_topic_name` |
+| `/carla/<ROLE NAME>/target_speed` | [`std_msgs.Float64`](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | the target speed as defined within the scenario |
 
 <br>

@@ -224,15 +224,15 @@ class ActorFactory(object):
         Creates also the object for its parent, if not yet existing
         """
         parent = None
-        relative_transform = None
+        # the transform relative to the map
+        relative_transform = trans.carla_transform_to_ros_pose(carla_actor.get_transform())
         if carla_actor.parent:
             if carla_actor.parent.id in self.actors:
                 parent = self.actors[carla_actor.parent.id]
             else:
                 parent = self._create_object_from_actor(carla_actor.parent)
-            # calculate relative transform
-            actor_transform_matrix = trans.ros_pose_to_transform_matrix(
-                trans.carla_transform_to_ros_pose(carla_actor.get_transform()))
+            # calculate relative transform to the parent
+            actor_transform_matrix = trans.ros_pose_to_transform_matrix(relative_transform)
             parent_transform_matrix = trans.ros_pose_to_transform_matrix(
                 trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
             relative_transform_matrix = np.matrix(
