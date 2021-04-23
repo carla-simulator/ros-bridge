@@ -13,6 +13,7 @@ from abc import abstractmethod
 
 import math
 import numpy
+import transforms3d
 import os
 from cv_bridge import CvBridge
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
@@ -119,6 +120,31 @@ class Camera(Sensor):
         cam_info.header = img_msg.header
         self.camera_info_publisher.publish(cam_info)
         self.camera_image_publisher.publish(img_msg)
+
+    def get_ros_transform(self, pose, timestamp):
+        """
+        Function (override) to modify the tf messages sent by this camera.
+        The camera transformation has to be altered to look at the same axis
+        as the opencv projection in order to get easy depth cloud for RGBD camera
+        :return: the filled tf message
+        :rtype: geometry_msgs.msg.TransformStamped
+        """
+        tf_msg = super(Camera, self).get_ros_transform(pose, timestamp)
+        rotation = tf_msg.transform.rotation
+
+        quat = [rotation.w, rotation.x, rotation.y, rotation.z]
+        quat_swap = transforms3d.quaternions.mat2quat(numpy.matrix(
+            [[0, 0, 1],
+             [-1, 0, 0],
+             [0, -1, 0]]))
+        quat = transforms3d.quaternions.qmult(quat, quat_swap)
+
+        tf_msg.transform.rotation.w = quat[0]
+        tf_msg.transform.rotation.x = quat[1]
+        tf_msg.transform.rotation.y = quat[2]
+        tf_msg.transform.rotation.z = quat[3]
+
+        return tf_msg
 
     def get_ros_image(self, carla_camera_data):
         """
