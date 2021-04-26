@@ -11,9 +11,9 @@ handle a opendrive sensor
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
-from std_msgs.msg import String
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
-from ros_compatibility import QoSProfile, latch_on
+from std_msgs.msg import String
 
 
 class OpenDriveSensor(PseudoActor):
@@ -43,8 +43,10 @@ class OpenDriveSensor(PseudoActor):
                                               node=node)
         self.carla_map = carla_map
         self._map_published = False
-        self.map_publisher = node.new_publisher(String, self.get_topic_prefix(),
-                                                qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.map_publisher = node.new_publisher(
+            String,
+            self.get_topic_prefix(),
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
     def destroy(self):
         super(OpenDriveSensor, self).destroy()

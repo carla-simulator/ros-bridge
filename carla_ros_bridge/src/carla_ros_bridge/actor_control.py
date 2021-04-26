@@ -9,12 +9,16 @@
 provide functions to control actors
 """
 
-import numpy
 import math
-import carla_common.transforms as trans
-from carla_ros_bridge.pseudo_actor import PseudoActor
-from geometry_msgs.msg import Pose, Twist
+
+import numpy
 from carla import Vector3D
+
+import carla_common.transforms as trans
+
+from carla_ros_bridge.pseudo_actor import PseudoActor
+
+from geometry_msgs.msg import Pose, Twist
 
 
 class ActorControl(PseudoActor):
@@ -42,13 +46,15 @@ class ActorControl(PseudoActor):
                                            parent=parent,
                                            node=node)
 
-        self.set_location_subscriber = self.node.create_subscriber(Pose,
-                                                                   self.get_topic_prefix() + "/set_transform",
-                                                                   self.on_pose)
+        self.set_location_subscriber = self.node.new_subscription(Pose,
+                                                                  self.get_topic_prefix() + "/set_transform",
+                                                                  self.on_pose,
+                                                                  qos_profile=10)
 
-        self.twist_control_subscriber = self.node.create_subscriber(Twist,
-                                                                    self.get_topic_prefix() + "/set_target_velocity",
-                                                                    self.on_twist)
+        self.twist_control_subscriber = self.node.new_subscription(Twist,
+                                                                   self.get_topic_prefix() + "/set_target_velocity",
+                                                                   self.on_twist,
+                                                                   qos_profile=10)
 
     def destroy(self):
         """
