@@ -11,6 +11,7 @@ Classes to handle lane invasion events
 """
 
 from carla_ros_bridge.sensor import Sensor
+
 from carla_msgs.msg import CarlaLaneInvasionEvent
 
 
@@ -49,7 +50,8 @@ class LaneInvasionSensor(Sensor):
                                                  is_event_sensor=True)
 
         self.lane_invasion_publisher = node.new_publisher(CarlaLaneInvasionEvent,
-                                                          self.get_topic_prefix())
+                                                          self.get_topic_prefix(),
+                                                          qos_profile=10)
         self.listen()
 
     def destroy(self):

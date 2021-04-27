@@ -8,14 +8,12 @@
 """
 Base Class to handle Pseudo Actors (that are not existing in Carla world)
 """
-import numpy as np
-from std_msgs.msg import Header
 
-from ros_compatibility import (
-    ros_timestamp,
-    QoSProfile,
-    latch_on
-)
+import numpy as np
+
+import ros_compatibility as roscomp
+
+from std_msgs.msg import Header
 
 
 class PseudoActor(object):
@@ -80,7 +78,7 @@ class PseudoActor(object):
 
         if not timestamp:
             timestamp = self.node.get_time()
-        header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
+        header.stamp = roscomp.ros_timestamp(sec=timestamp, from_sec=True)
         return header
 
     def get_prefix(self):

@@ -11,6 +11,7 @@ handle a actor list sensor
 
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.pseudo_actor import PseudoActor
+
 from carla_msgs.msg import CarlaActorList, CarlaActorInfo
 
 
@@ -42,7 +43,7 @@ class ActorListSensor(PseudoActor):
                                               parent=parent,
                                               node=node)
         self.actor_list = actor_list
-        self.actor_list_publisher = node.new_publisher(CarlaActorList, self.get_topic_prefix())
+        self.actor_list_publisher = node.new_publisher(CarlaActorList, self.get_topic_prefix(), qos_profile=10)
 
     def destroy(self):
         """

@@ -11,15 +11,9 @@ report the carla status
 """
 import os
 
+import ros_compatibility as roscomp
+
 from carla_msgs.msg import CarlaStatus  # pylint: disable=import-error
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION not in (1, 2):
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
 class CarlaStatusPublisher(object):
@@ -39,11 +33,9 @@ class CarlaStatusPublisher(object):
         if self.fixed_delta_seconds is None:
             self.fixed_delta_seconds = 0.
         self.frame = 0
-        if ROS_VERSION == 1:
-            callback_group = None
-        elif ROS_VERSION == 2:
-            callback_group = ReentrantCallbackGroup()
-        self.carla_status_publisher = self.node.new_publisher(CarlaStatus, "/carla/status",
+
+        callback_group = roscomp.callback_groups.ReentrantCallbackGroup()
+        self.carla_status_publisher = self.node.new_publisher(CarlaStatus, "/carla/status", qos_profile=10,
                                                               callback_group=callback_group)
         self.publish()
 
