@@ -17,25 +17,32 @@ position.
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
 
-import rospy
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
 
 
-class SetInitialPose(object):
+class SetInitialPose(CompatibleNode):
 
     def __init__(self):
+        super(SetInitialPose, self).__init__("set_initial_pose")
 
-        rospy.init_node('set_initial_pose', anonymous=True)
-
-        self.role_name = rospy.get_param('~role_name', 'ego_vehicle')
+        self.role_name = self.get_param("role_name", "ego_vehicle")
         # control_id should correspond to the id of the actor.pseudo.control
         # actor that is set in the config file used to spawn it
-        self.control_id = rospy.get_param('~control_id', 'control')
-        self.transform_publisher = rospy.Publisher(
-            "/carla/{}/{}/set_transform".format(self.role_name, self.control_id), Pose, queue_size=10)
+        self.control_id = self.get_param("control_id", "control")
 
-        self.initial_pose_subscriber = rospy.Subscriber(
-            "/initialpose", PoseWithCovarianceStamped, self.intial_pose_callback)
+        self.transform_publisher = self.new_publisher(
+            Pose,
+            "/carla/{}/{}/set_transform".format(self.role_name, self.control_id),
+            qos_profile=10)
+
+        self.initial_pose_subscriber = self.new_subscription(
+            PoseWithCovarianceStamped,
+            "/initialpose",
+            self.intial_pose_callback,
+            qos_profile=10)
 
     def intial_pose_callback(self, initial_pose):
         pose_to_publish = initial_pose.pose.pose
@@ -47,9 +54,15 @@ def main():
     """
     main function
     """
-    set_initial_pose_node = SetInitialPose()
-    rospy.spin()
+    roscomp.init("set_initial_pose")
 
+    try:
+        set_initial_pose_node = SetInitialPose()
+        set_initial_pose_node.spin()
+    except KeyboardInterrupt:
+        roscomp.loginfo("Cancelled by user.")
+    finally:
+        roscomp.shutdown()
 
 if __name__ == '__main__':
     main()
