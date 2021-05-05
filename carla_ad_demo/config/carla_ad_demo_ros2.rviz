@@ -86,11 +86,12 @@ Visualization Manager:
         Depth Camera: true
         Grid: true
         Lidar: true
-        MarkerArray: true
+        Objects: true
         Path: true
         Radar: true
         Semantic Camera: true
         Semantic Lidar: true
+        StaticObjects: true
         Value: true
       Zoom Factor: 1
     - Alpha: 1
@@ -128,7 +129,7 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Name: MarkerArray
+      Name: Objects
       Namespaces:
         "": true
       Topic:
@@ -137,6 +138,18 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /carla/markers
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: StaticObjects
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /carla/static_markers
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
