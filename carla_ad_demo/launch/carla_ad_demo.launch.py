@@ -6,6 +6,25 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 
+def launch_carla_spawn_object(context, *args, **kwargs):
+    # workaround to use launch argument 'role_name' as a part of the string used for the spawn_point param name
+    spawn_point_param_name = 'spawn_point_' + \
+        launch.substitutions.LaunchConfiguration('role_name').perform(context)
+
+    carla_spawn_objects_launch = launch.actions.IncludeLaunchDescription(
+        launch.launch_description_sources.PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory(
+                'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
+        ),
+        launch_arguments={
+            'objects_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/objects.json',
+            spawn_point_param_name: launch.substitutions.LaunchConfiguration('spawn_point')
+        }.items()
+    )
+
+    return [carla_spawn_objects_launch]
+
+
 def generate_launch_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
@@ -22,11 +41,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='synchronous_mode',
-            default_value='True'
+            default_value='10'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
@@ -41,27 +56,21 @@ def generate_launch_description():
             default_value='ego_vehicle'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='vehicle_filter',
-            default_value='vehicle.tesla.model3'
-        ),
-        launch.actions.DeclareLaunchArgument(
             name='spawn_point',
-            default_value='127.4,195.4,0,0,0,180'
+            default_value='127.4,-195.4,2,0,0,180'
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='30'
+            default_value='30.0'
         ),
         launch.actions.DeclareLaunchArgument(
             name='avoid_risk',
             default_value='True'
         ),
-        # TODO: adapt this to ROS2
-        # launch_ros.actions.Node(
-        #     package='rostopic',
-        #     executable='rostopic',
-        #     name='publish_goal'
-        # ),
+        launch.actions.DeclareLaunchArgument(
+            name='sigterm_timeout',
+            default_value='15'
+        ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
@@ -72,22 +81,11 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode'),
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()
         ),
-        launch.actions.IncludeLaunchDescription(
-            launch.launch_description_sources.PythonLaunchDescriptionSource(
-                os.path.join(get_package_share_directory(
-                    'carla_spawn_objects'), 'carla_example_ego_vehicle.launch.py')
-            ),
-            launch_arguments={
-                'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/sensors.json',
-                'role_name_' + str(launch.substitutions.LaunchConfiguration('role_name')): launch.substitutions.LaunchConfiguration('role_name'),
-                'spawn_point': launch.substitutions.LaunchConfiguration('spawn_point')
-            }.items()
-        ),
+        launch.actions.OpaqueFunction(function=launch_carla_spawn_object),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(

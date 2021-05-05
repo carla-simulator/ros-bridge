@@ -7,8 +7,6 @@
 Classes to handle Carla imu sensor
 """
 
-import math
-
 from sensor_msgs.msg import Imu
 
 from carla_ros_bridge.sensor import Sensor
@@ -51,6 +49,10 @@ class ImuSensor(Sensor):
 
         self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(ImuSensor, self).destroy()
+        self.node.destroy_publisher(self.imu_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_imu_measurement):

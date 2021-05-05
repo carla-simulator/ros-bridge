@@ -20,7 +20,7 @@ from sensor_msgs.msg import CameraInfo, NavSatFix, Image, PointCloud2, Imu
 from geometry_msgs.msg import Quaternion, Vector3, Pose
 from nav_msgs.msg import Odometry
 from derived_object_msgs.msg import ObjectArray
-from visualization_msgs.msg import Marker
+from visualization_msgs.msg import Marker, MarkerArray
 from carla_msgs.msg import (CarlaEgoVehicleStatus, CarlaEgoVehicleInfo, CarlaWorldInfo,
                             CarlaActorList, CarlaTrafficLightStatusList,
                             CarlaTrafficLightInfoList)
@@ -50,7 +50,8 @@ class TestClock(unittest.TestCase):
         rospy.init_node('test_node', anonymous=True)
         msg = rospy.wait_for_message(
             "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus, timeout=TIMEOUT)
-        self.assertNotEqual(msg.header, Header())  # todo: check frame-id
+        self.assertNotEqual(msg.header, Header())
+        self.assertEqual(msg.header.frame_id, 'map')
         self.assertNotEqual(msg.orientation, Quaternion())
 
     def test_vehicle_info(self):
@@ -142,8 +143,8 @@ class TestClock(unittest.TestCase):
         msg = rospy.wait_for_message(
             "/carla/ego_vehicle/dvs_front/camera_info", CameraInfo, timeout=TIMEOUT)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/dvs_front")
-        self.assertEqual(msg.height, 600)
-        self.assertEqual(msg.width, 800)
+        self.assertEqual(msg.height, 70)
+        self.assertEqual(msg.width, 400)
 
     def test_dvs_camera_image(self):
         """
@@ -153,8 +154,8 @@ class TestClock(unittest.TestCase):
         msg = rospy.wait_for_message(
             "/carla/ego_vehicle/dvs_front/image", Image, timeout=TIMEOUT)
         self.assertEqual(msg.header.frame_id, "ego_vehicle/dvs_front")
-        self.assertEqual(msg.height, 600)
-        self.assertEqual(msg.width, 800)
+        self.assertEqual(msg.height, 70)
+        self.assertEqual(msg.width, 400)
         self.assertEqual(msg.encoding, "bgr8")
 
     def test_dvs_camera_events(self):

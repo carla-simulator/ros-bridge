@@ -107,9 +107,9 @@ class TrafficParticipant(Actor):
         :rtpye : std_msgs.msg.ColorRGBA
         """
         color = ColorRGBA()
-        color.r = 0
-        color.g = 0
-        color.b = 255
+        color.r = 0.
+        color.g = 0.
+        color.b = 255.
         return color
 
     def get_marker_pose(self):

@@ -13,6 +13,7 @@ from abc import abstractmethod
 
 import math
 import numpy
+import transforms3d
 import os
 from cv_bridge import CvBridge
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
@@ -33,7 +34,7 @@ class Camera(Sensor):
     # global cv bridge to convert image between opencv and ros
     cv_bridge = CvBridge()
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):  # pylint: disable=too-many-arguments
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, is_event_sensor=False):  # pylint: disable=too-many-arguments
         """
         Constructor
 
@@ -56,7 +57,8 @@ class Camera(Sensor):
                                      relative_spawn_pose=relative_spawn_pose,
                                      node=node,
                                      carla_actor=carla_actor,
-                                     synchronous_mode=synchronous_mode)
+                                     synchronous_mode=synchronous_mode,
+                                     is_event_sensor=is_event_sensor)
 
         if self.__class__.__name__ == "Camera":
             self.node.logwarn("Created Unsupported Camera Actor"
@@ -70,6 +72,11 @@ class Camera(Sensor):
                                                         '/camera_info')
         self.camera_image_publisher = node.new_publisher(Image, self.get_topic_prefix() +
                                                          '/' + 'image')
+
+    def destroy(self):
+        super(Camera, self).destroy()
+        self.node.destroy_publisher(self.camera_info_publisher)
+        self.node.destroy_publisher(self.camera_image_publisher)
 
     def _build_camera_info(self):
         """
@@ -111,9 +118,33 @@ class Camera(Sensor):
 
         cam_info = self._camera_info
         cam_info.header = img_msg.header
-
         self.camera_info_publisher.publish(cam_info)
         self.camera_image_publisher.publish(img_msg)
+
+    def get_ros_transform(self, pose, timestamp):
+        """
+        Function (override) to modify the tf messages sent by this camera.
+        The camera transformation has to be altered to look at the same axis
+        as the opencv projection in order to get easy depth cloud for RGBD camera
+        :return: the filled tf message
+        :rtype: geometry_msgs.msg.TransformStamped
+        """
+        tf_msg = super(Camera, self).get_ros_transform(pose, timestamp)
+        rotation = tf_msg.transform.rotation
+
+        quat = [rotation.w, rotation.x, rotation.y, rotation.z]
+        quat_swap = transforms3d.quaternions.mat2quat(numpy.matrix(
+            [[0, 0, 1],
+             [-1, 0, 0],
+             [0, -1, 0]]))
+        quat = transforms3d.quaternions.qmult(quat, quat_swap)
+
+        tf_msg.transform.rotation.w = quat[0]
+        tf_msg.transform.rotation.x = quat[1]
+        tf_msg.transform.rotation.y = quat[2]
+        tf_msg.transform.rotation.z = quat[3]
+
+        return tf_msg
 
     def get_ros_image(self, carla_camera_data):
         """
@@ -364,7 +395,8 @@ class DVSCamera(Camera):
                                         relative_spawn_pose=relative_spawn_pose,
                                         node=node,
                                         carla_actor=carla_actor,
-                                        synchronous_mode=synchronous_mode)
+                                        synchronous_mode=synchronous_mode,
+                                        is_event_sensor=True)
 
         self._dvs_events = None
         self.dvs_camera_publisher = node.new_publisher(PointCloud2,
@@ -372,6 +404,10 @@ class DVSCamera(Camera):
                                                        '/events')
 
         self.listen()
+
+    def destroy(self):
+        super(DVSCamera, self).destroy()
+        self.node.destroy_publisher(self.dvs_camera_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_dvs_event_array):

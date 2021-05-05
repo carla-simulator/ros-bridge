@@ -4,7 +4,7 @@ usage() { echo "Usage: $0 [-t <tag>] [-i <image>]" 1>&2; exit 1; }
 
 # Defaults
 DOCKER_IMAGE_NAME="carla-ros-bridge"
-TAG="latest"
+TAG="foxy"
 
 while getopts ":ht:i:" opt; do
   case $opt in
@@ -32,4 +32,7 @@ shift $((OPTIND-1))
 
 echo "Using $DOCKER_IMAGE_NAME:$TAG"
 
-docker run -it --rm "$DOCKER_IMAGE_NAME:$TAG" "$@"
+docker run \
+    -it --rm \
+    --net=host \
+    "$DOCKER_IMAGE_NAME:$TAG" "$@"

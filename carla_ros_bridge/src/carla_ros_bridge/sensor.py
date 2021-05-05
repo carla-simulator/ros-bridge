@@ -14,6 +14,7 @@ import ctypes
 import os
 import struct
 import sys
+from threading import Lock
 try:
     import queue
 except ImportError:
@@ -22,7 +23,7 @@ except ImportError:
 import tf2_ros
 from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
-from ros_compatibility import ros_ok, ros_timestamp
+from ros_compatibility import ros_ok, ros_timestamp, ROSException
 from sensor_msgs.msg import PointCloud2, PointField
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -89,6 +90,7 @@ class Sensor(Actor):
         self.next_data_expected_time = None
         self.sensor_tick_time = None
         self.is_event_sensor = is_event_sensor
+        self._callback_active = Lock()
         try:
             self.sensor_tick_time = float(carla_actor.attributes["sensor_tick"])
             node.logdebug("Sensor tick time is {}".format(self.sensor_tick_time))
@@ -100,8 +102,11 @@ class Sensor(Actor):
         elif ROS_VERSION == 2:
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
-    def publish_tf(self, pose=None):
+    def get_ros_transform(self, pose, timestamp):
         if self.synchronous_mode:
+            if not self.relative_spawn_pose:
+                self.node.logwarn("{}: No relative spawn pose defined".format(self.get_prefix()))
+                return
             pose = self.relative_spawn_pose
             child_frame_id = self.get_prefix()
             if self.parent is not None:
@@ -113,22 +118,29 @@ class Sensor(Actor):
             child_frame_id = self.get_prefix()
             frame_id = "map"
 
-        if pose is not None:
-            transform = tf2_ros.TransformStamped()
-            transform.header.stamp = ros_timestamp(sec=self.node.get_time(), from_sec=True)
-            transform.header.frame_id = frame_id
-            transform.child_frame_id = child_frame_id
+        transform = tf2_ros.TransformStamped()
+        transform.header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
+        transform.header.frame_id = frame_id
+        transform.child_frame_id = child_frame_id
 
-            transform.transform.translation.x = pose.position.x
-            transform.transform.translation.y = pose.position.y
-            transform.transform.translation.z = pose.position.z
+        transform.transform.translation.x = pose.position.x
+        transform.transform.translation.y = pose.position.y
+        transform.transform.translation.z = pose.position.z
 
-            transform.transform.rotation.x = pose.orientation.x
-            transform.transform.rotation.y = pose.orientation.y
-            transform.transform.rotation.z = pose.orientation.z
-            transform.transform.rotation.w = pose.orientation.w
+        transform.transform.rotation.x = pose.orientation.x
+        transform.transform.rotation.y = pose.orientation.y
+        transform.transform.rotation.z = pose.orientation.z
+        transform.transform.rotation.w = pose.orientation.w
 
+        return transform
+
+    def publish_tf(self, pose, timestamp):
+        transform = self.get_ros_transform(pose, timestamp)
+        try:
             self._tf_broadcaster.sendTransform(transform)
+        except ROSException:
+            if ros_ok():
+                self.node.logwarn("Sensor {} failed to send transform.".format(self.uid))
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -142,7 +154,7 @@ class Sensor(Actor):
 
         :return:
         """
-        self.node.logdebug("Destroy Sensor(id={})".format(self.get_id()))
+        self._callback_active.acquire()
         if self.carla_actor.is_listening:
             self.carla_actor.stop()
         super(Sensor, self).destroy()
@@ -154,15 +166,24 @@ class Sensor(Actor):
         :param carla_sensor_data: carla sensor data object
         :type carla_sensor_data: carla.SensorData
         """
-        if ros_ok():
-            if self.synchronous_mode:
-                if self.sensor_tick_time:
-                    self.next_data_expected_time = carla_sensor_data.timestamp + \
-                        float(self.sensor_tick_time)
-                self.queue.put(carla_sensor_data)
-            else:
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
+        if not self._callback_active.acquire(False):
+            # if acquire fails, sensor is currently getting destroyed
+            return
+        if self.synchronous_mode:
+            if self.sensor_tick_time:
+                self.next_data_expected_time = carla_sensor_data.timestamp + \
+                    float(self.sensor_tick_time)
+            self.queue.put(carla_sensor_data)
+        else:
+            self.publish_tf(trans.carla_transform_to_ros_pose(
+                carla_sensor_data.transform), carla_sensor_data.timestamp)
+            try:
                 self.sensor_data_updated(carla_sensor_data)
+            except ROSException:
+                if ros_ok():
+                    self.node.logwarn(
+                        "Sensor {}: Error while executing sensor_data_updated().".format(self.uid))
+        self._callback_active.release()
 
     @abstractmethod
     def sensor_data_updated(self, carla_sensor_data):
@@ -176,7 +197,7 @@ class Sensor(Actor):
         raise NotImplementedError(
             "This function has to be implemented by the derived classes")
 
-    def _update_synchronous_event_sensor(self, frame):
+    def _update_synchronous_event_sensor(self, frame, timestamp):
         while True:
             try:
                 carla_sensor_data = self.queue.get(block=False)
@@ -187,7 +208,8 @@ class Sensor(Actor):
                                           carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                self.publish_tf(trans.carla_transform_to_ros_pose(carla_sensor_data.transform))
+                self.publish_tf(trans.carla_transform_to_ros_pose(
+                    carla_sensor_data.transform), timestamp)
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -204,7 +226,7 @@ class Sensor(Actor):
                         self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
                                                                        self.get_id(), frame))
                         self.publish_tf(trans.carla_transform_to_ros_pose(
-                            carla_sensor_data.transform))
+                            carla_sensor_data.transform), timestamp)
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:
@@ -222,7 +244,7 @@ class Sensor(Actor):
     def update(self, frame, timestamp):
         if self.synchronous_mode:
             if self.is_event_sensor:
-                self._update_synchronous_event_sensor(frame)
+                self._update_synchronous_event_sensor(frame, timestamp)
             else:
                 self._update_synchronous_sensor(frame, timestamp)
 

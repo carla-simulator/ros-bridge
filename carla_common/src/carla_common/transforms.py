@@ -16,6 +16,7 @@ import carla
 
 from geometry_msgs.msg import Vector3, Quaternion, Transform, Pose, Point, Twist, Accel  # pylint: disable=import-error
 from transforms3d.euler import euler2mat, quat2euler, euler2quat
+from transforms3d.quaternions import quat2mat, mat2quat
 
 
 def carla_location_to_numpy_vector(carla_location):
@@ -324,3 +325,25 @@ def ros_pose_to_carla_transform(ros_pose):
     return carla.Transform(
         ros_point_to_carla_location(ros_pose.position),
         ros_quaternion_to_carla_rotation(ros_pose.orientation))
+
+
+def transform_matrix_to_ros_pose(mat):
+    """
+    Convert a transform matrix to a ROS pose.
+    """
+    quat = mat2quat(mat[:3, :3])
+    msg = Pose()
+    msg.position = Point(x=mat[0, 3], y=mat[1, 3], z=mat[2, 3])
+    msg.orientation = Quaternion(w=quat[0], x=quat[1], y=quat[2], z=quat[3])
+    return msg
+
+
+def ros_pose_to_transform_matrix(msg):
+    """
+    Convert a ROS pose to a transform matrix
+    """
+    mat44 = numpy.eye(4)
+    mat44[:3, :3] = quat2mat([msg.orientation.w, msg.orientation.x,
+                              msg.orientation.y, msg.orientation.z])
+    mat44[0:3, -1] = [msg.position.x, msg.position.y, msg.position.z]
+    return mat44

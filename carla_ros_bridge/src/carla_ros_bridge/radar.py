@@ -53,6 +53,10 @@ class Radar(Sensor):
         self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(Radar, self).destroy()
+        self.node.destroy_publisher(self.radar_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_radar_measurement):
         """
@@ -70,7 +74,7 @@ class Radar(Sensor):
             PointField(name='ElevationAngle', offset=28, datatype=PointField.FLOAT32, count=1)]
         points = []
         for detection in carla_radar_measurement:
-            points.append([detection.depth * np.cos(-detection.azimuth) * np.cos(detection.altitude),
+            points.append([detection.depth * np.cos(detection.azimuth) * np.cos(-detection.altitude),
                            detection.depth * np.sin(-detection.azimuth) *
                            np.cos(detection.altitude),
                            detection.depth * np.sin(detection.altitude),

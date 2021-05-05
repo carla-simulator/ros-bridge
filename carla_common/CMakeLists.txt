@@ -15,10 +15,4 @@ if(${ROS_VERSION} EQUAL 1)
   catkin_install_python(PROGRAMS src/carla_common/transforms.py DESTINATION
                         ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-elseif(${ROS_VERSION} EQUAL 2)
-  find_package(ament_cmake REQUIRED)
-  find_package(rclpy REQUIRED)
-  ament_export_dependencies(rclpy)
-  ament_package()
-
 endif()

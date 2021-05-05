@@ -100,10 +100,15 @@ class ApplicationRunner(object):
         """
         if not argument_list:
             raise KeyError("No arguments given!")
-        executable = argument_list[0]
-        log_fct("Executing: {}".format(" ".join(argument_list)))
-        process = pexpect.spawn(" ".join(argument_list), env=env, cwd=cwd)
+        if not isinstance(argument_list, str):
+            executable = " ".join(argument_list)
+        else:
+            executable = argument_list
+
+        log_fct("Executing: " + executable)
+        process = pexpect.spawn(executable, env=env, cwd=cwd, encoding='utf-8')
         #process.logfile_read = sys.stdout
+
         return process
 
     def run(self, process, shutdown_requested_event, ready_string, status_updated_fct, log_fct):  # pylint: disable=no-self-use,too-many-arguments

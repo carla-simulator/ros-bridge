@@ -12,14 +12,10 @@ Internally, the CARLA scenario runner is executed
 """
 import sys
 import os
-import logging
 try:
     import queue
 except ImportError:
     import Queue as queue
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-from std_msgs.msg import Float64
 from carla_ros_scenario_runner_types.srv import ExecuteScenario
 from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
 from carla_ros_scenario_runner.application_runner import ApplicationStatus  # pylint: disable=relative-import
@@ -29,7 +25,11 @@ from ros_compatibility import (
     CompatibleNode,
     QoSProfile,
     ros_ok,
-    ros_init)
+    ros_init,
+    get_service_response,
+    ros_shutdown,
+    loginfo,
+    ROS_VERSION)
 
 # Check Python dependencies of scenario runner
 try:
@@ -47,12 +47,7 @@ except ImportError:
         Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH.")
     sys.exit(1)
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    from carla_ros_scenario_runner_types.srv import ExecuteScenarioResponse
-elif ROS_VERSION == 2:
-    import rclpy
+if ROS_VERSION == 2:
     import threading
 
 
@@ -120,8 +115,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         """
         self.loginfo("Scenario Execution requested...")
 
-        if ROS_VERSION == 1:
-            response = ExecuteScenarioResponse()
+        response = get_service_response(ExecuteScenario)
         response.result = True
         if not os.path.isfile(req.scenario.scenario_file):
             self.logwarn("Requested scenario file not existing {}".format(
@@ -181,12 +175,16 @@ def main(args=None):
 
     try:
         scenario_runner.run()
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
         if scenario_runner._scenario_runner.is_running():
             scenario_runner.loginfo("Scenario Runner still running. Shutting down.")
             scenario_runner._scenario_runner.shutdown()
         del scenario_runner
-        logging.info("Done.")
+        ros_shutdown()
+        if ROS_VERSION == 2:
+            spin_thread.join()
 
 
 if __name__ == "__main__":

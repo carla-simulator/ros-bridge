@@ -49,8 +49,9 @@ class ActorListSensor(PseudoActor):
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(ActorListSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.actor_list_publisher)
 
     @staticmethod
     def get_blueprint_name():

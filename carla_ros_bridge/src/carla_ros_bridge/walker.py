@@ -16,8 +16,6 @@ from carla_ros_bridge.traffic_participant import TrafficParticipant
 from carla_msgs.msg import CarlaWalkerControl
 from carla import WalkerControl
 
-from ros_compatibility import destroy_subscription
-
 
 class Walker(TrafficParticipant):
 
@@ -60,10 +58,8 @@ class Walker(TrafficParticipant):
 
         :return:
         """
-        self.node.logdebug("Destroy Walker(id={})".format(self.get_id()))
-        destroy_subscription(self.control_subscriber)
-        self.control_subscriber = None
         super(Walker, self).destroy()
+        self.node.destroy_subscription(self.control_subscriber)
 
     def control_command_updated(self, ros_walker_control):
         """

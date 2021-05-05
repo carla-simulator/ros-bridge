@@ -23,7 +23,8 @@ elif ROS_VERSION == 2:
         packages=[package_name],
         data_files=[('share/ament_index/resource_index/packages', ['resource/' + package_name]),
                     ('share/' + package_name, ['package.xml']),
-                    (os.path.join('share', package_name), glob('launch/*.launch.py'))],
+                    (os.path.join('share', package_name), glob('launch/*.launch.py')),
+                    (os.path.join('share', package_name + '/test'), glob('test/test_objects.json'))],
         install_requires=['setuptools'],
         zip_safe=True,
         maintainer='CARLA Simulator Team',
@@ -35,4 +36,6 @@ elif ROS_VERSION == 2:
             'console_scripts': ['bridge = carla_ros_bridge.bridge:main'],
         },
         package_dir={'': 'src'},
+        package_data={'': ['CARLA_VERSION']},
+        include_package_data=True
     )

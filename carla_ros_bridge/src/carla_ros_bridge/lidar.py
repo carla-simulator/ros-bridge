@@ -55,6 +55,10 @@ class Lidar(Sensor):
                                                   self.get_topic_prefix())
         self.listen()
 
+    def destroy(self):
+        super(Lidar, self).destroy()
+        self.node.destroy_publisher(self.lidar_publisher)
+
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):
         """
@@ -119,6 +123,10 @@ class SemanticLidar(Sensor):
             PointCloud2,
             self.get_topic_prefix())
         self.listen()
+
+    def destroy(self):
+        super(SemanticLidar, self).destroy()
+        self.node.destroy_publisher(self.semantic_lidar_publisher)
 
     # pylint: disable=arguments-differ
     def sensor_data_updated(self, carla_lidar_measurement):

@@ -11,12 +11,11 @@ Classes to handle Carla vehicles
 """
 import math
 import os
+import numpy
 
 from std_msgs.msg import Bool  # pylint: disable=import-error
 from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 from carla import VehicleControl
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaEgoVehicleInfoWheel  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleStatus  # pylint: disable=import-error
 from carla_ros_bridge.vehicle import Vehicle
 
 from carla_msgs.msg import (
@@ -27,18 +26,10 @@ from carla_msgs.msg import (
 )
 
 from ros_compatibility import (
-    destroy_subscription,
     QoSProfile,
-    latch_on
+    latch_on,
+    ROS_VERSION
 )
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION not in (1, 2):
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
-
-if ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
 
 
 class EgoVehicle(Vehicle):
@@ -152,12 +143,16 @@ class EgoVehicle(Vehicle):
                 wheel_info.radius = wheel.radius
                 wheel_info.max_brake_torque = wheel.max_brake_torque
                 wheel_info.max_handbrake_torque = wheel.max_handbrake_torque
-                wheel_info.position.x = (wheel.position.x/100.0) - \
-                    self.carla_actor.get_transform().location.x
-                wheel_info.position.y = -((wheel.position.y/100.0) -
-                                          self.carla_actor.get_transform().location.y)
-                wheel_info.position.z = (wheel.position.z/100.0) - \
-                    self.carla_actor.get_transform().location.z
+
+                inv_T = numpy.array(self.carla_actor.get_transform().get_inverse_matrix(), dtype=float)
+                wheel_pos_in_map = numpy.array([wheel.position.x/100.0,
+                                        wheel.position.y/100.0,
+                                        wheel.position.z/100.0,
+                                        1.0])
+                wheel_pos_in_ego_vehicle = numpy.matmul(inv_T, wheel_pos_in_map)
+                wheel_info.position.x = wheel_pos_in_ego_vehicle[0]
+                wheel_info.position.y = -wheel_pos_in_ego_vehicle[1]
+                wheel_info.position.z = wheel_pos_in_ego_vehicle[2]
                 vehicle_info.wheels.append(wheel_info)
 
             vehicle_info.max_rpm = vehicle_physics.max_rpm
@@ -200,14 +195,12 @@ class EgoVehicle(Vehicle):
         :return:
         """
         self.node.logdebug("Destroy Vehicle(id={})".format(self.get_id()))
-        destroy_subscription(self.control_subscriber)
-        self.control_subscriber = None
-        destroy_subscription(self.enable_autopilot_subscriber)
-        self.enable_autopilot_subscriber = None
-        destroy_subscription(self.control_override_subscriber)
-        self.control_override_subscriber = None
-        destroy_subscription(self.manual_control_subscriber)
-        self.manual_control_subscriber = None
+        self.node.destroy_subscription(self.control_subscriber)
+        self.node.destroy_subscription(self.enable_autopilot_subscriber)
+        self.node.destroy_subscription(self.control_override_subscriber)
+        self.node.destroy_subscription(self.manual_control_subscriber)
+        self.node.destroy_publisher(self.vehicle_status_publisher)
+        self.node.destroy_publisher(self.vehicle_info_publisher)
         Vehicle.destroy(self)
 
     def control_command_override(self, enable):
@@ -238,6 +231,8 @@ class EgoVehicle(Vehicle):
             vehicle_control.steer = ros_vehicle_control.steer
             vehicle_control.throttle = ros_vehicle_control.throttle
             vehicle_control.reverse = ros_vehicle_control.reverse
+            vehicle_control.manual_gear_shift = ros_vehicle_control.manual_gear_shift
+            vehicle_control.gear = ros_vehicle_control.gear
             self.carla_actor.apply_control(vehicle_control)
             self._vehicle_control_applied_callback(self.get_id())
 

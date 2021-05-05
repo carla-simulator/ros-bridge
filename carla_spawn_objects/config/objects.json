@@ -22,7 +22,7 @@
             "id": "map"
         },
         {
-            "type": "vehicle.*",
+            "type": "vehicle.tesla.model3",
             "id": "ego_vehicle",
             "sensors": 
             [
@@ -32,8 +32,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "image_size_x": 800,
                     "image_size_y": 600,
-                    "fov": 90.0,
-                    "sensor_tick": 0.05
+                    "fov": 90.0
                 },
                 {
                     "type": "sensor.camera.rgb",
@@ -42,7 +41,6 @@
                     "image_size_x": 800,
                     "image_size_y": 600,
                     "fov": 90.0,
-                    "sensor_tick": 0.05,
                     "attached_objects":
                     [
                         {
@@ -61,7 +59,6 @@
                     "upper_fov": 2.0,
                     "lower_fov": -26.8,
                     "rotation_frequency": 20,
-                    "sensor_tick": 0.05,
                     "noise_stddev": 0.0
                 },
                 {
@@ -73,13 +70,12 @@
                     "points_per_second": 320000,
                     "upper_fov": 2.0,
                     "lower_fov": -26.8,
-                    "rotation_frequency": 20,
-                    "sensor_tick": 0.05
+                    "rotation_frequency": 20
                 },
                 {
                     "type": "sensor.other.radar",
                     "id": "radar_front",
-                    "spawn_point": {"x": 2.0, "y": 0.0, "z": 1.5, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -91,8 +87,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "fov": 90.0,
                     "image_size_x": 400,
-                    "image_size_y": 70,
-                    "sensor_tick": 0.05
+                    "image_size_y": 70
                 },
                 {
                     "type": "sensor.camera.depth",
@@ -100,8 +95,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "fov": 90.0,
                     "image_size_x": 400,
-                    "image_size_y": 70,
-                    "sensor_tick": 0.05
+                    "image_size_y": 70
                 },
                 {
                     "type": "sensor.camera.dvs",
@@ -110,7 +104,6 @@
                     "fov": 90.0,
                     "image_size_x": 400,
                     "image_size_y": 70,
-                    "sensor_tick": 0.05,
                     "positive_threshold": 0.3,
                     "negative_threshold": 0.3,
                     "sigma_positive_threshold": 0.0,

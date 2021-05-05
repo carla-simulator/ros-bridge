@@ -20,7 +20,6 @@ Additionally, services are provided to interface CARLA waypoints.
 import math
 import sys
 import threading
-import os
 
 from ros_compatibility import (CompatibleNode,
                                QoSProfile,
@@ -28,7 +27,10 @@ from ros_compatibility import (CompatibleNode,
                                ros_timestamp,
                                latch_on,
                                ros_init,
-                               get_service_response)
+                               get_service_response,
+                               loginfo,
+                               ROS_VERSION,
+                               ros_shutdown)
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import carla_common.transforms as trans
@@ -83,8 +85,6 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.goal_subscriber = self.create_subscriber(
             PoseStamped, "/carla/{}/goal".format(self.role_name), self.on_goal)
 
-        self._update_lock = threading.Lock()
-
         # use callback to wait for ego vehicle
         self.loginfo("Waiting for ego vehicle...")
         self.on_tick = self.world.on_tick(self.find_ego_vehicle_actor)
@@ -109,14 +109,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         carla_waypoint = self.map.get_waypoint(carla_position)
 
         response = get_service_response(GetWaypoint)
-        response.waypoint.pose.position.x = carla_waypoint.transform.location.x
-        response.waypoint.pose.position.y = -carla_waypoint.transform.location.y
-        response.waypoint.pose.position.z = carla_waypoint.transform.location.z
+        response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
         response.waypoint.is_junction = carla_waypoint.is_junction
         response.waypoint.road_id = carla_waypoint.road_id
         response.waypoint.section_id = carla_waypoint.section_id
         response.waypoint.lane_id = carla_waypoint.lane_id
-        #self.logwarn("Get waypoint {}".format(response.waypoint.pose.position))
         return response
 
     def get_actor_waypoint(self, req, response=None):
@@ -167,38 +164,37 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         """
         Look for an carla actor with name 'ego_vehicle'
         """
-        with self._update_lock:
-            hero = None
-            for actor in self.world.get_actors():
-                if actor.attributes.get('role_name') == self.role_name:
-                    hero = actor
-                    break
+        hero = None
+        for actor in self.world.get_actors():
+            if actor.attributes.get('role_name') == self.role_name:
+                hero = actor
+                break
 
-            ego_vehicle_changed = False
-            if hero is None and self.ego_vehicle is not None:
-                ego_vehicle_changed = True
+        ego_vehicle_changed = False
+        if hero is None and self.ego_vehicle is not None:
+            ego_vehicle_changed = True
 
-            if not ego_vehicle_changed and hero is not None and self.ego_vehicle is None:
-                ego_vehicle_changed = True
+        if not ego_vehicle_changed and hero is not None and self.ego_vehicle is None:
+            ego_vehicle_changed = True
 
-            if not ego_vehicle_changed and hero is not None and \
-                    self.ego_vehicle is not None and hero.id != self.ego_vehicle.id:
-                ego_vehicle_changed = True
+        if not ego_vehicle_changed and hero is not None and \
+                self.ego_vehicle is not None and hero.id != self.ego_vehicle.id:
+            ego_vehicle_changed = True
 
-            if ego_vehicle_changed:
-                self.loginfo("Ego vehicle changed.")
-                self.ego_vehicle = hero
-                self.reroute()
-            elif self.ego_vehicle:
-                current_location = self.ego_vehicle.get_location()
-                if self.ego_vehicle_location:
-                    dx = self.ego_vehicle_location.x - current_location.x
-                    dy = self.ego_vehicle_location.y - current_location.y
-                    distance = math.sqrt(dx * dx + dy * dy)
-                    if distance > self.WAYPOINT_DISTANCE:
-                        self.loginfo("Ego vehicle was repositioned.")
-                        self.reroute()
-                self.ego_vehicle_location = current_location
+        if ego_vehicle_changed:
+            self.loginfo("Ego vehicle changed.")
+            self.ego_vehicle = hero
+            self.reroute()
+        elif self.ego_vehicle:
+            current_location = self.ego_vehicle.get_location()
+            if self.ego_vehicle_location:
+                dx = self.ego_vehicle_location.x - current_location.x
+                dy = self.ego_vehicle_location.y - current_location.y
+                distance = math.sqrt(dx * dx + dy * dy)
+                if distance > self.WAYPOINT_DISTANCE:
+                    self.loginfo("Ego vehicle was repositioned.")
+                    self.reroute()
+            self.ego_vehicle_location = current_location
 
     def calculate_route(self, goal):
         """
@@ -239,11 +235,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_one_message("/carla/world_info", CarlaWorldInfo,
-                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=10.0)
-        except ROSException:
-            self.logerr("Error while waiting for world info!")
-            sys.exit(1)
+            self.wait_for_message("/carla/world_info", CarlaWorldInfo,
+                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=15.0)
+        except ROSException as e:
+            self.logerr("Error while waiting for world info: {}".format(e))
+            raise e
 
         host = self.get_param("host", "127.0.0.1")
         port = self.get_param("port", 2000)
@@ -254,7 +250,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         carla_client = carla.Client(host=host, port=port)
         carla_client.set_timeout(timeout)
 
-        self.world = carla_client.get_world()
+        try:
+            self.world = carla_client.get_world()
+        except RuntimeError as e:
+            self.logerr("Error while connecting to Carla: {}".format(e))
+            raise e
 
         self.loginfo("Connected to Carla.")
 
@@ -265,13 +265,24 @@ def main(args=None):
     """
     ros_init(args)
 
+    waypoint_converter = None
     try:
-        waypointConverter = CarlaToRosWaypointConverter()
-        waypointConverter.spin()
-        del waypointConverter
-
+        waypoint_converter = CarlaToRosWaypointConverter()
+        if ROS_VERSION == 1:
+            waypoint_converter.spin()
+        else:
+            spin_thread = threading.Thread(target=waypoint_converter.spin)
+            spin_thread.start()
+            spin_thread.join()
+    except (RuntimeError, ROSException):
+        pass
+    except KeyboardInterrupt:
+        loginfo("User requested shut down.")
     finally:
-        print("Done")
+        loginfo("Shutting down.")
+        if waypoint_converter:
+            waypoint_converter.destroy()
+        ros_shutdown()
 
 
 if __name__ == "__main__":

@@ -10,23 +10,22 @@ This module contains a local planner to perform
 low-level waypoint following based on PID controllers.
 """
 
-from collections import deque
-from geometry_msgs.msg import PointStamped  # pylint: disable=import-error
+import collections
+import math
+import threading
+
+from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION
+
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
-from ros_compatibility import QoSProfile
+from nav_msgs.msg import Odometry, Path
+from std_msgs.msg import Float64
+from visualization_msgs.msg import Marker
 
-import os
-ROS_VERSION = int(os.environ['ROS_VERSION'])
-
-if ROS_VERSION == 1:
-    from vehicle_pid_controller import VehiclePIDController
-    from misc import distance_vehicle
-elif ROS_VERSION == 2:
-    from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
-    from carla_ad_agent.misc import distance_vehicle
+from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
+from carla_ad_agent.misc import distance_vehicle
 
 
-class LocalPlanner(object):
+class LocalPlanner(CompatibleNode):
     """
     LocalPlanner implements the basic behavior of following a trajectory of waypoints that is
     generated on-the-fly. The low-level motion of the vehicle is computed by using two PID
@@ -40,122 +39,183 @@ class LocalPlanner(object):
     # total distance)
     MIN_DISTANCE_PERCENTAGE = 0.9
 
-    def __init__(self, node, opt_dict=None):
-        """
-        :param vehicle: actor to apply to local planner logic onto
-        :param opt_dict: dictionary of arguments with the following semantics:
+    def __init__(self):
+        super(LocalPlanner, self).__init__("local_planner")
 
-            target_speed -- desired cruise speed in Km/h
+        role_name = self.get_param("role_name", "ego_vehicle")
+        self.control_time_step = self.get_param("control_time_step", 0.05)
 
-            sampling_radius -- search radius for next waypoints in seconds: e.g. 0.5 seconds ahead
+        args_lateral_dict = {}
+        args_lateral_dict['K_P'] = self.get_param("Kp_lateral", 0.9)
+        args_lateral_dict['K_I'] = self.get_param("Ki_lateral", 0.0)
+        args_lateral_dict['K_D'] = self.get_param("Kd_lateral", 0.0)
 
-            lateral_control_dict -- dictionary of arguments to setup the lateral PID controller
-                                    {'K_P':, 'K_D':, 'K_I'}
+        args_longitudinal_dict = {}
+        args_longitudinal_dict['K_P'] = self.get_param("Kp_longitudinal", 0.206)
+        args_longitudinal_dict['K_I'] = self.get_param("Ki_longitudinal", 0.0206)
+        args_longitudinal_dict['K_D'] = self.get_param("Kd_longitudinal", 0.515)
 
-            longitudinal_control_dict -- dictionary of arguments to setup the longitudinal
-                                         PID controller
-                                         {'K_P':, 'K_D':, 'K_I'}
-        """
-        self.target_route_point = None
-        self._vehicle_controller = None
-        self._waypoints_queue = deque(maxlen=20000)
+        self.data_lock = threading.Lock()
+
+        self._current_pose = None
+        self._current_speed = None
+        self._target_speed = 0.0
+
         self._buffer_size = 5
-        self._waypoint_buffer = deque(maxlen=self._buffer_size)
-        self.node = node
+        self._waypoints_queue = collections.deque(maxlen=20000)
+        self._waypoint_buffer = collections.deque(maxlen=self._buffer_size)
 
-        self._target_point_publisher = self.node.new_publisher(
-            PointStamped, "/next_target", QoSProfile(depth=1, durability=False))
+        # subscribers
+        self._odometry_subscriber = self.create_subscriber(
+            Odometry,
+            "/carla/{}/odometry".format(role_name),
+            self.odometry_cb)
+        self._path_subscriber = self.create_subscriber(
+            Path,
+            "/carla/{}/waypoints".format(role_name),
+            self.path_cb,
+            QoSProfile(depth=1, durability=True))
+        self._target_speed_subscriber = self.create_subscriber(
+            Float64,
+            "/carla/{}/speed_command".format(role_name),
+            self.target_speed_cb,
+            QoSProfile(depth=1, durability=True))
+
+        # publishers
+        self._target_pose_publisher = self.new_publisher(
+            Marker,
+            "/carla/{}/next_target".format(role_name),
+            QoSProfile(depth=10, durability=False))
+        self._control_cmd_publisher = self.new_publisher(
+            CarlaEgoVehicleControl,
+            "/carla/{}/vehicle_control_cmd".format(role_name),
+            QoSProfile(depth=1, durability=False))
 
         # initializing controller
-        self._init_controller(opt_dict)
+        self._vehicle_controller = VehiclePIDController(
+            self, args_lateral=args_lateral_dict, args_longitudinal=args_longitudinal_dict)
 
-    def _init_controller(self, opt_dict):
+    def odometry_cb(self, odometry_msg):
+        with self.data_lock:
+            self._current_pose = odometry_msg.pose.pose
+            self._current_speed = math.sqrt(odometry_msg.twist.twist.linear.x ** 2 +
+                                            odometry_msg.twist.twist.linear.y ** 2 +
+                                            odometry_msg.twist.twist.linear.z ** 2) * 3.6
+
+    def target_speed_cb(self, target_speed_msg):
+        with self.data_lock:
+            self._target_speed = target_speed_msg.data
+
+    def path_cb(self, path_msg):
+        with self.data_lock:
+            self._waypoint_buffer.clear()
+            self._waypoints_queue.clear()
+            self._waypoints_queue.extend([pose.pose for pose in path_msg.poses])
+
+    def pose_to_marker_msg(self, pose):
+        marker_msg = Marker()
+        marker_msg.type = 0
+        marker_msg.header.frame_id = "map"
+        marker_msg.pose = pose
+        marker_msg.scale.x = 1.0
+        marker_msg.scale.y = 0.2
+        marker_msg.scale.z = 0.2
+        marker_msg.color.r = 255.0
+        marker_msg.color.a = 1.0
+        return marker_msg
+
+    def run_step(self):
         """
-        Controller initialization.
-
-        :param opt_dict: dictionary of arguments.
-        :return:
-        """
-        # default params
-        args_lateral_dict = {
-            'K_P': 1.95,
-            'K_D': 0.01,
-            'K_I': 1.4}
-        args_longitudinal_dict = {
-            'K_P': 0.2,
-            'K_D': 0.05,
-            'K_I': 0.1}
-
-        # parameters overload
-        if opt_dict:
-            if 'lateral_control_dict' in opt_dict:
-                args_lateral_dict = opt_dict['lateral_control_dict']
-            if 'longitudinal_control_dict' in opt_dict:
-                args_longitudinal_dict = opt_dict['longitudinal_control_dict']
-
-        self._vehicle_controller = VehiclePIDController(self.node, args_lateral=args_lateral_dict,
-                                                        args_longitudinal=args_longitudinal_dict)
-
-    def set_global_plan(self, current_plan):
-        """
-        set a global plan to follow
-        """
-        self.target_route_point = None
-        self._waypoint_buffer.clear()
-        self._waypoints_queue.clear()
-        for elem in current_plan:
-            self._waypoints_queue.append(elem.pose)
-
-    def run_step(self, target_speed, current_speed, current_pose):
-        """
-        Execute one step of local planning which involves running the longitudinal
+        Executes one step of local planning which involves running the longitudinal
         and lateral PID controllers to follow the waypoints trajectory.
         """
-        if not self._waypoint_buffer and not self._waypoints_queue:
-            control = CarlaEgoVehicleControl()
-            control.steer = 0.0
-            control.throttle = 0.0
-            control.brake = 1.0
-            control.hand_brake = False
-            control.manual_gear_shift = False
+        with self.data_lock:
+            if not self._waypoint_buffer and not self._waypoints_queue:
+                self.loginfo("Waiting for a route...")
+                self.emergency_stop()
+                return
 
-            self.node.loginfo("Route finished.")
-            return control, True
+            # when target speed is 0, brake.
+            if self._target_speed == 0.0:
+                self.emergency_stop()
+                return
 
-        #   Buffering the waypoints
-        if not self._waypoint_buffer:
-            for i in range(self._buffer_size):
-                if self._waypoints_queue:
-                    self._waypoint_buffer.append(
-                        self._waypoints_queue.popleft())
-                else:
-                    break
+            #   Buffering the waypoints
+            if not self._waypoint_buffer:
+                for i in range(self._buffer_size):
+                    if self._waypoints_queue:
+                        self._waypoint_buffer.append(self._waypoints_queue.popleft())
+                    else:
+                        break
 
-        # target waypoint
-        self.target_route_point = self._waypoint_buffer[0]
+            # target waypoint
+            target_pose = self._waypoint_buffer[0]
+            self._target_pose_publisher.publish(self.pose_to_marker_msg(target_pose))
 
-        target_point = PointStamped()
-        target_point.header.frame_id = "map"
-        target_point.point.x = self.target_route_point.position.x
-        target_point.point.y = self.target_route_point.position.y
-        target_point.point.z = self.target_route_point.position.z
-        self._target_point_publisher.publish(target_point)
-        # move using PID controllers
-        control = self._vehicle_controller.run_step(
-            target_speed, current_speed, current_pose, self.target_route_point)
+            # move using PID controllers
+            control_msg = self._vehicle_controller.run_step(
+                self._target_speed, self._current_speed, self._current_pose, target_pose)
 
-        # purge the queue of obsolete waypoints
-        max_index = -1
+            # purge the queue of obsolete waypoints
+            max_index = -1
 
-        sampling_radius = target_speed * 1 / 3.6  # 1 seconds horizon
-        min_distance = sampling_radius * self.MIN_DISTANCE_PERCENTAGE
+            sampling_radius = self._target_speed * 1 / 3.6  # search radius for next waypoints in seconds
+            min_distance = sampling_radius * self.MIN_DISTANCE_PERCENTAGE
 
-        for i, route_point in enumerate(self._waypoint_buffer):
-            if distance_vehicle(
-                    route_point, current_pose.position) < min_distance:
-                max_index = i
-        if max_index >= 0:
-            for i in range(max_index + 1):
-                self._waypoint_buffer.popleft()
+            for i, route_point in enumerate(self._waypoint_buffer):
+                if distance_vehicle(route_point, self._current_pose.position) < min_distance:
+                    max_index = i
+            if max_index >= 0:
+                for i in range(max_index + 1):
+                    self._waypoint_buffer.popleft()
 
-        return control, False
+            self._control_cmd_publisher.publish(control_msg)
+
+    def emergency_stop(self):
+        control_msg = CarlaEgoVehicleControl()
+        control_msg.steer = 0.0
+        control_msg.throttle = 0.0
+        control_msg.brake = 1.0
+        control_msg.hand_brake = False
+        control_msg.manual_gear_shift = False
+        self._control_cmd_publisher.publish(control_msg)
+
+
+def main(args=None):
+    """
+
+    main function
+
+    :return:
+    """
+    ros_init(args)
+
+    local_planner = None
+    update_timer = None
+    try:
+        local_planner = LocalPlanner()
+        if ROS_VERSION == 1:
+            local_planner.on_shutdown(local_planner.emergency_stop)
+
+        update_timer = local_planner.new_timer(
+            local_planner.control_time_step, lambda timer_event=None: local_planner.run_step())
+
+        local_planner.spin()
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        loginfo('Local planner shutting down.')
+        if update_timer:
+            if ROS_VERSION == 1:
+                update_timer.shutdown()
+            else:
+                update_timer.destroy()
+        if ROS_VERSION == 2:
+            local_planner.emergency_stop()
+        local_planner.shutdown()
+
+
+if __name__ == "__main__":
+    main()

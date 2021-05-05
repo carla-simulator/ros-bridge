@@ -3,9 +3,17 @@ import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
+if ROS_VERSION not in (1, 2):
+    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+
 if ROS_VERSION == 1:
     import rospy
-    import tf.transformations as trans
+elif ROS_VERSION == 2:
+    import rclpy
+else:
+    raise NotImplementedError('Make sure you have valid ROS_VERSION env variable.')
+
+if ROS_VERSION == 1:
 
     latch_on = True
 
@@ -23,8 +31,8 @@ if ROS_VERSION == 1:
     def ros_shutdown():
         pass
 
-    def destroy_subscription(subscription):
-        subscription.unregister()
+    def ros_on_shutdown(handler):
+        rospy.on_shutdown(handler)
 
     def logdebug(log):
         rospy.logdebug(log)
@@ -67,6 +75,10 @@ if ROS_VERSION == 1:
             self.depth = depth
             self.latch = bool(durability)
 
+    class MultiThreadedExecutor(object):
+        def add_node(self, node):
+            pass
+
     class CompatibleNode(object):
         def __init__(self, node_name, queue_size=10, latch=False, rospy_init=True, **kwargs):
             if rospy_init:
@@ -76,6 +88,15 @@ if ROS_VERSION == 1:
 
         def destroy(self):
             pass
+
+        def destroy_service(self, service):
+            service.shutdown()
+
+        def destroy_subscription(self, subscription):
+            subscription.unregister()
+
+        def destroy_publisher(self, publisher):
+            publisher.unregister()
 
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if name.startswith('/'):
@@ -121,25 +142,34 @@ if ROS_VERSION == 1:
         def new_timer(self, timer_period_sec, callback):
             return rospy.Timer(rospy.Duration(timer_period_sec), callback)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
-            return rospy.wait_for_message(topic, topic_type, timeout)
+        def wait_for_message(self, topic, topic_type, timeout=None, qos_profile=None, executor=None):
+            try:
+                return rospy.wait_for_message(topic, topic_type, timeout)
+            except rospy.ROSException as e:
+                raise ROSException(e)
 
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
             return rospy.Service(srv_name, srv_type, callback)
 
-        def create_service_client(self, service_name, service, callback_group=None):
-            rospy.wait_for_service(service_name)
+        def create_service_client(self, service_name, service, timeout_sec=None, callback_group=None):
+            if timeout_sec is not None:
+                timeout = timeout_sec * 1000
+            else:
+                timeout = timeout_sec
             try:
+                rospy.wait_for_service(service_name, timeout=timeout)
                 client = rospy.ServiceProxy(service_name, service)
             except rospy.ServiceException as e:
-                print("Service call failed: %s" % e)
+                raise ServiceException(e)
+            except rospy.ROSException as e:
+                raise ROSException(e)
             return client
 
-        def call_service(self, client, req):
+        def call_service(self, client, req, timeout_ros2=None, executor=None, spin_until_response_received=False):
             try:
                 return client(req)
             except rospy.ServiceException as e:
-                print("Service call failed: %s" % e)
+                raise ServiceException(e)
 
         def spin(self, executor=None):
             rospy.spin()
@@ -159,10 +189,14 @@ elif ROS_VERSION == 2:
     from rclpy.exceptions import ROSInterruptException
     from rclpy.node import Node
     from rclpy.qos import QoSProfile, QoSDurabilityPolicy
-    import rclpy
+    from rclpy.task import Future
+    from rclpy.executors import MultiThreadedExecutor
+    from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
     from builtin_interfaces.msg import Time
 
     latch_on = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+    def dummy_handler(): pass
+    shutdown_handler = dummy_handler
 
     def ros_init(args=None):
         rclpy.init(args=args)
@@ -181,10 +215,12 @@ elif ROS_VERSION == 2:
         return rclpy.ok()
 
     def ros_shutdown():
+        shutdown_handler()
         rclpy.shutdown()
 
-    def destroy_subscription(subscription):
-        subscription.destroy()
+    def ros_on_shutdown(handler):
+        global shutdown_handler
+        shutdown_handler = handler
 
     def logdebug(log):
         rclpy.logging.get_logger("default").debug(log)
@@ -201,14 +237,6 @@ elif ROS_VERSION == 2:
     def logfatal(log):
         rclpy.logging.get_logger("default").fatal(log)
 
-    class WaitForMessageHelper(object):
-        def __init__(self):
-            self.msg = None
-
-        def callback(self, msg):
-            if self.msg is None:
-                self.msg = msg
-
     def get_service_request(service_type):
         return service_type.Request()
 
@@ -222,6 +250,9 @@ elif ROS_VERSION == 2:
         pass
 
     class ServiceException(Exception):
+        pass
+
+    class MultiThreadedExecutor(MultiThreadedExecutor):
         pass
 
     class CompatibleNode(Node):
@@ -277,7 +308,7 @@ elif ROS_VERSION == 2:
             if qos_profile is None:
                 qos_profile = self.qos_profile
             if callback_group is None:
-                callback_group = self.callback_group
+                callback_group = MutuallyExclusiveCallbackGroup()
             return self.create_subscription(msg_type, topic, callback, qos_profile,
                                             callback_group=callback_group)
 
@@ -287,48 +318,62 @@ elif ROS_VERSION == 2:
         def new_timer(self, timer_period_sec, callback):
             return self.create_timer(timer_period_sec, callback)
 
-        def wait_for_one_message(self, topic, topic_type, timeout=None, qos_profile=None):
+        def wait_for_message(self, topic, topic_type, timeout=None, qos_profile=None, executor=None):
+            """
+            Wait for one message from topic.
+
+            This will create a new subcription to the topic, receive one message, then unsubscribe.
+ 
+            Do not call this method in a callback or a deadlock may occur.
+            """
             s = None
-            wfm = WaitForMessageHelper()
             try:
-                s = self.create_subscriber(topic_type, topic, wfm.callback, qos_profile=qos_profile)
-                if timeout is not None:
-                    timeout_t = time.time() + timeout
-                    while ros_ok() and wfm.msg is None:
-                        time.sleep(0.01)
-                        rclpy.spin_once(self, timeout_sec=0)
-                        if time.time() >= timeout_t:
-                            raise ROSException
-                else:
-                    while ros_ok() and wfm.msg is None:
-                        time.sleep(0.01)
-                        rclpy.spin_once(self, timeout_sec=0)
+                future = Future()
+                s = self.create_subscriber(
+                    topic_type,
+                    topic,
+                    lambda msg: future.set_result(msg),
+                    qos_profile=qos_profile)
+                rclpy.spin_until_future_complete(self, future, self.executor, timeout)
             finally:
                 if s is not None:
                     self.destroy_subscription(s)
-            return wfm.msg
+
+            return future.result()
 
         def new_service(self, srv_type, srv_name, callback, qos_profile=None, callback_group=None):
-            return self.create_service(srv_type, srv_name, callback)
+            return self.create_service(srv_type, srv_name, callback, callback_group=callback_group)
 
-        def create_service_client(self, service_name, service, callback_group=None):
+        def create_service_client(self, service_name, service, timeout_sec=None, callback_group=None):
+            if callback_group is None:
+                callback_group = MutuallyExclusiveCallbackGroup()
             client = self.create_client(service, service_name, callback_group=callback_group)
-            while not client.wait_for_service(timeout_sec=1.0):
-                self.get_logger().info('service not available, waiting again...')
-            return client
-
-        def call_service(self, client, req):
-            resp = client.call_async(req)
-            rclpy.spin_until_future_complete(self, resp)
-            try:
-                result = resp.result()
-            except Exception as e:
-                node.get_logger().info('Service call failed %r' % (e,))
+            status = client.wait_for_service(timeout_sec=timeout_sec)
+            if status is True:
+                return client
             else:
-                return result
+                raise ROSException("Timeout of {}sec while waiting for service".format(timeout_sec))
+
+        def call_service(self, client, req, timeout_ros2=None, executor=None, spin_until_response_received=False):
+
+            if not spin_until_response_received:
+                response = client.call(req)
+                return response
+            else:
+                future = client.call_async(req)
+                rclpy.spin_until_future_complete(self, future, self.executor, timeout_ros2)
+                
+                if future.done():
+                    return future.result()
+                else:
+                    if timeout_ros2 is not None:
+                        raise ServiceException(
+                            'Service did not return a response before timeout {}'.format(timeout_ros2))
+                    else:
+                        raise ServiceException('Service did not return a response')
 
         def spin(self, executor=None):
-            rclpy.spin(self, executor)
+            rclpy.spin(self, self.executor)
 
         def get_time(self):
             t = self.get_clock().now()

@@ -9,7 +9,6 @@
 """
 Control Carla ego vehicle by using AckermannDrive messages
 """
-import os
 import sys
 import datetime
 import numpy
@@ -20,22 +19,16 @@ from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_init
+from ros_compatibility import CompatibleNode, QoSProfile, ros_init, ROS_VERSION
 from carla_ackermann_control import carla_control_physics as phys
 
 from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
-
-
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
 
 if ROS_VERSION == 1:
     from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
     from dynamic_reconfigure.server import Server
 if ROS_VERSION == 2:
-    import rclpy
-    from rclpy.parameter import Parameter
     from rcl_interfaces.msg import SetParametersResult
-    from typing import Sequence
 
 
 class CarlaAckermannControl(CompatibleNode):
@@ -85,30 +78,9 @@ class CarlaAckermannControl(CompatibleNode):
                 callback=self.reconfigure_pid_parameters,
             )
         if ROS_VERSION == 2:
-            # self.add_on_set_parameters_callback(self.reconfigure_pid_parameters) # works with ros2 foxy
-            # for ros2 eloquent, deprecated in ros2 foxy
             self.set_parameters_callback(self.reconfigure_pid_parameters)
-            # TODO(hillekia@schaeffler.com): Enable stricter handling of node
-            # parameters, so they must be explicitly listed. This can be done by
-            # disabling the `automatically_declare_parameters_from_overrides`
-            # and `allow_undeclared_parameters` flags of `Node` and will prevent
-            # mistakes in the future.
-            #
-            # self.declare_parameters(
-            #     namespace="",
-            #     parameters=[
-            #         ("speed_Kp",),
-            #         ("speed_Ki",),
-            #         ("speed_Kd",),
-            #         ("accel_Kp",),
-            #         ("accel_Ki",),
-            #         ("accel_Kd",),
-            #         ("min_accel",),
-            #         ("role_name",),
-            #     ]
-            # )
 
-        self.control_loop_rate = 1.0 / 10  # 10Hz
+        self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()

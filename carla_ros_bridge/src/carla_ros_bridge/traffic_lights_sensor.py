@@ -26,7 +26,6 @@ class TrafficLightsSensor(PseudoActor):
     def __init__(self, uid, name, parent, node, actor_list):
         """
         Constructor
-
         :param uid: unique identifier for this object
         :type uid: int
         :param name: name identiying the sensor
@@ -61,8 +60,10 @@ class TrafficLightsSensor(PseudoActor):
         Function to destroy this object.
         :return:
         """
-        self.actor_list = None
         super(TrafficLightsSensor, self).destroy()
+        self.actor_list = None
+        self.node.destroy_publisher(self.traffic_lights_info_publisher)
+        self.node.destroy_publisher(self.traffic_lights_status_publisher)
 
     @staticmethod
     def get_blueprint_name():

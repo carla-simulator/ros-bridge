@@ -1,5 +1,4 @@
 import os
-import sys
 
 import launch
 import launch_ros.actions
@@ -27,10 +26,6 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='timeout',
             default_value='2'
-        ),
-        launch.actions.DeclareLaunchArgument(
-            name='synchronous_mode',
-            default_value='True'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
@@ -81,7 +76,6 @@ def generate_launch_description():
                 'port': launch.substitutions.LaunchConfiguration('port'),
                 'town': launch.substitutions.LaunchConfiguration('town'),
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
-                'synchronous_mode': launch.substitutions.LaunchConfiguration('synchronous_mode'),
                 'synchronous_mode_wait_for_vehicle_control_command': launch.substitutions.LaunchConfiguration('synchronous_mode_wait_for_vehicle_control_command'),
                 'fixed_delta_seconds': launch.substitutions.LaunchConfiguration('fixed_delta_seconds')
             }.items()
@@ -93,7 +87,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 'object_definition_file': get_package_share_directory('carla_spawn_objects') + '/config/objects.json',
-                'role_name_' + str(launch.substitutions.LaunchConfiguration('role_name')): launch.substitutions.LaunchConfiguration('role_name')
+                'role_name': launch.substitutions.LaunchConfiguration('role_name')
             }.items()
         ),
         launch.actions.IncludeLaunchDescription(
