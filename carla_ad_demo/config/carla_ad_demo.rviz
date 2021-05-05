@@ -60,7 +60,15 @@ Visualization Manager:
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /carla/markers
-      Name: MarkerArray
+      Name: Objects
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /carla/static_markers
+      Name: StaticObjects
       Namespaces:
         "": true
       Queue Size: 100
@@ -79,11 +87,12 @@ Visualization Manager:
         DVS Camera: true
         Depth Camera: true
         Lidar: true
-        MarkerArray: true
+        Objects: true
         Path: true
         Radar: true
         Semantic Camera: true
         Semantic Lidar: true
+        StaticObjects: true
         Value: true
       Zoom Factor: 1
     - Alpha: 1
