@@ -107,7 +107,7 @@ class CarlaAdAgent(Agent):
 
     def target_speed_cb(self, target_speed_msg):
         with self.data_lock:
-            self._target_speed = target_speed_msg.data
+            self._target_speed = target_speed_msg.data * 3.6 # target speed from scenario is in m/s
 
     def objects_cb(self, objects_msg):
         objects = {}
