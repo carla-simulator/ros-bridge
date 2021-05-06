@@ -1,7 +1,6 @@
 <!-- -->
 <launch>
   <arg name="role_name" default="ego_vehicle"/>
-  <arg name="target_speed" default="20"/>
   <arg name="avoid_risk" default="True"/>
   <arg name="Kp_lateral" default="0.9"/>
   <arg name="Ki_lateral" default="0.0"/>
@@ -12,7 +11,6 @@
   <arg name="control_time_step" default="0.05"/>
 
   <node pkg="carla_ad_agent" type="ad_agent.py" name="carla_ad_agent_$(arg role_name)" output="screen">
-    <param name="target_speed" value="$(arg target_speed)" />
     <param name="role_name" value="$(arg role_name)" />
     <param name="avoid_risk" value="$(arg avoid_risk)" />
   </node>

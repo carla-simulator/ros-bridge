@@ -39,7 +39,6 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 |-----------|------|-------------|
 | `role_name` | string (default: `ego_vehicle`) | CARLA role name of the ego vehicle |
 | `avoid_risk` | bool (default: `true`) | If True, avoids crashes with other vehicles and respects traffic lights  |
-| `target_speed` | float (default `30.0`) | Target speed of the ego vehicle |
 
 <br>
 
@@ -47,6 +46,7 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 
 | Topic | Type | Description |
 |-------|------|-------------|
+| `/carla/<ROLE NAME>/target_speed` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed of the ego vehicle |
 | `/carla/<ROLE NAME>/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Odometry of the ego vehicle |
 | `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs/CarlaEgoVehicleInfo](ros_msgs.md#carlaegovehicleinfomsg) | Identify the CARLA actor id of the ego vehicle |
 | `/carla/<ROLE NAME>/objects` | [derived_object_msgs/ObjectArray](https://docs.ros.org/en/melodic/api/derived_object_msgs/html/msg/ObjectArray.html) | Information about other actors |
