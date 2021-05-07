@@ -9,10 +9,6 @@ def generate_launch_description():
             default_value='ego_vehicle'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='target_speed',
-            default_value='30.0'
-        ),
-        launch.actions.DeclareLaunchArgument(
             name='avoid_risk',
             default_value='True'
         ),
@@ -50,9 +46,6 @@ def generate_launch_description():
             name=['carla_ad_agent_', launch.substitutions.LaunchConfiguration('role_name')],
             output='screen',
             parameters=[
-                {
-                    'target_speed': launch.substitutions.LaunchConfiguration('target_speed')
-                },
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
                 },

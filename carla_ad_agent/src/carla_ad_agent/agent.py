@@ -18,7 +18,9 @@ from ros_compatibility import (
     CompatibleNode,
     ros_ok,
     ServiceException,
-    get_service_request)
+    get_service_request,
+    QoSProfile,
+    latch_on)
 
 import carla_common.transforms as trans
 
@@ -58,9 +60,12 @@ class Agent(CompatibleNode):
         self._proximity_vehicle_threshold = 12.0  # meters
 
         role_name = self.get_param("role_name", "ego_vehicle")
+        self.loginfo("Waiting for vehicle_info...")
         vehicle_info = self.wait_for_message(
             "/carla/{}/vehicle_info".format(role_name),
-            CarlaEgoVehicleInfo)
+            CarlaEgoVehicleInfo,
+            qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.loginfo("Vehicle info received.")
         self._ego_vehicle_id = vehicle_info.id
 
         self._get_waypoint_client = self.create_service_client(

@@ -15,7 +15,7 @@ from nav_msgs.msg import Path
 import carla_common.transforms as trans
 from srunner.scenariomanager.actorcontrols.basic_control import BasicControl  # pylint: disable=import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp, ros_init
+from ros_compatibility import CompatibleNode, QoSProfile, ros_timestamp, ros_init, latch_on
 import os
 
 ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
@@ -53,11 +53,13 @@ class RosVehicleControl(BasicControl):
 
         self._target_speed_publisher = self.node.new_publisher(
             Float64, "/carla/{}/target_speed".format(self._role_name),
-            QoSProfile(depth=1, durability=True))
+            QoSProfile(depth=10, durability=latch_on))
+        self.node.loginfo("Publishing target_speed on /carla/{}/target_speed".format(self._role_name))
 
         self._path_publisher = self.node.new_publisher(
             Path, "/carla/{}/{}".format(self._role_name, self._path_topic_name),
-            QoSProfile(depth=1, durability=True))
+            QoSProfile(depth=10, durability=latch_on))
+        self.node.loginfo("Publishing path on /carla/{}/{}".format(self._role_name, self._path_topic_name))
 
         if "launch" in args and "launch-package" in args:
 

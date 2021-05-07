@@ -14,11 +14,14 @@
   <!-- spectator camera parameter -->
   <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
   <arg name='spawn_point' default='127.4,-195.4,2,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
-  <arg name="target_speed" default="30"/> <!-- target speed in km/h that the agent tries to follow -->
+  <arg name="target_speed" default="8.33"/> <!-- target speed in m/s that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
 
   <!-- ===================================================== -->
 
+  <!-- Publish the target speed -->
+  <node pkg="rostopic" type="rostopic" name="rostopic" args="pub /carla/$(arg role_name)/target_speed std_msgs/Float64 $(arg target_speed)"/>
+  
   <!-- The ros bridge -->
   <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
     <arg name='host' value='$(arg host)'/>
@@ -40,7 +43,6 @@
 
   <!-- The agent to control the ego vehicle -->
   <include file="$(find carla_ad_agent)/launch/carla_ad_agent.launch">
-    <arg name="target_speed" value="$(arg target_speed)" />
     <arg name="role_name" value="$(arg role_name)" />
     <arg name="avoid_risk" value="$(arg avoid_risk)" />
   </include>
