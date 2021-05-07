@@ -55,8 +55,8 @@ class CarlaSpawnObjects(CompatibleNode):
 
     def __init__(self):
         super(CarlaSpawnObjects, self).__init__('carla_spawn_objects')
-        self.objects_definition_file = self.get_param('objects_definition_file')
-        self.spawn_sensors_only = self.get_param('spawn_sensors_only', None)
+        self.objects_definition_file = self.get_param('objects_definition_file', None)
+        self.spawn_sensors_only = self.get_param('spawn_sensors_only', False)
 
         self.players = []
         self.vehicles_sensors = []

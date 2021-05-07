@@ -101,8 +101,6 @@ if ROS_VERSION == 1:
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if name.startswith('/'):
                 raise RuntimeError("Only private parameters are supported.")
-            if alternative_value is None:
-                return rospy.get_param("~" + name)
             return rospy.get_param("~" + name, alternative_value)
 
         def logdebug(self, text):
@@ -272,8 +270,6 @@ elif ROS_VERSION == 2:
             self.destroy_node()
 
         def get_param(self, name, alternative_value=None, alternative_name=None):
-            if alternative_value is None:
-                return self.get_parameter(name).value
             if alternative_name is None:
                 alternative_name = name
             return self.get_parameter_or(name,
