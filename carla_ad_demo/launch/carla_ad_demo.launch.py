@@ -24,6 +24,15 @@ def launch_carla_spawn_object(context, *args, **kwargs):
 
     return [carla_spawn_objects_launch]
 
+def launch_target_speed_publisher(context, *args, **kwargs):
+    topic_name = "/carla/" + launch.substitutions.LaunchConfiguration('role_name').perform(context) + "/target_speed"
+    data_string = "{'data': " + launch.substitutions.LaunchConfiguration('target_speed').perform(context) + "}"
+    return [
+        launch.actions.ExecuteProcess(
+            output="screen",
+            cmd=["ros2", "topic", "pub", topic_name,
+                 "std_msgs/msg/Float64", data_string, "--qos-durability", "transient_local"],
+            name='topic_pub_target_speed')]
 
 def generate_launch_description():
     ld = launch.LaunchDescription([
@@ -61,7 +70,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='30.0'
+            default_value='8.33' # in m/s
         ),
         launch.actions.DeclareLaunchArgument(
             name='avoid_risk',
@@ -86,13 +95,13 @@ def generate_launch_description():
             }.items()
         ),
         launch.actions.OpaqueFunction(function=launch_carla_spawn_object),
+        launch.actions.OpaqueFunction(function=launch_target_speed_publisher),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
                     'carla_ad_agent'), 'carla_ad_agent.launch.py')
             ),
             launch_arguments={
-                'target_speed': launch.substitutions.LaunchConfiguration('target_speed'),
                 'role_name': launch.substitutions.LaunchConfiguration('role_name'),
                 'avoid_risk': launch.substitutions.LaunchConfiguration('avoid_risk')
             }.items()

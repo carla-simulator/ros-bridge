@@ -55,7 +55,6 @@ class CarlaAdAgent(Agent):
 
         role_name = self.get_param("role_name", "ego_vehicle")
         self._avoid_risk = self.get_param("avoid_risk", True)
-        self._target_speed = self.get_param("target_speed", 30.0)
 
         self.data_lock = threading.Lock()
 
@@ -63,6 +62,7 @@ class CarlaAdAgent(Agent):
         self._objects = {}
         self._lights_status = {}
         self._lights_info = {}
+        self._target_speed = 0.
 
         self.speed_command_publisher = self.new_publisher(
             Float64, "/carla/{}/speed_command".format(role_name),
@@ -72,6 +72,13 @@ class CarlaAdAgent(Agent):
             Odometry,
             "/carla/{}/odometry".format(role_name),
             self.odometry_cb
+        )
+
+        self._target_speed_subscriber = self.create_subscriber(
+            Float64,
+            "/carla/{}/target_speed".format(role_name),
+            self.target_speed_cb,
+            qos_profile=QoSProfile(depth=10, durability=latch_on)
         )
 
         if self._avoid_risk:
@@ -97,6 +104,10 @@ class CarlaAdAgent(Agent):
     def odometry_cb(self, odometry_msg):
         with self.data_lock:
             self._ego_vehicle_pose = odometry_msg.pose.pose
+
+    def target_speed_cb(self, target_speed_msg):
+        with self.data_lock:
+            self._target_speed = target_speed_msg.data * 3.6 # target speed from scenario is in m/s
 
     def objects_cb(self, objects_msg):
         objects = {}
@@ -136,6 +147,7 @@ class CarlaAdAgent(Agent):
             objects = copy.deepcopy(self._objects)
             lights_info = copy.deepcopy(self._lights_info)
             lights_status = copy.deepcopy(self._lights_status)
+            target_speed = copy.deepcopy(self._target_speed)
 
         if ego_vehicle_pose is None:
             self.loginfo("Waiting for ego vehicle pose")
@@ -164,7 +176,7 @@ class CarlaAdAgent(Agent):
             speed_command.data = 0.0
         else:
             self._state = AgentState.NAVIGATING
-            speed_command.data = self._target_speed
+            speed_command.data = target_speed
 
         self.speed_command_publisher.publish(speed_command)
 
