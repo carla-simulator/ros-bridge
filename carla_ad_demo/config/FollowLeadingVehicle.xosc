@@ -92,7 +92,17 @@
                     <Gear number="0" active="false" />
                 </OverrideControllerValueAction>
             </ControllerAction>
-        </PrivateAction>
+          </PrivateAction>
+          <PrivateAction>
+              <LongitudinalAction>
+                  <SpeedAction>
+                      <SpeedActionDynamics dynamicsShape="step" value="10" dynamicsDimension="distance"/>
+                      <SpeedActionTarget>
+                          <AbsoluteTargetSpeed value="8.33"/>
+                      </SpeedActionTarget>
+                  </SpeedAction>
+              </LongitudinalAction>
+          </PrivateAction>
         </Private>
         <Private entityRef="adversary">
           <PrivateAction>

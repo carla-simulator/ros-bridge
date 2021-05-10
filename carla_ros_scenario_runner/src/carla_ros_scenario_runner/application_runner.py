@@ -132,7 +132,7 @@ class ApplicationRunner(object):
                             Sending SIGKILL")
                         process.terminate(force=True)
             try:
-                process.expect(".*\n", timeout=0.1)
+                process.expect(u".*\n", timeout=0.1)
                 log_fct(process.after.strip())
                 if not signaled_running:
                     if str(process.after).find(ready_string) != -1:

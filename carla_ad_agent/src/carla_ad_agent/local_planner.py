@@ -14,7 +14,7 @@ import collections
 import math
 import threading
 
-from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION
+from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION, latch_on
 
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 from nav_msgs.msg import Odometry, Path
@@ -74,12 +74,12 @@ class LocalPlanner(CompatibleNode):
             Path,
             "/carla/{}/waypoints".format(role_name),
             self.path_cb,
-            QoSProfile(depth=1, durability=True))
+            QoSProfile(depth=1, durability=latch_on))
         self._target_speed_subscriber = self.create_subscriber(
             Float64,
             "/carla/{}/speed_command".format(role_name),
             self.target_speed_cb,
-            QoSProfile(depth=1, durability=True))
+            QoSProfile(depth=1, durability=latch_on))
 
         # publishers
         self._target_pose_publisher = self.new_publisher(
