@@ -29,6 +29,7 @@ ROS_VERSION = get_ros_version()
 if ROS_VERSION == 1:
 
     import rospy
+    import rospkg
 
     def init(name, args=None):
         rospy.init_node(name)
@@ -59,8 +60,12 @@ if ROS_VERSION == 1:
         response_class = __import__(module, fromlist=[classname])
         return getattr(response_class, classname)()
 
+    def get_package_share_directory(package_name):
+        return rospkg.RosPack().get_path(package_name)
+
 elif ROS_VERSION == 2:
 
+    import ament_index_python.packages
     import rclpy
     from builtin_interfaces.msg import Time
 
@@ -101,3 +106,6 @@ elif ROS_VERSION == 2:
 
     def get_service_response(service_type):
         return service_type.Response()
+
+    def get_package_share_directory(package_name):
+        return ament_index_python.packages.get_package_share_directory(package_name)

@@ -28,8 +28,6 @@ if ROS_VERSION == 1:
         def get_param(self, name, alternative_value=None, alternative_name=None):
             if name.startswith('/'):
                 raise RuntimeError("Only private parameters are supported.")
-            if alternative_value is None:
-                return rospy.get_param("~" + name)
             return rospy.get_param("~" + name, alternative_value)
 
         def get_time(self):
@@ -68,7 +66,7 @@ if ROS_VERSION == 1:
         def new_timer(self, timer_period_sec, callback, callback_group=None):
             return rospy.Timer(rospy.Duration(timer_period_sec), callback)
 
-        def wait_for_message(self, msg_type, topic, timeout=None, qos_profile=None):
+        def wait_for_message(self, topic, msg_type, timeout=None, qos_profile=None):
             try:
                 return rospy.wait_for_message(topic, msg_type, timeout)
             except rospy.ROSException as e:
@@ -117,6 +115,7 @@ elif ROS_VERSION == 2:
     import time
     from rclpy import Parameter
     from rclpy.node import Node
+    from rclpy.task import Future
     import rclpy.qos
 
     _DURABILITY_POLICY_MAP = {
@@ -144,8 +143,6 @@ elif ROS_VERSION == 2:
                 **kwargs)
 
         def get_param(self, name, alternative_value=None, alternative_name=None):
-            if alternative_value is None:
-                return self.get_parameter(name).value
             if alternative_name is None:
                 alternative_name = name
             return self.get_parameter_or(
@@ -197,7 +194,7 @@ elif ROS_VERSION == 2:
             return self.create_timer(
                 timer_period_sec, callback, callback_group=callback_group)
 
-        def wait_for_message(self, msg_type, topic, timeout=None, qos_profile=None):
+        def wait_for_message(self, topic, msg_type, timeout=None, qos_profile=1):
             """
             Wait for one message from topic.
             This will create a new subcription to the topic, receive one message, then unsubscribe.
