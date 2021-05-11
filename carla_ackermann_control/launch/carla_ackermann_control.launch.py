@@ -18,7 +18,7 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='carla_ackermann_control',
             executable='carla_ackermann_control_node',
-            node_name='carla_ackermann_control',
+            name='carla_ackermann_control',
             output='screen',
             parameters=[
                 Path(get_package_share_directory('carla_ackermann_control'), "settings.yaml"),

@@ -9,9 +9,17 @@
 """
 Control Carla ego vehicle by using AckermannDrive messages
 """
-import sys
+
 import datetime
+import sys
+
 import numpy
+from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
+
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+
+from carla_ackermann_control import carla_control_physics as phys
 
 from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
@@ -19,10 +27,7 @@ from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
 from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no-name-in-module,import-error
 
-from ros_compatibility import CompatibleNode, QoSProfile, ros_init, ROS_VERSION
-from carla_ackermann_control import carla_control_physics as phys
-
-from simple_pid import PID  # pylint: disable=import-error,wrong-import-order
+ROS_VERSION = roscomp.get_ros_version()
 
 if ROS_VERSION == 1:
     from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
@@ -42,9 +47,7 @@ class CarlaAckermannControl(CompatibleNode):
         Constructor
 
         """
-        super(CarlaAckermannControl, self).__init__(
-            "carla_ackermann_control", rospy_init=True
-        )
+        super(CarlaAckermannControl, self).__init__("carla_ackermann_control")
 
         # PID controller
         # the controller has to run with the simulation time, not with real-time
@@ -78,7 +81,7 @@ class CarlaAckermannControl(CompatibleNode):
                 callback=self.reconfigure_pid_parameters,
             )
         if ROS_VERSION == 2:
-            self.set_parameters_callback(self.reconfigure_pid_parameters)
+            self. add_on_set_parameters_callback(self.reconfigure_pid_parameters)
 
         self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
         self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
@@ -122,37 +125,40 @@ class CarlaAckermannControl(CompatibleNode):
         self.info.output.hand_brake = True
 
         # ackermann drive commands
-        self.control_subscriber = self.create_subscriber(
+        self.control_subscriber = self.new_subscription(
             AckermannDrive,
             "/carla/" + self.role_name + "/ackermann_cmd",
-            self.ackermann_command_updated
+            self.ackermann_command_updated,
+            qos_profile=10
         )
 
         # current status of the vehicle
-        self.vehicle_status_subscriber = self.create_subscriber(
+        self.vehicle_status_subscriber = self.new_subscription(
             CarlaEgoVehicleStatus,
             "/carla/" + self.role_name + "/vehicle_status",
             self.vehicle_status_updated,
+            qos_profile=10
         )
 
         # vehicle info
-        self.vehicle_info_subscriber = self.create_subscriber(
+        self.vehicle_info_subscriber = self.new_subscription(
             CarlaEgoVehicleInfo,
             "/carla/" + self.role_name + "/vehicle_info",
             self.vehicle_info_updated,
+            qos_profile=10
         )
 
         # to send command to carla
         self.carla_control_publisher = self.new_publisher(
             CarlaEgoVehicleControl,
             "/carla/" + self.role_name + "/vehicle_control_cmd",
-            qos_profile=QoSProfile(depth=1))
+            qos_profile=1)
 
         # report controller info
         self.control_info_publisher = self.new_publisher(
             EgoVehicleControlInfo,
             "/carla/" + self.role_name + "/ackermann_control/control_info",
-            qos_profile=QoSProfile(depth=1))
+            qos_profile=1)
 
     if ROS_VERSION == 1:
 
@@ -182,10 +188,7 @@ class CarlaAckermannControl(CompatibleNode):
             return ego_vehicle_control_parameter
 
     if ROS_VERSION == 2:
-        # annotations not supported in Python 2 (ROS1)
-        # def reconfigure_pid_parameters(  # pylint: disable=function-redefined	        def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
-        #     self, params: Sequence[Parameter]
-        # ) -> SetParametersResult:
+
         def reconfigure_pid_parameters(self, params):  # pylint: disable=function-redefined
             """Check and update the node's parameters."""
             param_values = {p.name: p.value for p in params}
@@ -565,11 +568,15 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
+    roscomp.init("carla_ackermann_control", args=args)
 
-    controller = CarlaAckermannControl()
-    controller.run()
-
+    try:
+        controller = CarlaAckermannControl()
+        controller.run()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        roscomp.shutdown()
 
 if __name__ == "__main__":
     main()
