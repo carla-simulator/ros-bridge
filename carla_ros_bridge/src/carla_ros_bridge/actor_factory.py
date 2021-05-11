@@ -55,9 +55,9 @@ class ActorFactory(object):
     TIME_BETWEEN_UPDATES = 0.1
 
     class TaskType(Enum):
-        SPAWN_PSEUDO_ACTOR = 0
-        DESTROY_ACTOR = 1
-        SYNC = 2
+        SPAWN_ACTOR = 0
+        SPAWN_PSEUDO_ACTOR = 1
+        DESTROY_ACTOR = 2
 
     def __init__(self, node, world, sync_mode=False):
         self.node = node
@@ -110,7 +110,8 @@ class ActorFactory(object):
         self.lock.acquire()
         for actor_id in new_actors:
             carla_actor = self.world.get_actor(actor_id)
-            self._create_object_from_actor(carla_actor)
+            if self.node.parameters["register_all_sensors"] or not isinstance(carla_actor, carla.Sensor):
+                self._create_object_from_actor(carla_actor)
 
         for actor_id in deleted_actors:
             self._destroy_object(actor_id, delete_actor=False)
@@ -119,15 +120,16 @@ class ActorFactory(object):
         with self.spawn_lock:
             while not self._task_queue.empty():
                 task = self._task_queue.get()
-                if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
+                if task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
+                    carla_actor = self.world.get_actor(task[1][0])
+                    self._create_object_from_actor(carla_actor)
+                elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     pseudo_object = task[1]
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
                                         pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
                     actor_id = task[1]
                     self._destroy_object(actor_id, delete_actor=True)
-                elif task[0] == ActorFactory.TaskType.SYNC and not self.node.shutdown.is_set():
-                    break
         self.lock.release()
 
     def update_actor_states(self, frame_id, timestamp):
@@ -166,28 +168,29 @@ class ActorFactory(object):
                 self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self._task_queue.put((ActorFactory.TaskType.SYNC, None))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None)))
             self._known_actor_ids.append(id_)
         return id_
 
     def destroy_actor(self, uid):
+
+        def get_objects_to_destroy(uid):
+            objects_to_destroy = []
+            if uid in self._known_actor_ids:
+                objects_to_destroy.append(uid)
+                self._known_actor_ids.remove(uid)
+
+            # remove actors that have the actor to be removed as parent.
+            for actor in list(self.actors.values()):
+                if actor.parent is not None and actor.parent.uid == uid:
+                    objects_to_destroy.extend(get_objects_to_destroy(actor.uid))
+
+            return objects_to_destroy
+
         with self.spawn_lock:
-            objects_to_destroy = set(self._destroy_actor(uid))
+            objects_to_destroy = set(get_objects_to_destroy(uid))
             for obj in objects_to_destroy:
                 self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, obj))
-        return objects_to_destroy
-
-    def _destroy_actor(self, uid):
-        objects_to_destroy = []
-        if uid in self._known_actor_ids:
-            objects_to_destroy.append(uid)
-            self._known_actor_ids.remove(uid)
-
-        # remove actors that have the actor to be removed as parent.
-        for actor in list(self.actors.values()):
-            if actor.parent is not None and actor.parent.uid == uid:
-                objects_to_destroy.extend(self._destroy_actor(actor.uid))
-
         return objects_to_destroy
 
     def _spawn_carla_actor(self, req):

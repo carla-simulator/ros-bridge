@@ -17,6 +17,7 @@
   <!-- set the fixed timestep length -->
   <arg name='fixed_delta_seconds' default='0.05'/>
   <arg name='town' default='Town01'/>
+  <arg name='register_all_sensors' default='True'/>
   <!-- 
     the role name of the vehicles that acts as ego vehicle for this ros bridge instance
     Only the vehicles within this list are controllable from within ROS.
@@ -32,8 +33,8 @@
     <param name="synchronous_mode" value="$(arg synchronous_mode)"/>
     <param name="synchronous_mode_wait_for_vehicle_control_command" value="$(arg synchronous_mode_wait_for_vehicle_control_command)"/>
     <param name="fixed_delta_seconds" value="$(arg fixed_delta_seconds)"/>
+    <param name="register_all_sensors" value="$(arg register_all_sensors)/">
     <param name="town" value="$(arg town)"/>
     <param name="ego_vehicle_role_name" value="$(arg ego_vehicle_role_name)"/>
   </node>
-    
 </launch>
