@@ -77,6 +77,10 @@ The following settings are available:
 *  __fixed_delta_seconds__: Simulation time (delta seconds) between simulation steps. __It must be lower than 0.1__. Take a look at the [documentation](https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/) to learn more about this.
 *  __ego_vehicle__: Role names to identify ego vehicles. Relevant topics will be created so these vehicles will be able to be controlled from ROS.
 * __town__: Either use an available CARLA town (eg. 'town01') or an OpenDRIVE file (ending in `.xodr`).
+*  __register_all_sensors__:
+	*  __If false__: Only sensors spawned by the bridge are registered.
+	*  __If true (default)__: All the sensors present in the simulation are registered.
+
 
 [ros_clock]: https://wiki.ros.org/Clock
 

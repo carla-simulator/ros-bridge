@@ -17,6 +17,8 @@
   <!-- set the fixed timestep length -->
   <arg name='fixed_delta_seconds' default='0.05'/>
   <arg name='town' default='Town01'/>
+  <!-- enable/disable the registration of all sensors. If disabled, only sensors
+  spawned by the bridge are registered -->
   <arg name='register_all_sensors' default='True'/>
   <!-- 
     the role name of the vehicles that acts as ego vehicle for this ros bridge instance
