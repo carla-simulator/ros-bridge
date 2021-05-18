@@ -17,6 +17,9 @@ jobs:
           pip install -r requirements.txt
       - name: Check
         run: make check_format
+        # TODO enable linter
+        #  make pylint
+        #  make flake8
 
   ros:
     runs-on: ubuntu-latest
@@ -76,8 +79,6 @@ jobs:
           catkin run_tests --no-status --force-color && catkin_test_results
           source devel/setup.bash
           cd $GITHUB_WORKSPACE
-        #  make pylint
-        # TODO enable pylint
 
   debian:
     runs-on: ubuntu-latest
