@@ -38,8 +38,11 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {
+                    'use_sim_time': True
+                },
+                {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
-                }
+                },
             ]
         ),
         launch.actions.IncludeLaunchDescription(
