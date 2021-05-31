@@ -67,7 +67,7 @@ class CollisionSensor(Sensor):
         :type collision_event: carla.CollisionEvent
         """
         collision_msg = CarlaCollisionEvent()
-        collision_msg.header = self.get_msg_header()
+        collision_msg.header = self.get_msg_header(timestamp=collision_event.timestamp)
         collision_msg.other_actor_id = collision_event.other_actor.id
         collision_msg.normal_impulse.x = collision_event.normal_impulse.x
         collision_msg.normal_impulse.y = collision_event.normal_impulse.y

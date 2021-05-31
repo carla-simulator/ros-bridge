@@ -138,7 +138,7 @@ class SemanticLidar(Sensor):
         :param carla_lidar_measurement: carla semantic lidar measurement object
         :type carla_lidar_measurement: carla.SemanticLidarMeasurement
         """
-        header = self.get_msg_header()
+        header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
         fields = [
             PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
             PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),

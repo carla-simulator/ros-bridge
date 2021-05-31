@@ -76,5 +76,5 @@ class MarkerSensor(PseudoActor):
         marker_array_msg = MarkerArray()
         for actor in self.actor_list.values():
             if isinstance(actor, TrafficParticipant):
-                marker_array_msg.markers.append(actor.get_marker())
+                marker_array_msg.markers.append(actor.get_marker(timestamp))
         self.marker_publisher.publish(marker_array_msg)
