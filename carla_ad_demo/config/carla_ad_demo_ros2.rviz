@@ -143,13 +143,24 @@ Visualization Manager:
       Enabled: true
       Name: StaticObjects
       Namespaces:
-        "": true
+        Bridge: false
+        Buildings: true
+        Fences: true
+        GuardRail: true
+        Poles: false
+        RoadLines: false
+        Roads: true
+        Sidewalks: true
+        TrafficLight: true
+        TrafficSigns: true
+        Vegetation: false
+        Walls: true
       Topic:
         Depth: 5
         Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/static_markers
+        Value: /carla/markers/static
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
