@@ -9,12 +9,17 @@
 handle a tf sensor
 """
 
-import tf2_ros
 import os
+
+import tf2_ros
+
+import ros_compatibility as roscomp
+
 from carla_ros_bridge.pseudo_actor import PseudoActor
+
 from geometry_msgs.msg import TransformStamped
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+ROS_VERSION = roscomp.get_ros_version()
 
 
 class TFSensor(PseudoActor):

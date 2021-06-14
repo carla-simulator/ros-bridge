@@ -12,9 +12,9 @@ Classes to handle Carla Radar
 
 import numpy as np
 
-from sensor_msgs.msg import PointCloud2, PointField
-
 from carla_ros_bridge.sensor import Sensor, create_cloud
+
+from sensor_msgs.msg import PointCloud2, PointField
 
 
 class Radar(Sensor):
@@ -50,7 +50,7 @@ class Radar(Sensor):
                                     carla_actor=carla_actor,
                                     synchronous_mode=synchronous_mode)
 
-        self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix())
+        self.radar_publisher = node.new_publisher(PointCloud2, self.get_topic_prefix(), qos_profile=10)
         self.listen()
 
     def destroy(self):

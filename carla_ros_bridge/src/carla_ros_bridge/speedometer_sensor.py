@@ -42,7 +42,8 @@ class SpeedometerSensor(PseudoActor):
                                                 node=node)
 
         self.speedometer_publisher = node.new_publisher(Float32,
-                                                        self.get_topic_prefix())
+                                                        self.get_topic_prefix(),
+                                                        qos_profile=10)
 
     def destroy(self):
         super(SpeedometerSensor, self).destroy()

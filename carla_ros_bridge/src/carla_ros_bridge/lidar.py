@@ -13,9 +13,9 @@ Classes to handle Carla lidars
 
 import numpy
 
-from sensor_msgs.msg import PointCloud2, PointField
-
 from carla_ros_bridge.sensor import Sensor, create_cloud
+
+from sensor_msgs.msg import PointCloud2, PointField
 
 
 class Lidar(Sensor):
@@ -52,7 +52,8 @@ class Lidar(Sensor):
                                     synchronous_mode=synchronous_mode)
 
         self.lidar_publisher = node.new_publisher(PointCloud2,
-                                                  self.get_topic_prefix())
+                                                  self.get_topic_prefix(),
+                                                  qos_profile=10)
         self.listen()
 
     def destroy(self):
@@ -67,7 +68,7 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header()
+        header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
         fields = [
             PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
             PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
@@ -121,7 +122,8 @@ class SemanticLidar(Sensor):
 
         self.semantic_lidar_publisher = node.new_publisher(
             PointCloud2,
-            self.get_topic_prefix())
+            self.get_topic_prefix(),
+            qos_profile=10)
         self.listen()
 
     def destroy(self):

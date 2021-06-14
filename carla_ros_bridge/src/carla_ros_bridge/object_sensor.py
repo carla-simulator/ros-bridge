@@ -9,10 +9,11 @@
 handle a object sensor
 """
 
-from derived_object_msgs.msg import ObjectArray
+from carla_ros_bridge.pseudo_actor import PseudoActor
 from carla_ros_bridge.vehicle import Vehicle
 from carla_ros_bridge.walker import Walker
-from carla_ros_bridge.pseudo_actor import PseudoActor
+
+from derived_object_msgs.msg import ObjectArray
 
 
 class ObjectSensor(PseudoActor):
@@ -43,7 +44,8 @@ class ObjectSensor(PseudoActor):
                                            node=node)
         self.actor_list = actor_list
         self.object_publisher = node.new_publisher(ObjectArray,
-                                                   self.get_topic_prefix())
+                                                   self.get_topic_prefix(),
+                                                   qos_profile=10)
 
     def destroy(self):
         """

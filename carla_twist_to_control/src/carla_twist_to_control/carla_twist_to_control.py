@@ -9,25 +9,16 @@ receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
 
 use max wheel steer angle
 """
-from ros_compatibility import (
-    CompatibleNode,
-    QoSProfile,
-    latch_on,
-    ros_ok,
-    ROSException,
-    ROSInterruptException,
-    ros_init)
+
 import sys
-from geometry_msgs.msg import Twist  # pylint: disable=import-error
+
+import ros_compatibility as roscomp
+from ros_compatibility.exceptions import ROSException
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo  # pylint: disable=import-error
-
-import os
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
-
-if ROS_VERSION == 1:
-    import rospy  # pylint: disable=import-error
-elif ROS_VERSION == 2:
-    import rclpy  # pylint: disable=import-error
+from geometry_msgs.msg import Twist  # pylint: disable=import-error
 
 
 class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-methods
@@ -39,22 +30,31 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
 
     MAX_LON_ACCELERATION = 10
 
-    def __init__(self, rospy_init=True):
+    def __init__(self):
         """
         Constructor
         """
-        super(TwistToVehicleControl, self).__init__("twist_to_control", rospy_init=rospy_init)
+        super(TwistToVehicleControl, self).__init__("twist_to_control")
+
+        self.role_name = self.get_param("role_name", "ego_vehicle")
         self.max_steering_angle = None
 
-    def initialize_twist_to_control(self, role_name):
-        self.create_subscriber(CarlaEgoVehicleInfo,
-                               "/carla/{}/vehicle_info".format(role_name), self.update_vehicle_info,
-                               qos_profile=QoSProfile(depth=1, durability=latch_on))
+        self.new_subscription(
+            CarlaEgoVehicleInfo,
+            "/carla/{}/vehicle_info".format(self.role_name),
+            self.update_vehicle_info,
+            qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
-        self.create_subscriber(Twist, "/carla/{}/twist".format(role_name), self.twist_received)
+        self.new_subscription(
+            Twist,
+            "/carla/{}/twist".format(self.role_name),
+            self.twist_received,
+            qos_profile=10)
 
-        self.pub = self.new_publisher(CarlaEgoVehicleControl,
-                                      "/carla/{}/vehicle_control_cmd".format(role_name))
+        self.pub = self.new_publisher(
+            CarlaEgoVehicleControl,
+            "/carla/{}/vehicle_control_cmd".format(self.role_name),
+            qos_profile=10)
 
     def update_vehicle_info(self, vehicle_info):
         """
@@ -103,7 +103,7 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         try:
             self.pub.publish(control)
         except ROSException as e:
-            if ros_ok():
+            if roscomp.ok():
                 self.logwarn("Error while publishing control: {}".format(e))
 
 
@@ -113,27 +113,19 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
+    roscomp.init("twist_to_control", args)
 
-    role_name = None
     twist_to_vehicle_control = None
-
-    if ROS_VERSION == 1:
-        twist_to_vehicle_control = TwistToVehicleControl()
-        role_name = rospy.get_param("~role_name", "ego_vehicle")
-    elif ROS_VERSION == 2:
-        twist_to_vehicle_control = TwistToVehicleControl()
-        executor = rclpy.executors.MultiThreadedExecutor()
-        executor.add_node(twist_to_vehicle_control)
-        role_name = twist_to_vehicle_control.get_param("role_name", "ego_vehicle")
-
-    twist_to_vehicle_control.initialize_twist_to_control(role_name)
-
     try:
+        twist_to_vehicle_control = TwistToVehicleControl()
         twist_to_vehicle_control.spin()
+    except KeyboardInterrupt:
+        pass
     finally:
-        twist_to_vehicle_control.loginfo("Done, deleting twist to control")
-        del twist_to_vehicle_control
+        if twist_to_vehicle_control is not None:
+            twist_to_vehicle_control.loginfo("Done, deleting twist to control")
+            del twist_to_vehicle_control
+        roscomp.shutdown()
 
 
 if __name__ == "__main__":

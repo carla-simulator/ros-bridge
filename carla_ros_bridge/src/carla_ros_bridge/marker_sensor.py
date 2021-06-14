@@ -9,16 +9,18 @@
 handle a marker sensor
 """
 
-from carla_ros_bridge.pseudo_actor import PseudoActor
-from carla_ros_bridge.traffic_participant import TrafficParticipant
+import itertools
 
 import carla
 
-import itertools
-from visualization_msgs.msg import MarkerArray, Marker
-from std_msgs.msg import ColorRGBA
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_ros_bridge.traffic_participant import TrafficParticipant
 from carla_common.transforms import carla_location_to_ros_point, carla_rotation_to_ros_quaternion
-from ros_compatibility import QoSProfile, latch_on
+
+from std_msgs.msg import ColorRGBA
+from visualization_msgs.msg import MarkerArray, Marker
 
 # Using colors from CityScapesPalette specified here:
 # https://carla.readthedocs.io/en/latest/ref_sensors/#semantic-segmentation-camera
@@ -82,10 +84,11 @@ class MarkerSensor(PseudoActor):
         self.node = node
 
         self.marker_publisher = node.new_publisher(MarkerArray,
-                                                   self.get_topic_prefix())
+                                                   self.get_topic_prefix(),
+                                                   qos_profile=10)
         self.static_marker_publisher = node.new_publisher(MarkerArray,
                                                    self.get_topic_prefix() + "/static",
-                                                   qos_profile=QoSProfile(depth=1, durability=latch_on))
+                                                   qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # id generator for static objects.
         self.static_id_gen = itertools.count(1)

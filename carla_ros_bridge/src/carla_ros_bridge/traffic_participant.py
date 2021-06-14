@@ -10,12 +10,14 @@
 Classes to handle Carla traffic participants
 """
 
+import carla_common.transforms as trans
+
+from carla_ros_bridge.actor import Actor
+
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
-from carla_ros_bridge.actor import Actor
-import carla_common.transforms as trans
 
 
 class TrafficParticipant(Actor):
