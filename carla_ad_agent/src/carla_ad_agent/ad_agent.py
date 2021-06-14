@@ -14,32 +14,20 @@ import sys
 import time
 import threading
 
-from ros_compatibility import (
-    CompatibleNode,
-    ROSInterruptException,
-    ros_ok,
-    QoSProfile,
-    ROSException,
-    latch_on,
-    ros_init,
-    ROS_VERSION,
-    logwarn,
-    loginfo,
-    ros_shutdown,
-    MultiThreadedExecutor,
-    ServiceException,
-    get_service_request)
+import ros_compatibility as roscomp
+from ros_compatibility.exceptions import *
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
-from std_msgs.msg import Float64  # pylint: disable=import-error
-from derived_object_msgs.msg import ObjectArray
-from nav_msgs.msg import Odometry
+from carla_ad_agent.agent import Agent, AgentState
+
 from carla_msgs.msg import (
     CarlaEgoVehicleInfo,
     CarlaActorList,
     CarlaTrafficLightStatusList,
     CarlaTrafficLightInfoList)
-
-from carla_ad_agent.agent import Agent, AgentState
+from derived_object_msgs.msg import ObjectArray
+from nav_msgs.msg import Odometry
+from std_msgs.msg import Float64  # pylint: disable=import-error
 
 
 class CarlaAdAgent(Agent):
@@ -66,39 +54,41 @@ class CarlaAdAgent(Agent):
 
         self.speed_command_publisher = self.new_publisher(
             Float64, "/carla/{}/speed_command".format(role_name),
-            QoSProfile(depth=1, durability=True))
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
-        self._odometry_subscriber = self.create_subscriber(
+        self._odometry_subscriber = self.new_subscription(
             Odometry,
             "/carla/{}/odometry".format(role_name),
-            self.odometry_cb
+            self.odometry_cb,
+            qos_profile=10
         )
 
-        self._target_speed_subscriber = self.create_subscriber(
+        self._target_speed_subscriber = self.new_subscription(
             Float64,
             "/carla/{}/target_speed".format(role_name),
             self.target_speed_cb,
-            qos_profile=QoSProfile(depth=10, durability=latch_on)
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         )
 
         if self._avoid_risk:
 
-            self._objects_subscriber = self.create_subscriber(
+            self._objects_subscriber = self.new_subscription(
                 ObjectArray,
                 "/carla/{}/objects".format(role_name),
-                self.objects_cb
+                self.objects_cb,
+                qos_profile=10
             )
-            self._traffic_light_status_subscriber = self.create_subscriber(
+            self._traffic_light_status_subscriber = self.new_subscription(
                 CarlaTrafficLightStatusList,
                 "/carla/traffic_lights/status",
                 self.traffic_light_status_cb,
-                qos_profile=QoSProfile(depth=10, durability=latch_on)
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             )
-            self._traffic_light_info_subscriber = self.create_subscriber(
+            self._traffic_light_info_subscriber = self.new_subscription(
                 CarlaTrafficLightInfoList,
                 "/carla/traffic_lights/info",
                 self.traffic_light_info_cb,
-                qos_profile=QoSProfile(depth=10, durability=latch_on)
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             )
 
     def odometry_cb(self, odometry_msg):
@@ -132,6 +122,11 @@ class CarlaAdAgent(Agent):
 
         with self.data_lock:
             self._lights_info = lights_info
+
+    def emergency_stop(self):
+        stopping_speed = Float64()
+        stopping_speed.data = 0.0
+        self.speed_command_publisher.publish(stopping_speed)
 
     def run_step(self):
         """
@@ -188,12 +183,14 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
+    roscomp.init("ad_agent", args=args)
     controller = None
     try:
-        executor = MultiThreadedExecutor()
+        executor = roscomp.executors.MultiThreadedExecutor()
         controller = CarlaAdAgent()
         executor.add_node(controller)
+
+        roscomp.on_shutdown(controller.emergency_stop)
 
         update_timer = controller.new_timer(
             0.05, lambda timer_event=None: controller.run_step())
@@ -201,16 +198,12 @@ def main(args=None):
         controller.spin()
 
     except (ROSInterruptException, ROSException) as e:
-        if ros_ok():
-            logwarn("ROS Error during exection: {}".format(e))
+        if roscomp.ok():
+            roscomp.logwarn("ROS Error during exection: {}".format(e))
     except KeyboardInterrupt:
-        loginfo("User requested shut down.")
+        roscomp.loginfo("User requested shut down.")
     finally:
-        if controller is not None:
-            stopping_speed = Float64()
-            stopping_speed.data = 0.0
-            controller.speed_command_publisher.publish(stopping_speed)
-        ros_shutdown()
+        roscomp.shutdown()
 
 
 if __name__ == "__main__":

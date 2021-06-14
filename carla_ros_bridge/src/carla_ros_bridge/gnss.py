@@ -10,9 +10,9 @@
 Classes to handle Carla gnsss
 """
 
-from sensor_msgs.msg import NavSatFix
-
 from carla_ros_bridge.sensor import Sensor
+
+from sensor_msgs.msg import NavSatFix
 
 
 class Gnss(Sensor):
@@ -49,7 +49,8 @@ class Gnss(Sensor):
                                    synchronous_mode=synchronous_mode)
 
         self.gnss_publisher = node.new_publisher(NavSatFix,
-                                                 self.get_topic_prefix())
+                                                 self.get_topic_prefix(),
+                                                 qos_profile=10)
         self.listen()
 
     def destroy(self):

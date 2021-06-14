@@ -10,11 +10,12 @@
 Classes to handle Carla pedestrians
 """
 
-from derived_object_msgs.msg import Object
+from carla import WalkerControl
 
 from carla_ros_bridge.traffic_participant import TrafficParticipant
+
 from carla_msgs.msg import CarlaWalkerControl
-from carla import WalkerControl
+from derived_object_msgs.msg import Object
 
 
 class Walker(TrafficParticipant):
@@ -44,10 +45,11 @@ class Walker(TrafficParticipant):
                                      node=node,
                                      carla_actor=carla_actor)
 
-        self.control_subscriber = self.node.create_subscriber(
+        self.control_subscriber = self.node.new_subscription(
             CarlaWalkerControl,
             self.get_topic_prefix() + "/walker_control_cmd",
-            self.control_command_updated)
+            self.control_command_updated,
+            qos_profile=10)
 
     def destroy(self):
         """

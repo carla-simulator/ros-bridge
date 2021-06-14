@@ -9,20 +9,24 @@
 """
 Class to handle Carla camera sensors
 """
-from abc import abstractmethod
 
 import math
-import numpy
-import transforms3d
 import os
-from cv_bridge import CvBridge
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
+from abc import abstractmethod
 
 import carla
-from carla_ros_bridge.sensor import Sensor, create_cloud
-import carla_common.transforms as trans
+import numpy
+import transforms3d
+from cv_bridge import CvBridge
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+import carla_common.transforms as trans
+from ros_compatibility.core import get_ros_version
+
+from carla_ros_bridge.sensor import Sensor, create_cloud
+
+from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
+
+ROS_VERSION = get_ros_version()
 
 
 class Camera(Sensor):
@@ -69,9 +73,9 @@ class Camera(Sensor):
             self._build_camera_info()
 
         self.camera_info_publisher = node.new_publisher(CameraInfo, self.get_topic_prefix() +
-                                                        '/camera_info')
+                                                        '/camera_info', qos_profile=10)
         self.camera_image_publisher = node.new_publisher(Image, self.get_topic_prefix() +
-                                                         '/' + 'image')
+                                                         '/' + 'image', qos_profile=10)
 
     def destroy(self):
         super(Camera, self).destroy()
@@ -401,7 +405,7 @@ class DVSCamera(Camera):
         self._dvs_events = None
         self.dvs_camera_publisher = node.new_publisher(PointCloud2,
                                                        self.get_topic_prefix() +
-                                                       '/events')
+                                                       '/events', qos_profile=10)
 
         self.listen()
 

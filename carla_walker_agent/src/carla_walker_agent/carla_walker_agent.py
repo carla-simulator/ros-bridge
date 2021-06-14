@@ -8,26 +8,18 @@
 """
 Agent for Walker
 """
+
 import math
+
+import ros_compatibility as roscomp
+from ros_compatibility.exceptions import ROSInterruptException
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_msgs.msg import CarlaWalkerControl
+from geometry_msgs.msg import Pose, Vector3
 from nav_msgs.msg import Path, Odometry
 from std_msgs.msg import Float64
-from geometry_msgs.msg import Pose, Vector3
-from carla_msgs.msg import CarlaWalkerControl
-from ros_compatibility import (
-    CompatibleNode,
-    QoSProfile,
-    ros_ok,
-    ROSInterruptException,
-    ros_init)
-
-import os
-ROS_VERSION = int(os.environ['ROS_VERSION'])
-
-if ROS_VERSION == 1:
-    import rospy
-elif ROS_VERSION == 2:
-    import time
-    import threading
 
 
 class CarlaWalkerAgent(CompatibleNode):
@@ -49,28 +41,36 @@ class CarlaWalkerAgent(CompatibleNode):
         self._route_assigned = False
         self._waypoints = []
         self._current_pose = Pose()
-        self.on_shutdown(self._on_shutdown)
 
         # wait for ros bridge to create relevant topics
         try:
-            self.wait_for_message(
-                "/carla/{}/odometry".format(role_name), Odometry)
+            self.wait_for_message("/carla/{}/odometry".format(role_name), Odometry, qos_profile=10)
         except ROSInterruptException as e:
-            if not ros_ok:
+            if not roscomp.ok:
                 raise e
 
-        self._odometry_subscriber = self.create_subscriber(
-            Odometry, "/carla/{}/odometry".format(role_name), self.odometry_updated)
+        self._odometry_subscriber = self.new_subscription(
+            Odometry,
+            "/carla/{}/odometry".format(role_name),
+            self.odometry_updated,
+            qos_profile=10)
 
         self.control_publisher = self.new_publisher(
-            CarlaWalkerControl, "/carla/{}/walker_control_cmd".format(role_name),
-            QoSProfile(depth=1, durability=False))
+            CarlaWalkerControl,
+            "/carla/{}/walker_control_cmd".format(role_name),
+            qos_profile=1)
 
-        self._route_subscriber = self.create_subscriber(
-            Path, "/carla/{}/waypoints".format(role_name), self.path_updated)
+        self._route_subscriber = self.new_subscription(
+            Path,
+            "/carla/{}/waypoints".format(role_name),
+            self.path_updated,
+            qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
-        self._target_speed_subscriber = self.create_subscriber(
-            Float64,  "/carla/{}/target_speed".format(role_name), self.target_speed_updated)
+        self._target_speed_subscriber = self.new_subscription(
+            Float64, 
+            "/carla/{}/target_speed".format(role_name),
+            self.target_speed_updated,
+            qos_profile=10)
 
     def _on_shutdown(self):
         """
@@ -103,44 +103,25 @@ class CarlaWalkerAgent(CompatibleNode):
         """
         self._current_pose = odo.pose.pose
 
-    def run(self):
-        """
-
-        Control loop
-
-        :return:
-        """
-        loop_frequency = 20
-        if ROS_VERSION == 1:
-            r = rospy.Rate(loop_frequency)
-        self.loginfo("Starting run loop")
-        while ros_ok():
-            if self._waypoints:
-                control = CarlaWalkerControl()
-                direction = Vector3()
-                direction.x = self._waypoints[0].position.x - self._current_pose.position.x
-                direction.y = self._waypoints[0].position.y - self._current_pose.position.y
-                direction_norm = math.sqrt(direction.x**2 + direction.y**2)
-                if direction_norm > CarlaWalkerAgent.MIN_DISTANCE:
-                    control.speed = self._target_speed
-                    control.direction.x = direction.x / direction_norm
-                    control.direction.y = direction.y / direction_norm
+    def run_step(self):
+        if self._waypoints:
+            control = CarlaWalkerControl()
+            direction = Vector3()
+            direction.x = self._waypoints[0].position.x - self._current_pose.position.x
+            direction.y = self._waypoints[0].position.y - self._current_pose.position.y
+            direction_norm = math.sqrt(direction.x**2 + direction.y**2)
+            if direction_norm > CarlaWalkerAgent.MIN_DISTANCE:
+                control.speed = self._target_speed
+                control.direction.x = direction.x / direction_norm
+                control.direction.y = direction.y / direction_norm
+            else:
+                self._waypoints = self._waypoints[1:]
+                if self._waypoints:
+                    self.loginfo("next waypoint: {} {}".format(
+                        self._waypoints[0].position.x, self._waypoints[0].position.y))
                 else:
-                    self._waypoints = self._waypoints[1:]
-                    if self._waypoints:
-                        self.loginfo("next waypoint: {} {}".format(
-                            self._waypoints[0].position.x, self._waypoints[0].position.y))
-                    else:
-                        self.loginfo("Route finished.")
-                self.control_publisher.publish(control)
-            try:
-                if ROS_VERSION == 1:
-                    r.sleep()
-                elif ROS_VERSION == 2:
-                    # TODO: use rclpy.Rate, not working yet
-                    time.sleep(1 / loop_frequency)
-            except ROSInterruptException:
-                pass
+                    self.loginfo("Route finished.")
+            self.control_publisher.publish(control)
 
 
 def main(args=None):
@@ -150,18 +131,22 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
-
-    controller = CarlaWalkerAgent()
-
-    if ROS_VERSION == 2:
-        spin_thread = threading.Thread(target=controller.spin, daemon=True)
-        spin_thread.start()
+    roscomp.init("carla_walker_agent", args)
+    controller = None
 
     try:
-        controller.run()
+        controller = CarlaWalkerAgent()
+
+        roscomp.on_shutdown(controller._on_shutdown)
+
+        update_timer = controller.new_timer(
+            0.05, lambda timer_event=None: controller.run_step())
+
+        controller.spin()
+    except KeyboardInterrupt:
+        pass
     finally:
-        del controller
+        roscomp.shutdown()
         print("Done")
 
 

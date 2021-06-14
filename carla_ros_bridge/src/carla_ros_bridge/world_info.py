@@ -10,8 +10,9 @@
 Class to handle the carla map
 """
 
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
 from carla_msgs.msg import CarlaWorldInfo
-from ros_compatibility import QoSProfile, latch_on
 
 
 class WorldInfo(object):
@@ -34,9 +35,10 @@ class WorldInfo(object):
 
         self.map_published = False
 
-        self.world_info_publisher = node.new_publisher(CarlaWorldInfo,
-                                                       "/carla/world_info",
-                                                       qos_profile=QoSProfile(depth=10, durability=latch_on))
+        self.world_info_publisher = node.new_publisher(
+            CarlaWorldInfo,
+            "/carla/world_info",
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
     def destroy(self):
         """

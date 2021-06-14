@@ -20,7 +20,4 @@ if(${ROS_VERSION} EQUAL 1)
 
   include_directories()
 
-  catkin_install_python(PROGRAMS src/ros_compatibility/ros_compatible_node.py
-                        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
 endif()

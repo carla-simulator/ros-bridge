@@ -4,19 +4,17 @@
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
-#include "PclRecorderROS2.h"
-#include <string>
-#include <pcl/io/pcd_io.h>
 #include <sstream>
+#include <string>
+
 #include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
+
+#include "PclRecorderROS2.h"
 
 PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
 {
-  rclcpp::Clock::SharedPtr clock = std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
-  rclcpp::TimeSource timesource;
-  timesource.attachClock(clock);
-  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(clock);
-
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   tfListener = new tf2_ros::TransformListener(*tf_buffer_);
 
   if (mkdir("/tmp/pcl_capture", 0777) == -1) {
@@ -28,7 +26,9 @@ PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
   if (!this->get_parameter("role_name", roleName)) {
     roleName = "ego_vehicle";
   }
-  sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar", 100, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1));
+  auto sub_opt = rclcpp::SubscriptionOptions();
+  sub_opt.callback_group = this->create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+  sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar", 10, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1), sub_opt);
 }
 
 void PclRecorderROS2::callback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud)

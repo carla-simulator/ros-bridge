@@ -9,13 +9,15 @@
 a sensor that reports the state of all traffic lights
 """
 
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_ros_bridge.traffic import TrafficLight
+
 from carla_msgs.msg import (
     CarlaTrafficLightStatusList,
     CarlaTrafficLightInfoList
 )
-from carla_ros_bridge.traffic import TrafficLight
-from carla_ros_bridge.pseudo_actor import PseudoActor
-from ros_compatibility import QoSProfile, latch_on
 
 
 class TrafficLightsSensor(PseudoActor):
@@ -49,11 +51,12 @@ class TrafficLightsSensor(PseudoActor):
 
         self.traffic_lights_info_publisher = node.new_publisher(
             CarlaTrafficLightInfoList,
-            self.get_topic_prefix() + "/info", qos_profile=QoSProfile(depth=10, durability=latch_on))
+            self.get_topic_prefix() + "/info",
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.traffic_lights_status_publisher = node.new_publisher(
             CarlaTrafficLightStatusList,
             self.get_topic_prefix() + "/status",
-            qos_profile=QoSProfile(depth=10, durability=latch_on))
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
     def destroy(self):
         """

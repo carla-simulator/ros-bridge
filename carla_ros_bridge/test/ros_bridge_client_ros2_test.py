@@ -15,7 +15,10 @@ import launch_testing
 import launch_testing.actions
 
 from ament_index_python.packages import get_package_share_directory
-from ros_compatibility import CompatibleNode, ros_init, ros_shutdown, QoSProfile, latch_on
+
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
 from std_msgs.msg import Header, String
 from rosgraph_msgs.msg import Clock
@@ -126,14 +129,14 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message("/clock", Clock, timeout=TIMEOUT)
             self.assertNotEqual(Clock(), msg)
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_vehicle_status(self, proc_output):
         """
@@ -141,7 +144,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus)
@@ -151,7 +154,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_vehicle_info(self):
         """
@@ -159,11 +162,11 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/vehicle_info", CarlaEgoVehicleInfo, timeout=TIMEOUT,
-                qos_profile=QoSProfile(depth=1, durability=latch_on))
+                qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(msg.id, 0)
             self.assertEqual(msg.type, "vehicle.tesla.model3")
             self.assertEqual(msg.rolename, "ego_vehicle")
@@ -183,7 +186,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_odometry(self):
         """
@@ -191,7 +194,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/odometry", Odometry, timeout=TIMEOUT)
@@ -201,7 +204,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_gnss(self):
         """
@@ -209,7 +212,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/gnss", NavSatFix, timeout=TIMEOUT)
@@ -220,7 +223,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_imu(self):
         """
@@ -228,7 +231,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message("/carla/ego_vehicle/imu", Imu, timeout=TIMEOUT)
             self.assertEqual(msg.header.frame_id, "ego_vehicle/imu")
@@ -238,7 +241,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_camera_info(self):
         """
@@ -246,7 +249,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/rgb_front/camera_info", CameraInfo, timeout=TIMEOUT)
@@ -256,7 +259,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_camera_image(self):
         """
@@ -264,7 +267,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/rgb_front/image", Image, timeout=TIMEOUT)
@@ -275,7 +278,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_dvs_camera_info(self):
         """
@@ -283,7 +286,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/dvs_front/camera_info", CameraInfo, timeout=TIMEOUT)
@@ -293,7 +296,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_dvs_camera_image(self):
         """
@@ -301,7 +304,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/dvs_front/image", Image, timeout=TIMEOUT)
@@ -312,7 +315,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_dvs_camera_events(self):
         """
@@ -320,7 +323,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/dvs_front/events", PointCloud2, timeout=TIMEOUT)
@@ -328,7 +331,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_lidar(self):
         """
@@ -336,7 +339,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/lidar", PointCloud2, timeout=TIMEOUT)
@@ -344,7 +347,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_semantic_lidar(self):
         """
@@ -352,7 +355,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/semantic_lidar", PointCloud2, timeout=TIMEOUT)
@@ -360,7 +363,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_radar(self):
         """
@@ -368,7 +371,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = None
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
@@ -377,7 +380,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_ego_vehicle_objects(self):
         """
@@ -385,7 +388,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/ego_vehicle/objects", ObjectArray, timeout=15)
@@ -394,7 +397,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_objects(self):
         """
@@ -402,7 +405,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message("/carla/objects", ObjectArray, timeout=TIMEOUT)
             self.assertEqual(msg.header.frame_id, "map")
@@ -410,7 +413,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_marker(self):
         """
@@ -418,7 +421,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message("/carla/markers", MarkerArray, timeout=TIMEOUT)
             self.assertEqual(len(msg.markers), 1)  # only ego vehicle exists
@@ -435,7 +438,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_map(self):
         """
@@ -443,16 +446,16 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/map", String, timeout=TIMEOUT,
-                qos_profile=QoSProfile(depth=10, durability=latch_on))
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(len(msg.data), 0)
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_world_info(self):
         """
@@ -460,17 +463,17 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/world_info", CarlaWorldInfo, timeout=TIMEOUT,
-                qos_profile=QoSProfile(depth=10, durability=latch_on))
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(len(msg.map_name), 0)
             self.assertNotEqual(len(msg.opendrive), 0)
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_actor_list(self):
         """
@@ -478,7 +481,7 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/actor_list", CarlaActorList, timeout=TIMEOUT)
@@ -486,7 +489,7 @@ class TestClock(unittest.TestCase):
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_traffic_lights(self):
         """
@@ -494,16 +497,16 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/traffic_lights/status", CarlaTrafficLightStatusList, timeout=TIMEOUT,
-                qos_profile=QoSProfile(depth=10, durability=latch_on))
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(len(msg.traffic_lights), 0)
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()
 
     def test_traffic_lights_info(self):
         """
@@ -511,13 +514,13 @@ class TestClock(unittest.TestCase):
         """
         try:
             node = None
-            ros_init()
+            roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
                 "/carla/traffic_lights/info", CarlaTrafficLightInfoList, timeout=TIMEOUT,
-                qos_profile=QoSProfile(depth=10, durability=latch_on))
+                qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(len(msg.traffic_lights), 0)
         finally:
             if node is not None:
                 node.destroy_node()
-            ros_shutdown()
+            roscomp.shutdown()

@@ -8,25 +8,29 @@
 """
 Classes to handle Carla sensors
 """
+
 from __future__ import print_function
-from abc import abstractmethod
+
 import ctypes
 import os
-import struct
-import sys
-from threading import Lock
 try:
     import queue
 except ImportError:
     import Queue as queue
+import struct
+import sys
+from abc import abstractmethod
+from threading import Lock
 
-import tf2_ros
-from carla_ros_bridge.actor import Actor
 import carla_common.transforms as trans
-from ros_compatibility import ros_ok, ros_timestamp, ROSException
+import ros_compatibility as roscomp
+import tf2_ros
+
+from carla_ros_bridge.actor import Actor
+
 from sensor_msgs.msg import PointCloud2, PointField
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+ROS_VERSION = roscomp.get_ros_version()
 
 _DATATYPES = {}
 _DATATYPES[PointField.INT8] = ('b', 1)
@@ -119,7 +123,7 @@ class Sensor(Actor):
             frame_id = "map"
 
         transform = tf2_ros.TransformStamped()
-        transform.header.stamp = ros_timestamp(sec=timestamp, from_sec=True)
+        transform.header.stamp = roscomp.ros_timestamp(sec=timestamp, from_sec=True)
         transform.header.frame_id = frame_id
         transform.child_frame_id = child_frame_id
 
@@ -138,8 +142,8 @@ class Sensor(Actor):
         transform = self.get_ros_transform(pose, timestamp)
         try:
             self._tf_broadcaster.sendTransform(transform)
-        except ROSException:
-            if ros_ok():
+        except roscomp.exceptions.ROSException:
+            if roscomp.ok():
                 self.node.logwarn("Sensor {} failed to send transform.".format(self.uid))
 
     def listen(self):
@@ -179,8 +183,8 @@ class Sensor(Actor):
                 carla_sensor_data.transform), carla_sensor_data.timestamp)
             try:
                 self.sensor_data_updated(carla_sensor_data)
-            except ROSException:
-                if ros_ok():
+            except roscomp.exceptions.ROSException:
+                if roscomp.ok():
                     self.node.logwarn(
                         "Sensor {}: Error while executing sensor_data_updated().".format(self.uid))
         self._callback_active.release()
@@ -236,7 +240,7 @@ class Sensor(Actor):
                             carla_sensor_data.frame,
                             frame))
                 except queue.Empty:
-                    if ros_ok():
+                    if roscomp.ok():
                         self.node.logwarn("{}({}): Expected Frame {} not received".format(
                             self.__class__.__name__, self.get_id(), frame))
                     return
