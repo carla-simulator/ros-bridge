@@ -109,14 +109,14 @@ class EgoVehicle(Vehicle):
         color.b = 0.0
         return color
 
-    def send_vehicle_msgs(self):
+    def send_vehicle_msgs(self, frame, timestamp):
         """
         send messages related to vehicle status
 
         :return:
         """
         vehicle_status = CarlaEgoVehicleStatus(
-            header=self.get_msg_header("map"))
+            header=self.get_msg_header("map", timestamp=timestamp))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration.linear = self.get_current_ros_accel().linear
         vehicle_status.orientation = self.get_current_ros_pose().orientation
@@ -185,7 +185,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        self.send_vehicle_msgs()
+        self.send_vehicle_msgs(frame, timestamp)
         super(EgoVehicle, self).update(frame, timestamp)
 
     def destroy(self):

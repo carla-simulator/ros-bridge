@@ -67,7 +67,7 @@ class LaneInvasionSensor(Sensor):
         :type lane_invasion_event: carla.LaneInvasionEvent
         """
         lane_invasion_msg = CarlaLaneInvasionEvent()
-        lane_invasion_msg.header = self.get_msg_header()
+        lane_invasion_msg.header = self.get_msg_header(timestamp=lane_invasion_event.timestamp)
         for marking in lane_invasion_event.crossed_lane_markings:
             lane_invasion_msg.crossed_lane_markings.append(marking.type)
         self.lane_invasion_publisher.publish(lane_invasion_msg)
