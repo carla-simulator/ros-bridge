@@ -25,7 +25,7 @@ if ROS_VERSION == 1:
         def __init__(self, name, **kwargs):
            pass
 
-        def get_param(self, name, alternative_value=None, alternative_name=None):
+        def get_param(self, name, alternative_value=None):
             if name.startswith('/'):
                 raise RuntimeError("Only private parameters are supported.")
             return rospy.get_param("~" + name, alternative_value)
@@ -142,12 +142,10 @@ elif ROS_VERSION == 2:
                 parameter_overrides=[param],
                 **kwargs)
 
-        def get_param(self, name, alternative_value=None, alternative_name=None):
-            if alternative_name is None:
-                alternative_name = name
+        def get_param(self, name, alternative_value=None):
             return self.get_parameter_or(
                 name,
-                Parameter(alternative_name, value=alternative_value)).value
+                Parameter(name, value=alternative_value)).value
 
         def get_time(self):
             t = self.get_clock().now()
