@@ -14,15 +14,17 @@ import collections
 import math
 import threading
 
-from ros_compatibility import QoSProfile, CompatibleNode, loginfo, ros_init, ROS_VERSION, latch_on
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
+from carla_ad_agent.misc import distance_vehicle
 
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
 from nav_msgs.msg import Odometry, Path
 from std_msgs.msg import Float64
 from visualization_msgs.msg import Marker
-
-from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
-from carla_ad_agent.misc import distance_vehicle
 
 
 class LocalPlanner(CompatibleNode):
@@ -66,30 +68,31 @@ class LocalPlanner(CompatibleNode):
         self._waypoint_buffer = collections.deque(maxlen=self._buffer_size)
 
         # subscribers
-        self._odometry_subscriber = self.create_subscriber(
+        self._odometry_subscriber = self.new_subscription(
             Odometry,
             "/carla/{}/odometry".format(role_name),
-            self.odometry_cb)
-        self._path_subscriber = self.create_subscriber(
+            self.odometry_cb,
+            qos_profile=10)
+        self._path_subscriber = self.new_subscription(
             Path,
             "/carla/{}/waypoints".format(role_name),
             self.path_cb,
-            QoSProfile(depth=1, durability=latch_on))
-        self._target_speed_subscriber = self.create_subscriber(
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self._target_speed_subscriber = self.new_subscription(
             Float64,
             "/carla/{}/speed_command".format(role_name),
             self.target_speed_cb,
-            QoSProfile(depth=1, durability=latch_on))
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # publishers
         self._target_pose_publisher = self.new_publisher(
             Marker,
             "/carla/{}/next_target".format(role_name),
-            QoSProfile(depth=10, durability=False))
+            qos_profile=10)
         self._control_cmd_publisher = self.new_publisher(
             CarlaEgoVehicleControl,
             "/carla/{}/vehicle_control_cmd".format(role_name),
-            QoSProfile(depth=1, durability=False))
+            qos_profile=10)
 
         # initializing controller
         self._vehicle_controller = VehiclePIDController(
@@ -188,14 +191,13 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
+    roscomp.init("local_planner", args=args)
 
     local_planner = None
     update_timer = None
     try:
         local_planner = LocalPlanner()
-        if ROS_VERSION == 1:
-            local_planner.on_shutdown(local_planner.emergency_stop)
+        roscomp.on_shutdown(local_planner.emergency_stop)
 
         update_timer = local_planner.new_timer(
             local_planner.control_time_step, lambda timer_event=None: local_planner.run_step())
@@ -206,16 +208,8 @@ def main(args=None):
         pass
 
     finally:
-        loginfo('Local planner shutting down.')
-        if update_timer:
-            if ROS_VERSION == 1:
-                update_timer.shutdown()
-            else:
-                update_timer.destroy()
-        if ROS_VERSION == 2:
-            local_planner.emergency_stop()
-        local_planner.shutdown()
-
+        roscomp.loginfo('Local planner shutting down.')
+        roscomp.shutdown()
 
 if __name__ == "__main__":
     main()

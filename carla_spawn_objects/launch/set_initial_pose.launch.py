@@ -1,4 +1,5 @@
-from pathlib import Path
+import os
+import sys
 
 import launch
 import launch_ros.actions
@@ -12,19 +13,21 @@ def generate_launch_description():
             default_value='ego_vehicle'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='control_loop_rate',
-            default_value='0.05'
+            name='control_id',
+            default_value='control'
         ),
         launch_ros.actions.Node(
-            package='carla_ackermann_control',
-            executable='carla_ackermann_control_node',
-            name='carla_ackermann_control',
+            package='carla_spawn_objects',
+            executable='set_initial_pose',
+            name='set_initial_pose',
             output='screen',
+            emulate_tty=True,
             parameters=[
-                Path(get_package_share_directory('carla_ackermann_control'), "settings.yaml"),
                 {
-                    'role_name': launch.substitutions.LaunchConfiguration('role_name'),
-                    'control_loop_rate': launch.substitutions.LaunchConfiguration('control_loop_rate')
+                    'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                },
+                {
+                    'control_id': launch.substitutions.LaunchConfiguration('control_id')
                 }
             ]
         )

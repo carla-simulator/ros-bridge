@@ -11,11 +11,12 @@ Classes to handle Carla vehicles
 """
 import math
 import os
-import numpy
 
-from std_msgs.msg import Bool  # pylint: disable=import-error
-from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
+import numpy
 from carla import VehicleControl
+
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
 from carla_ros_bridge.vehicle import Vehicle
 
 from carla_msgs.msg import (
@@ -24,12 +25,8 @@ from carla_msgs.msg import (
     CarlaEgoVehicleControl,
     CarlaEgoVehicleStatus
 )
-
-from ros_compatibility import (
-    QoSProfile,
-    latch_on,
-    ROS_VERSION
-)
+from std_msgs.msg import Bool  # pylint: disable=import-error
+from std_msgs.msg import ColorRGBA  # pylint: disable=import-error
 
 
 class EgoVehicle(Vehicle):
@@ -65,31 +62,37 @@ class EgoVehicle(Vehicle):
 
         self.vehicle_status_publisher = node.new_publisher(
             CarlaEgoVehicleStatus,
-            self.get_topic_prefix() + "/vehicle_status")
-        self.vehicle_info_publisher = node.new_publisher(CarlaEgoVehicleInfo,
-                                                         self.get_topic_prefix() +
-                                                         "/vehicle_info",
-                                                         qos_profile=QoSProfile(depth=10, durability=latch_on))
+            self.get_topic_prefix() + "/vehicle_status",
+            qos_profile=10)
+        self.vehicle_info_publisher = node.new_publisher(
+            CarlaEgoVehicleInfo,
+            self.get_topic_prefix() +
+            "/vehicle_info",
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
-        self.control_subscriber = node.create_subscriber(
+        self.control_subscriber = node.new_subscription(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd",
-            lambda data: self.control_command_updated(data, manual_override=False))
+            lambda data: self.control_command_updated(data, manual_override=False),
+            qos_profile=10)
 
-        self.manual_control_subscriber = node.create_subscriber(
+        self.manual_control_subscriber = node.new_subscription(
             CarlaEgoVehicleControl,
             self.get_topic_prefix() + "/vehicle_control_cmd_manual",
-            lambda data: self.control_command_updated(data, manual_override=True))
+            lambda data: self.control_command_updated(data, manual_override=True),
+            qos_profile=10)
 
-        self.control_override_subscriber = node.create_subscriber(
+        self.control_override_subscriber = node.new_subscription(
             Bool,
             self.get_topic_prefix() + "/vehicle_control_manual_override",
-            self.control_command_override, QoSProfile(depth=1, durability=True))
+            self.control_command_override,
+            qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
-        self.enable_autopilot_subscriber = node.create_subscriber(
+        self.enable_autopilot_subscriber = node.new_subscription(
             Bool,
             self.get_topic_prefix() + "/enable_autopilot",
-            self.enable_autopilot_updated)
+            self.enable_autopilot_updated,
+            qos_profile=10)
 
     def get_marker_color(self):
         """
@@ -106,14 +109,14 @@ class EgoVehicle(Vehicle):
         color.b = 0.0
         return color
 
-    def send_vehicle_msgs(self):
+    def send_vehicle_msgs(self, frame, timestamp):
         """
         send messages related to vehicle status
 
         :return:
         """
         vehicle_status = CarlaEgoVehicleStatus(
-            header=self.get_msg_header("map"))
+            header=self.get_msg_header("map", timestamp=timestamp))
         vehicle_status.velocity = self.get_vehicle_speed_abs(self.carla_actor)
         vehicle_status.acceleration.linear = self.get_current_ros_accel().linear
         vehicle_status.orientation = self.get_current_ros_pose().orientation
@@ -182,7 +185,7 @@ class EgoVehicle(Vehicle):
 
         :return:
         """
-        self.send_vehicle_msgs()
+        self.send_vehicle_msgs(frame, timestamp)
         super(EgoVehicle, self).update(frame, timestamp)
 
     def destroy(self):

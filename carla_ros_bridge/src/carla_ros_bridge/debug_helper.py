@@ -11,12 +11,10 @@ Class to draw marker
 import math
 import os
 
-from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import-error
-
 import carla
 from transforms3d.euler import quat2euler
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+from visualization_msgs.msg import Marker, MarkerArray  # pylint: disable=import-error
 
 
 class DebugHelper(object):
@@ -33,8 +31,8 @@ class DebugHelper(object):
         """
         self.debug = carla_debug_helper
         self.node = node
-        self.marker_subscriber = self.node.create_subscriber(MarkerArray, "/carla/debug_marker",
-                                                             self.on_marker)
+        self.marker_subscriber = self.node.new_subscription(MarkerArray, "/carla/debug_marker",
+                                                            self.on_marker, qos_profile=10)
 
     def destroy(self):
         """

@@ -14,21 +14,18 @@ import math
 
 import carla
 
-from ros_compatibility import (
-    CompatibleNode,
-    ros_ok,
-    ServiceException,
-    get_service_request,
-    QoSProfile,
-    latch_on)
-
 import carla_common.transforms as trans
+import ros_compatibility as roscomp
+from ros_compatibility.callback_groups import MutuallyExclusiveCallbackGroup
+from ros_compatibility.exceptions import *
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_ad_agent.misc import is_within_distance_ahead  # pylint: disable=relative-import
 
 from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaTrafficLightStatus
 from carla_waypoint_types.srv import GetWaypoint
 from derived_object_msgs.msg import Object
-
-from carla_ad_agent.misc import is_within_distance_ahead  # pylint: disable=relative-import
 
 
 class AgentState(enum.Enum):
@@ -64,13 +61,14 @@ class Agent(CompatibleNode):
         vehicle_info = self.wait_for_message(
             "/carla/{}/vehicle_info".format(role_name),
             CarlaEgoVehicleInfo,
-            qos_profile=QoSProfile(depth=10, durability=latch_on))
+            qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.loginfo("Vehicle info received.")
         self._ego_vehicle_id = vehicle_info.id
 
-        self._get_waypoint_client = self.create_service_client(
+        self._get_waypoint_client = self.new_client(
+            GetWaypoint,
             '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name),
-            GetWaypoint)
+            callback_group=MutuallyExclusiveCallbackGroup())
 
     def get_waypoint(self, location):
         """
@@ -81,15 +79,15 @@ class Agent(CompatibleNode):
         :return: waypoint of the requested location
         :rtype: carla_msgs/Waypoint
         """
-        if not ros_ok():
+        if not roscomp.ok():
             return None
         try:
-            request = get_service_request(GetWaypoint)
+            request = roscomp.get_service_request(GetWaypoint)
             request.location = location
             response = self.call_service(self._get_waypoint_client, request)
             return response.waypoint
         except ServiceException as e:
-            if ros_ok():
+            if roscomp.ok():
                 self.logwarn("Service call 'get_waypoint' failed: {}".format(str(e)))
 
     def run_step():

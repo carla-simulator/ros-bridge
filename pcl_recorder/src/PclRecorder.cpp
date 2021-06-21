@@ -23,7 +23,7 @@ PclRecorder::PclRecorder()
   if (!ros::param::get("~role_name", roleName)) {
     roleName = "ego_vehicle";
   }
-  sub = nh.subscribe("/carla/" + roleName + "/lidar", 1000000, &PclRecorder::callback, this);
+  sub = nh.subscribe("/carla/" + roleName + "/lidar", 1, &PclRecorder::callback, this);
 }
 
 void PclRecorder::callback(const pcl::PCLPointCloud2::ConstPtr& cloud)

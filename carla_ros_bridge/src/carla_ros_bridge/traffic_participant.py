@@ -10,12 +10,14 @@
 Classes to handle Carla traffic participants
 """
 
+import carla_common.transforms as trans
+
+from carla_ros_bridge.actor import Actor
+
 from derived_object_msgs.msg import Object
 from shape_msgs.msg import SolidPrimitive
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
-from carla_ros_bridge.actor import Actor
-import carla_common.transforms as trans
 
 
 class TrafficParticipant(Actor):
@@ -121,14 +123,14 @@ class TrafficParticipant(Actor):
         """
         return trans.carla_transform_to_ros_pose(self.carla_actor.get_transform())
 
-    def get_marker(self):
+    def get_marker(self, timestamp=None):
         """
         Helper function to create a ROS visualization_msgs.msg.Marker for the actor
 
         :return:
         visualization_msgs.msg.Marker
         """
-        marker = Marker(header=self.get_msg_header(frame_id="map"))
+        marker = Marker(header=self.get_msg_header(frame_id="map", timestamp=timestamp))
         marker.color = self.get_marker_color()
         marker.color.a = 0.3
         marker.id = self.get_id()

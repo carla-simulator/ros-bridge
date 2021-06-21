@@ -42,7 +42,8 @@ class OdometrySensor(PseudoActor):
                                              node=node)
 
         self.odometry_publisher = node.new_publisher(Odometry,
-                                                     self.get_topic_prefix())
+                                                     self.get_topic_prefix(),
+                                                     qos_profile=10)
 
     def destroy(self):
         super(OdometrySensor, self).destroy()
@@ -60,7 +61,7 @@ class OdometrySensor(PseudoActor):
         """
         Function (override) to update this object.
         """
-        odometry = Odometry(header=self.parent.get_msg_header("map"))
+        odometry = Odometry(header=self.parent.get_msg_header("map", timestamp=timestamp))
         odometry.child_frame_id = self.parent.get_prefix()
         try:
             odometry.pose.pose = self.parent.get_current_ros_pose()

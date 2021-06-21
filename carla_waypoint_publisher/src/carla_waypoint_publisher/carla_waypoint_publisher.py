@@ -21,26 +21,20 @@ import math
 import sys
 import threading
 
-from ros_compatibility import (CompatibleNode,
-                               QoSProfile,
-                               ROSException,
-                               ros_timestamp,
-                               latch_on,
-                               ros_init,
-                               get_service_response,
-                               loginfo,
-                               ROS_VERSION,
-                               ros_shutdown)
-from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
-import carla_common.transforms as trans
-from carla_msgs.msg import CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint
-
 import carla
-
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
+
+import carla_common.transforms as trans
+import ros_compatibility as roscomp
+from ros_compatibility.exceptions import *
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
+from carla_msgs.msg import CarlaWorldInfo
+from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path
 
 
 class CarlaToRosWaypointConverter(CompatibleNode):
@@ -66,7 +60,9 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.on_tick = None
         self.role_name = self.get_param("role_name", 'ego_vehicle')
         self.waypoint_publisher = self.new_publisher(
-            Path, '/carla/{}/waypoints'.format(self.role_name), QoSProfile(depth=1, durability=True))
+            Path,
+            '/carla/{}/waypoints'.format(self.role_name),
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # initialize ros services
         self.get_waypoint_service = self.new_service(
@@ -82,8 +78,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.goal = self.world.get_map().get_spawn_points()[0]
 
         self.current_route = None
-        self.goal_subscriber = self.create_subscriber(
-            PoseStamped, "/carla/{}/goal".format(self.role_name), self.on_goal)
+        self.goal_subscriber = self.new_subscription(
+            PoseStamped,
+            "/carla/{}/goal".format(self.role_name),
+            self.on_goal,
+            qos_profile=10)
 
         # use callback to wait for ego vehicle
         self.loginfo("Waiting for ego vehicle...")
@@ -108,7 +107,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         carla_waypoint = self.map.get_waypoint(carla_position)
 
-        response = get_service_response(GetWaypoint)
+        response = roscomp.get_service_response(GetWaypoint)
         response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
         response.waypoint.is_junction = carla_waypoint.is_junction
         response.waypoint.road_id = carla_waypoint.road_id
@@ -123,7 +122,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         # self.loginfo("get_actor_waypoint(): Get waypoint of actor {}".format(req.id))
         actor = self.world.get_actors().find(req.id)
 
-        response = get_service_response(GetActorWaypoint)
+        response = roscomp.get_service_response(GetActorWaypoint)
         if actor:
             carla_waypoint = self.map.get_waypoint(actor.get_location())
             response.waypoint.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
@@ -221,7 +220,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         """
         msg = Path()
         msg.header.frame_id = "map"
-        msg.header.stamp = ros_timestamp(self.get_time(), from_sec=True)
+        msg.header.stamp = roscomp.ros_timestamp(self.get_time(), from_sec=True)
         if self.current_route is not None:
             for wp in self.current_route:
                 pose = PoseStamped()
@@ -235,8 +234,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
         self.loginfo("Waiting for CARLA world (topic: /carla/world_info)...")
         try:
-            self.wait_for_message("/carla/world_info", CarlaWorldInfo,
-                                      qos_profile=QoSProfile(depth=1, durability=latch_on), timeout=15.0)
+            self.wait_for_message(
+                "/carla/world_info",
+                CarlaWorldInfo,
+                qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+                timeout=15.0)
         except ROSException as e:
             self.logerr("Error while waiting for world info: {}".format(e))
             raise e
@@ -263,26 +265,21 @@ def main(args=None):
     """
     main function
     """
-    ros_init(args)
+    roscomp.init('carla_waypoint_publisher', args)
 
     waypoint_converter = None
     try:
         waypoint_converter = CarlaToRosWaypointConverter()
-        if ROS_VERSION == 1:
-            waypoint_converter.spin()
-        else:
-            spin_thread = threading.Thread(target=waypoint_converter.spin)
-            spin_thread.start()
-            spin_thread.join()
+        waypoint_converter.spin()
     except (RuntimeError, ROSException):
         pass
     except KeyboardInterrupt:
-        loginfo("User requested shut down.")
+        roscomp.loginfo("User requested shut down.")
     finally:
-        loginfo("Shutting down.")
+        roscomp.loginfo("Shutting down.")
         if waypoint_converter:
             waypoint_converter.destroy()
-        ros_shutdown()
+        roscomp.shutdown()
 
 
 if __name__ == "__main__":

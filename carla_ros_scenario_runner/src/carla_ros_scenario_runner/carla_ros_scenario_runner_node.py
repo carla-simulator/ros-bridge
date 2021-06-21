@@ -10,26 +10,24 @@ Execute scenarios via ros service
 
 Internally, the CARLA scenario runner is executed
 """
-import sys
+
 import os
 try:
     import queue
 except ImportError:
     import Queue as queue
-from carla_ros_scenario_runner_types.srv import ExecuteScenario
-from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
+import sys
+import threading
+
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+
 from carla_ros_scenario_runner.application_runner import ApplicationStatus  # pylint: disable=relative-import
 from carla_ros_scenario_runner.scenario_runner_runner import ScenarioRunnerRunner  # pylint: disable=relative-import
 
-from ros_compatibility import (
-    CompatibleNode,
-    QoSProfile,
-    ros_ok,
-    ros_init,
-    get_service_response,
-    ros_shutdown,
-    loginfo,
-    ROS_VERSION)
+from carla_ros_scenario_runner_types.srv import ExecuteScenario
+from carla_ros_scenario_runner_types.msg import CarlaScenarioRunnerStatus
 
 # Check Python dependencies of scenario runner
 try:
@@ -47,8 +45,7 @@ except ImportError:
         Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH.")
     sys.exit(1)
 
-if ROS_VERSION == 2:
-    import threading
+ROS_VERSION = roscomp.get_ros_version()
 
 
 class CarlaRosScenarioRunner(CompatibleNode):
@@ -69,8 +66,9 @@ class CarlaRosScenarioRunner(CompatibleNode):
         port = self.get_param("port", 2000)
 
         self._status_publisher = self.new_publisher(
-            CarlaScenarioRunnerStatus, "/scenario_runner/status",
-            qos_profile=QoSProfile(depth=1, durability=1))
+            CarlaScenarioRunnerStatus,
+            "/scenario_runner/status",
+            qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.scenario_runner_status_updated(ApplicationStatus.STOPPED)
         self._scenario_runner = ScenarioRunnerRunner(
             scenario_runner_path,
@@ -81,7 +79,9 @@ class CarlaRosScenarioRunner(CompatibleNode):
             self.scenario_runner_log)
         self._request_queue = queue.Queue()
         self._execute_scenario_service = self.new_service(
-            ExecuteScenario, '/scenario_runner/execute_scenario', self.execute_scenario)
+            ExecuteScenario,
+            '/scenario_runner/execute_scenario',
+            self.execute_scenario)
 
     def scenario_runner_log(self, log):  # pylint: disable=no-self-use
         """
@@ -115,7 +115,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         """
         self.loginfo("Scenario Execution requested...")
 
-        response = get_service_response(ExecuteScenario)
+        response = roscomp.get_service_response(ExecuteScenario)
         response.result = True
         if not os.path.isfile(req.scenario.scenario_file):
             self.logwarn("Requested scenario file not existing {}".format(
@@ -132,7 +132,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         :return:
         """
         current_req = None
-        while ros_ok():
+        while roscomp.ok():
             if current_req:
                 if self._scenario_runner.is_running():
                     self.loginfo("Scenario Runner currently running. Shutting down.")
@@ -165,7 +165,7 @@ def main(args=None):
 
     :return:
     """
-    ros_init(args)
+    roscomp.init("carla_ros_scenario_runner", args=args)
 
     scenario_runner = CarlaRosScenarioRunner()
 
@@ -182,9 +182,10 @@ def main(args=None):
             scenario_runner.loginfo("Scenario Runner still running. Shutting down.")
             scenario_runner._scenario_runner.shutdown()
         del scenario_runner
-        ros_shutdown()
         if ROS_VERSION == 2:
             spin_thread.join()
+
+        roscomp.shutdown()
 
 
 if __name__ == "__main__":

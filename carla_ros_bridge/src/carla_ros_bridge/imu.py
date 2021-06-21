@@ -7,11 +7,13 @@
 Classes to handle Carla imu sensor
 """
 
-from sensor_msgs.msg import Imu
+from transforms3d.euler import euler2quat
+
+import carla_common.transforms as trans
 
 from carla_ros_bridge.sensor import Sensor
-from transforms3d.euler import euler2quat
-import carla_common.transforms as trans
+
+from sensor_msgs.msg import Imu
 
 
 class ImuSensor(Sensor):
@@ -47,7 +49,7 @@ class ImuSensor(Sensor):
                                         carla_actor=carla_actor,
                                         synchronous_mode=synchronous_mode)
 
-        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix())
+        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix(), qos_profile=10)
         self.listen()
 
     def destroy(self):

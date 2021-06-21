@@ -15,30 +15,20 @@ finally ask for a random one to the spawn service.
 
 """
 
-import os
-import math
 import json
+import math
+import os
 
+from transforms3d.euler import euler2quat
+
+import ros_compatibility as roscomp
+from ros_compatibility.exceptions import *
+from ros_compatibility.node import CompatibleNode
+
+from carla_msgs.msg import CarlaActorList
+from carla_msgs.srv import SpawnObject, DestroyObject
 from diagnostic_msgs.msg import KeyValue
 from geometry_msgs.msg import Pose
-from carla_msgs.msg import CarlaActorList
-from transforms3d.euler import euler2quat
-from carla_msgs.srv import SpawnObject, DestroyObject
-
-from ros_compatibility import (
-    CompatibleNode,
-    ROSInterruptException,
-    ServiceException,
-    ros_init,
-    logfatal,
-    loginfo,
-    logwarn,
-    logerr,
-    ros_ok,
-    get_service_request,
-    ros_shutdown,
-    ROS_VERSION
-)
 
 # ==============================================================================
 # -- CarlaSpawnObjects ------------------------------------------------------------
@@ -55,16 +45,16 @@ class CarlaSpawnObjects(CompatibleNode):
 
     def __init__(self):
         super(CarlaSpawnObjects, self).__init__('carla_spawn_objects')
-        self.objects_definition_file = self.get_param('objects_definition_file')
-        self.spawn_sensors_only = self.get_param('spawn_sensors_only', None)
+
+        self.objects_definition_file = self.get_param('objects_definition_file', '')
+        self.spawn_sensors_only = self.get_param('spawn_sensors_only', False)
 
         self.players = []
         self.vehicles_sensors = []
         self.global_sensors = []
 
-        self.spawn_object_service = self.create_service_client("/carla/spawn_object", SpawnObject)
-        self.destroy_object_service = self.create_service_client(
-            "/carla/destroy_object", DestroyObject)
+        self.spawn_object_service = self.new_client(SpawnObject, "/carla/spawn_object")
+        self.destroy_object_service = self.new_client(DestroyObject, "/carla/destroy_object")
 
     def spawn_object(self, spawn_object_request):
         response_id = -1
@@ -140,7 +130,7 @@ class CarlaSpawnObjects(CompatibleNode):
                 # spawn the vehicle's sensors
                 self.setup_sensors(vehicle["sensors"], carla_id)
             else:
-                spawn_object_request = get_service_request(SpawnObject)
+                spawn_object_request = roscomp.get_service_request(SpawnObject)
                 spawn_object_request.type = vehicle["type"]
                 spawn_object_request.id = vehicle["id"]
                 spawn_object_request.attach_to = 0
@@ -184,7 +174,7 @@ class CarlaSpawnObjects(CompatibleNode):
                     spawn_object_request.random_pose = True
 
                 player_spawned = False
-                while not player_spawned and ros_ok():
+                while not player_spawned and roscomp.ok():
                     spawn_object_request.transform = spawn_point
 
                     response_id = self.spawn_object(spawn_object_request)
@@ -208,7 +198,7 @@ class CarlaSpawnObjects(CompatibleNode):
         """
         sensor_names = []
         for sensor_spec in sensors:
-            if not ros_ok():
+            if not roscomp.ok():
                 break
             try:
                 sensor_type = str(sensor_spec.pop("type"))
@@ -242,7 +232,7 @@ class CarlaSpawnObjects(CompatibleNode):
                             spawn_point.pop("pitch", 0.0),
                             spawn_point.pop("yaw", 0.0))
 
-                spawn_object_request = get_service_request(SpawnObject)
+                spawn_object_request = roscomp.get_service_request(SpawnObject)
                 spawn_object_request.type = sensor_type
                 spawn_object_request.id = sensor_id
                 spawn_object_request.attach_to = attached_vehicle_id if attached_vehicle_id is not None else 0
@@ -323,28 +313,28 @@ class CarlaSpawnObjects(CompatibleNode):
         try:
             # destroy vehicles sensors
             for actor_id in self.vehicles_sensors:
-                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
+                                  destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.vehicles_sensors = []
 
             # destroy global sensors
             for actor_id in self.global_sensors:
-                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
+                                  destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
             self.global_sensors = []
 
             # destroy player
             for player_id in self.players:
-                destroy_object_request = get_service_request(DestroyObject)
+                destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = player_id
                 self.call_service(self.destroy_object_service,
-                                  destroy_object_request, timeout_ros2=0.5, spin_until_response_received=True)
+                                  destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(player_id))
             self.players = []
         except ServiceException:
@@ -360,16 +350,15 @@ def main(args=None):
     """
     main function
     """
-    ros_init(args)
+    roscomp.init("spawn_objects", args=args)
     spawn_objects_node = None
     try:
         spawn_objects_node = CarlaSpawnObjects()
+        roscomp.on_shutdown(spawn_objects_node.destroy)
     except KeyboardInterrupt:
-        logerr("Could not initialize CarlaSpawnObjects. Shutting down.")
+        roscomp.logerr("Could not initialize CarlaSpawnObjects. Shutting down.")
 
     if spawn_objects_node:
-        if ROS_VERSION == 1:
-            spawn_objects_node.on_shutdown(spawn_objects_node.destroy)
         try:
             spawn_objects_node.spawn_objects()
             try:
@@ -380,11 +369,9 @@ def main(args=None):
             spawn_objects_node.logwarn(
                 "Spawning process has been interrupted. There might be actors that have not been destroyed properly")
         except RuntimeError as e:
-            logfatal("Exception caught: {}".format(e))
+            roscomp.logfatal("Exception caught: {}".format(e))
         finally:
-            if ROS_VERSION == 2:
-                spawn_objects_node.destroy()
-    ros_shutdown()
+            roscomp.shutdown()
 
 
 if __name__ == '__main__':
