@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import ctypes
 import os
+
 try:
     import queue
 except ImportError:
@@ -25,7 +26,7 @@ from threading import Lock
 import carla_common.transforms as trans
 import ros_compatibility as roscomp
 import tf2_ros
-
+import numpy as np
 from carla_ros_bridge.actor import Actor
 
 from sensor_msgs.msg import PointCloud2, PointField
@@ -44,7 +45,6 @@ _DATATYPES[PointField.FLOAT64] = ('d', 8)
 
 
 class Sensor(Actor):
-
     """
     Actor implementation details for sensors
     """
@@ -176,7 +176,7 @@ class Sensor(Actor):
         if self.synchronous_mode:
             if self.sensor_tick_time:
                 self.next_data_expected_time = carla_sensor_data.timestamp + \
-                    float(self.sensor_tick_time)
+                                               float(self.sensor_tick_time)
             self.queue.put(carla_sensor_data)
         else:
             self.publish_tf(trans.carla_transform_to_ros_pose(
@@ -208,8 +208,8 @@ class Sensor(Actor):
                 if carla_sensor_data.frame != frame:
                     self.node.logwarn("{}({}): Received event for frame {}"
                                       " (expected {}). Process it anyways.".format(
-                                          self.__class__.__name__, self.get_id(),
-                                          carla_sensor_data.frame, frame))
+                        self.__class__.__name__, self.get_id(),
+                        carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
                 self.publish_tf(trans.carla_transform_to_ros_pose(
@@ -220,9 +220,9 @@ class Sensor(Actor):
 
     def _update_synchronous_sensor(self, frame, timestamp):
         while not self.next_data_expected_time or \
-            (not self.queue.empty() or
-             self.next_data_expected_time and
-             self.next_data_expected_time < timestamp):
+                (not self.queue.empty() or
+                 self.next_data_expected_time and
+                 self.next_data_expected_time < timestamp):
             while True:
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
@@ -276,6 +276,33 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
     return fmt
 
 
+def _check_if_fast_byte_coversion_avaliable(fields, packed_point_size, points):
+    _POINTTYPE_TO_NUMPY = {
+        PointField.INT8: np.int8,
+        PointField.UINT8: np.uint8,
+        PointField.INT16: np.int16,
+        PointField.UINT16: np.uint16,
+        PointField.INT32: np.int32,
+        PointField.UINT32: np.uint32,
+        PointField.FLOAT32: np.float32,
+        PointField.FLOAT64: np.float64,
+    }
+    if len(fields) <= 0:
+        return False
+
+    if type(points) is not np.ndarray:
+        return False
+    point_type = fields[0].datatype
+    # Ensure that all fields have the same type
+    if not np.all([field.datatype == point_type for field in fields]):
+        return False
+    # Ensure that no conversion is needed for field type
+    if points.dtype != _POINTTYPE_TO_NUMPY[point_type]:
+        return False
+    # Ensure that no padding is required and data are tightly packed
+    return len(points.tobytes()) / points.itemsize != packed_point_size
+
+
 def create_cloud(header, fields, points):
     """
     Create a L{sensor_msgs.msg.PointCloud2} message.
@@ -292,14 +319,17 @@ def create_cloud(header, fields, points):
     """
 
     cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
+    if _check_if_fast_byte_coversion_avaliable(fields, cloud_struct.size, points):
+        point_bytes = points.tobytes()
+    else:
+        buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
 
-    buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
-
-    point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
-    offset = 0
-    for p in points:
-        pack_into(buff, offset, *p)
-        offset += point_step
+        point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
+        offset = 0
+        for p in points:
+            pack_into(buff, offset, *p)
+            offset += point_step
+        point_bytes = buff.raw
 
     return PointCloud2(header=header,
                        height=1,
@@ -309,4 +339,4 @@ def create_cloud(header, fields, points):
                        fields=fields,
                        point_step=cloud_struct.size,
                        row_step=cloud_struct.size * len(points),
-                       data=buff.raw)
+                       data=point_bytes)
