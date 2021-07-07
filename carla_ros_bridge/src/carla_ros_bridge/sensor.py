@@ -276,7 +276,7 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
     return fmt
 
 
-def _check_if_fast_byte_coversion_avaliable(fields, packed_point_size, points):
+def _check_if_fast_byte_conversion_available(fields, packed_point_size, points):
     _POINTTYPE_TO_NUMPY = {
         PointField.INT8: np.int8,
         PointField.UINT8: np.uint8,
@@ -319,7 +319,7 @@ def create_cloud(header, fields, points):
     """
 
     cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
-    if _check_if_fast_byte_coversion_avaliable(fields, cloud_struct.size, points):
+    if _check_if_fast_byte_conversion_available(fields, cloud_struct.size, points):
         point_bytes = points.tobytes()
     else:
         buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
