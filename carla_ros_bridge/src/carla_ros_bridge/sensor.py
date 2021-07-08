@@ -310,6 +310,19 @@ def _check_if_fast_byte_conversion_available(fields, packed_point_size, points):
     return len(points.tobytes()) / points.itemsize != packed_point_size
 
 
+def _create_point_bytes_from_points(fields, cloud_struct, points):
+    if _check_if_fast_byte_conversion_available(fields, cloud_struct.size, points):
+        return points.tobytes()
+    else:
+        buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
+
+        point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
+        offset = 0
+        for p in points:
+            pack_into(buff, offset, *p)
+            offset += point_step
+        return buff.raw
+
 def create_cloud(header, fields, points):
     """
     Create a L{sensor_msgs.msg.PointCloud2} message.
@@ -326,18 +339,8 @@ def create_cloud(header, fields, points):
     """
 
     cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
-    if _check_if_fast_byte_conversion_available(fields, cloud_struct.size, points):
-        point_bytes = points.tobytes()
-    else:
-        buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
-
-        point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
-        offset = 0
-        for p in points:
-            pack_into(buff, offset, *p)
-            offset += point_step
-        point_bytes = buff.raw
-
+    point_bytes = _create_point_bytes_from_points(fields, cloud_struct, points)
+    
     return PointCloud2(header=header,
                        height=1,
                        width=len(points),
