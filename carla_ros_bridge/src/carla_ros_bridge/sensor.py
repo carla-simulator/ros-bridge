@@ -276,21 +276,28 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
     return fmt
 
 
+_POINTTYPE_TO_NUMPY = {
+    PointField.INT8: np.int8,
+    PointField.UINT8: np.uint8,
+    PointField.INT16: np.int16,
+    PointField.UINT16: np.uint16,
+    PointField.INT32: np.int32,
+    PointField.UINT32: np.uint32,
+    PointField.FLOAT32: np.float32,
+    PointField.FLOAT64: np.float64,
+}
+
 def _check_if_fast_byte_conversion_available(fields, packed_point_size, points):
-    _POINTTYPE_TO_NUMPY = {
-        PointField.INT8: np.int8,
-        PointField.UINT8: np.uint8,
-        PointField.INT16: np.int16,
-        PointField.UINT16: np.uint16,
-        PointField.INT32: np.int32,
-        PointField.UINT32: np.uint32,
-        PointField.FLOAT32: np.float32,
-        PointField.FLOAT64: np.float64,
-    }
+
     if len(fields) <= 0:
         return False
 
-    if type(points) is not np.ndarray:
+    # ensure that computer uses little-endian because this is expected output format
+    # endian conversion is required if computer uses big endian representation
+    if sys.byteorder != 'little':
+        return False
+
+    if not isinstance(points, np.ndarray):
         return False
     point_type = fields[0].datatype
     # Ensure that all fields have the same type
