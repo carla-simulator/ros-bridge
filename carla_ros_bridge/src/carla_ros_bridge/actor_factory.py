@@ -6,44 +6,45 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 #
 
-import time
-from threading import Thread, Lock
 import itertools
-from enum import Enum
-
 try:
     import queue
 except ImportError:
     import Queue as queue
+import time
+from enum import Enum
+from threading import Thread, Lock
 
-from carla_ros_bridge.actor import Actor
-from carla_ros_bridge.spectator import Spectator
-from carla_ros_bridge.traffic import Traffic, TrafficLight
-from carla_ros_bridge.vehicle import Vehicle
-from carla_ros_bridge.lidar import Lidar, SemanticLidar
-from carla_ros_bridge.radar import Radar
-from carla_ros_bridge.gnss import Gnss
-from carla_ros_bridge.pseudo_actor import PseudoActor
-from carla_ros_bridge.imu import ImuSensor
-from carla_ros_bridge.ego_vehicle import EgoVehicle
-from carla_ros_bridge.collision_sensor import CollisionSensor
-from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
-from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
-from carla_ros_bridge.object_sensor import ObjectSensor
-from carla_ros_bridge.rss_sensor import RssSensor
-from carla_ros_bridge.walker import Walker
-from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
-from carla_ros_bridge.odom_sensor import OdometrySensor
-from carla_ros_bridge.speedometer_sensor import SpeedometerSensor
-from carla_ros_bridge.tf_sensor import TFSensor
-from carla_ros_bridge.marker_sensor import MarkerSensor
-from carla_ros_bridge.actor_list_sensor import ActorListSensor
-from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
-from carla_ros_bridge.actor_control import ActorControl
-from carla_ros_bridge.sensor import Sensor
-import carla_common.transforms as trans
 import carla
 import numpy as np
+
+import carla_common.transforms as trans
+
+from carla_ros_bridge.actor import Actor
+from carla_ros_bridge.actor_control import ActorControl
+from carla_ros_bridge.actor_list_sensor import ActorListSensor
+from carla_ros_bridge.camera import Camera, RgbCamera, DepthCamera, SemanticSegmentationCamera, DVSCamera
+from carla_ros_bridge.collision_sensor import CollisionSensor
+from carla_ros_bridge.ego_vehicle import EgoVehicle
+from carla_ros_bridge.gnss import Gnss
+from carla_ros_bridge.imu import ImuSensor
+from carla_ros_bridge.lane_invasion_sensor import LaneInvasionSensor
+from carla_ros_bridge.lidar import Lidar, SemanticLidar
+from carla_ros_bridge.marker_sensor import MarkerSensor
+from carla_ros_bridge.object_sensor import ObjectSensor
+from carla_ros_bridge.odom_sensor import OdometrySensor
+from carla_ros_bridge.opendrive_sensor import OpenDriveSensor
+from carla_ros_bridge.pseudo_actor import PseudoActor
+from carla_ros_bridge.radar import Radar
+from carla_ros_bridge.rss_sensor import RssSensor
+from carla_ros_bridge.sensor import Sensor
+from carla_ros_bridge.spectator import Spectator
+from carla_ros_bridge.speedometer_sensor import SpeedometerSensor
+from carla_ros_bridge.tf_sensor import TFSensor
+from carla_ros_bridge.traffic import Traffic, TrafficLight
+from carla_ros_bridge.traffic_lights_sensor import TrafficLightsSensor
+from carla_ros_bridge.vehicle import Vehicle
+from carla_ros_bridge.walker import Walker
 
 # to generate a random spawning position or vehicles
 import random
@@ -55,9 +56,9 @@ class ActorFactory(object):
     TIME_BETWEEN_UPDATES = 0.1
 
     class TaskType(Enum):
-        SPAWN_PSEUDO_ACTOR = 0
-        DESTROY_ACTOR = 1
-        SYNC = 2
+        SPAWN_ACTOR = 0
+        SPAWN_PSEUDO_ACTOR = 1
+        DESTROY_ACTOR = 2
 
     def __init__(self, node, world, sync_mode=False):
         self.node = node
@@ -110,7 +111,8 @@ class ActorFactory(object):
         self.lock.acquire()
         for actor_id in new_actors:
             carla_actor = self.world.get_actor(actor_id)
-            self._create_object_from_actor(carla_actor)
+            if self.node.parameters["register_all_sensors"] or not isinstance(carla_actor, carla.Sensor):
+                self._create_object_from_actor(carla_actor)
 
         for actor_id in deleted_actors:
             self._destroy_object(actor_id, delete_actor=False)
@@ -119,15 +121,16 @@ class ActorFactory(object):
         with self.spawn_lock:
             while not self._task_queue.empty():
                 task = self._task_queue.get()
-                if task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
+                if task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
+                    carla_actor = self.world.get_actor(task[1][0])
+                    self._create_object_from_actor(carla_actor)
+                elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     pseudo_object = task[1]
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
                                         pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
                     actor_id = task[1]
                     self._destroy_object(actor_id, delete_actor=True)
-                elif task[0] == ActorFactory.TaskType.SYNC and not self.node.shutdown.is_set():
-                    break
         self.lock.release()
 
     def update_actor_states(self, frame_id, timestamp):
@@ -166,28 +169,29 @@ class ActorFactory(object):
                 self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self._task_queue.put((ActorFactory.TaskType.SYNC, None))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None)))
             self._known_actor_ids.append(id_)
         return id_
 
     def destroy_actor(self, uid):
+
+        def get_objects_to_destroy(uid):
+            objects_to_destroy = []
+            if uid in self._known_actor_ids:
+                objects_to_destroy.append(uid)
+                self._known_actor_ids.remove(uid)
+
+            # remove actors that have the actor to be removed as parent.
+            for actor in list(self.actors.values()):
+                if actor.parent is not None and actor.parent.uid == uid:
+                    objects_to_destroy.extend(get_objects_to_destroy(actor.uid))
+
+            return objects_to_destroy
+
         with self.spawn_lock:
-            objects_to_destroy = set(self._destroy_actor(uid))
+            objects_to_destroy = set(get_objects_to_destroy(uid))
             for obj in objects_to_destroy:
                 self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, obj))
-        return objects_to_destroy
-
-    def _destroy_actor(self, uid):
-        objects_to_destroy = []
-        if uid in self._known_actor_ids:
-            objects_to_destroy.append(uid)
-            self._known_actor_ids.remove(uid)
-
-        # remove actors that have the actor to be removed as parent.
-        for actor in list(self.actors.values()):
-            if actor.parent is not None and actor.parent.uid == uid:
-                objects_to_destroy.extend(self._destroy_actor(actor.uid))
-
         return objects_to_destroy
 
     def _spawn_carla_actor(self, req):
@@ -303,7 +307,8 @@ class ActorFactory(object):
                                  name=name,
                                  parent=parent,
                                  node=self.node,
-                                 actor_list=self.actors)
+                                 actor_list=self.actors,
+                                 world=self.world)
 
         elif type_id == ActorListSensor.get_blueprint_name():
             actor = ActorListSensor(uid=uid,

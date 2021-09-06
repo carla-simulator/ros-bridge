@@ -10,51 +10,32 @@ Rosbridge class:
 
 Class that handle communication between CARLA and ROS
 """
-from ros_compatibility import (
-    CompatibleNode,
-    ros_ok,
-    ros_shutdown,
-    ros_on_shutdown,
-    ros_timestamp,
-    QoSProfile,
-    latch_on,
-    ros_init,
-    get_service_response,
-    ROS_VERSION)
 
+import os
+import pkg_resources
 try:
     import queue
 except ImportError:
     import Queue as queue
-
-import os
 import sys
 from distutils.version import LooseVersion
 from threading import Thread, Lock, Event
-import pkg_resources
-from rosgraph_msgs.msg import Clock
 
 import carla
 
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+
 from carla_ros_bridge.actor import Actor
 from carla_ros_bridge.actor_factory import ActorFactory
-
 from carla_ros_bridge.carla_status_publisher import CarlaStatusPublisher
 from carla_ros_bridge.debug_helper import DebugHelper
-from carla_ros_bridge.world_info import WorldInfo
 from carla_ros_bridge.ego_vehicle import EgoVehicle
+from carla_ros_bridge.world_info import WorldInfo
 
 from carla_msgs.msg import CarlaControl, CarlaWeatherParameters
 from carla_msgs.srv import SpawnObject, DestroyObject, GetBlueprints
-
-if ROS_VERSION == 1:
-    import rospy  # pylint: disable=import-error
-elif ROS_VERSION == 2:
-    import rclpy  # pylint: disable=import-error
-    from rclpy.callback_groups import ReentrantCallbackGroup  # pylint: disable=import-error
-    from builtin_interfaces.msg import Time
-else:
-    raise NotImplementedError("Make sure you have a valid ROS_VERSION env variable set.")
+from rosgraph_msgs.msg import Clock
 
 
 class CarlaRosBridge(CompatibleNode):
@@ -70,7 +51,7 @@ class CarlaRosBridge(CompatibleNode):
     # wait for this time until a next tick is triggered.
     VEHICLE_CONTROL_TIMEOUT = 1.
 
-    def __init__(self, rospy_init=True, executor=None):
+    def __init__(self):
         """
         Constructor
 
@@ -79,25 +60,18 @@ class CarlaRosBridge(CompatibleNode):
         :param params: dict of parameters, see settings.yaml
         :type params: dict
         """
-        super(CarlaRosBridge, self).__init__("ros_bridge_node", rospy_init=rospy_init)
-        self.executor = executor
+        super(CarlaRosBridge, self).__init__("ros_bridge_node")
 
     # pylint: disable=attribute-defined-outside-init
     def initialize_bridge(self, carla_world, params):
         """
         Initialize the bridge
         """
-        ros_on_shutdown(self.destroy)
-
         self.parameters = params
         self.carla_world = carla_world
 
-        if ROS_VERSION == 1:
-            self.ros_timestamp = 0
-            self.callback_group = None
-        elif ROS_VERSION == 2:
-            self.ros_timestamp = Time()
-            self.callback_group = ReentrantCallbackGroup()
+        self.ros_timestamp = roscomp.ros_timestamp()
+        self.callback_group = roscomp.callback_groups.ReentrantCallbackGroup()
 
         self.synchronous_mode_update_thread = None
         self.shutdown = Event()
@@ -139,7 +113,7 @@ class CarlaRosBridge(CompatibleNode):
         self.debug_helper = DebugHelper(carla_world.debug, self)
 
         # Communication topics
-        self.clock_publisher = self.new_publisher(Clock, 'clock')
+        self.clock_publisher = self.new_publisher(Clock, 'clock', 10)
 
         self.status_publisher = CarlaStatusPublisher(
             self.carla_settings.synchronous_mode,
@@ -157,9 +131,9 @@ class CarlaRosBridge(CompatibleNode):
             self.carla_run_state = CarlaControl.PLAY
 
             self.carla_control_subscriber = \
-                self.create_subscriber(CarlaControl, "/carla/control",
-                                       lambda control: self.carla_control_queue.put(
-                                           control.command), callback_group=self.callback_group)
+                self.new_subscription(CarlaControl, "/carla/control",
+                                      lambda control: self.carla_control_queue.put(control.command),
+                                      qos_profile=10, callback_group=self.callback_group)
 
             self.synchronous_mode_update_thread = Thread(
                 target=self._synchronous_mode_update)
@@ -183,11 +157,11 @@ class CarlaRosBridge(CompatibleNode):
                                                        self.get_blueprints, callback_group=self.callback_group)
 
         self.carla_weather_subscriber = \
-            self.create_subscriber(CarlaWeatherParameters, "/carla/weather_control",
-                                   self.on_weather_changed, callback_group=self.callback_group)
+            self.new_subscription(CarlaWeatherParameters, "/carla/weather_control",
+                                  self.on_weather_changed, qos_profile=10, callback_group=self.callback_group)
 
     def spawn_object(self, req, response=None):
-        response = get_service_response(SpawnObject)
+        response = roscomp.get_service_response(SpawnObject)
         if not self.shutdown.is_set():
             try:
                 id_ = self.actor_factory.spawn_actor(req)
@@ -203,7 +177,7 @@ class CarlaRosBridge(CompatibleNode):
         return response
 
     def destroy_object(self, req, response=None):
-        response = get_service_response(DestroyObject)
+        response = roscomp.get_service_response(DestroyObject)
         destroyed_actors = self.actor_factory.destroy_actor(req.id)
         response.success = bool(destroyed_actors)
         for actor in destroyed_actors:
@@ -212,7 +186,7 @@ class CarlaRosBridge(CompatibleNode):
         return response
 
     def get_blueprints(self, req):
-        response = get_service_response(GetBlueprints)
+        response = roscomp.get_service_response(GetBlueprints)
         if req.filter:
             bp_filter = req.filter
         else:
@@ -254,7 +228,7 @@ class CarlaRosBridge(CompatibleNode):
         while not self.carla_control_queue.empty():
             command = self.carla_control_queue.get()
 
-        while command is not None and ros_ok():
+        while command is not None and roscomp.ok():
             self.carla_run_state = command
 
             if self.carla_run_state == CarlaControl.PAUSE:
@@ -276,7 +250,7 @@ class CarlaRosBridge(CompatibleNode):
         """
         execution loop for synchronous mode
         """
-        while not self.shutdown.is_set() and ros_ok():
+        while not self.shutdown.is_set() and roscomp.ok():
             self.process_run_state()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
@@ -359,8 +333,8 @@ class CarlaRosBridge(CompatibleNode):
         :type carla_timestamp: carla.Timestamp
         :return:
         """
-        if ros_ok():
-            self.ros_timestamp = ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
+        if roscomp.ok():
+            self.ros_timestamp = roscomp.ros_timestamp(carla_timestamp.elapsed_seconds, from_sec=True)
             self.clock_publisher.publish(Clock(clock=self.ros_timestamp))
 
     def destroy(self):
@@ -397,20 +371,19 @@ def main(args=None):
     main function for carla simulator ROS bridge
     maintaining the communication client and the CarlaBridge object
     """
-    ros_init(args)
+    roscomp.init("bridge", args=args)
+
     carla_bridge = None
     carla_world = None
     carla_client = None
     executor = None
     parameters = {}
-    if ROS_VERSION == 1:
-        carla_bridge = CarlaRosBridge()
-        # rospy.init_node('carla_ros_bridge', anonymous=True)
 
-    elif ROS_VERSION == 2:
-        executor = rclpy.executors.MultiThreadedExecutor()
-        carla_bridge = CarlaRosBridge(executor=executor)
-        executor.add_node(carla_bridge)
+    executor = roscomp.executors.MultiThreadedExecutor()
+    carla_bridge = CarlaRosBridge()
+    executor.add_node(carla_bridge)
+
+    roscomp.on_shutdown(carla_bridge.destroy)
 
     parameters['host'] = carla_bridge.get_param('host', 'localhost')
     parameters['port'] = carla_bridge.get_param('port', 2000)
@@ -421,6 +394,7 @@ def main(args=None):
         'synchronous_mode_wait_for_vehicle_control_command', False)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
                                                                0.05)
+    parameters['register_all_sensors'] = carla_bridge.get_param('register_all_sensors', True)
     parameters['town'] = carla_bridge.get_param('town', 'Town01')
     role_name = carla_bridge.get_param('ego_vehicle_role_name',
                                        ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])
@@ -467,16 +441,14 @@ def main(args=None):
 
         carla_bridge.initialize_bridge(carla_client.get_world(), parameters)
 
-        if ROS_VERSION == 1:
-            rospy.spin()
-        elif ROS_VERSION == 2:
-            executor.spin()
+        carla_bridge.spin()
+
     except (IOError, RuntimeError) as e:
         carla_bridge.logerr("Error: {}".format(e))
     except KeyboardInterrupt:
         pass
     finally:
-        ros_shutdown()
+        roscomp.shutdown()
         del carla_world
         del carla_client
 

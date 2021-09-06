@@ -6,9 +6,12 @@
 Executes scenario runner
 """
 import os
+
+import ros_compatibility as roscomp
+
 from carla_ros_scenario_runner.application_runner import ApplicationRunner  # pylint: disable=relative-import
 
-ROS_VERSION = int(os.environ.get('ROS_VERSION', 0))
+ROS_VERSION = roscomp.get_ros_version()
 
 
 class ScenarioRunnerRunner(ApplicationRunner):

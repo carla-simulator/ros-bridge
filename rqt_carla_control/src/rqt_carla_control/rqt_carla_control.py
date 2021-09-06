@@ -8,21 +8,19 @@
 """
 RQT Plugin to control CARLA
 """
-from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
+
+import os
+import threading
+
+from python_qt_binding import loadUi  # pylint: disable=import-error
 from python_qt_binding.QtGui import QPixmap, QIcon  # pylint: disable=no-name-in-module, import-error
 from python_qt_binding.QtWidgets import QWidget  # pylint: disable=no-name-in-module, import-error
-from python_qt_binding import loadUi  # pylint: disable=import-error
 from qt_gui.plugin import Plugin  # pylint: disable=import-error
-from ros_compatibility import CompatibleNode, QoSProfile
-import os
 
-ROS_VERSION = int(os.environ['ROS_VERSION'])
-if ROS_VERSION == 1:
-    import rospkg
-elif ROS_VERSION == 2:
-    from rclpy.callback_groups import ReentrantCallbackGroup
-    from ament_index_python.packages import get_package_share_directory
-    import threading
+import ros_compatibility as roscomp
+from ros_compatibility.node import CompatibleNode
+
+from carla_msgs.msg import CarlaControl, CarlaStatus  # pylint: disable=import-error
 
 
 class CarlaControlPlugin(Plugin):
@@ -40,15 +38,9 @@ class CarlaControlPlugin(Plugin):
 
         self._widget = QWidget()
 
-        self._node = CompatibleNode('rqt_carla_control_node', rospy_init=False)
+        self._node = CompatibleNode('rqt_carla_control_node')
 
-        if ROS_VERSION == 1:
-            package_share_dir = rospkg.RosPack().get_path('rqt_carla_control')
-            self.callback_group = None
-        elif ROS_VERSION == 2:
-            package_share_dir = get_package_share_directory('rqt_carla_control')
-            self.callback_group = ReentrantCallbackGroup()
-
+        package_share_dir = roscomp.get_package_share_directory('rqt_carla_control')
         ui_file = os.path.join(package_share_dir, 'resource', 'CarlaControl.ui')
 
         loadUi(ui_file, self._widget)
@@ -68,11 +60,16 @@ class CarlaControlPlugin(Plugin):
                 package_share_dir, 'resource', 'step_once.png'))))
 
         self.carla_status = None
-        self.carla_status_subscriber = self._node.create_subscriber(
-            CarlaStatus, "/carla/status", self.carla_status_changed, callback_group=self.callback_group)
+        self.carla_status_subscriber = self._node.new_subscription(
+            CarlaStatus,
+            "/carla/status",
+            self.carla_status_changed,
+            qos_profile=10)
 
         self.carla_control_publisher = self._node.new_publisher(
-            CarlaControl, "/carla/control", QoSProfile(depth=10, durability=False))
+            CarlaControl,
+            "/carla/control",
+            qos_profile=10)
 
         self._widget.pushButtonPlayPause.setDisabled(True)
         self._widget.pushButtonStepOnce.setDisabled(True)
@@ -82,7 +79,7 @@ class CarlaControlPlugin(Plugin):
 
         context.add_widget(self._widget)
 
-        if ROS_VERSION == 2:
+        if roscomp.get_ros_version() == 2:
             spin_thread = threading.Thread(target=self._node.spin, daemon=True)
             spin_thread.start()
 
