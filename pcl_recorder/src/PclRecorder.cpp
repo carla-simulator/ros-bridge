@@ -26,7 +26,7 @@ PclRecorder::PclRecorder()
   sub = nh.subscribe("/carla/" + roleName + "/lidar", 1, &PclRecorder::callback, this);
 }
 
-void PclRecorder::callback(const pcl::PCLPointCloud2::ConstPtr& cloud)
+void PclRecorder::callback(const boost::shared_ptr<const pcl::PCLPointCloud2>& cloud)
 {
   if ((cloud->width * cloud->height) == 0) {
     return;

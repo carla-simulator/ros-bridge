@@ -18,7 +18,7 @@ public:
 
   PclRecorder();
 
-  void callback(const pcl::PCLPointCloud2::ConstPtr& cloud);
+  void callback(const boost::shared_ptr<const pcl::PCLPointCloud2>& cloud);
 
 private:
   ros::NodeHandle nh;
