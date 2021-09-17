@@ -112,7 +112,7 @@ class ActorFactory(object):
         for actor_id in new_actors:
             carla_actor = self.world.get_actor(actor_id)
             if self.node.parameters["register_all_sensors"] or not isinstance(carla_actor, carla.Sensor):
-                self._create_object_from_actor(carla_actor)
+                self._create_object_from_actor(carla_actor, None)
 
         for actor_id in deleted_actors:
             self._destroy_object(actor_id, delete_actor=False)
@@ -123,7 +123,8 @@ class ActorFactory(object):
                 task = self._task_queue.get()
                 if task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
                     carla_actor = self.world.get_actor(task[1][0])
-                    self._create_object_from_actor(carla_actor)
+                    relative_transform = task[1][1].transform
+                    self._create_object_from_actor(carla_actor, relative_transform)
                 elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     pseudo_object = task[1]
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
@@ -169,7 +170,7 @@ class ActorFactory(object):
                 self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req)))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None)))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, req)))
             self._known_actor_ids.append(id_)
         return id_
 
@@ -222,27 +223,21 @@ class ActorFactory(object):
         carla_actor = self.world.spawn_actor(blueprint, transform, attach_to)
         return carla_actor.id
 
-    def _create_object_from_actor(self, carla_actor):
+    def _create_object_from_actor(self, carla_actor, relative_transform):
         """
         create a object for a given carla actor
         Creates also the object for its parent, if not yet existing
         """
         parent = None
         # the transform relative to the map
-        relative_transform = trans.carla_transform_to_ros_pose(carla_actor.get_transform())
+        if relative_transform == None:
+            relative_transform = trans.carla_transform_to_ros_pose(carla_actor.get_transform())
         if carla_actor.parent:
             if carla_actor.parent.id in self.actors:
                 parent = self.actors[carla_actor.parent.id]
             else:
-                parent = self._create_object_from_actor(carla_actor.parent)
-            # calculate relative transform to the parent
-            actor_transform_matrix = trans.ros_pose_to_transform_matrix(relative_transform)
-            parent_transform_matrix = trans.ros_pose_to_transform_matrix(
-                trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
-            relative_transform_matrix = np.matrix(
-                parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
-            relative_transform = trans.transform_matrix_to_ros_pose(relative_transform_matrix)
-
+                parent = self._create_object_from_actor(carla_actor.parent, None)
+                
         parent_id = 0
         if parent is not None:
             parent_id = parent.uid
