@@ -134,7 +134,6 @@ class ActorFactory(object):
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
                                         pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
-                    actor_id = task[1]
                     self._destroy_object(actor_id, delete_actor=True)
         self._task_queue = task_queue
         self.lock.release()
@@ -198,7 +197,7 @@ class ActorFactory(object):
         with self.spawn_lock:
             objects_to_destroy = set(get_objects_to_destroy(uid))
             for obj in objects_to_destroy:
-                self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, obj, None))
+                self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, (obj, ), None))
         return objects_to_destroy
 
     def _spawn_carla_actor(self, req):
