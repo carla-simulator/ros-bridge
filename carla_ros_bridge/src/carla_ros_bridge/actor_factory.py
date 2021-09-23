@@ -71,6 +71,7 @@ class ActorFactory(object):
         self.actors = {}
 
         self._task_queue = queue.Queue()
+        self._last_update_frame = 0
         self._known_actor_ids = []  # used to immediately reply to spawn_actor/destroy_actor calls
 
         self.lock = Lock()
@@ -92,10 +93,10 @@ class ActorFactory(object):
         """
         while not self.node.shutdown.is_set():
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
-            self.world.wait_for_tick()
-            self.update_available_objects()
+            world_snapshot = self.world.wait_for_tick()
+            self.update_available_objects(world_snapshot.timestamp.frame)
 
-    def update_available_objects(self, timestamp = None):
+    def update_available_objects(self, frame = None):
         """
         update the available actors
         """
@@ -119,14 +120,18 @@ class ActorFactory(object):
 
         # update objects for pseudo actors here as they might have an carla actor as parent ######
         with self.spawn_lock:
+            if frame:
+                self._last_update_frame = frame
             task_queue = queue.Queue()
             while not self._task_queue.empty():
                 task = self._task_queue.get()
                 actor_id = task[1][0]
-                if timestamp and task[2] and task[2].frame >= timestamp.frame:
+                desired_task_frame = task[2]
+                if frame and desired_task_frame and desired_task_frame > frame:
                     task_queue.put(task)
-                    self.node.loginfo("Delaying task on actor {} to next tick".format(actor_id))
+                    self.node.logdebug("Frame {}: Delaying task triggered at {} on actor {} to next tick".format(frame, desired_task_frame, actor_id))
                 elif task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
+                    self.node.logdebug("Frame {}: Execute task triggered at {} on actor {}".format(frame, desired_task_frame, actor_id))
                     carla_actor = self.world.get_actor(actor_id)
                     self._create_object_from_actor(carla_actor)
                 elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
@@ -135,7 +140,7 @@ class ActorFactory(object):
                                         pseudo_object[1].attach_to, pseudo_object[1].transform)
                 elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
                     self._destroy_object(actor_id, delete_actor=True)
-        self._task_queue = task_queue
+            self._task_queue = task_queue
         self.lock.release()
 
     def update_actor_states(self, frame_id, timestamp):
@@ -164,7 +169,11 @@ class ActorFactory(object):
         and pseudo objects are appended to a list to get created later.
         """
         with self.spawn_lock:
-            timestamp = self.world.get_snapshot().timestamp
+            # Since the next frame might already being calculated at the moment,
+            # we have to ensure the task is executed earliest in two frames to allow
+            # CARLA to see the actor at least once, update the actor states and send
+            # them to the brigde client
+            desired_task_frame = self._last_update_frame+2
             if "pseudo" in req.type:
                 # only allow spawning pseudo objects if parent actor already exists in carla
                 if req.attach_to != 0:
@@ -172,10 +181,10 @@ class ActorFactory(object):
                     if carla_actor is None:
                         raise IndexError("Parent actor {} not found".format(req.attach_to))
                 id_ = next(self.id_gen)
-                self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req), timestamp))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req), desired_task_frame))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None), timestamp))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None), desired_task_frame))
             self._known_actor_ids.append(id_)
         return id_
 
