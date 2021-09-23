@@ -122,14 +122,13 @@ class ActorFactory(object):
             task_queue = queue.Queue()
             while not self._task_queue.empty():
                 task = self._task_queue.get()
-                if task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
-                    actor_id = task[1][0]
-                    if timestamp and task[2] and task[2].frame >= timestamp.frame:
-                        task_queue.put(task)
-                        self.node.loginfo("Delaying task on actor {} to next tick".format(actor_id))
-                    else:
-                        carla_actor = self.world.get_actor(actor_id)
-                        self._create_object_from_actor(carla_actor)
+                actor_id = task[1][0]
+                if timestamp and task[2] and task[2].frame >= timestamp.frame:
+                    task_queue.put(task)
+                    self.node.loginfo("Delaying task on actor {} to next tick".format(actor_id))
+                elif task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
+                    carla_actor = self.world.get_actor(actor_id)
+                    self._create_object_from_actor(carla_actor)
                 elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     pseudo_object = task[1]
                     self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
