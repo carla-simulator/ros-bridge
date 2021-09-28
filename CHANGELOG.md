@@ -1,5 +1,6 @@
 ## Latest changed
 
+*   Fix of scenario runner status
 *   Added static markers for carla environment objects.
 *   Added hybrid ROS1/ROS2 bridge.
 *   Added passive mode. Wordl configuration and ticking are performed by other clients.
