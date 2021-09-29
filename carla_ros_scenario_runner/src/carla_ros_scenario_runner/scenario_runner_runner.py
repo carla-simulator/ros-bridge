@@ -27,7 +27,7 @@ class ScenarioRunnerRunner(ApplicationRunner):
         super(ScenarioRunnerRunner, self).__init__(
             status_updated_fct,
             log_fct,
-            "ScenarioManager: Running scenario OpenScenario")
+            "ScenarioManager: Running scenario ")
 
     def execute_scenario(self, scenario_file):
         """
