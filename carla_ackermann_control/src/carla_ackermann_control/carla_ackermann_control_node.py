@@ -10,7 +10,6 @@
 Control Carla ego vehicle by using AckermannDrive messages
 """
 
-import datetime
 import sys
 
 import numpy
@@ -21,7 +20,8 @@ from ros_compatibility.node import CompatibleNode
 
 from carla_ackermann_control import carla_control_physics as phys
 
-from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error
+from ackermann_msgs.msg import AckermannDrive  # pylint: disable=import-error,wrong-import-order
+from std_msgs.msg import Header # pylint: disable=wrong-import-order
 from carla_msgs.msg import CarlaEgoVehicleStatus  # pylint: disable=no-name-in-module,import-error
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=no-name-in-module,import-error
 from carla_msgs.msg import CarlaEgoVehicleInfo  # pylint: disable=no-name-in-module,import-error
@@ -30,8 +30,8 @@ from carla_ackermann_msgs.msg import EgoVehicleControlInfo  # pylint: disable=no
 ROS_VERSION = roscomp.get_ros_version()
 
 if ROS_VERSION == 1:
-    from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig
-    from dynamic_reconfigure.server import Server
+    from carla_ackermann_control.cfg import EgoVehicleControlParameterConfig # pylint: disable=no-name-in-module,import-error,ungrouped-imports
+    from dynamic_reconfigure.server import Server # pylint: disable=no-name-in-module,import-error
 if ROS_VERSION == 2:
     from rcl_interfaces.msg import SetParametersResult
 
@@ -84,7 +84,7 @@ class CarlaAckermannControl(CompatibleNode):
             self. add_on_set_parameters_callback(self.reconfigure_pid_parameters)
 
         self.control_loop_rate = self.get_param("control_loop_rate", 0.05)
-        self.lastAckermannMsgReceived = datetime.datetime(datetime.MINYEAR, 1, 1)
+        self.last_ackermann_msg_received_sec =  self.get_time()
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
         self.role_name = self.get_param('role_name', 'ego_vehicle')
@@ -224,12 +224,27 @@ class CarlaAckermannControl(CompatibleNode):
 
             self.loginfo(
                 "Reconfigure Request:  speed ({}, {}, {}), accel ({}, {}, {})".format(
-                    self.speed_controller.tunings[0], self.speed_controller.tunings[1], self.speed_controller.tunings[2],
-                    self.accel_controller.tunings[0], self.accel_controller.tunings[1], self.accel_controller.tunings[2]
+                    self.speed_controller.tunings[0],
+                    self.speed_controller.tunings[1],
+                    self.speed_controller.tunings[2],
+                    self.accel_controller.tunings[0],
+                    self.accel_controller.tunings[1],
+                    self.accel_controller.tunings[2]
                 )
             )
 
             return SetParametersResult(successful=True)
+
+    def get_msg_header(self):
+        """
+        Get a filled ROS message header
+        :return: ROS message header
+        :rtype: std_msgs.msg.Header
+        """
+        header = Header()
+        header.frame_id = "map"
+        header.stamp = roscomp.ros_timestamp(sec=self.get_time(), from_sec=True)
+        return header
 
     def vehicle_status_updated(self, vehicle_status):
         """
@@ -277,7 +292,7 @@ class CarlaAckermannControl(CompatibleNode):
         :type ros_ackermann_drive: ackermann_msgs.AckermannDrive
         :return:
         """
-        self.lastAckermannMsgReceived = datetime.datetime.now()
+        self.last_ackermann_msg_received_sec = self.get_time()
         # set target values
         self.set_target_steering_angle(ros_ackermann_drive.steering_angle)
         self.set_target_speed(ros_ackermann_drive.speed)
@@ -340,8 +355,9 @@ class CarlaAckermannControl(CompatibleNode):
 
             # only send out the Carla Control Command if AckermannDrive messages are
             # received in the last second (e.g. to allows manually controlling the vehicle)
-            if (self.lastAckermannMsgReceived + datetime.timedelta(0, 1)) > \
-                    datetime.datetime.now():
+            if (self.last_ackermann_msg_received_sec + 1.0) > \
+                    self.get_time():
+                self.info.output.header = self.get_msg_header()
                 self.carla_control_publisher.publish(self.info.output)
 
     def control_steering(self):
@@ -519,7 +535,7 @@ class CarlaAckermannControl(CompatibleNode):
 
         :return:
         """
-        self.info.output.header = self.info.header
+        self.info.header = self.get_msg_header()
         self.control_info_publisher.publish(self.info)
 
     def update_current_values(self):
