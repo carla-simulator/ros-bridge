@@ -81,7 +81,7 @@ class Vehicle(TrafficParticipant):
         # Moving pivot point from the bottom (CARLA) to the center (ROS) of the bounding box.
         extent = self.carla_actor.bounding_box.extent
         marker_transform = self.carla_actor.get_transform()
-        marker_transform.location -= marker_transform.get_up_vector() * extent.z
+        marker_transform.location += marker_transform.get_up_vector() * extent.z
         return trans.carla_transform_to_ros_pose(marker_transform)
 
     def get_classification(self):
