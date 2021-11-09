@@ -30,6 +30,8 @@ elif ROS_VERSION == 2:
             ('share/' + package_name, ['package.xml']),
             ('share/' + package_name + '/config',
              ['config/objects.json']),
+            ('share/' + package_name + '/config',
+             ['config/object_sensor_only.json']),
             (os.path.join('share', package_name), glob('launch/*.launch.py'))
         ],
         install_requires=['setuptools'],
