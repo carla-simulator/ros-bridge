@@ -222,7 +222,7 @@ class Sensor(Actor):
         while not self.next_data_expected_time or \
             (not self.queue.empty() or
              self.next_data_expected_time and
-             self.next_data_expected_time < timestamp):
+             self.next_data_expected_time < timestamp + 1e-8):
             while True:
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
