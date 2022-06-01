@@ -261,7 +261,10 @@ class CarlaRosBridge(CompatibleNode):
                         if isinstance(actor, EgoVehicle):
                             self._expected_ego_vehicle_control_command_ids.append(
                                 actor_id)
+
+            self.actor_factory.update_available_objects()
             frame = self.carla_world.tick()
+
             world_snapshot = self.carla_world.get_snapshot()
 
             self.status_publisher.set_frame(frame)
@@ -270,7 +273,6 @@ class CarlaRosBridge(CompatibleNode):
                 frame))
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             self.logdebug("Waiting for sensor data finished.")
-            self.actor_factory.update_available_objects()
 
             if self.parameters['synchronous_mode_wait_for_vehicle_control_command']:
                 # wait for all ego vehicles to send a vehicle control command
@@ -394,6 +396,7 @@ def main(args=None):
         'synchronous_mode_wait_for_vehicle_control_command', False)
     parameters['fixed_delta_seconds'] = carla_bridge.get_param('fixed_delta_seconds',
                                                                0.05)
+    parameters['register_all_sensors'] = carla_bridge.get_param('register_all_sensors', True)
     parameters['town'] = carla_bridge.get_param('town', 'Town01')
     role_name = carla_bridge.get_param('ego_vehicle_role_name',
                                        ["hero", "ego_vehicle", "hero1", "hero2", "hero3"])

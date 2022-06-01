@@ -23,7 +23,6 @@ import threading
 
 import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 import carla_common.transforms as trans
 import ros_compatibility as roscomp
@@ -204,9 +203,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             goal.location.y,
             goal.location.z))
 
-        dao = GlobalRoutePlannerDAO(self.world.get_map(), sampling_resolution=1)
-        grp = GlobalRoutePlanner(dao)
-        grp.setup()
+        grp = GlobalRoutePlanner(self.world.get_map(), sampling_resolution=1)
         route = grp.trace_route(self.ego_vehicle.get_location(),
                                 carla.Location(goal.location.x,
                                                goal.location.y,

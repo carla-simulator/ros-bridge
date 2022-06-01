@@ -123,7 +123,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /carla/ego_vehicle/lidar/lidar1/point_cloud
+        Value: /carla/ego_vehicle/lidar
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
