@@ -74,7 +74,7 @@ elseif(${ROS_VERSION} EQUAL 2)
                                            plugin_description_ros2.xml)
 
   ament_target_dependencies(rviz_carla_plugin rclcpp carla_msgs nav_msgs
-                            carla_ros_scenario_runner_types)
+                            carla_ros_scenario_runner_types rviz_common)
 
   ament_export_libraries(${PROJECT_NAME})
 
