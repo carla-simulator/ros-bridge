@@ -26,10 +26,9 @@ elseif(${ROS_VERSION} EQUAL 2)
 
   find_package(ament_cmake REQUIRED)
 
-  install(
-    DIRECTORY config launch
-    DESTINATION share/${PROJECT_NAME}
-  )
+  install(DIRECTORY config/ DESTINATION share/${PROJECT_NAME})
+
+  install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME})
 
   ament_package()
 
