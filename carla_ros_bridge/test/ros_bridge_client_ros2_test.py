@@ -77,7 +77,7 @@ def generate_test_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_point',
-            default_value=''
+            default_value='None'
         ),
         launch.actions.DeclareLaunchArgument(
             name='objects_definition_file',
