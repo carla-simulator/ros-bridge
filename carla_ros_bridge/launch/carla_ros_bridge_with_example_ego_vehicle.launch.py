@@ -72,7 +72,7 @@ def generate_launch_description():
                 'timeout': launch.substitutions.LaunchConfiguration('timeout'),
                 'vehicle_filter': launch.substitutions.LaunchConfiguration('vehicle_filter'),
                 'role_name': launch.substitutions.LaunchConfiguration('role_name'),
-                'spawn_point': launch.substitutions.LaunchConfiguration('spawn_point')
+                'spawn_point': str(launch.substitutions.LaunchConfiguration('spawn_point'))
             }.items()
         ),
         launch.actions.IncludeLaunchDescription(
