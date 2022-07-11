@@ -34,7 +34,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 'objects_definition_file': launch.substitutions.LaunchConfiguration('objects_definition_file'),
-                'spawn_point_ego_vehicle': str(launch.substitutions.LaunchConfiguration('spawn_point_ego_vehicle')),
+                'spawn_point_ego_vehicle': launch.substitutions.LaunchConfiguration('spawn_point_ego_vehicle'),
                 'spawn_sensors_only': launch.substitutions.LaunchConfiguration('spawn_sensors_only')
             }.items()
         ),
