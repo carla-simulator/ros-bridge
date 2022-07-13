@@ -71,8 +71,8 @@ jobs:
           cd $GITHUB_WORKSPACE/../catkin_ws/src
           ln -s $GITHUB_WORKSPACE
           cd ..
-          catkin init
           source /opt/ros/$(rosversion -d)/setup.bash
+          catkin init
           cd $GITHUB_WORKSPACE/../catkin_ws &&
           catkin build --summarize --no-status --force-color
           catkin run_tests --no-status --force-color && catkin_test_results
