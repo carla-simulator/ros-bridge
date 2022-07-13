@@ -52,7 +52,9 @@ jobs:
           fetch-depth: 1
           submodules: true
       - name: Setup
-        run: ./install_dependencies.sh
+        run: |
+          ./install_dependencies.sh
+          sudo apt-get install --no-install-recommends -y python3-rospkg
       - name: ROS2 Build, Test, Lint
         if: ${{ matrix.ros_version == 2 }}
         shell: bash
