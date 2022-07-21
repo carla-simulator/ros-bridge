@@ -27,7 +27,7 @@ PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
     roleName = "ego_vehicle";
   }
   auto sub_opt = rclcpp::SubscriptionOptions();
-  sub_opt.callback_group = this->create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+  sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar", 10, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1), sub_opt);
 }
 
@@ -47,7 +47,7 @@ void PclRecorderROS2::callback(const sensor_msgs::msg::PointCloud2::SharedPtr cl
 
   Eigen::Affine3d transform;
   try {
-    transform = tf2::transformToEigen (tf_buffer_->lookupTransform(fixed_frame_, cloud->header.frame_id,  cloud->header.stamp, rclcpp::Duration(1)));
+    transform = tf2::transformToEigen (tf_buffer_->lookupTransform(fixed_frame_, cloud->header.frame_id,  cloud->header.stamp, rclcpp::Duration::from_seconds(1)));
 
     pcl::PointCloud<pcl::PointXYZ> pclCloud;
     pcl::fromROSMsg(*cloud, pclCloud);
