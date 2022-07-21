@@ -1,5 +1,7 @@
 ## Latest changed
 
+*   Fixed scenario runner node shutdown for foxy
+*   Fixed actor synchronization creation
 *   Fix of scenario runner status
 
 ## CARLA-ROS-Bridge 0.9.11
