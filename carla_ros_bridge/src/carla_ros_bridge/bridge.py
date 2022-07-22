@@ -12,6 +12,7 @@ Class that handle communication between CARLA and ROS
 """
 
 import os
+import time
 import pkg_resources
 try:
     import queue
@@ -250,6 +251,8 @@ class CarlaRosBridge(CompatibleNode):
         """
         execution loop for synchronous mode
         """
+        # sleep 2 seconds to allow actor spawning time before the next tick
+        time.sleep(2)
         while not self.shutdown.is_set() and roscomp.ok():
             self.process_run_state()
 
