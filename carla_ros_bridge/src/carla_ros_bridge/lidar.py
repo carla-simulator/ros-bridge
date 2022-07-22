@@ -17,6 +17,14 @@ from carla_ros_bridge.sensor import Sensor, create_cloud
 
 from sensor_msgs.msg import PointCloud2, PointField
 
+def cloud_from_numpy(msg, points):
+    # use only if points data is packed (no padding for memory alignment)
+    msg.height = 1
+    msg.width = len(points)
+    msg.point_step = points.itemsize
+    msg.row_step = msg.point_step * msg.width
+    msg.data = points.tobytes()
+    return msg
 
 class Lidar(Sensor):
 
@@ -51,6 +59,14 @@ class Lidar(Sensor):
                                     carla_actor=carla_actor,
                                     synchronous_mode=synchronous_mode)
 
+        self.dtype = numpy.dtype([(name, numpy.float32) for name in 'xyzi'])
+        self.msg = PointCloud2()
+        self.msg.fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+        ]
         self.lidar_publisher = node.new_publisher(PointCloud2,
                                                   self.get_topic_prefix(),
                                                   qos_profile=10)
@@ -68,23 +84,13 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
-        fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
-        ]
+        self.msg.header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
+        lidar_data = numpy.frombuffer(carla_lidar_measurement.raw_data, self.dtype).copy()
 
-        lidar_data = numpy.fromstring(
-            bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
-        lidar_data = numpy.reshape(
-            lidar_data, (int(lidar_data.shape[0] / 4), 4))
         # we take the opposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
-        lidar_data[:, 1] *= -1
-        point_cloud_msg = create_cloud(header, fields, lidar_data)
-        self.lidar_publisher.publish(point_cloud_msg)
+        lidar_data['y'] *= -1
+        self.lidar_publisher.publish(cloud_from_numpy(self.msg, lidar_data))
 
 
 class SemanticLidar(Sensor):
@@ -120,6 +126,23 @@ class SemanticLidar(Sensor):
                                             carla_actor=carla_actor,
                                             synchronous_mode=synchronous_mode)
 
+        self.dtype = numpy.dtype([
+            ('x', numpy.float32),
+            ('y', numpy.float32),
+            ('z', numpy.float32),
+            ('CosAngle', numpy.float32),
+            ('ObjIdx', numpy.uint32),
+            ('ObjTag', numpy.uint32)
+        ])
+        self.msg = PointCloud2()
+        self.msg.fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='CosAngle', offset=12, datatype=PointField.FLOAT32, count=1),
+            PointField(name='ObjIdx', offset=16, datatype=PointField.UINT32, count=1),
+            PointField(name='ObjTag', offset=20, datatype=PointField.UINT32, count=1)
+        ]
         self.semantic_lidar_publisher = node.new_publisher(
             PointCloud2,
             self.get_topic_prefix(),
@@ -138,28 +161,10 @@ class SemanticLidar(Sensor):
         :param carla_lidar_measurement: carla semantic lidar measurement object
         :type carla_lidar_measurement: carla.SemanticLidarMeasurement
         """
-        header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
-        fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-            PointField(name='CosAngle', offset=12, datatype=PointField.FLOAT32, count=1),
-            PointField(name='ObjIdx', offset=16, datatype=PointField.UINT32, count=1),
-            PointField(name='ObjTag', offset=20, datatype=PointField.UINT32, count=1)
-        ]
-
-        lidar_data = numpy.fromstring(bytes(carla_lidar_measurement.raw_data),
-                                      dtype=numpy.dtype([
-                                          ('x', numpy.float32),
-                                          ('y', numpy.float32),
-                                          ('z', numpy.float32),
-                                          ('CosAngle', numpy.float32),
-                                          ('ObjIdx', numpy.uint32),
-                                          ('ObjTag', numpy.uint32)
-                                      ]))
+        self.msg.header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
+        lidar_data = numpy.frombuffer(carla_lidar_measurement.raw_data, self.dtype).copy()
 
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data['y'] *= -1
-        point_cloud_msg = create_cloud(header, fields, lidar_data.tolist())
-        self.semantic_lidar_publisher.publish(point_cloud_msg)
+        self.semantic_lidar_publisher.publish(cloud_from_numpy(self.msg, lidar_data))
