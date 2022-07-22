@@ -25,7 +25,7 @@ from threading import Lock
 import carla_common.transforms as trans
 import ros_compatibility as roscomp
 import tf2_ros
-
+import numpy as np
 from carla_ros_bridge.actor import Actor
 
 from sensor_msgs.msg import PointCloud2, PointField
@@ -44,7 +44,7 @@ _DATATYPES[PointField.FLOAT64] = ('d', 8)
 
 
 class Sensor(Actor):
-
+    
     """
     Actor implementation details for sensors
     """
@@ -276,6 +276,53 @@ def _get_struct_fmt(is_bigendian, fields, field_names=None):
     return fmt
 
 
+_POINTTYPE_TO_NUMPY = {
+    PointField.INT8: np.int8,
+    PointField.UINT8: np.uint8,
+    PointField.INT16: np.int16,
+    PointField.UINT16: np.uint16,
+    PointField.INT32: np.int32,
+    PointField.UINT32: np.uint32,
+    PointField.FLOAT32: np.float32,
+    PointField.FLOAT64: np.float64,
+}
+
+def _check_if_fast_byte_conversion_available(fields, packed_point_size, points):
+
+    if len(fields) <= 0:
+        return False
+
+    # ensure that computer uses little-endian because this is expected output format
+    # endian conversion is required if computer uses big endian representation
+    if sys.byteorder != 'little':
+        return False
+
+    if not isinstance(points, np.ndarray):
+        return False
+    point_type = fields[0].datatype
+    # Ensure that all fields have the same type
+    if not np.all([field.datatype == point_type for field in fields]):
+        return False
+    # Ensure that no conversion is needed for field type
+    if points.dtype != _POINTTYPE_TO_NUMPY[point_type]:
+        return False
+    # Ensure that no padding is required and data are tightly packed
+    return len(points.tobytes()) / points.itemsize != packed_point_size
+
+
+def _create_point_bytes_from_points(fields, cloud_struct, points):
+    if _check_if_fast_byte_conversion_available(fields, cloud_struct.size, points):
+        return points.tobytes()
+    else:
+        buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
+
+        point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
+        offset = 0
+        for p in points:
+            pack_into(buff, offset, *p)
+            offset += point_step
+        return buff.raw
+
 def create_cloud(header, fields, points):
     """
     Create a L{sensor_msgs.msg.PointCloud2} message.
@@ -292,15 +339,8 @@ def create_cloud(header, fields, points):
     """
 
     cloud_struct = struct.Struct(_get_struct_fmt(False, fields))
-
-    buff = ctypes.create_string_buffer(cloud_struct.size * len(points))
-
-    point_step, pack_into = cloud_struct.size, cloud_struct.pack_into
-    offset = 0
-    for p in points:
-        pack_into(buff, offset, *p)
-        offset += point_step
-
+    point_bytes = _create_point_bytes_from_points(fields, cloud_struct, points)
+    
     return PointCloud2(header=header,
                        height=1,
                        width=len(points),
@@ -309,4 +349,4 @@ def create_cloud(header, fields, points):
                        fields=fields,
                        point_step=cloud_struct.size,
                        row_step=cloud_struct.size * len(points),
-                       data=buff.raw)
+                       data=point_bytes)
