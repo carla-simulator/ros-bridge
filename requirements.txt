@@ -1,5 +1,6 @@
 pep8
 autopep8
+flake8
 cmake_format==0.6.11
 pylint
 transforms3d
