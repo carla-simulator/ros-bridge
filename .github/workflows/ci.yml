@@ -23,10 +23,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - docker_image: melodic-robot
-            ros_distro: melodic
-            ros_python_version: 2
-            ros_version: 1
+          #- docker_image: melodic-robot
+          #  ros_distro: melodic
+          #  ros_python_version: 2
+          #  ros_version: 1
 
           - docker_image: noetic-robot
             ros_distro: noetic
@@ -52,7 +52,9 @@ jobs:
           fetch-depth: 1
           submodules: true
       - name: Setup
-        run: ./install_dependencies.sh
+        run: |
+          ./install_dependencies.sh
+          sudo apt-get install --no-install-recommends -y python3-rospkg
       - name: ROS2 Build, Test, Lint
         if: ${{ matrix.ros_version == 2 }}
         shell: bash
@@ -69,8 +71,8 @@ jobs:
           cd $GITHUB_WORKSPACE/../catkin_ws/src
           ln -s $GITHUB_WORKSPACE
           cd ..
-          catkin init
           source /opt/ros/$(rosversion -d)/setup.bash
+          catkin init
           cd $GITHUB_WORKSPACE/../catkin_ws &&
           catkin build --summarize --no-status --force-color
           catkin run_tests --no-status --force-color && catkin_test_results

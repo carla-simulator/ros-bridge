@@ -11,6 +11,7 @@ if [ "$ROS_VERSION" = "2" ]; then
 else
     ADDITIONAL_PACKAGES="ros-$ROS_DISTRO-rviz
                          ros-$ROS_DISTRO-opencv-apps
+                         ros-$ROS_DISTRO-rospy
                          ros-$ROS_DISTRO-rospy-message-converter
                          ros-$ROS_DISTRO-pcl-ros"
 fi
