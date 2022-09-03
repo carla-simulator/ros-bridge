@@ -116,7 +116,6 @@ class Sensor(Actor):
             frame_id = self.parent.get_prefix()
         else:
             frame_id = "map"
-        self.node.loginfo("Haciendo relative tf: {}, {}".format(child_frame_id, frame_id))
 
         transform = tf2_ros.TransformStamped()
         transform.header.stamp = roscomp.ros_timestamp(sec=timestamp, from_sec=True)

@@ -144,8 +144,6 @@ class ActorFactory(object):
             for actor_id in self.actors:
                 try:
                     actor = self.actors[actor_id]
-                    if isinstance(actor, Sensor):
-                        self.node.loginfo(actor.__class__.__name__)
                     self.actors[actor_id].update(frame_id, timestamp)
                 except RuntimeError as e:
                     self.node.logwarn("Update actor {}({}) failed: {}".format(
