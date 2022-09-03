@@ -50,7 +50,7 @@ class CarlaAdAgent(Agent):
         self._objects = {}
         self._lights_status = {}
         self._lights_info = {}
-        self._target_speed = 0.
+        self._target_speed = 8.33
 
         self.speed_command_publisher = self.new_publisher(
             Float64, "/carla/{}/speed_command".format(role_name),

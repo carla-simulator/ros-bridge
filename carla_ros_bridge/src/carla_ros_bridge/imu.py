@@ -7,8 +7,12 @@
 Classes to handle Carla imu sensor
 """
 
-from transforms3d.euler import euler2quat
+import math
 
+from sensor_msgs.msg import Imu
+
+from carla_ros_bridge.sensor import Sensor
+from transforms3d.euler import euler2quat, quat2euler
 import carla_common.transforms as trans
 
 from carla_ros_bridge.sensor import Sensor
@@ -69,7 +73,7 @@ class ImuSensor(Sensor):
 
         # Carla uses a left-handed coordinate convention (X forward, Y right, Z up).
         # Here, these measurements are converted to the right-handed ROS convention
-        #  (X forward, Y left, Z up).
+        # (X forward, Y left, Z up).
         imu_msg.angular_velocity.x = -carla_imu_measurement.gyroscope.x
         imu_msg.angular_velocity.y = carla_imu_measurement.gyroscope.y
         imu_msg.angular_velocity.z = -carla_imu_measurement.gyroscope.z
@@ -78,11 +82,17 @@ class ImuSensor(Sensor):
         imu_msg.linear_acceleration.y = -carla_imu_measurement.accelerometer.y
         imu_msg.linear_acceleration.z = carla_imu_measurement.accelerometer.z
 
-        roll, pitch, yaw = trans.carla_rotation_to_RPY(carla_imu_measurement.transform.rotation)
-        quat = euler2quat(roll, pitch, yaw)
+        quat = euler2quat(math.sin(-carla_imu_measurement.compass), math.cos(-carla_imu_measurement.compass), 0.0)
         imu_msg.orientation.w = quat[0]
         imu_msg.orientation.x = quat[1]
         imu_msg.orientation.y = quat[2]
         imu_msg.orientation.z = quat[3]
+
+        roll, pitch, yaw = quat2euler([
+        imu_msg.orientation.w,
+        imu_msg.orientation.x,
+        imu_msg.orientation.y,
+        imu_msg.orientation.z])
+        compass = -math.atan2(roll, pitch) + 2*math.pi
 
         self.imu_publisher.publish(imu_msg)

@@ -92,7 +92,10 @@ class ActorFactory(object):
         """
         while not self.node.shutdown.is_set():
             time.sleep(ActorFactory.TIME_BETWEEN_UPDATES)
-            self.world.wait_for_tick()
+            try:
+                self.world.wait_for_tick(seconds=5)
+            except Exception as e:
+                self.node.logwarn(str(e))
             self.update_available_objects()
 
     def update_available_objects(self):
@@ -140,6 +143,9 @@ class ActorFactory(object):
         with self.lock:
             for actor_id in self.actors:
                 try:
+                    actor = self.actors[actor_id]
+                    if isinstance(actor, Sensor):
+                        self.node.loginfo(actor.__class__.__name__)
                     self.actors[actor_id].update(frame_id, timestamp)
                 except RuntimeError as e:
                     self.node.logwarn("Update actor {}({}) failed: {}".format(

@@ -9,7 +9,7 @@ if(${ROS_VERSION} EQUAL 1)
 
   find_package(catkin REQUIRED COMPONENTS message_generation nav_msgs)
 
-  add_service_files(DIRECTORY srv FILES GetWaypoint.srv GetActorWaypoint.srv)
+  add_service_files(DIRECTORY srv FILES ComputeRoute.srv GetWaypoint.srv GetActorWaypoint.srv)
 
   add_message_files(DIRECTORY msg FILES CarlaWaypoint.msg)
 
@@ -37,6 +37,7 @@ elseif(${ROS_VERSION} EQUAL 2)
   rosidl_generate_interfaces(
     ${PROJECT_NAME}
     msg/CarlaWaypoint.msg
+    srv/ComputeRoute.srv
     srv/GetWaypoint.srv
     srv/GetActorWaypoint.srv
     DEPENDENCIES

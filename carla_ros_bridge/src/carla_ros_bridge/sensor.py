@@ -107,20 +107,16 @@ class Sensor(Actor):
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     def get_ros_transform(self, pose, timestamp):
-        if self.synchronous_mode:
-            if not self.relative_spawn_pose:
-                self.node.logwarn("{}: No relative spawn pose defined".format(self.get_prefix()))
-                return
-            pose = self.relative_spawn_pose
-            child_frame_id = self.get_prefix()
-            if self.parent is not None:
-                frame_id = self.parent.get_prefix()
-            else:
-                frame_id = "map"
-
+        if not self.relative_spawn_pose:
+            self.node.logwarn("{}: No relative spawn pose defined".format(self.get_prefix()))
+            return
+        pose = self.relative_spawn_pose
+        child_frame_id = self.get_prefix()
+        if self.parent is not None:
+            frame_id = self.parent.get_prefix()
         else:
-            child_frame_id = self.get_prefix()
             frame_id = "map"
+        self.node.loginfo("Haciendo relative tf: {}, {}".format(child_frame_id, frame_id))
 
         transform = tf2_ros.TransformStamped()
         transform.header.stamp = roscomp.ros_timestamp(sec=timestamp, from_sec=True)

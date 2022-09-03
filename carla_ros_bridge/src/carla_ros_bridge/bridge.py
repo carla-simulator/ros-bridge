@@ -156,9 +156,9 @@ class CarlaRosBridge(CompatibleNode):
         self.get_blueprints_service = self.new_service(GetBlueprints, "/carla/get_blueprints",
                                                        self.get_blueprints, callback_group=self.callback_group)
 
-        self.carla_weather_subscriber = \
-            self.new_subscription(CarlaWeatherParameters, "/carla/weather_control",
-                                  self.on_weather_changed, qos_profile=10, callback_group=self.callback_group)
+        #self.carla_weather_subscriber = \
+        #    self.new_subscription(CarlaWeatherParameters, "/carla/weather_control",
+        #                          self.on_weather_changed, qos_profile=10, callback_group=self.callback_group)
 
     def spawn_object(self, req, response=None):
         response = roscomp.get_service_response(SpawnObject)
@@ -358,7 +358,7 @@ class CarlaRosBridge(CompatibleNode):
         self.status_publisher.destroy()
         self.destroy_service(self.spawn_object_service)
         self.destroy_service(self.destroy_object_service)
-        self.destroy_subscription(self.carla_weather_subscriber)
+        #self.destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
 
         for uid in self._registered_actors:
@@ -411,19 +411,6 @@ def main(args=None):
             port=parameters['port'])
         carla_client.set_timeout(parameters['timeout'])
 
-        # check carla version
-        dist = pkg_resources.get_distribution("carla")
-        if LooseVersion(dist.version) != LooseVersion(CarlaRosBridge.CARLA_VERSION):
-            carla_bridge.logfatal("CARLA python module version {} required. Found: {}".format(
-                CarlaRosBridge.CARLA_VERSION, dist.version))
-            sys.exit(1)
-
-        if LooseVersion(carla_client.get_server_version()) != \
-           LooseVersion(carla_client.get_client_version()):
-            carla_bridge.logwarn(
-                "Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API. Client API version: {}. Simulator API version: {}"
-                .format(carla_client.get_client_version(),
-                        carla_client.get_server_version()))
 
         carla_world = carla_client.get_world()
 

@@ -22,6 +22,7 @@ from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
 from carla_ad_agent.misc import distance_vehicle
 
 from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
+from carla_waypoint_types.srv import ComputeRoute
 from nav_msgs.msg import Odometry, Path
 from std_msgs.msg import Float64
 from visualization_msgs.msg import Marker
@@ -66,6 +67,10 @@ class LocalPlanner(CompatibleNode):
         self._buffer_size = 5
         self._waypoints_queue = collections.deque(maxlen=20000)
         self._waypoint_buffer = collections.deque(maxlen=self._buffer_size)
+
+        self._compute_route_client = self.create_service_client(
+            '/carla_waypoint_publisher/compute_route',
+            ComputeRoute)
 
         # subscribers
         self._odometry_subscriber = self.new_subscription(
@@ -115,6 +120,17 @@ class LocalPlanner(CompatibleNode):
             self._waypoints_queue.clear()
             self._waypoints_queue.extend([pose.pose for pose in path_msg.poses])
 
+    def plan_cb(self, path_msg):
+        request = get_service_request(ComputeRoute)
+        request.locations = [pose.pose.position for pose in path_msg.poses] 
+        response = self.call_service(self._compute_route_client, request)
+        with self.data_lock:
+            self._waypoint_buffer.clear()
+            self._waypoints_queue.clear()
+            self._waypoints_queue.extend([pose.pose for pose in response.route.poses])
+        
+        self._plan_publisher.publish(response.route)
+
     def pose_to_marker_msg(self, pose):
         marker_msg = Marker()
         marker_msg.type = 0
@@ -158,6 +174,7 @@ class LocalPlanner(CompatibleNode):
             # move using PID controllers
             control_msg = self._vehicle_controller.run_step(
                 self._target_speed, self._current_speed, self._current_pose, target_pose)
+            control_msg.header.stamp = ros_timestamp(self.get_time(), from_sec=True)
 
             # purge the queue of obsolete waypoints
             max_index = -1
@@ -176,6 +193,7 @@ class LocalPlanner(CompatibleNode):
 
     def emergency_stop(self):
         control_msg = CarlaEgoVehicleControl()
+        control_msg.header.stamp = ros_timestamp(self.get_time(), from_sec=True)
         control_msg.steer = 0.0
         control_msg.throttle = 0.0
         control_msg.brake = 1.0

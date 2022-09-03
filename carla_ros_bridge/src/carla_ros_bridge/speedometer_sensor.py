@@ -13,7 +13,7 @@ import numpy as np
 
 from carla_ros_bridge.pseudo_actor import PseudoActor
 
-from std_msgs.msg import Float32
+from carla_msgs.msg import CarlaSpeedometer
 
 
 class SpeedometerSensor(PseudoActor):
@@ -41,7 +41,7 @@ class SpeedometerSensor(PseudoActor):
                                                 parent=parent,
                                                 node=node)
 
-        self.speedometer_publisher = node.new_publisher(Float32,
+        self.speedometer_publisher = node.new_publisher(CarlaSpeedometer,
                                                         self.get_topic_prefix(),
                                                         qos_profile=10)
 
@@ -79,5 +79,9 @@ class SpeedometerSensor(PseudoActor):
             np.sin(pitch)
         ])
         speed = np.dot(vel_np, orientation)
+        
+        speed_msg = CarlaSpeedometer()
+        speed_msg.header = self.get_msg_header(timestamp=timestamp)
+        speed_msg.speed = speed
 
-        self.speedometer_publisher.publish(Float32(data=speed))
+        self.speedometer_publisher.publish(speed_msg)

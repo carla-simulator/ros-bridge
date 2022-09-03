@@ -31,9 +31,10 @@ from ros_compatibility.node import CompatibleNode
 from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
 from carla_msgs.msg import CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
+from carla_waypoint_types.srv import ComputeRoute, GetWaypoint, GetActorWaypoint
+
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+from agents.navigation.global_route_planner_dao import GlobalRoutePlannerDAO
 
 
 class CarlaToRosWaypointConverter(CompatibleNode):
@@ -73,6 +74,12 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(self.role_name),
             self.get_actor_waypoint)
 
+        self.compute_route_service = self.new_service(
+            ComputeRoute,
+            '/carla_waypoint_publisher/compute_route',
+            self.compute_route
+        )
+
         # set initial goal
         self.goal = self.world.get_map().get_spawn_points()[0]
 
@@ -82,10 +89,6 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             "/carla/{}/goal".format(self.role_name),
             self.on_goal,
             qos_profile=10)
-
-        # use callback to wait for ego vehicle
-        self.loginfo("Waiting for ego vehicle...")
-        self.on_tick = self.world.on_tick(self.find_ego_vehicle_actor)
 
     def destroy(self):
         """
@@ -131,6 +134,32 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             response.waypoint.lane_id = carla_waypoint.lane_id
         else:
             self.logwarn("get_actor_waypoint(): Actor {} not valid.".format(req.id))
+        return response
+
+    def compute_route(self, req):
+        map_ = self.world.get_map()
+
+        dao = GlobalRoutePlannerDAO(map_, sampling_resolution=1)
+        grp = GlobalRoutePlanner(dao)
+        grp.setup()
+
+        path, previous_waypoint = [], None
+        for location in req.locations:
+            waypoint = map_.get_waypoint(trans.ros_point_to_carla_location(location))
+            if  previous_waypoint:
+                route_segment = grp.trace_route(previous_waypoint.transform.location, waypoint.transform.location)
+                path.extend(route_segment)
+
+            previous_waypoint = waypoint
+
+        response = get_service_response(ComputeRoute)
+        response.route.header.frame_id = "map"
+        response.route.header.stamp = ros_timestamp(self.get_time(), from_sec=True)
+        for wp in path:
+            pose = PoseStamped()
+            pose.pose = trans.carla_transform_to_ros_pose(wp[0].transform)
+            response.route.poses.append(pose)
+
         return response
 
     def on_goal(self, goal):
