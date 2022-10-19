@@ -1,5 +1,7 @@
 ## Latest
 
+*   Fill CarlaEgoVehicleControl message header
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy

@@ -59,6 +59,7 @@ class LocalPlanner(CompatibleNode):
 
         self.data_lock = threading.Lock()
 
+        self._current_header = None
         self._current_pose = None
         self._current_speed = None
         self._target_speed = 0.0
@@ -100,6 +101,8 @@ class LocalPlanner(CompatibleNode):
 
     def odometry_cb(self, odometry_msg):
         with self.data_lock:
+            self._current_header = odometry_msg.header
+            self._current_header.frame_id = odometry_msg.child_frame_id
             self._current_pose = odometry_msg.pose.pose
             self._current_speed = math.sqrt(odometry_msg.twist.twist.linear.x ** 2 +
                                             odometry_msg.twist.twist.linear.y ** 2 +
@@ -158,6 +161,7 @@ class LocalPlanner(CompatibleNode):
             # move using PID controllers
             control_msg = self._vehicle_controller.run_step(
                 self._target_speed, self._current_speed, self._current_pose, target_pose)
+            control_msg.header = self._current_header
 
             # purge the queue of obsolete waypoints
             max_index = -1
@@ -176,6 +180,8 @@ class LocalPlanner(CompatibleNode):
 
     def emergency_stop(self):
         control_msg = CarlaEgoVehicleControl()
+        if self._current_header:
+            control_msg.header = self._current_header
         control_msg.steer = 0.0
         control_msg.throttle = 0.0
         control_msg.brake = 1.0

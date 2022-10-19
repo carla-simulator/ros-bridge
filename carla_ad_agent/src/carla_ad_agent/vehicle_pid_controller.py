@@ -55,8 +55,14 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         :return: control signal (throttle and steering)
         """
         control = CarlaEgoVehicleControl()
-        throttle = self._lon_controller.run_step(target_speed, current_speed)
-        steering = self._lat_controller.run_step(current_pose, waypoint)
+        if current_speed:
+            throttle = self._lon_controller.run_step(target_speed, current_speed)
+        else:
+            throttle = 0.0
+        if current_pose:
+            steering = self._lat_controller.run_step(current_pose, waypoint)
+        else:
+            sterring = 0.0
         control.steer = -steering
         control.throttle = throttle
         control.brake = 0.0
