@@ -51,6 +51,20 @@ class Vehicle(TrafficParticipant):
                 self.classification = Object.CLASSIFICATION_TRUCK
             elif carla_actor.attributes['object_type'] == 'other':
                 self.classification = Object.CLASSIFICATION_OTHER_VEHICLE
+            else:
+                # object_type seems to be empty all the time, so try to identify at least some of them
+                if 'number_of_wheels' in carla_actor.attributes and \
+                   carla_actor.attributes['number_of_wheels'] == '2':
+                    motorcycle_keys = [ "yamaha", "kawasaki", "harley-davidson", "vespa" ]
+                    bicycle_keys = [ "crossbike", "gazelle", "diamondback" ]
+                    if any(x in carla_actor.type_id for x in motorcycle_keys):
+                      self.classification = Object.CLASSIFICATION_MOTORCYCLE
+                    elif any(x in carla_actor.type_id for x in bicycle_keys):
+                      self.classification = Object.CLASSIFICATION_BIKE
+                else:
+                    truck_keys = [ "sprinter", "ambulance", "firetruck", "carlacola" ]
+                    if any(x in carla_actor.type_id for x in truck_keys):
+                      self.classification = Object.CLASSIFICATION_TRUCK
 
         super(Vehicle, self).__init__(uid=uid,
                                       name=name,
