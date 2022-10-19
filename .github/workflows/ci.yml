@@ -86,10 +86,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - docker_image: melodic-robot
-            ros_distro: melodic
-            ros_python_version: 2
-            ros_version: 1
+          #- docker_image: melodic-robot
+          #  ros_distro: melodic
+          #  ros_python_version: 2
+          #  ros_version: 1
 
           - docker_image: noetic-robot
             ros_distro: noetic
