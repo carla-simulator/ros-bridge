@@ -66,7 +66,7 @@ elseif(${ROS_VERSION} EQUAL 2)
   add_executable(${PROJECT_NAME}_node src/PclRecorderROS2.cpp src/mainROS2.cpp)
 
   ament_target_dependencies(${PROJECT_NAME}_node rclcpp sensor_msgs
-                            pcl_conversions tf2 tf2_ros)
+                            pcl_conversions tf2 tf2_ros tf2_eigen)
 
   target_link_libraries(${PROJECT_NAME}_node ${Boost_SYSTEM_LIBRARY}
                         ${PCL_LIBRARIES})
