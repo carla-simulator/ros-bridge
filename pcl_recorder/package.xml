@@ -24,11 +24,14 @@
 
   <build_depend>pcl_conversions</build_depend>
   <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf2_eigen</build_depend>
   <build_export_depend>pcl_conversions</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>tf2_eigen</build_export_depend>
   <exec_depend>pcl_conversions</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>carla_ros_bridge</exec_depend>
+  <exec_depend>tf2_eigen</exec_depend>
   
   <export>
     <build_type condition="$ROS_VERSION == 1">catkin</build_type>
