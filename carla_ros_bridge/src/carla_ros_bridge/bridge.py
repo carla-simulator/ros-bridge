@@ -185,7 +185,7 @@ class CarlaRosBridge(CompatibleNode):
                 self._registered_actors.remove(actor)
         return response
 
-    def get_blueprints(self, req):
+    def get_blueprints(self, req, response=None):
         response = roscomp.get_service_response(GetBlueprints)
         if req.filter:
             bp_filter = req.filter
