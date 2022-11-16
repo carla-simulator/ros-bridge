@@ -1,6 +1,6 @@
 ## Latest
 
-*   Fill CarlaEgoVehicleControl message header
+*   carla_ad_agent: Fill CarlaEgoVehicleControl message header
 
 ## CARLA-ROS-Bridge 0.9.12
 
