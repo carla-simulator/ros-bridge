@@ -141,6 +141,11 @@ class LocalPlanner(CompatibleNode):
                 self.emergency_stop()
                 return
 
+            if (self._current_pose is None) or (self._current_speed is None) or (self._current_header is None):
+                self.loginfo("Waiting for first odometry message...")
+                self.emergency_stop()
+                return
+
             # when target speed is 0, brake.
             if self._target_speed == 0.0:
                 self.emergency_stop()
