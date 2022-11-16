@@ -62,7 +62,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         if current_pose:
             steering = self._lat_controller.run_step(current_pose, waypoint)
         else:
-            sterring = 0.0
+            steering = 0.0
         control.steer = -steering
         control.throttle = throttle
         control.brake = 0.0
