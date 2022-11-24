@@ -10,6 +10,7 @@
 Classes to handle Carla pedestrians
 """
 
+import carla_common.transforms as trans
 from carla import WalkerControl
 
 from carla_ros_bridge.traffic_participant import TrafficParticipant
@@ -81,6 +82,19 @@ class Walker(TrafficParticipant):
         walker_control.speed = ros_walker_control.speed
         walker_control.jump = ros_walker_control.jump
         self.carla_actor.apply_control(walker_control)
+
+    def get_current_ros_pose(self):
+        """
+        Function to return the pose for walkers.
+
+        :return: the pose of the walker
+        :rtype: geometry_msgs.msg.Pose
+        """
+        # Moving position of walkers from the pivot point to the bottom of the bounding box.
+        extent = self.carla_actor.bounding_box.extent
+        pose_transform = self.carla_actor.get_transform()
+        pose_transform.location -= pose_transform.get_up_vector() * extent.z
+        return trans.carla_transform_to_ros_pose(pose_transform)
 
     def get_classification(self):
         """
