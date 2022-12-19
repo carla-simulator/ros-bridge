@@ -17,7 +17,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_point_ego_vehicle',
-            default_value=''
+            default_value='None'
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_sensors_only',

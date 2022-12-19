@@ -176,16 +176,16 @@ def main(args=None):
     try:
         scenario_runner.run()
     except KeyboardInterrupt:
-        loginfo("User requested shut down.")
+        scenario_runner.loginfo("User requested shut down.")
     finally:
         if scenario_runner._scenario_runner.is_running():
             scenario_runner.loginfo("Scenario Runner still running. Shutting down.")
             scenario_runner._scenario_runner.shutdown()
         del scenario_runner
-        if ROS_VERSION == 2:
-            spin_thread.join()
 
         roscomp.shutdown()
+        if ROS_VERSION == 2:
+            spin_thread.join()
 
 
 if __name__ == "__main__":

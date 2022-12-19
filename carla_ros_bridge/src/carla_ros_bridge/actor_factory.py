@@ -67,7 +67,7 @@ class ActorFactory(object):
         self.spawn_points = self.world.get_map().get_spawn_points()
         self.sync_mode = sync_mode
 
-        self._previous_actor_ids = []
+        self._active_actors = set()
         self.actors = {}
 
         self._task_queue = queue.Queue()
@@ -100,45 +100,44 @@ class ActorFactory(object):
         """
         update the available actors
         """
-        # get only carla actors
-        previous_actors = self._previous_actor_ids
-        current_actors = [x.id for x in self.world.get_actors()]
-        self._previous_actor_ids = current_actors
+        # The carla.World.get_actors() method does not return actors that has been spawned in the same frame.
+        # This is a known bug and will be fixed in future release of CARLA.
+        current_actors = set([actor.id for actor in self.world.get_actors()])
+        spawned_actors = current_actors - self._active_actors
+        destroyed_actors = self._active_actors - current_actors
+        self._active_actors = current_actors
 
-        new_actors = [x for x in current_actors if x not in previous_actors]
-        deleted_actors = [x for x in previous_actors if x not in current_actors]
-
-        # Actual creation/removal of objects
+        # Create/destroy actors not managed by the bridge. 
         self.lock.acquire()
-        for actor_id in new_actors:
+        for actor_id in spawned_actors:
             carla_actor = self.world.get_actor(actor_id)
             if self.node.parameters["register_all_sensors"] or not isinstance(carla_actor, carla.Sensor):
                 self._create_object_from_actor(carla_actor)
 
-        for actor_id in deleted_actors:
+        for actor_id in destroyed_actors:
             self._destroy_object(actor_id, delete_actor=False)
 
-        # update objects for pseudo actors here as they might have an carla actor as parent ######
+        # Create/destroy objects managed by the bridge.
         with self.spawn_lock:
             if frame:
                 self._last_update_frame = frame
             task_queue = queue.Queue()
             while not self._task_queue.empty():
                 task = self._task_queue.get()
-                actor_id = task[1][0]
+                task_type = task[0]
+                actor_id, req = task[1]
                 desired_task_frame = task[2]
+
                 if frame and desired_task_frame and desired_task_frame > frame:
                     task_queue.put(task)
                     self.node.logdebug("Frame {}: Delaying task triggered at {} on actor {} to next tick".format(frame, desired_task_frame, actor_id))
-                elif task[0] == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
+                elif task_type == ActorFactory.TaskType.SPAWN_ACTOR and not self.node.shutdown.is_set():
                     self.node.logdebug("Frame {}: Execute task triggered at {} on actor {}".format(frame, desired_task_frame, actor_id))
                     carla_actor = self.world.get_actor(actor_id)
-                    self._create_object_from_actor(carla_actor)
-                elif task[0] == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
-                    pseudo_object = task[1]
-                    self._create_object(pseudo_object[0], pseudo_object[1].type, pseudo_object[1].id,
-                                        pseudo_object[1].attach_to, pseudo_object[1].transform)
-                elif task[0] == ActorFactory.TaskType.DESTROY_ACTOR:
+                    self._create_object_from_actor(carla_actor, req)
+                elif task_type == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
+                    self._create_object(actor_id, req.type, req.id, req.attach_to, req.transform)
+                elif task_type == ActorFactory.TaskType.DESTROY_ACTOR:
                     self._destroy_object(actor_id, delete_actor=True)
             self._task_queue = task_queue
         self.lock.release()
@@ -184,7 +183,7 @@ class ActorFactory(object):
                 self._task_queue.put((ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR, (id_, req), desired_task_frame))
             else:
                 id_ = self._spawn_carla_actor(req)
-                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, None), desired_task_frame))
+                self._task_queue.put((ActorFactory.TaskType.SPAWN_ACTOR, (id_, req), desired_task_frame))
             self._known_actor_ids.append(id_)
         return id_
 
@@ -206,7 +205,7 @@ class ActorFactory(object):
         with self.spawn_lock:
             objects_to_destroy = set(get_objects_to_destroy(uid))
             for obj in objects_to_destroy:
-                self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, (obj, ), None))
+                self._task_queue.put((ActorFactory.TaskType.DESTROY_ACTOR, (obj, None), None))
         return objects_to_destroy
 
     def _spawn_carla_actor(self, req):
@@ -237,7 +236,7 @@ class ActorFactory(object):
         carla_actor = self.world.spawn_actor(blueprint, transform, attach_to)
         return carla_actor.id
 
-    def _create_object_from_actor(self, carla_actor):
+    def _create_object_from_actor(self, carla_actor, req=None):
         """
         create a object for a given carla actor
         Creates also the object for its parent, if not yet existing
@@ -250,13 +249,16 @@ class ActorFactory(object):
                 parent = self.actors[carla_actor.parent.id]
             else:
                 parent = self._create_object_from_actor(carla_actor.parent)
-            # calculate relative transform to the parent
-            actor_transform_matrix = trans.ros_pose_to_transform_matrix(relative_transform)
-            parent_transform_matrix = trans.ros_pose_to_transform_matrix(
-                trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
-            relative_transform_matrix = np.matrix(
-                parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
-            relative_transform = trans.transform_matrix_to_ros_pose(relative_transform_matrix)
+            if req is not None:
+                relative_transform = req.transform
+            else:
+                # calculate relative transform to the parent
+                actor_transform_matrix = trans.ros_pose_to_transform_matrix(relative_transform)
+                parent_transform_matrix = trans.ros_pose_to_transform_matrix(
+                    trans.carla_transform_to_ros_pose(carla_actor.parent.get_transform()))
+                relative_transform_matrix = np.matrix(
+                    parent_transform_matrix).getI() * np.matrix(actor_transform_matrix)
+                relative_transform = trans.transform_matrix_to_ros_pose(relative_transform_matrix)
 
         parent_id = 0
         if parent is not None:

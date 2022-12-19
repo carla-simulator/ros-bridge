@@ -16,7 +16,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2'
+            default_value='10'
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
@@ -28,7 +28,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_point',
-            default_value=''
+            default_value='None'
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
