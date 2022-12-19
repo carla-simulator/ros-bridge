@@ -1,5 +1,9 @@
 ## Latest
 
+## CARLA-ROS-Bridge 0.9.13
+
+* Disable vegetation on MarkerSensor to prevent from millions of boxes in maps with larger vegetation
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy
