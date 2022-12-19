@@ -262,7 +262,7 @@ class CarlaRosBridge(CompatibleNode):
                             self._expected_ego_vehicle_control_command_ids.append(
                                 actor_id)
 
-            self.actor_factory.update_available_objects()
+            self.actor_factory.update_available_objects(self.status_publisher.frame)
             frame = self.carla_world.tick()
 
             world_snapshot = self.carla_world.get_snapshot()
