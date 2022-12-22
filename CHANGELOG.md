@@ -1,6 +1,7 @@
 ## Latest
 
 *   carla_ad_agent: Fill CarlaEgoVehicleControl message header
+*   Added workaround for vehicle classification
 
 ## CARLA-ROS-Bridge 0.9.12
 
