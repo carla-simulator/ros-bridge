@@ -34,7 +34,7 @@ OBJECT_LABELS = {
     carla.CityObjectLabel.RoadLines: ColorRGBA(r=157.0/255.0, g=234.0/255.0, b=50.0/255.0, a=0.8),
     carla.CityObjectLabel.Roads: ColorRGBA(r=128.0/255.0, g=64.0/255.0, b=128.0/255.0, a=0.8),
     carla.CityObjectLabel.Sidewalks: ColorRGBA(r=244.0/255.0, g=35.0/255.0, b=232.0/255.0, a=0.8),
-    carla.CityObjectLabel.Vegetation: ColorRGBA(r=107.0/255.0, g=142.0/255.0, b=35.0/255.0, a=0.8),
+    #carla.CityObjectLabel.Vegetation: ColorRGBA(r=107.0/255.0, g=142.0/255.0, b=35.0/255.0, a=0.8),
     #carla.CityObjectLabel.Vehicles: ColorRGBA(r=0.0/255.0, g=0.0/255.0, b=142.0/255.0, a=0.8),
     carla.CityObjectLabel.Walls: ColorRGBA(r=102.0/255.0, g=102.0/255.0, b=156.0/255.0, a=0.8),
     carla.CityObjectLabel.TrafficSigns: ColorRGBA(r=220.0/255.0, g=220.0/255.0, b=0.0/255.0, a=0.8),
