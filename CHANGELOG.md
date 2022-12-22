@@ -1,7 +1,10 @@
 ## Latest
 
-*   carla_ad_agent: Fill CarlaEgoVehicleControl message header
-*   Added workaround for vehicle classification
+## CARLA-ROS-Bridge 0.9.13
+
+* Disable vegetation on MarkerSensor to prevent from millions of boxes in maps with larger vegetation
+* carla_ad_agent: Fill CarlaEgoVehicleControl message header
+* Added workaround for vehicle classification
 
 ## CARLA-ROS-Bridge 0.9.12
 
