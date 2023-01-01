@@ -9,7 +9,7 @@
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-**This version requires CARLA 0.9.13**
+**This version requires CARLA 0.9.14**
 
 ## Features
 
