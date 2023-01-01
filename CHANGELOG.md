@@ -1,5 +1,9 @@
 ## Latest
 
+## CARLA-ROS-Bridge 0.9.14
+*   Updated ROS-bridge to PythonAPI of CARLA 0.9.14
+
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy
