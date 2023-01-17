@@ -44,7 +44,7 @@ class Camera(Sensor):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying this object
+        :param name: name identifying this object
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
@@ -191,7 +191,7 @@ class RgbCamera(Camera):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying this object
+        :param name: name identifying this object
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
@@ -246,7 +246,7 @@ class DepthCamera(Camera):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying this object
+        :param name: name identifying this object
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
@@ -314,7 +314,7 @@ class DepthCamera(Camera):
 class SemanticSegmentationCamera(Camera):
 
     """
-    Camera implementation details for segmentation camera
+    Camera implementation details for semantic segmentation camera
     """
 
     def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
@@ -323,7 +323,7 @@ class SemanticSegmentationCamera(Camera):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying this object
+        :param name: name identifying this object
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
@@ -368,6 +368,63 @@ class SemanticSegmentationCamera(Camera):
         return carla_image_data_array, 'bgra8'
 
 
+class InstanceSegmentationCamera(Camera):
+
+    """
+    Camera implementation details for instance segmentation camera
+    """
+
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
+        """
+        Constructor
+
+        :param uid: unique identifier for this object
+        :type uid: int
+        :param name: name identifying this object
+        :type name: string
+        :param parent: the parent of this
+        :type parent: carla_ros_bridge.Parent
+        :param relative_spawn_pose: the relative spawn pose of this
+        :type relative_spawn_pose: geometry_msgs.Pose
+        :param node: node-handle
+        :type node: CompatibleNode
+        :param carla_actor: carla actor object
+        :type carla_actor: carla.Actor
+        :param synchronous_mode: use in synchronous mode?
+        :type synchronous_mode: bool
+        """
+        super(
+            InstanceSegmentationCamera, self).__init__(uid=uid,
+                                                       name=name,
+                                                       parent=parent,
+                                                       relative_spawn_pose=relative_spawn_pose,
+                                                       node=node,
+                                                       synchronous_mode=synchronous_mode,
+                                                       carla_actor=carla_actor)
+
+        self.listen()
+
+    def get_carla_image_data_array(self, carla_image):
+        """
+        Function (override) to convert the carla image to a numpy data array
+        as input for the cv_bridge.cv2_to_imgmsg() function
+
+        The InstanceSegmentation camera provides a 4-channel int8 color format (bgra).
+        r: tag, g & b: unique instance ID
+
+        :param carla_image: carla image object
+        :type carla_image: carla.Image
+        :return tuple (numpy data array containing the image information, encoding)
+        :rtype tuple(numpy.ndarray, string)
+        """
+
+        carla_image_data_array = numpy.ndarray(
+            shape=(carla_image.height, carla_image.width, 4),
+            dtype=numpy.uint8, buffer=carla_image.raw_data)
+
+        return carla_image_data_array, 'bgra8'
+
+
 class DVSCamera(Camera):
 
     """
@@ -380,7 +437,7 @@ class DVSCamera(Camera):
 
         :param uid: unique identifier for this object
         :type uid: int
-        :param name: name identiying this object
+        :param name: name identifying this object
         :type name: string
         :param parent: the parent of this
         :type parent: carla_ros_bridge.Parent
