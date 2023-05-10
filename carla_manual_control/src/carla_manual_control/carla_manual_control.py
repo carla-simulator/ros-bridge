@@ -423,10 +423,10 @@ class HUD(object):
         x, y, z = self.x, self.y, self.z
         yaw = self.yaw
 
-        heading = 'N' if abs(yaw) < 89.5 else ''
-        heading += 'S' if abs(yaw) > 90.5 else ''
-        heading += 'E' if 179.5 > yaw > 0.5 else ''
-        heading += 'W' if -0.5 > yaw > -179.5 else ''
+        heading = 'N' if 179.5 > yaw > 0.5 else ''
+        heading += 'S' if -0.5 > yaw > -179.5 else ''
+        heading += 'E' if 89.5 > yaw > -89.5 else ''
+        heading += 'W' if -90.5 > yaw or yaw > 90.5 else ''
         fps = 0
 
         time = str(datetime.timedelta(seconds=self.node.get_time()))[:10]
