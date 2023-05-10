@@ -1,5 +1,7 @@
 ## Latest
 
+. Fixed cardinal direction in HUD in carla_manual_control
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy
