@@ -9,9 +9,9 @@ if(${ROS_VERSION} EQUAL 1)
 
   find_package(catkin REQUIRED COMPONENTS message_generation nav_msgs)
 
-  add_service_files(DIRECTORY srv FILES GetWaypoint.srv GetActorWaypoint.srv)
+  add_service_files(DIRECTORY srv FILES GetWaypoint.srv GetActorWaypoint.srv GetAllWaypoints.srv)
 
-  add_message_files(DIRECTORY msg FILES CarlaWaypoint.msg)
+  add_message_files(DIRECTORY msg FILES CarlaWaypoint.msg CarlaWaypointArray.msg)
 
   generate_messages(DEPENDENCIES nav_msgs)
 
@@ -37,8 +37,10 @@ elseif(${ROS_VERSION} EQUAL 2)
   rosidl_generate_interfaces(
     ${PROJECT_NAME}
     msg/CarlaWaypoint.msg
+    msg/CarlaWaypointArray.msg
     srv/GetWaypoint.srv
     srv/GetActorWaypoint.srv
+    srv/GetAllWaypoints.srv
     DEPENDENCIES
     nav_msgs
     ADD_LINTER_TESTS)

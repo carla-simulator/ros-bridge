@@ -31,7 +31,8 @@ from ros_compatibility.node import CompatibleNode
 from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
 from carla_msgs.msg import CarlaWorldInfo
-from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint
+from carla_waypoint_types.srv import GetWaypoint, GetActorWaypoint, GetAllWaypoints
+from carla_waypoint_types.msg import CarlaWaypoint
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
@@ -58,6 +59,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.ego_vehicle_location = None
         self.on_tick = None
         self.role_name = self.get_param("role_name", 'ego_vehicle')
+        self.waypoint_distance = 2.0
         self.waypoint_publisher = self.new_publisher(
             Path,
             '/carla/{}/waypoints'.format(self.role_name),
@@ -72,6 +74,11 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             GetActorWaypoint,
             '/carla_waypoint_publisher/{}/get_actor_waypoint'.format(self.role_name),
             self.get_actor_waypoint)
+        
+        self.get_all_waypoints_service = self.new_service(
+            GetAllWaypoints,
+            '/carla_waypoint_publisher/{}/get_all_waypoints'.format(self.role_name),
+            self.get_map_waypoints)
 
         # set initial goal
         self.goal = self.world.get_map().get_spawn_points()[0]
@@ -94,6 +101,24 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.ego_vehicle = None
         if self.on_tick:
             self.world.remove_on_tick(self.on_tick)
+            
+    def get_map_waypoints(self, req=None, response=None):
+        """
+        Get all waypoints for the current map
+        """
+        carla_map_waypoints = self.map.generate_waypoints(self.waypoint_distance)
+        result_waypoints = []
+        for carla_waypoint in carla_map_waypoints:
+            wp_result = CarlaWaypoint()
+            wp_result.pose = trans.carla_transform_to_ros_pose(carla_waypoint.transform)
+            wp_result.is_junction = carla_waypoint.is_junction
+            wp_result.road_id = carla_waypoint.road_id
+            wp_result.section_id = carla_waypoint.section_id
+            wp_result.lane_id = carla_waypoint.lane_id
+            result_waypoints.append(wp_result)
+        response = roscomp.get_service_response(GetAllWaypoints)
+        response.waypoints.waypoints = result_waypoints
+        return response
 
     def get_waypoint(self, req, response=None):
         """
