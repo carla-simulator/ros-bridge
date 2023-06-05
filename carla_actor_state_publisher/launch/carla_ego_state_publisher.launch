@@ -1,0 +1,15 @@
+<!-- -->
+<launch>
+  <arg name='host' default='localhost'/>
+  <arg name='port' default='2000'/>
+  <arg name='timeout' default='10'/>
+  <arg name="role_name" default="ego_vehicle" />
+
+  <node pkg="carla_actor_state_publisher" type="carla_actor_state_publisher.py" name="carla_actor_state_publisher" output="screen">
+    <param name="role_name" value="$(arg role_name)" />
+    <param name="host" value="$(arg host)" />
+    <param name="port" value="$(arg port)" />
+    <param name="timeout" value="$(arg timeout)" />
+  </node>
+
+</launch>
