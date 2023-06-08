@@ -61,6 +61,7 @@ class Sensor(Actor):
                  # if a sensor only delivers data on special events,
                  # do not wait for it. That means you might get data from a
                  # sensor, that belongs to a different frame
+                 simulation_tick=None,
                  ):
         """
         Constructor
@@ -219,26 +220,17 @@ class Sensor(Actor):
                 return
 
     def _update_synchronous_sensor(self, frame, timestamp):
-        while not self.next_data_expected_time or \
-            (not self.queue.empty() or
-             self.next_data_expected_time and
-             self.next_data_expected_time < timestamp):
+        if not self.queue.empty():
             while True:
                 try:
                     carla_sensor_data = self.queue.get(timeout=1.0)
-                    if carla_sensor_data.frame == frame:
-                        self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
-                                                                       self.get_id(), frame))
-                        self.publish_tf(trans.carla_transform_to_ros_pose(
-                            carla_sensor_data.transform), timestamp)
-                        self.sensor_data_updated(carla_sensor_data)
-                        return
-                    elif carla_sensor_data.frame < frame:
-                        self.node.logwarn("{}({}): skipping old frame {}, expected {}".format(
-                            self.__class__.__name__,
-                            self.get_id(),
-                            carla_sensor_data.frame,
-                            frame))
+                    self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
+                                                                    self.get_id(), frame))
+                    self.publish_tf(trans.carla_transform_to_ros_pose(
+                        carla_sensor_data.transform), timestamp)
+                    self.sensor_data_updated(carla_sensor_data)
+                    return
+
                 except queue.Empty:
                     if roscomp.ok():
                         self.node.logwarn("{}({}): Expected Frame {} not received".format(
