@@ -387,9 +387,8 @@ class ActorFactory(object):
             elif carla_actor.type_id.startswith("sensor.lidar"):
                 if carla_actor.type_id.endswith("sensor.lidar.ray_cast"):
                     actor = Lidar(uid, name, parent, spawn_pose, self.node,
-                                  carla_actor, self.sync_mode)
-                elif carla_actor.type_id.endswith(
-                        "sensor.lidar.ray_cast_semantic"):
+                                  carla_actor, self.sync_mode, False, self.world.get_settings().fixed_delta_seconds)
+                elif carla_actor.type_id.endswith("sensor.lidar.ray_cast_semantic"):
                     actor = SemanticLidar(uid, name, parent, spawn_pose,
                                           self.node, carla_actor,
                                           self.sync_mode)

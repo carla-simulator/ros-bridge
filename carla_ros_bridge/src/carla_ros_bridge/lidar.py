@@ -24,7 +24,7 @@ class Lidar(Sensor):
     Actor implementation details for lidars
     """
 
-    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode):
+    def __init__(self, uid, name, parent, relative_spawn_pose, node, carla_actor, synchronous_mode, is_event_sensor, simulation_tick):
         """
         Constructor
 
@@ -54,6 +54,18 @@ class Lidar(Sensor):
         self.lidar_publisher = node.new_publisher(PointCloud2,
                                                   self.get_topic_prefix(),
                                                   qos_profile=10)
+
+        self.packet_per_frame = 1/(float(carla_actor.attributes.get('rotation_frequency'))*simulation_tick)
+
+        self.packet_list = []
+
+        self.fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+        ]
+
         self.listen()
 
     def destroy(self):
@@ -68,23 +80,24 @@ class Lidar(Sensor):
         :param carla_lidar_measurement: carla lidar measurement object
         :type carla_lidar_measurement: carla.LidarMeasurement
         """
-        header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
-        fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-            PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
-        ]
+        lidar_packet = numpy.fromstring(bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
 
-        lidar_data = numpy.fromstring(
-            bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
-        lidar_data = numpy.reshape(
-            lidar_data, (int(lidar_data.shape[0] / 4), 4))
-        # we take the opposite of y axis
-        # (as lidar point are express in left handed coordinate system, and ros need right handed)
-        lidar_data[:, 1] *= -1
-        point_cloud_msg = create_cloud(header, fields, lidar_data)
-        self.lidar_publisher.publish(point_cloud_msg)
+        self.packet_list.append(lidar_packet)
+
+        if len(self.packet_list) == self.packet_per_frame:
+
+            pts_all = numpy.hstack(self.packet_list)
+
+            header = self.get_msg_header(timestamp=carla_lidar_measurement.timestamp)
+
+            lidar_data = numpy.reshape(pts_all, (int(pts_all.shape[0] / 4), 4))
+            # we take the opposite of y axis
+            # (as lidar point are express in left handed coordinate system, and ros need right handed)
+            lidar_data[:, 1] *= -1
+            point_cloud_msg = create_cloud(header, self.fields, lidar_data)
+            self.lidar_publisher.publish(point_cloud_msg)
+
+            self.packet_list = []
 
 
 class SemanticLidar(Sensor):
