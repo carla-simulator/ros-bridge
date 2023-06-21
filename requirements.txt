@@ -1,5 +1,6 @@
 pep8
-autopep8
+pycodestyle==2.8.0 
+autopep8==1.7.0
 cmake_format==0.6.11
 pylint
 transforms3d
