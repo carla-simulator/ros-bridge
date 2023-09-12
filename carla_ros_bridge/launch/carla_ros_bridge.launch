@@ -11,12 +11,12 @@
     enable/disable synchronous mode. If enabled ros-bridge waits until
     expected data is received for all sensors
   -->
-  <arg name="passive" default='False'/>
+  <arg name="passive" default='True'/>
   <arg name='synchronous_mode' default='True'/>
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/>
   <!-- set the fixed timestep length -->
   <arg name='fixed_delta_seconds' default='0.05'/>
-  <arg name='town' default='Town01'/>
+  <arg name='town' default='map_package/Maps/Playground/Playground'/>
   <!-- enable/disable the registration of all sensors. If disabled, only sensors
   spawned by the bridge are registered -->
   <arg name='register_all_sensors' default='True'/>
