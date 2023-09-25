@@ -16,7 +16,8 @@
   <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/>
   <!-- set the fixed timestep length -->
   <arg name='fixed_delta_seconds' default='0.05'/>
-  <arg name='town' default='map_package/Maps/Playground/Playground'/>
+  <arg name='town' default='map_package/Maps/Carla_map/Carla_map'/>
+  <!-- <arg name='town' default='map_package/Maps/Playground/Playground'/> -->
   <!-- enable/disable the registration of all sensors. If disabled, only sensors
   spawned by the bridge are registered -->
   <arg name='register_all_sensors' default='True'/>
@@ -25,7 +26,7 @@
     Only the vehicles within this list are controllable from within ROS.
     (the vehicle from CARLA is selected which has the attribute 'role_name' set to this value)
   -->
-  <arg name='ego_vehicle_role_name' default='["hero", "ego_vehicle", "hero0", "hero1", "hero2", "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"]'/>
+  <arg name='ego_vehicle_role_name' default='["ego_vehicle", "npc_vehicle", "npc_vehicle1","npc_vehicle2"]'/>
       
   <node pkg="carla_ros_bridge" name="carla_ros_bridge" type="bridge.py" output="screen" required="true">
     <param name="host" value="$(arg host)" unless="$(eval host == '')"/>

@@ -47,10 +47,10 @@ class TFSensor(PseudoActor):
                                        parent=parent,
                                        node=node)
 
-        if ROS_VERSION == 1:
-            self._tf_broadcaster = tf2_ros.TransformBroadcaster()
-        elif ROS_VERSION == 2:
-            self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
+        # if ROS_VERSION == 1:
+            # self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        # elif ROS_VERSION == 2:
+            # self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     @staticmethod
     def get_blueprint_name():

@@ -101,10 +101,10 @@ class Sensor(Actor):
         except (KeyError, ValueError):
             self.sensor_tick_time = None
 
-        if ROS_VERSION == 1:
-            self._tf_broadcaster = tf2_ros.TransformBroadcaster()
-        elif ROS_VERSION == 2:
-            self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
+        # if ROS_VERSION == 1:
+            # self._tf_broadcaster = tf2_ros.TransformBroadcaster()
+        # elif ROS_VERSION == 2:
+            # self._tf_broadcaster = tf2_ros.TransformBroadcaster(node)
 
     def get_ros_transform(self, pose, timestamp):
         if self.synchronous_mode:
@@ -140,11 +140,11 @@ class Sensor(Actor):
 
     def publish_tf(self, pose, timestamp):
         transform = self.get_ros_transform(pose, timestamp)
-        try:
-            self._tf_broadcaster.sendTransform(transform)
-        except roscomp.exceptions.ROSException:
-            if roscomp.ok():
-                self.node.logwarn("Sensor {} failed to send transform.".format(self.uid))
+        # try:
+            # self._tf_broadcaster.sendTransform(transform)
+        # except roscomp.exceptions.ROSException:
+            # if roscomp.ok():
+                # self.node.logwarn("Sensor {} failed to send transform.".format(self.uid))
 
     def listen(self):
         self.carla_actor.listen(self._callback_sensor_data)
@@ -179,8 +179,8 @@ class Sensor(Actor):
                     float(self.sensor_tick_time)
             self.queue.put(carla_sensor_data)
         else:
-            self.publish_tf(trans.carla_transform_to_ros_pose(
-                carla_sensor_data.transform), carla_sensor_data.timestamp)
+            # self.publish_tf(trans.carla_transform_to_ros_pose(
+                # carla_sensor_data.transform), carla_sensor_data.timestamp)
             try:
                 self.sensor_data_updated(carla_sensor_data)
             except roscomp.exceptions.ROSException:
@@ -212,8 +212,8 @@ class Sensor(Actor):
                                           carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
-                self.publish_tf(trans.carla_transform_to_ros_pose(
-                    carla_sensor_data.transform), timestamp)
+                # self.publish_tf(trans.carla_transform_to_ros_pose(
+                    # carla_sensor_data.transform), timestamp)
                 self.sensor_data_updated(carla_sensor_data)
             except queue.Empty:
                 return
@@ -229,8 +229,8 @@ class Sensor(Actor):
                     if carla_sensor_data.frame == frame:
                         self.node.logdebug("{}({}): process {}".format(self.__class__.__name__,
                                                                        self.get_id(), frame))
-                        self.publish_tf(trans.carla_transform_to_ros_pose(
-                            carla_sensor_data.transform), timestamp)
+                        # self.publish_tf(trans.carla_transform_to_ros_pose(
+                            # carla_sensor_data.transform), timestamp)
                         self.sensor_data_updated(carla_sensor_data)
                         return
                     elif carla_sensor_data.frame < frame:
