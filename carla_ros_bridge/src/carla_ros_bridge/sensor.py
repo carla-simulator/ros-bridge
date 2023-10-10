@@ -22,6 +22,8 @@ import sys
 from abc import abstractmethod
 from threading import Lock
 
+import time
+
 import carla_common.transforms as trans
 import ros_compatibility as roscomp
 import tf2_ros
@@ -204,7 +206,10 @@ class Sensor(Actor):
     def _update_synchronous_event_sensor(self, frame, timestamp):
         while True:
             try:
+                ts = time.time()
                 carla_sensor_data = self.queue.get(block=False)
+                if self.__class__.__name__ == "RgbCamera":
+                    print("Camera Queue FPS {}".format(1.0 / (time.time() - ts)))
                 if carla_sensor_data.frame != frame:
                     self.node.logwarn("{}({}): Received event for frame {}"
                                       " (expected {}). Process it anyways.".format(
