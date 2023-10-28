@@ -1,0 +1,13 @@
+<launch>
+  <node name="mobile_system_control" pkg="mobile_system_control" type="mobile_system_control" output="screen">
+    <!-- erp2simuil -->
+    <!--publish-->
+    <remap from="~state2user" to="/mobile_system_control/ego_vehicle"/>
+    <remap from="~ctrl2carla" to="/carla/ego_vehicle/vehicle_control_cmd"/>
+    <!--subscribe-->
+    <remap from="~carla_ego" to="/carla/ego_vehicle/vehicle_status"/>
+    <remap from="~carla_obj" to="/carla/objects"/>
+    <remap from="~user_ctrl" to="/mobile_system_control/control_msg"/>
+
+  </node>
+</launch>
