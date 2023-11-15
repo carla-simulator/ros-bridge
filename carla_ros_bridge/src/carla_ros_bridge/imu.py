@@ -82,17 +82,10 @@ class ImuSensor(Sensor):
         imu_msg.linear_acceleration.y = -carla_imu_measurement.accelerometer.y
         imu_msg.linear_acceleration.z = carla_imu_measurement.accelerometer.z
 
-        quat = euler2quat(math.sin(-carla_imu_measurement.compass), math.cos(-carla_imu_measurement.compass), 0.0)
+        quat = euler2quat(0.0, 0.0, (math.pi / 2.0) - carla_imu_measurement.compass)
         imu_msg.orientation.w = quat[0]
         imu_msg.orientation.x = quat[1]
         imu_msg.orientation.y = quat[2]
         imu_msg.orientation.z = quat[3]
-
-        roll, pitch, yaw = quat2euler([
-        imu_msg.orientation.w,
-        imu_msg.orientation.x,
-        imu_msg.orientation.y,
-        imu_msg.orientation.z])
-        compass = -math.atan2(roll, pitch) + 2*math.pi
 
         self.imu_publisher.publish(imu_msg)
