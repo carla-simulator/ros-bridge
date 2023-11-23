@@ -20,7 +20,7 @@
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
                     "image_size_x": 800,
                     "image_size_y": 600,
-                    "fov": 90.0,
+                    "fov": 120.0,
                     "attached_objects":
                     [
                         {
@@ -28,6 +28,10 @@
                             "id": "control"
                         }
                     ]
+                },
+                {
+                    "type": "sensor.pseudo.objects",
+                    "id": "objects"
                 },
                 {
                     "type": "actor.pseudo.control",
