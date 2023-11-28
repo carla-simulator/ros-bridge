@@ -1,0 +1,16 @@
+<launch>
+        <!-- course visualize -->
+        <node pkg="mobile_system_control_vis" name="mobile_system_control_vis" type="mobile_system_control_vis.py" output="screen">
+                <!-- subscribe -->
+                <remap from="~pose"            to="/mobile_system_control/ego_vehicle"/>
+                <!-- publish -->
+                <remap from="~track"           to="/mobile_system_control_vis/track"/>
+                <remap from="~vehicle"         to="/mobile_system_control_vis/vehicle"/>
+
+		<param name="csv_dir"           value="$(find mobile_system_control_vis)/track/reference_path.csv" />
+
+        </node>
+
+        <node type="rviz" name="rviz" pkg="rviz" args="-d $(find mobile_system_control_vis)/rviz/track.rviz" />
+
+</launch>
