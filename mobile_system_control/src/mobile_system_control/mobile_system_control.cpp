@@ -64,7 +64,7 @@ namespace mobile_system_control
         impl_->state.data[1] = msg->objects[0].pose.position.y;
         float siny_cosp_ = 2 * (msg->objects[0].pose.orientation.w * msg->objects[0].pose.orientation.z + msg->objects[0].pose.orientation.x * msg->objects[0].pose.orientation.y);
         float cosy_cosp_ = 1 - 2 * (pow(msg->objects[0].pose.orientation.y, 2) + pow(msg->objects[0].pose.orientation.z, 2));
-        impl_->state.data[2] = atan2(-siny_cosp_, cosy_cosp_);
+        impl_->state.data[2] = atan2(siny_cosp_, cosy_cosp_);
         impl_->pub_state2user.publish(impl_->state);
         return;
     }
