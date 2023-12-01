@@ -72,8 +72,8 @@ class TrackVisualizer:
         self.vehicle.pose.position.z = 0
         self.vehicle.pose.orientation.x = 0
         self.vehicle.pose.orientation.y = 0
-        self.vehicle.pose.orientation.z = sin(- data.data[2] / 2)
-        self.vehicle.pose.orientation.w = cos(- data.data[2] / 2)
+        self.vehicle.pose.orientation.z = sin(data.data[2] / 2)
+        self.vehicle.pose.orientation.w = cos(data.data[2] / 2)
         # print(data.data)
 
     def publish(self):
