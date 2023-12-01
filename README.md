@@ -26,25 +26,25 @@ Installation instructions and further documentation of the ROS bridge and additi
 
 # AI-Racing Setting
 ## install Required PKG 
-    - pip
-    
-        ```
-        pip install --user pygame numpy &&
-        pip3 install --user pygame numpy &&
-        pip install transforms3d
-        ```
+- pip
 
-    - apt-get
-    
-        ```
-        sudo apt-get install libomp-dev
-        sudo apt-get install ros-noetic-ackermann-msgs
-        sudo apt-get install ros-noetic-derived-object-msgs
-        ```
+    ```
+    pip install --user pygame numpy &&
+    pip3 install --user pygame numpy &&
+    pip install transforms3d
+    ```
+
+- apt-get
+
+    ```
+    sudo apt-get install libomp-dev
+    sudo apt-get install ros-noetic-ackermann-msgs
+    sudo apt-get install ros-noetic-derived-object-msgs
+    ```
 
 ## Set Python API Root
-     - zshrc
-    
-        ```
-        export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ros-carla-bridge/carla-0.9.15-py3.8-linux-x86_64.egg
-        ```
+- zshrc
+
+    ```
+    export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ros-carla-bridge/carla-0.9.15-py3.8-linux-x86_64.egg
+    ```
