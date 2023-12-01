@@ -35,6 +35,10 @@
                     "id": "objects"
                 },
                 {
+                    "type": "sensor.pseudo.odom",
+                    "id": "odometry"
+                },
+                {
                     "type": "actor.pseudo.control",
                     "id": "control"
                 }

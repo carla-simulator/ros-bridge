@@ -315,6 +315,7 @@ class HUD(object):
         self._show_info = True
         self._info_text = []
         self.vehicle_status = CarlaEgoVehicleStatus()
+        self.ref_time = datetime.timedelta(0)
 
         self.vehicle_status_subscriber = node.new_subscription(
             CarlaEgoVehicleStatus, "/carla/{}/vehicle_status".format(self.role_name),
@@ -429,7 +430,10 @@ class HUD(object):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
 
-        time = str(datetime.timedelta(seconds=self.node.get_time()))[:10]
+        if self.manual_control:
+            self.ref_time = datetime.timedelta(seconds=self.node.get_time())
+
+        time = str(datetime.timedelta(seconds=self.node.get_time()) - self.ref_time)[:10]
 
         if self.carla_status.fixed_delta_seconds:
             fps = 1 / self.carla_status.fixed_delta_seconds
