@@ -430,6 +430,9 @@ class HUD(object):
         heading += 'W' if -0.5 > yaw > -179.5 else ''
         fps = 0
 
+
+
+
         if self.manual_control:
             self.ref_time = datetime.timedelta(seconds=self.node.get_time())
 
@@ -443,7 +446,7 @@ class HUD(object):
             'FPS: % 24.1f' % fps, '',
             'Vehicle: % 20s' % ' '.join(self.vehicle_info.type.title().split('.')[1:]),
             'Speed:   % 15.0f km/h' % (3.6 * self.vehicle_status.velocity),
-            u'Heading:% 16.0f\N{DEGREE SIGN} % 2s' % (yaw, heading),
+            'Heading:% 16.0f\N{DEGREE SIGN} % 2s' % (yaw, heading),
             'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (x, y)),
             'GNSS:% 24s' % ('(% 2.6f, % 3.6f)' % (self.latitude, self.longitude)),
             'Height:  % 18.0f m' % z, ''

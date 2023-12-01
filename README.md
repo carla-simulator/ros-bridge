@@ -22,8 +22,6 @@
 
 Installation instructions and further documentation of the ROS bridge and additional packages are found [__here__](https://carla.readthedocs.io/projects/ros-bridge/en/latest/).
 
-
-
 # AI-Racing Setting
 ## install Required PKG 
 - pip
@@ -46,5 +44,5 @@ Installation instructions and further documentation of the ROS bridge and additi
 - zshrc
 
     ```
-    export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ros-carla-bridge/carla-0.9.15-py3.8-linux-x86_64.egg
+    export PYTHONPATH=$PYTHONPATH:~/catkin_ws/src/ros-carla-bridge/PythonAPI/carla-0.9.15-py3.8-linux-x86_64.egg
     ```
