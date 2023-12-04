@@ -404,7 +404,7 @@ class CarlaAckermannControl(CompatibleNode):
                 self.info.output.throttle = 0.0
 
         elif numpy.sign(self.info.current.speed) * numpy.sign(self.info.target.speed) == -1:
-            # requrest for change of driving direction
+            # request for change of driving direction
             # first we have to come to full stop before changing driving
             # direction
             self.loginfo("VehicleControl: Request change of driving direction."
@@ -491,7 +491,7 @@ class CarlaAckermannControl(CompatibleNode):
             self.vehicle_info, self.vehicle_status, self.info.output.reverse)
 
         # the engine lay off acceleration defines the size of the coasting area
-        # Interpretation: The engine already prforms braking on its own;
+        # Interpretation: The engine already performs braking on its own;
         #  therefore pushing the brake is not required for small decelerations
         self.info.status.brake_upper_border = self.info.status.throttle_lower_border + \
             phys.get_vehicle_lay_off_engine_acceleration(self.vehicle_info)
