@@ -26,6 +26,15 @@ mkdir -p ~/Workspace/ros-bridge && cd ~/Workspace/ros-bridge
 git clone --recurse-submodules https://github.com/ttgamage/carla-ros-bridge.git
 mv carla-ros-bridge src
 ```
-2. 
+2. Set up ROS environment and install dependencies:
+```
+source /opt/ros/humble/setup.bash
+rosdep update
+rosdep install --from-paths src --ignore-src -r
+```
+3. Build the ROS bridge workspace using colcon:
+```
+colcon build --symlink-install
+```
 
 
