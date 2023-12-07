@@ -1,4 +1,4 @@
-# ROS/ROS2 bridge for CARLA simulator
+# ROS2 bridge for CARLA simulator v0.9.15
 
 [![Actions Status](https://github.com/carla-simulator/ros-bridge/workflows/CI/badge.svg)](https://github.com/carla-simulator/ros-bridge)
 [![Documentation](https://readthedocs.org/projects/carla/badge/?version=latest)](http://carla.readthedocs.io)
