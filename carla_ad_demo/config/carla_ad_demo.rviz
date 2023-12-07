@@ -55,7 +55,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /carla/ego_vehicle/waypoints
+      Topic: /carla/hero/waypoints
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
@@ -88,7 +88,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /carla/ego_vehicle/rgb_view/image
+      Image Topic: /carla/hero/rgb_view/image
       Name: RGB Camera
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -132,7 +132,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.029999999329447746
       Style: Flat Squares
-      Topic: /carla/ego_vehicle/lidar
+      Topic: /carla/hero/lidar
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -162,7 +162,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.029999999329447746
       Style: Flat Squares
-      Topic: /carla/ego_vehicle/semantic_lidar
+      Topic: /carla/hero/semantic_lidar
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -192,14 +192,14 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /carla/ego_vehicle/radar_front
+      Topic: /carla/hero/radar_front
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /carla/ego_vehicle/dvs_front/image
+      Image Topic: /carla/hero/dvs_front/image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -211,7 +211,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /carla/ego_vehicle/semantic_segmentation_front/image
+      Image Topic: /carla/hero/semantic_segmentation_front/image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -223,7 +223,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /carla/ego_vehicle/depth_front/image
+      Image Topic: /carla/hero/depth_front/image
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -277,7 +277,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.2903985381126404
-      Target Frame: ego_vehicle
+      Target Frame: hero
       Value: ThirdPersonFollower (rviz)
       Yaw: 3.130403995513916
     Saved: ~

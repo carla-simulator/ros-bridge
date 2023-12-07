@@ -56,7 +56,7 @@ class Agent(CompatibleNode):
         self._proximity_tlight_threshold = 10.0  # meters
         self._proximity_vehicle_threshold = 12.0  # meters
 
-        role_name = self.get_param("role_name", "ego_vehicle")
+        role_name = self.get_param("role_name", "hero")
         self.loginfo("Waiting for vehicle_info...")
         vehicle_info = self.wait_for_message(
             "/carla/{}/vehicle_info".format(role_name),

@@ -15,7 +15,7 @@ Install [Scenario Runner](https://carla-scenariorunner.readthedocs.io/en/latest/
 Set an environment variable to find the Scenario Runner installation:
 
 ```sh
-export SCENARIO_RUNNER_PATH=<path_to_scenario_runner>
+export SCENARIO_RUNNER_ROOT=<path_to_scenario_runner>
 ```
 
 ---

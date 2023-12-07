@@ -57,10 +57,6 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   vehicleLayout->addLayout(egoCtrlStatusLayout);
 
   QFormLayout *egoStatusLayout = new QFormLayout;
-  mPosLabel = new QLineEdit();
-  mPosLabel->setDisabled(true);
-  egoStatusLayout->addRow("Position", mPosLabel);
-
   mSpeedLabel = new QLineEdit();
   mSpeedLabel->setDisabled(true);
   egoStatusLayout->addRow("Speed", mSpeedLabel);
@@ -71,6 +67,12 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
 
   vehicleLayout->addLayout(egoStatusLayout);
 
+  QFormLayout *egoPositionLayout = new QFormLayout;
+  mPosLabel = new QLineEdit();
+  mPosLabel->setDisabled(true);
+  egoPositionLayout->addRow("Position", mPosLabel);
+  layout->addLayout(egoPositionLayout);
+ 
   QVBoxLayout *egoCtrlLayout = new QVBoxLayout;
   mOverrideVehicleControl = new QCheckBox("Manual control");
   mOverrideVehicleControl->setDisabled(true);
@@ -178,26 +180,26 @@ void CarlaControlPanel::onInitialize()
   mCarlaStatusSubscriber = _node->create_subscription<carla_msgs::msg::CarlaStatus>("/carla/status", 1000, std::bind(&CarlaControlPanel::carlaStatusChanged, this, _1));
   mCarlaControlPublisher = _node->create_publisher<carla_msgs::msg::CarlaControl>("/carla/control", 10);
   mEgoVehicleStatusSubscriber 
-    = _node->create_subscription<carla_msgs::msg::CarlaEgoVehicleStatus>("/carla/ego_vehicle/vehicle_status", 1000, std::bind(&CarlaControlPanel::egoVehicleStatusChanged, this, _1));
+    = _node->create_subscription<carla_msgs::msg::CarlaEgoVehicleStatus>("/carla/hero/vehicle_status", 1000, std::bind(&CarlaControlPanel::egoVehicleStatusChanged, this, _1));
   mEgoVehicleOdometrySubscriber
-    = _node->create_subscription<nav_msgs::msg::Odometry>("/carla/ego_vehicle/odometry", 1000, std::bind(&CarlaControlPanel::egoVehicleOdometryChanged, this, _1));
+    = _node->create_subscription<nav_msgs::msg::Odometry>("/carla/hero/odometry", 1000, std::bind(&CarlaControlPanel::egoVehicleOdometryChanged, this, _1));
 
   auto qos_latch_10 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10));
   qos_latch_10.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
   mCameraPosePublisher
-    = _node->create_publisher<geometry_msgs::msg::Pose>("/carla/ego_vehicle/spectator_pose", qos_latch_10);
+    = _node->create_publisher<geometry_msgs::msg::Pose>("/carla/hero/spectator_pose", qos_latch_10);
 
   auto qos_latch_1 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1));
   qos_latch_1.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
   mEgoVehicleControlManualOverridePublisher
-    = _node->create_publisher<std_msgs::msg::Bool>("/carla/ego_vehicle/vehicle_control_manual_override", qos_latch_1);
+    = _node->create_publisher<std_msgs::msg::Bool>("/carla/hero/vehicle_control_manual_override", qos_latch_1);
 
   mExecuteScenarioClient
     = _node->create_client<carla_ros_scenario_runner_types::srv::ExecuteScenario>("/scenario_runner/execute_scenario");
   mScenarioRunnerStatusSubscriber
     = _node->create_subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus>("/scenario_runner/status", 10, std::bind(&CarlaControlPanel::scenarioRunnerStatusChanged, this, _1));
 
-  mTwistPublisher = _node->create_publisher<geometry_msgs::msg::Twist>("/carla/ego_vehicle/twist", 1);
+  mTwistPublisher = _node->create_publisher<geometry_msgs::msg::Twist>("/carla/hero/twist", 1);
 
   mScenarioSubscriber
     = _node->create_subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>("/carla/available_scenarios", 1, std::bind(&CarlaControlPanel::carlaScenariosChanged, this, _1));
@@ -319,10 +321,34 @@ void CarlaControlPanel::egoVehicleOdometryChanged(const nav_msgs::msg::Odometry:
 {
   std::stringstream posStream;
   posStream << std::fixed << std::setprecision(2) << msg->pose.pose.position.x << ", " << msg->pose.pose.position.y;
-  mPosLabel->setText(posStream.str().c_str());
+  mPosLabel->setText(posStream.str().c_str()); 
 
   std::stringstream headingStream;
-  headingStream << std::fixed << std::setprecision(2) << tf2::getYaw(msg->pose.pose.orientation);
+  //headingStream << std::fixed << std::setprecision(2) << tf2::getYaw(msg->pose.pose.orientation);
+
+  double yaw = 0.0;
+
+  double x = msg->pose.pose.orientation.x;
+  double y = msg->pose.pose.orientation.y;
+  double z = msg->pose.pose.orientation.z;
+  double w = msg->pose.pose.orientation.w;
+
+  double sqx = x * x;
+  double sqy = y * y;
+  double sqz = z * z;
+  double sqw = w * w;
+
+  double sarg = -2 * (x * z - w * y) / (sqx + sqy + sqz + sqw);
+
+  if (sarg <= -0.99999) {
+    yaw = -2 * atan2(y, x);
+  } else if (sarg >= 0.99999) {
+    yaw = 2 * atan2(y, x);
+  } else {
+    yaw = atan2(2 * (x * y + w * z), sqw + sqx - sqy - sqz);
+  }
+  
+  headingStream << std::fixed << std::setprecision(2) << yaw;
   mHeadingLabel->setText(headingStream.str().c_str());
 }
 

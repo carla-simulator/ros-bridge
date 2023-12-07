@@ -5,6 +5,8 @@ import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
 # string with message to publish on topic /carla/available/scenarios
+#ros_topic_msg_string = "{{ 'scenarios': [{{ 'name': 'IntersectionCollisionAvoidance', 'scenario_file': '{}'}}] }}".format(
+#    os.path.join(get_package_share_directory('carla_ad_demo'), 'config/IntersectionCollisionAvoidance.xosc')) 
 ros_topic_msg_string = "{{ 'scenarios': [{{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}] }}".format(
     os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc'))
 
@@ -37,11 +39,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='scenario_runner_path',
-            default_value=os.environ.get('SCENARIO_RUNNER_PATH')
+            default_value=os.environ.get('SCENARIO_RUNNER_ROOT')
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
@@ -122,8 +124,8 @@ def generate_launch_description():
             output='screen',
             remappings=[
                 (
-                    "carla/ego_vehicle/spectator_pose",
-                    "/carla/ego_vehicle/rgb_view/control/set_transform"
+                    "carla/hero/spectator_pose",
+                    "/carla/hero/rgb_view/control/set_transform"
                 )
             ],
             arguments=[

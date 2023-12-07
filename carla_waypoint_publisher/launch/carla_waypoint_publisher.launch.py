@@ -18,7 +18,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch_ros.actions.Node(
             package='carla_waypoint_publisher',

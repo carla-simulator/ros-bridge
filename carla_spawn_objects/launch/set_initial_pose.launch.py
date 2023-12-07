@@ -10,7 +10,7 @@ def generate_launch_description():
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
             name='control_id',

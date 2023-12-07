@@ -44,7 +44,7 @@ class LocalPlanner(CompatibleNode):
     def __init__(self):
         super(LocalPlanner, self).__init__("local_planner")
 
-        role_name = self.get_param("role_name", "ego_vehicle")
+        role_name = self.get_param("role_name", "hero")
         self.control_time_step = self.get_param("control_time_step", 0.05)
 
         args_lateral_dict = {}

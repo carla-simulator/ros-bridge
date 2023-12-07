@@ -126,7 +126,7 @@
                 },
                 "mouse_pub_topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/camera/depth/front/image_depth'"
+                  "repr": "u'/carla/hero/camera/depth/front/image_depth'"
                 },
                 "num_gridlines": {
                   "type": "repr",
@@ -146,7 +146,7 @@
                 },
                 "topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/camera/depth/front/image_depth'"
+                  "repr": "u'/carla/hero/camera/depth/front/image_depth'"
                 },
                 "publish_click_location": {
                   "type": "repr",
@@ -189,7 +189,7 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/state/speed_control_activation_count', u'/carla/ego_vehicle/ego_vehicle_control_info/target/speed_abs', u'/carla/ego_vehicle/ego_vehicle_control_info/current/speed_abs']"
+                  "repr": "[u'/carla/hero/ego_vehicle_control_info/state/speed_control_activation_count', u'/carla/hero/ego_vehicle_control_info/target/speed_abs', u'/carla/hero/ego_vehicle_control_info/current/speed_abs']"
                 },
                 "y_limits": {
                   "type": "repr",
@@ -236,7 +236,7 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/target/jerk', u'/carla/ego_vehicle/ego_vehicle_control_info/target/accel', u'/carla/ego_vehicle/ego_vehicle_control_info/current/accel', u'/carla/ego_vehicle/ego_vehicle_control_info/state/speed_control_accel_target']"
+                  "repr": "[u'/carla/hero/ego_vehicle_control_info/target/jerk', u'/carla/hero/ego_vehicle_control_info/target/accel', u'/carla/hero/ego_vehicle_control_info/current/accel', u'/carla/hero/ego_vehicle_control_info/state/speed_control_accel_target']"
                 },
                 "y_limits": {
                   "type": "repr",
@@ -283,7 +283,7 @@
                 },
                 "topics": {
                   "type": "repr",
-                  "repr": "[u'/carla/ego_vehicle/ego_vehicle_control_info/state/throttle_lower_border', u'/carla/ego_vehicle/ego_vehicle_control_info/state/brake_upper_border', u'/carla/ego_vehicle/ego_vehicle_control_info/output/throttle', u'/carla/ego_vehicle/ego_vehicle_control_info/output/brake', u'/carla/ego_vehicle/ego_vehicle_control_info/state/accel_control_pedal_target']"
+                  "repr": "[u'/carla/hero/ego_vehicle_control_info/state/throttle_lower_border', u'/carla/hero/ego_vehicle_control_info/state/brake_upper_border', u'/carla/hero/ego_vehicle_control_info/output/throttle', u'/carla/hero/ego_vehicle_control_info/output/brake', u'/carla/hero/ego_vehicle_control_info/state/accel_control_pedal_target']"
                 },
                 "y_limits": {
                   "type": "repr",
@@ -393,7 +393,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'topic_name': '/carla/ego_vehicle/vehicle_control_cmd', 'type_name': 'carla_ros_bridge/CarlaVehicleControl', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/ego_vehicle/vehicle_control_cmd/throttle': '0.5', u'/carla/ego_vehicle/vehicle_control_cmd/hand_brake': 'False', u'/carla/ego_vehicle/vehicle_control_cmd/steer': '0', u'/carla/ego_vehicle/vehicle_control_cmd/reverse': 'False', u'/carla/ego_vehicle/vehicle_control_cmd/brake': '0'}, 'publisher_id': 0, 'counter': 0}]\""
+                  "repr": "u\"[{'topic_name': '/carla/hero/vehicle_control_cmd', 'type_name': 'carla_ros_bridge/CarlaVehicleControl', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/hero/vehicle_control_cmd/throttle': '0.5', u'/carla/hero/vehicle_control_cmd/hand_brake': 'False', u'/carla/hero/vehicle_control_cmd/steer': '0', u'/carla/hero/vehicle_control_cmd/reverse': 'False', u'/carla/hero/vehicle_control_cmd/brake': '0'}, 'publisher_id': 0, 'counter': 0}]\""
                 }
               },
               "groups": {}

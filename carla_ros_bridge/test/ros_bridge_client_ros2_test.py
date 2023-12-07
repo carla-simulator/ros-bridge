@@ -64,7 +64,7 @@ def generate_test_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
             name='vehicle_filter',
@@ -147,7 +147,7 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/vehicle_status", CarlaEgoVehicleStatus)
+                "/carla/hero/vehicle_status", CarlaEgoVehicleStatus)
             self.assertNotEqual(msg.header, Header())
             self.assertEqual(msg.header.frame_id, 'map')
             self.assertNotEqual(msg.orientation, Quaternion())
@@ -165,11 +165,11 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/vehicle_info", CarlaEgoVehicleInfo, timeout=TIMEOUT,
+                "/carla/hero/vehicle_info", CarlaEgoVehicleInfo, timeout=TIMEOUT,
                 qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
             self.assertNotEqual(msg.id, 0)
             self.assertEqual(msg.type, "vehicle.tesla.model3")
-            self.assertEqual(msg.rolename, "ego_vehicle")
+            self.assertEqual(msg.rolename, "hero")
             self.assertEqual(len(msg.wheels), 4)
             self.assertNotEqual(msg.max_rpm, 0.0)
             self.assertNotEqual(msg.moi, 0.0)
@@ -197,9 +197,9 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/odometry", Odometry, timeout=TIMEOUT)
+                "/carla/hero/odometry", Odometry, timeout=TIMEOUT)
             self.assertEqual(msg.header.frame_id, "map")
-            self.assertEqual(msg.child_frame_id, "ego_vehicle")
+            self.assertEqual(msg.child_frame_id, "hero")
             self.assertNotEqual(msg.pose, Pose())
         finally:
             if node is not None:
@@ -215,8 +215,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/gnss", NavSatFix, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/gnss")
+                "/carla/hero/gnss", NavSatFix, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/gnss")
             self.assertNotEqual(msg.latitude, 0.0)
             self.assertNotEqual(msg.longitude, 0.0)
             self.assertNotEqual(msg.altitude, 0.0)
@@ -233,8 +233,8 @@ class TestClock(unittest.TestCase):
             node = None
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
-            msg = node.wait_for_message("/carla/ego_vehicle/imu", Imu, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/imu")
+            msg = node.wait_for_message("/carla/hero/imu", Imu, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/imu")
             self.assertNotEqual(msg.linear_acceleration, 0.0)
             self.assertNotEqual(msg.angular_velocity, 0.0)
             self.assertNotEqual(msg.orientation, 0.0)
@@ -252,8 +252,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/rgb_front/camera_info", CameraInfo, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/rgb_front")
+                "/carla/hero/rgb_front/camera_info", CameraInfo, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/rgb_front")
             self.assertEqual(msg.height, 600)
             self.assertEqual(msg.width, 800)
         finally:
@@ -270,8 +270,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/rgb_front/image", Image, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/rgb_front")
+                "/carla/hero/rgb_front/image", Image, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/rgb_front")
             self.assertEqual(msg.height, 600)
             self.assertEqual(msg.width, 800)
             self.assertEqual(msg.encoding, "bgra8")
@@ -289,8 +289,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/dvs_front/camera_info", CameraInfo, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/dvs_front")
+                "/carla/hero/dvs_front/camera_info", CameraInfo, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/dvs_front")
             self.assertEqual(msg.height, 70)
             self.assertEqual(msg.width, 400)
         finally:
@@ -307,8 +307,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/dvs_front/image", Image, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/dvs_front")
+                "/carla/hero/dvs_front/image", Image, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/dvs_front")
             self.assertEqual(msg.height, 70)
             self.assertEqual(msg.width, 400)
             self.assertEqual(msg.encoding, "bgr8")
@@ -326,8 +326,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/dvs_front/events", PointCloud2, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/dvs_front")
+                "/carla/hero/dvs_front/events", PointCloud2, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/dvs_front")
         finally:
             if node is not None:
                 node.destroy_node()
@@ -342,8 +342,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/lidar", PointCloud2, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/lidar")
+                "/carla/hero/lidar", PointCloud2, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/lidar")
         finally:
             if node is not None:
                 node.destroy_node()
@@ -358,8 +358,8 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/semantic_lidar", PointCloud2, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/semantic_lidar")
+                "/carla/hero/semantic_lidar", PointCloud2, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/semantic_lidar")
         finally:
             if node is not None:
                 node.destroy_node()
@@ -375,8 +375,8 @@ class TestClock(unittest.TestCase):
             node = None
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/radar_front", PointCloud2, timeout=TIMEOUT)
-            self.assertEqual(msg.header.frame_id, "ego_vehicle/radar_front")
+                "/carla/hero/radar_front", PointCloud2, timeout=TIMEOUT)
+            self.assertEqual(msg.header.frame_id, "hero/radar_front")
         finally:
             if node is not None:
                 node.destroy_node()
@@ -391,7 +391,7 @@ class TestClock(unittest.TestCase):
             roscomp.init("test_node")
             node = CompatibleNode('test_node')
             msg = node.wait_for_message(
-                "/carla/ego_vehicle/objects", ObjectArray, timeout=15)
+                "/carla/hero/objects", ObjectArray, timeout=15)
             self.assertEqual(msg.header.frame_id, "map")
             self.assertEqual(len(msg.objects), 0)
         finally:

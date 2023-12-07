@@ -21,7 +21,7 @@ PclRecorder::PclRecorder()
   // Create a ROS subscriber for the input point cloud
   std::string roleName;
   if (!ros::param::get("~role_name", roleName)) {
-    roleName = "ego_vehicle";
+    roleName = "hero";
   }
   sub = nh.subscribe("/carla/" + roleName + "/lidar", 1, &PclRecorder::callback, this);
 }

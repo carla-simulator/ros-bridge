@@ -36,7 +36,7 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         """
         super(TwistToVehicleControl, self).__init__("twist_to_control")
 
-        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.role_name = self.get_param("role_name", "hero")
         self.max_steering_angle = None
 
         self.new_subscription(

@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-  <arg name="role_name" default="ego_vehicle"/>
+  <arg name="role_name" default="hero"/>
   <arg name="avoid_risk" default="True"/>
   <arg name="Kp_lateral" default="0.9"/>
   <arg name="Ki_lateral" default="0.0"/>

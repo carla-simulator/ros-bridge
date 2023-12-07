@@ -41,7 +41,7 @@ class CarlaAdAgent(Agent):
         """
         super(CarlaAdAgent, self).__init__("ad_agent")
 
-        role_name = self.get_param("role_name", "ego_vehicle")
+        role_name = self.get_param("role_name", "hero")
         self._avoid_risk = self.get_param("avoid_risk", True)
 
         self.data_lock = threading.Lock()
@@ -95,6 +95,7 @@ class CarlaAdAgent(Agent):
         with self.data_lock:
             self._ego_vehicle_pose = odometry_msg.pose.pose
 
+
     def target_speed_cb(self, target_speed_msg):
         with self.data_lock:
             self._target_speed = target_speed_msg.data * 3.6 # target speed from scenario is in m/s
@@ -147,6 +148,7 @@ class CarlaAdAgent(Agent):
         if ego_vehicle_pose is None:
             self.loginfo("Waiting for ego vehicle pose")
             return
+
 
         # ensure we have received all the status/info data of traffic lights.
         if set(lights_info.keys()) != set(lights_status.keys()):

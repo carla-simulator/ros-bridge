@@ -1,20 +1,19 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-  <FileHeader revMajor="1" revMinor="0" date="2019-06-25T00:00:00" description="CARLA:FollowLeadingVehicle" author=""/>
+  <FileHeader revMajor="1" revMinor="0" date="2020-03-20T12:00:00" description="CARLA:FollowLeadingVehicle" author=""/>
   <ParameterDeclarations>
     <ParameterDeclaration name="leadingSpeed" parameterType="double" value="2.0"/>
   </ParameterDeclarations>
-  <CatalogLocations>
-  </CatalogLocations>
+  <CatalogLocations/>
   <RoadNetwork>
     <LogicFile filepath="Town01"/>
     <SceneGraphFile filepath=""/>
   </RoadNetwork>
   <Entities>
-    <ScenarioObject name="ego_vehicle">
-      <Vehicle name="vehicle.lincoln.mkz2017" vehicleCategory="car">
+    <ScenarioObject name="hero">
+      <Vehicle name="vehicle.lincoln.mkz_2017" vehicleCategory="car">
         <ParameterDeclarations/>
-        <Performance maxSpeed="69.444" maxAcceleration="10.0" maxDeceleration="10.0"/>
+        <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
         <BoundingBox>
           <Center x="1.5" y="0.0" z="0.9"/>
           <Dimensions width="2.1" length="4.5" height="1.8"/>
@@ -30,9 +29,9 @@
       </Vehicle>
     </ScenarioObject>
     <ScenarioObject name="adversary">
-      <Vehicle name="vehicle.lincoln.mkz2017" vehicleCategory="car">
+      <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
         <ParameterDeclarations/>
-        <Performance maxSpeed="69.444" maxAcceleration="10.0" maxDeceleration="10.0"/>
+        <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
         <BoundingBox>
           <Center x="1.5" y="0.0" z="0.9"/>
           <Dimensions width="2.1" length="4.5" height="1.8"/>
@@ -54,9 +53,9 @@
         <GlobalAction>
           <EnvironmentAction>
             <Environment name="Environment1">
-              <TimeOfDay animation="false" dateTime="2019-06-25T12:00:00"/>
+              <TimeOfDay animation="false" dateTime="2020-03-20T12:00:00"/>
               <Weather cloudState="free">
-                <Sun intensity="1.0" azimuth="0.0" elevation="1.31"/>
+                <Sun intensity="0.85" azimuth="0" elevation="1.31"/>
                 <Fog visualRange="100000.0"/>
                 <Precipitation precipitationType="dry" intensity="0.0"/>
               </Weather>
@@ -64,18 +63,20 @@
             </Environment>
           </EnvironmentAction>
         </GlobalAction>
-        <Private entityRef="ego_vehicle">
+        <Private entityRef="hero">
           <PrivateAction>
             <TeleportAction>
               <Position>
-                <WorldPosition x="150" y="133" z="0" h="0"/>
+                <RoadPosition roadId="4" s="48.58" t="2.75"/>
+<!--                <LanePosition roadId="4" laneId="-1" offset="1.0" s="48.58"/>-->
+<!--<WorldPosition x="150" y="133" z="0" h="0"/> -->
               </Position>
             </TeleportAction>
           </PrivateAction>          
           <PrivateAction>
             <ControllerAction>
                 <AssignControllerAction>
-                    <Controller name="EgoVehicleAgent">
+                    <Controller name="HeroAgent">
                         <Properties>
                             <Property name="module" value="carla_ros_scenario_runner.ros_vehicle_control" />
                             <Property name="launch" value="carla_ad_agent.launch"/>
@@ -84,12 +85,12 @@
                     </Controller>
                 </AssignControllerAction>
                 <OverrideControllerValueAction>
-                    <Throttle value="0" active="false" />
-                    <Brake value="0" active="false" />
-                    <Clutch value="0" active="false" />
-                    <ParkingBrake value="0" active="false" />
-                    <SteeringWheel value="0" active="false" />
-                    <Gear number="0" active="false" />
+                    <Throttle value="0" active="false"/>
+                    <Brake value="0" active="false"/>
+                    <Clutch value="0" active="false"/>
+                    <ParkingBrake value="0" active="false"/>
+                    <SteeringWheel value="0" active="false"/>
+                    <Gear number="0" active="false"/>
                 </OverrideControllerValueAction>
             </ControllerAction>
           </PrivateAction>
@@ -108,7 +109,8 @@
           <PrivateAction>
             <TeleportAction>
               <Position>
-                <WorldPosition x="190" y="133" z="0" h="0"/>
+                <RelativeRoadPosition entityRef="hero" ds="50" dt="-1.0"/>
+<!--                <WorldPosition x="190" y="133" z="0" h="0"/>-->
               </Position>
             </TeleportAction>
           </PrivateAction>
@@ -117,7 +119,7 @@
     </Init>
     <Story name="MyStory">
       <Act name="Behavior">
-        <ManeuverGroup maximumExecutionCount="1" name="ManeuverSequence">
+        <ManeuverGroup name="ManeuverSequence" maximumExecutionCount="1">
           <Actors selectTriggeringEntities="false">
             <EntityRef entityRef="adversary"/>
           </Actors>
@@ -127,7 +129,7 @@
                 <PrivateAction>
                   <LongitudinalAction>
                     <SpeedAction>
-                      <SpeedActionDynamics dynamicsShape="step" value="100" dynamicsDimension="distance"/>
+                      <SpeedActionDynamics dynamicsShape="step" value="20" dynamicsDimension="distance"/>
                       <SpeedActionTarget>
                         <AbsoluteTargetSpeed value="$leadingSpeed"/>
                       </SpeedActionTarget>
@@ -137,13 +139,14 @@
               </Action>
               <StartTrigger>
                 <ConditionGroup>
-                  <Condition name="StartCondition" delay="0" conditionEdge="rising">
+                  <Condition name="StartConditionLeadingVehicleKeepsVelocity" delay="0" conditionEdge="rising">
                     <ByEntityCondition>
                       <TriggeringEntities triggeringEntitiesRule="any">
-                        <EntityRef entityRef="ego_vehicle"/>
+                        <EntityRef entityRef="hero"/>
                       </TriggeringEntities>
                       <EntityCondition>
-                        <RelativeDistanceCondition entityRef="adversary" relativeDistanceType="cartesianDistance" value="40.0" freespace="false" rule="lessThan"/>
+<!--                        <RelativeDistanceCondition entityRef="adversary" relativeDistanceType="cartesianDistance" value="40.0" freespace="false" rule="lessThan"/>-->
+                        <RelativeDistanceCondition entityRef="adversary" relativeDistanceType="longitudinal" value="40.0" freespace="true" rule="lessThan"/>
                       </EntityCondition>
                     </ByEntityCondition>
                   </Condition>
@@ -157,7 +160,7 @@
             <Condition name="OverallStartCondition" delay="0" conditionEdge="rising">
               <ByEntityCondition>
                 <TriggeringEntities triggeringEntitiesRule="any">
-                  <EntityRef entityRef="ego_vehicle"/>
+                  <EntityRef entityRef="hero"/>
                 </TriggeringEntities>
                 <EntityCondition>
                   <TraveledDistanceCondition value="1.0"/>
@@ -176,10 +179,10 @@
             <Condition name="EndCondition" delay="0" conditionEdge="rising">
               <ByEntityCondition>
                 <TriggeringEntities triggeringEntitiesRule="any">
-                  <EntityRef entityRef="ego_vehicle"/>
+                  <EntityRef entityRef="hero"/>
                 </TriggeringEntities>
                 <EntityCondition>
-                  <TraveledDistanceCondition value="100.0"/>
+                  <TraveledDistanceCondition value="150.0"/>
                 </EntityCondition>
               </ByEntityCondition>
             </Condition>

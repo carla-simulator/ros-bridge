@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PYTHON_SUFFIX=""
+PYTHON_SUFFIX="3"
 if [ "$ROS_PYTHON_VERSION" = "3" ]; then
     PYTHON_SUFFIX=3
 fi
 
-if [ "$ROS_VERSION" = "2" ]; then
-    ADDITIONAL_PACKAGES="ros-$ROS_DISTRO-rviz2"
+ROS_DISTRO=humble
+echo ${ROS_DISTRO}
+
+if [ "${ROS_VERSION}" = "1" ]; then
+    ADDITIONAL_PACKAGES="ros-${ROS_DISTRO}-rviz
+                         ros-${ROS_DISTRO}-opencv-apps
+                         ros-${ROS_DISTRO}-rospy
+                         ros-${ROS_DISTRO}-rospy-message-converter
+                         ros-${ROS_DISTRO}-pcl-ros"
 else
-    ADDITIONAL_PACKAGES="ros-$ROS_DISTRO-rviz
-                         ros-$ROS_DISTRO-opencv-apps
-                         ros-$ROS_DISTRO-rospy
-                         ros-$ROS_DISTRO-rospy-message-converter
-                         ros-$ROS_DISTRO-pcl-ros"
+    ADDITIONAL_PACKAGES="ros-${ROS_DISTRO}-rviz2"    
 fi
 
 if [ "$(lsb_release -sc)" = "focal" ]; then
@@ -33,15 +36,15 @@ sudo apt-get install --no-install-recommends -y \
     python$PYTHON_SUFFIX-rosdep \
     python$PYTHON_SUFFIX-wstool \
     python$PYTHON_SUFFIX-opencv \
-    ros-$ROS_DISTRO-ackermann-msgs \
-    ros-$ROS_DISTRO-derived-object-msgs \
-    ros-$ROS_DISTRO-cv-bridge \
-    ros-$ROS_DISTRO-vision-opencv \
-    ros-$ROS_DISTRO-rqt-image-view \
-    ros-$ROS_DISTRO-rqt-gui-py \
+    ros-${ROS_DISTRO}-ackermann-msgs \
+    ros-${ROS_DISTRO}-derived-object-msgs \
+    ros-${ROS_DISTRO}-cv-bridge \
+    ros-${ROS_DISTRO}-vision-opencv \
+    ros-${ROS_DISTRO}-rqt-image-view \
+    ros-${ROS_DISTRO}-rqt-gui-py \
     wget \
     qt5-default \
-    ros-$ROS_DISTRO-pcl-conversions \
+    ros-${ROS_DISTRO}-pcl-conversions \
     $ADDITIONAL_PACKAGES
 
 pip$PYTHON_SUFFIX install --upgrade pip$PYTHON_SUFFIX

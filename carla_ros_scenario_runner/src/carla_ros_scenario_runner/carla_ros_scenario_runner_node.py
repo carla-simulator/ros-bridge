@@ -59,7 +59,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         """
         super(CarlaRosScenarioRunner, self).__init__('carla_ros_scenario_runner')
 
-        role_name = self.get_param("role_name", "ego_vehicle")
+        role_name = self.get_param("role_name", "hero")
         scenario_runner_path = self.get_param("scenario_runner_path", "")
         wait_for_ego = self.get_param("wait_for_ego", "True")
         host = self.get_param("host", "localhost")

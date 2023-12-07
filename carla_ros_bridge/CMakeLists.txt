@@ -28,6 +28,15 @@ if(${ROS_VERSION} EQUAL 1)
 
   install(FILES test/ros_bridge_client.test
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  
+  install(FILES test/settings.yaml
+          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test)
+
+  install(FILES test/test_objects.json
+          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test)
+
+  install(PROGRAMS test/ros_bridge_client.py
+          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   install(DIRECTORY launch/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)

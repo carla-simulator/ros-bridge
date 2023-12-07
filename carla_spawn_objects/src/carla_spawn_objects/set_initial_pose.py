@@ -7,20 +7,20 @@
 """
 Node to re-spawn vehicle in the ros-bridge
 
-Subscribes to ROS topic /initialpose and publishes the pose on /carla/<role_name>/set_transform
+Subscribes to ROS topic /carla/<role_name>/init_pose and publishes the pose on /carla/<role_name>/set_transform
 
 Uses ROS parameter: role_name
 
-Whenever a pose is received via /initialpose, the vehicle gets respawned at that
+Whenever a pose is received via /carla/<role_name>init_pose, the vehicle gets respawned at that
 position.
 
-/initialpose might be published via RVIZ '2D Pose Estimate" button.
+/carla/<role_name>/init_pose might be published via RVIZ '2D Pose Estimate" button.
 """
 
 import ros_compatibility as roscomp
 from ros_compatibility.node import CompatibleNode
 
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose 
 
 
 class SetInitialPose(CompatibleNode):
@@ -28,7 +28,7 @@ class SetInitialPose(CompatibleNode):
     def __init__(self):
         super(SetInitialPose, self).__init__("set_initial_pose")
 
-        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.role_name = self.get_param("role_name", "hero")
         # control_id should correspond to the id of the actor.pseudo.control
         # actor that is set in the config file used to spawn it
         self.control_id = self.get_param("control_id", "control")
@@ -40,7 +40,7 @@ class SetInitialPose(CompatibleNode):
 
         self.initial_pose_subscriber = self.new_subscription(
             PoseWithCovarianceStamped,
-            "/initialpose",
+            "/carla/{}/init_pose".format(self.role_name),
             self.intial_pose_callback,
             qos_profile=10)
 

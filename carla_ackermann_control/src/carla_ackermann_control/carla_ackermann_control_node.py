@@ -87,7 +87,7 @@ class CarlaAckermannControl(CompatibleNode):
         self.last_ackermann_msg_received_sec =  self.get_time()
         self.vehicle_status = CarlaEgoVehicleStatus()
         self.vehicle_info = CarlaEgoVehicleInfo()
-        self.role_name = self.get_param('role_name', 'ego_vehicle')
+        self.role_name = self.get_param('role_name', 'hero')
         # control info
         self.info = EgoVehicleControlInfo()
 

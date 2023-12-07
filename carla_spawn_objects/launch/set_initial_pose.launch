@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-  <arg name='role_name' default='ego_vehicle'/>
+  <arg name='role_name' default='hero'/>
   <!-- id of the actor.pseudo.control actor-->
   <arg name='control_id' default='control'/>
   

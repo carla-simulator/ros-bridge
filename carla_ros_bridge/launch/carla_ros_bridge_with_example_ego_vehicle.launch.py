@@ -16,11 +16,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='10'
+            default_value='100'
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
             name='vehicle_filter',

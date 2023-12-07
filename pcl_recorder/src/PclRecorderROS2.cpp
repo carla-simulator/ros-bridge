@@ -24,7 +24,7 @@ PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
   // Create a ROS subscriber for the input point cloud
   std::string roleName;
   if (!this->get_parameter("role_name", roleName)) {
-    roleName = "ego_vehicle";
+    roleName = "hero";
   }
   auto sub_opt = rclcpp::SubscriptionOptions();
   sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);

@@ -12,7 +12,7 @@
   <arg name='fixed_delta_seconds' default='0.05'/><!-- frequency of the carla ticks -->
 
   <!-- spectator camera parameter -->
-  <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
+  <arg name="role_name" default="hero"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
   <arg name='spawn_point' default='127.4,-195.4,2,0,0,180'/> <!-- fixed spawn point, set to "" for a random spawn point -->
   <arg name="target_speed" default="8.33"/> <!-- target speed in m/s that the agent tries to follow -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->

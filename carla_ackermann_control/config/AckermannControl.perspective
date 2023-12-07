@@ -87,7 +87,7 @@
                 },
                 "mouse_pub_topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/sensor/camera/rgb/image_raw_mouse_left'"
+                  "repr": "u'/carla/hero/sensor/camera/rgb/image_raw_mouse_left'"
                 },
                 "num_gridlines": {
                   "type": "repr",
@@ -107,7 +107,7 @@
                 },
                 "topic": {
                   "type": "repr",
-                  "repr": "u'/carla/ego_vehicle/sensor/camera/rgb/image_raw'"
+                  "repr": "u'/carla/hero/sensor/camera/rgb/image_raw'"
                 },
                 "publish_click_location": {
                   "type": "repr",
@@ -354,7 +354,7 @@
               "keys": {
                 "publishers": {
                   "type": "repr",
-                  "repr": "u\"[{'type_name': 'ackermann_msgs/AckermannDrive', 'topic_name': '/carla/ego_vehicle/ackermann_cmd', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/ego_vehicle/ackermann_cmd/speed': '1'}, 'publisher_id': 0, 'counter': 0}]\""
+                  "repr": "u\"[{'type_name': 'ackermann_msgs/AckermannDrive', 'topic_name': '/carla/hero/ackermann_cmd', 'enabled': False, 'rate': 1.0, 'expressions': {u'/carla/hero/ackermann_cmd/speed': '1'}, 'publisher_id': 0, 'counter': 0}]\""
                 }
               },
               "groups": {}

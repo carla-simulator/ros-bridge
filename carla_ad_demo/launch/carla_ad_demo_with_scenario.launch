@@ -10,10 +10,10 @@
   <arg name='fixed_delta_seconds' default='0.05'/><!-- frequency of the carla ticks -->
 
   <!-- scenario runner parameter -->
-  <arg name='scenario_runner_path' default='$(env SCENARIO_RUNNER_PATH)'/><!-- path to scenario runner -->
+  <arg name='scenario_runner_path' default='$(env SCENARIO_RUNNER_ROOT)'/><!-- path to scenario runner -->
 
   <!-- ego vehicle parameter -->
-  <arg name="role_name" default="ego_vehicle"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
+  <arg name="role_name" default="hero"/> <!-- role name of the ego vehicle (used for identification in many nodes) -->
   <arg name="vehicle_filter" default="vehicle.tesla.model3"/> <!-- which vehicle type to use for the ego. See blueprint library for others -->
   <arg name="avoid_risk" default="True"/> <!-- should the agent avoid crashs and respect red traffic lights? -->
 
@@ -71,7 +71,7 @@
 
   <!-- Rviz visualization-->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find carla_ad_demo)/config/carla_ad_demo.rviz" required="true" output="screen">
-    <remap from="carla/ego_vehicle/spectator_pose" to="/carla/ego_vehicle/rgb_view/control/set_transform"/>
+    <remap from="carla/hero/spectator_pose" to="/carla/hero/rgb_view/control/set_transform"/>
   </node>
 
 </launch>

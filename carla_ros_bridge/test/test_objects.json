@@ -23,7 +23,7 @@
         },
         {
             "type": "vehicle.tesla.model3",
-            "id": "ego_vehicle",
+            "id": "hero",
             "sensors": 
             [
                 {

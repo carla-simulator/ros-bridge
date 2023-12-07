@@ -10,7 +10,7 @@ Generates a plan of waypoints to follow
 It uses the current pose of the ego vehicle as starting point. If the
 vehicle is respawned or move, the route is newly calculated.
 
-The goal is either read from the ROS topic `/carla/<ROLE NAME>/move_base_simple/goal`, if available
+The goal is either read from the ROS topic `/carla/<ROLE NAME>/goal_pose`, if available
 (e.g. published by RVIZ via '2D Nav Goal') or a fixed point is used.
 
 The calculated route is published on '/carla/<ROLE NAME>/waypoints'
@@ -57,7 +57,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.ego_vehicle = None
         self.ego_vehicle_location = None
         self.on_tick = None
-        self.role_name = self.get_param("role_name", 'ego_vehicle')
+        self.role_name = self.get_param("role_name", 'hero')
         self.waypoint_publisher = self.new_publisher(
             Path,
             '/carla/{}/waypoints'.format(self.role_name),
@@ -79,7 +79,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.current_route = None
         self.goal_subscriber = self.new_subscription(
             PoseStamped,
-            "/carla/{}/goal".format(self.role_name),
+            "/carla/{}/goal_pose".format(self.role_name),
             self.on_goal,
             qos_profile=10)
 
@@ -135,7 +135,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
     def on_goal(self, goal):
         """
-        Callback for /move_base_simple/goal
+        Callback for /carla/hero/goal_pose
 
         Receiving a goal (e.g. from RVIZ '2D Nav Goal') triggers a new route calculation.
 
@@ -160,7 +160,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
 
     def find_ego_vehicle_actor(self, _):
         """
-        Look for an carla actor with name 'ego_vehicle'
+        Look for an carla actor with name 'hero'
         """
         hero = None
         for actor in self.world.get_actors():
@@ -240,7 +240,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
             self.logerr("Error while waiting for world info: {}".format(e))
             raise e
 
-        host = self.get_param("host", "127.0.0.1")
+        host = self.get_param("host", "localhost")
         port = self.get_param("port", 2000)
         timeout = self.get_param("timeout", 10)
         self.loginfo("CARLA world available. Trying to connect to {host}:{port}".format(

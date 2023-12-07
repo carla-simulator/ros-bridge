@@ -40,7 +40,7 @@ jobs:
     container:
       image: ros:${{ matrix.docker_image }}
     env:
-      SCENARIO_RUNNER_PATH: ""
+      SCENARIO_RUNNER_ROOT: ""
       DEBIAN_FRONTEND: "noninteractive"
       ROS_DISTRO: ${{ matrix.ros_distro }}
       ROS_VERSION: ${{ matrix.ros_version }}
@@ -98,7 +98,7 @@ jobs:
     container:
       image: ros:${{ matrix.docker_image }}
     env:
-      SCENARIO_RUNNER_PATH: ""
+      SCENARIO_RUNNER_ROOT: ""
       DEBIAN_FRONTEND: "noninteractive"
       ROS_DISTRO: ${{ matrix.ros_distro }}
       ROS_VERSION: ${{ matrix.ros_version }}

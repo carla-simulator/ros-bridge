@@ -88,7 +88,7 @@ class ManualControl(CompatibleNode):
     def __init__(self, resolution):
         super(ManualControl, self).__init__("ManualControl")
         self._surface = None
-        self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.role_name = self.get_param("role_name", "hero")
         self.hud = HUD(self.role_name, resolution['width'], resolution['height'], self)
         self.controller = KeyboardControl(self.role_name, self.hud, self)
 

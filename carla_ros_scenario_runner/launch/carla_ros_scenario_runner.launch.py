@@ -14,7 +14,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
-            default_value='ego_vehicle'
+            default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
             name='scenario_runner_path'
