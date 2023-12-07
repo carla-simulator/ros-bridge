@@ -19,7 +19,7 @@ This ROS package is a modified fork of the [carla-simulator/ros-bridge](https://
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-## Instructions (adapted from [ROS Bridge Documentation](https://carla.readthedocs.io/projects/ros-bridge/en/latest/ros_installation_ros2/)
+## Instructions (adapted from [ROS Bridge Documentation](https://carla.readthedocs.io/projects/ros-bridge/en/latest/ros_installation_ros2/))
 1. Set up a project directory and clone the ROS bridge repository and submodules:
 ```
 mkdir -p ~/Workspace/ros-bridge && cd ~/Workspace/ros-bridge
