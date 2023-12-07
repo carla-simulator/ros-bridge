@@ -13,7 +13,10 @@ This ROS package is a modified fork of the carla-simulator/ros-bridge package th
 - CARLA Version: 0.9.15
 - Scenario Runner Version: 0.9.15
 - ROS Version: Humble
+- **NOTE**: All testing were peformed using Python 3.10. The default CARLA PythonAPI only supports Python 2.7 and 3.7 (and 3.8 by extension). Updated .whl and .egg files for Python 3.10 can be found at [https://github.com/gezp/carla_ros/releases/](https://github.com/gezp/carla_ros/releases/).
+
+### Screenshot of Carla AD Demo in Action 
 
 ![rviz setup](./docs/images/ad_demo.png "AD Demo")
 
-**NOTE**: All testing were peformed using Python 3.10. The default CARLA PythonAPI only supports Python 2.7 and 3.7 (and 3.8 by extension). Updated .whl and .egg files for Python 3.10 can be found at [https://github.com/gezp/carla_ros/releases/](https://github.com/gezp/carla_ros/releases/).
+
