@@ -23,6 +23,10 @@ fi
 
 echo ADDITIONAL PACKAGES $ADDITIONAL_PACKAGES
 
+# Apply fix for GPG key expired error
+# Link: https://github.com/osrf/docker_images/issues/697#issuecomment-1819626877
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA
+
 sudo apt update
 sudo apt-get install --no-install-recommends -y \
     python$PYTHON_SUFFIX-pip \
@@ -42,6 +46,7 @@ sudo apt-get install --no-install-recommends -y \
     wget \
     qt5-default \
     ros-$ROS_DISTRO-pcl-conversions \
+    ros-$ROS_DISTRO-tf2-geometry-msgs \
     $ADDITIONAL_PACKAGES
 
 pip$PYTHON_SUFFIX install --upgrade pip$PYTHON_SUFFIX
