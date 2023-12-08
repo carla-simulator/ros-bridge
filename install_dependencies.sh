@@ -46,6 +46,7 @@ sudo apt-get install --no-install-recommends -y \
     wget \
     qt5-default \
     ros-$ROS_DISTRO-pcl-conversions \
+    ros-$ROS_DISTRO-tf2-geometry-msgs \
     $ADDITIONAL_PACKAGES
 
 pip$PYTHON_SUFFIX install --upgrade pip$PYTHON_SUFFIX
