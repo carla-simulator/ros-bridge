@@ -10,7 +10,7 @@
             "id": "actor_list"
         },
         {
-            "type": "vehicle.unmannedsolution.erp42npc15",
+            "type": "vehicle.dodge.charger2020",
             "id": "npc_vehicle",
             "sensors": 
             [

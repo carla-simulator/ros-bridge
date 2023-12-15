@@ -63,6 +63,10 @@
                     "sensor_tick": 0.05
                 },
                 {
+                    "type": "sensor.pseudo.odom",
+                    "id": "odometry"
+                },
+                {
                     "type": "actor.pseudo.control",
                     "id": "control"
                 }

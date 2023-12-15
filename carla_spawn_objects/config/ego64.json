@@ -20,14 +20,6 @@
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "ego_view",
-                    "spawn_point": {"x": 1.0, "y": 0.0, "z": 1.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "image_size_x": 692,
-                    "image_size_y": 512,
-                    "fov": 130.0
-                },
-                {
-                    "type": "sensor.camera.rgb",
                     "id": "rgb_view",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
                     "image_size_x": 800,
@@ -45,13 +37,13 @@
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar",
                     "spawn_point": {"x": -0.11, "y": 0.0, "z": 0.92, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
-                    "channels": 16,
-                    "points_per_second": 320000,
-                    "upper_fov": 15.0,
-                    "lower_fov": -15.0,
-                    "rotation_frequency": 70,
-                    "noise_stddev": 0.01,
+                    "range": 120,
+                    "channels": 64,
+                    "points_per_second": 2200000,
+                    "upper_fov": 26.8,
+                    "lower_fov": -24.0,
+                    "rotation_frequency": 20,
+                    "noise_stddev": 0.02,
                     "sensor_tick": 0.05
                 },
                 {
@@ -71,12 +63,8 @@
                     "sensor_tick": 0.05
                 },
                 {
-                    "type": "sensor.other.imu",
-                    "id": "imu",
-                    "spawn_point": {"x": -0.11, "y": 0.0, "z": 0.97, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "noise_accel_stddev_x": 0.0, "noise_accel_stddev_y": 0.0, "noise_accel_stddev_z": 0.0,
-                    "noise_gyro_stddev_x": 0.0, "noise_gyro_stddev_y": 0.0, "noise_gyro_stddev_z": 0.0,
-                    "noise_gyro_bias_x": 0.0, "noise_gyro_bias_y": 0.0, "noise_gyro_bias_z": 0.0
+                    "type": "sensor.pseudo.odom",
+                    "id": "odometry"
                 },
                 {
                     "type": "actor.pseudo.control",

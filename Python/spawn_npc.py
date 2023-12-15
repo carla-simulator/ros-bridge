@@ -88,7 +88,7 @@ class World(object):
         blueprints = []
         traffic = []
         # blueprint = random.choice(get_actor_blueprints(self.world, 'erp42'+self.speed, self._actor_generation))
-        blueprint = random.choice(get_actor_blueprints(self.world, 'erp42', self._actor_generation))
+        blueprint = random.choice(get_actor_blueprints(self.world, 'erp42npc15', self._actor_generation))
 
         if blueprint.has_attribute('terramechanics'):
             blueprint.set_attribute('terramechanics', 'true')
