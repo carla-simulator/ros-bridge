@@ -41,7 +41,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value='Town01',
+            default_value='Town10HD',
             description='Either use an available CARLA town (eg. "Town01") or an OpenDRIVE file (ending in .xodr)'
         ),
         launch.actions.DeclareLaunchArgument(
@@ -51,8 +51,9 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='ego_vehicle_role_name',
-            default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2",
-                           "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"],
+            default_value='hero',
+            #default_value=["hero", "ego_vehicle", "hero0", "hero1", "hero2",
+            #               "hero3", "hero4", "hero5", "hero6", "hero7", "hero8", "hero9"],
             description='Role names to identify ego vehicles. '
         ),
         launch_ros.actions.Node(

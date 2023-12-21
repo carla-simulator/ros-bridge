@@ -23,11 +23,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value='Town01'
+            default_value='Town10HD'
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2'
+            default_value='30'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',

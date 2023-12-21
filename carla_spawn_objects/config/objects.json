@@ -22,7 +22,7 @@
             "id": "map"
         },
         {
-            "type": "vehicle.tesla.model3",
+            "type": "vehicle.dodge.charger_police_2020",
             "id": "hero",
             "sensors": 
             [

@@ -46,11 +46,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value='Town01'
+            default_value='Town10HD'
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='10'
+            default_value='30'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
@@ -66,11 +66,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_point',
-            default_value='127.4,-195.4,2,0,0,180'
+            default_value='-38.59,-51.58,0,0,0.7,0.7'
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='8.33' # in m/s
+            default_value='8.33' # in m/s (8.3 = 30, 12.5 = 45)
         ),
         launch.actions.DeclareLaunchArgument(
             name='avoid_risk',

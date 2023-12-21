@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-#
-# Copyright (c) 2017 Computer Vision Center (CVC) at the Universitat Autonoma de
+# Copyright (c) 2019 Computer Vision Center (CVC) at the Universitat Autonoma de
 # Barcelona (UAB).
 # Copyright (c) 2019 Intel Corporation
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
+# Allows controlling a vehicle with a keyboard. For a simpler and more
+# documented example, please take a look at tutorial.py.
 """
 Welcome to CARLA ROS manual control.
 
@@ -13,7 +14,7 @@ Use ARROWS or WASD keys for control.
 
     W            : throttle
     S            : brake
-    AD           : steer
+    A/D          : steer left/right
     Q            : toggle reverse
     Space        : hand-brake
     P            : toggle autopilot
@@ -495,8 +496,7 @@ class HUD(object):
                     break
                 if isinstance(item, list):
                     if len(item) > 1:
-                        points = [(x + 8, v_offset + 8 + (1.0 - y) * 30) for x, y in enumerate(item)
-                                  ]
+                        points = [(x + 8, v_offset + 8 + (1.0 - y) * 30) for x, y in enumerate(item)]
                         pygame.draw.lines(display, (255, 136, 0), False, points, 2)
                     item = None
                     v_offset += 18
