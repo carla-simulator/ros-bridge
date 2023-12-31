@@ -31,7 +31,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
-            default_value='False',
+            default_value='True',
             description='When enabled, pauses the tick until a vehicle control is completed (only in synchronous mode)'
         ),
         launch.actions.DeclareLaunchArgument(
