@@ -16,7 +16,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2',
+            default_value='30',
             description='Time to wait for a successful connection to the CARLA server'
         ),
         launch.actions.DeclareLaunchArgument(
@@ -31,7 +31,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',
-            default_value='True',
+            default_value='False',
             description='When enabled, pauses the tick until a vehicle control is completed (only in synchronous mode)'
         ),
         launch.actions.DeclareLaunchArgument(
