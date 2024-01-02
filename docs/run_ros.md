@@ -181,5 +181,6 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 | `/carla_ros_bridge/set_parameters` | [rcl_interfaces/srv/SetParameters](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/SetParameters.srv) |  |
 | `/carla_ros_bridge/set_parameters_atomically` | [rcl_interfaces/srv/SetParametersAtomically](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/SetParametersAtomically.srv) |  |
 
-Additional distribution specific information can be found on [ROS INDEX](https://index.ros.org/r/rcl_interfaces/)
 ---
+Additional distribution specific information can be found on [ROS INDEX](https://index.ros.org/r/rcl_interfaces/)
+
