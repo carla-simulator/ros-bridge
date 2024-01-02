@@ -146,9 +146,9 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/debug_marker` | [visualization_msgs/MarkerArray](https://docs.ros.org/en/api/visualization_msgs/html/msg/MarkerArray.html) | Draws markers in the CARLA world. |
-| `/carla/weather_control` | [carla_msgs/CarlaWeatherParameters](https://github.com/carla-simulator/ros-carla-msgs/blob/master/msg/CarlaWeatherParameters.msg) | Set the CARLA weather parameters |
-| `/clock` | [rosgraph_msgs/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
+| `/carla/debug_marker` | [visualization_msgs/msg/MarkerArray](https://docs.ros.org/en/api/visualization_msgs/html/msg/MarkerArray.html) | Draws markers in the CARLA world. |
+| `/carla/weather_control` | [carla_msgs/msg/CarlaWeatherParameters](https://github.com/carla-simulator/ros-carla-msgs/blob/master/msg/CarlaWeatherParameters.msg) | Set the CARLA weather parameters |
+| `/clock` | [rosgraph_msgs/msg/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
 
 <br>
 
@@ -160,10 +160,10 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/status` | [carla_msgs/CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
-| `/carla/world_info` | [carla_msgs/CarlaWorldInfo](ros_msgs.md#carlaworldinfomsg) | Information about the current CARLA map. |
-| `/clock` | [rosgraph_msgs/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
-| `/rosout` | [rosgraph_msgs/Log](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Log.html) | ROS logging. |
+| `/carla/status` | [carla_msgs/msg/CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
+| `/carla/world_info` | [carla_msgs/msg/CarlaWorldInfo](ros_msgs.md#carlaworldinfomsg) | Information about the current CARLA map. |
+| `/clock` | [rosgraph_msgs/msg/Clock](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Clock.html) | Publishes simulated time in ROS. |
+| `/rosout` | [rosgraph_msgs/msg/Log](https://docs.ros.org/en/melodic/api/rosgraph_msgs/html/msg/Log.html) | ROS logging. |
 
 <br>
 
@@ -171,8 +171,15 @@ It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msg
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/destroy_object` | [carla_msgs/DestroyObject.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/DestroyObject.srv) | Destroys an object |
-| `/carla/get_blueprints` | [carla_msgs/GetBlueprints.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/GetBlueprints.srv) | Gets blueprints |
-| `/carla/spawn_object` | [carla_msgs/SpawnObject.srv](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/SpawnObject.srv) | Spawn an object |
+| `/carla/destroy_object` | [carla_msgs/srv/DestroyObject](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/DestroyObject.srv) | Destroys an object |
+| `/carla/get_blueprints` | [carla_msgs/srv/GetBlueprints](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/GetBlueprints.srv) | Gets blueprints |
+| `/carla/spawn_object` | [carla_msgs/srv/SpawnObject](https://github.com/carla-simulator/ros-carla-msgs/blob/f75637ce83a0b4e8fbd9818980c9b11570ff477c/srv/SpawnObject.srv) | Spawn an object |
+| `/carla_ros_bridge/describe_parameters` | [rcl_interfaces/srv/DescribeParameters](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/DescribeParameters.srv) |  |
+| `/carla_ros_bridge/get_parameter_types` | [rcl_interfaces/srv/GetParameterTypes](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/GetParameterTypes.srv) |  |
+| `/carla_ros_bridge/get_parameters` | [rcl_interfaces/srv/GetParameters](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/GetParameters.srv) |  |
+| `/carla_ros_bridge/list_parameters` | [rcl_interfaces/srv/ListParameters](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/ListParameters.srv) |  |
+| `/carla_ros_bridge/set_parameters` | [rcl_interfaces/srv/SetParameters](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/SetParameters.srv) |  |
+| `/carla_ros_bridge/set_parameters_atomically` | [rcl_interfaces/srv/SetParametersAtomically](https://github.com/ros2/rcl_interfaces/blob/humble/rcl_interfaces/srv/SetParametersAtomically.srv) |  |
 
+Additional distribution specific information can be found on [ROS INDEX](https://index.ros.org/r/rcl_interfaces/)
 ---
