@@ -25,16 +25,16 @@ The command to run depends on whether you installed the ROS bridge via the Debia
 
 ```sh
     # For debian installation of ROS bridge. Change the command according to your installed version of ROS.
-    source /opt/carla-ros-bridge/<melodic/noetic>/setup.bash
+    source /opt/carla-ros-bridge/{melodic/noetic}/setup.{bash|zsh}
 
     # For GitHub repository installation of ROS bridge
-    source ~/carla-ros-bridge/catkin_ws/devel/setup.bash
+    source ~/carla-ros-bridge/catkin_ws/devel/setup.{bash|zsh}
 ```
 
 #### Prepare ROS 2 environment:
 
 ```sh
-    source ./install/setup.bash
+    source ./install/setup.{bash|zsh}
 ```
 
 ## Running the ROS bridge
@@ -52,16 +52,14 @@ Once you have set your ROS environment and have a CARLA server running, you will
 There are other launchfiles that combine the above functionality of starting the ROS bridge at the same time as starting other packges or plugins:
 
 - `carla_ros_bridge_with_example_ego_vehicle.launch` (ROS 1) and `carla_ros_bridge_with_example_ego_vehicle.launch.py` (ROS 2) start the ROS bridge along with the [`carla_spawn_objects`](carla_spawn_objects.md) and [`carla_manual_control`](carla_manual_control.md) packages.
-
 ---
 
 ## Configuring CARLA settings
 
 Configurations should be set either within the launchfile or passed as an argument when running the file from the command line, for example:
 
-
 ```sh
-roslaunch carla_ros_bridge carla_ros_bridge.launch passive:=True
+ros2 launch carla_ros_bridge carla_ros_bridge.launch.py passive:=True
 ```
 
 The following settings are available:
@@ -69,7 +67,7 @@ The following settings are available:
 * __use_sim_time__: This should be set to __True__ to ensure that ROS is using simulation time rather than system time. This parameter will synchronize the ROS [`/clock`][ros_clock] topic with CARLA simulation time.
 *  __host and port__: Network settings to connect to CARLA using a Python client.
 * __timeout__: Time to wait for a successful connection to the server.
-* __passive__: Passive mode is for use in scynchronous mode. When enabled, the ROS bridge will take a backseat and another client __must__ tick the world. ROS bridge will wait for all expected data from all sensors to be received.
+* __passive__: Passive mode is for use in Asynchronous mode. When enabled, the ROS bridge will take a backseat and another client __must__ tick the world. ROS bridge will wait for all expected data from all sensors to be received. Default: `False`
 *  __synchronous_mode__:
 	*  __If false__: Data is published on every `world.on_tick()` and every `sensor.listen()` callback.
 	*  __If true (default)__: ROS bridge waits for all the sensor messages expected before the next tick. This might slow down the overall simulation but ensures reproducible results.
