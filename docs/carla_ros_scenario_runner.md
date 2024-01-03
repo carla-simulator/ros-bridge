@@ -93,7 +93,7 @@ ros2 launch carla_ad_demo carla_ad_demo_with_scenario.launch.py town:=Town04 tar
  - The above command will load RVIZ 2 with the `rviz_carla_plugin`. Select the desired scenario from the `Scenario List` and press the `Load` button. The simulator will Load the selected scenario ready to be executed/started. This example assumes selecting the `RevealScenario` scenario.
  - Set the Ego Vehicle Goal Pose by publishing to `/carla/ego/goal_pose`. 
    ```sh
-   ros2 topic pub --once /carla/hero/goal_pose geometry_msgs/msg/PoseStamped  "{pose: {position: {x: 6.0, y: 42.00}, orientation: {z: 0.67, w: 0.74}}}"
+   ros2 topic pub --once /carla/hero/goal_pose geometry_msgs/msg/PoseStamped  "{pose: {position: {x: 6.0, y: -75.0}, orientation: {z: 0.71, w: 0.7}}}"
    ```
    
 __3.__ Start the Ego Vehicle
