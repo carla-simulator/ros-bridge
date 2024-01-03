@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-  <FileHeader revMajor="1" revMinor="0" date="2020-03-20T12:00:00" description="CARLA:FollowLeadingVehicle" author=""/>
+  <FileHeader revMajor="1" revMinor="0" date="2024-01-02T17:09:00" description="CARLA:FollowLeadingVehicle" author="Thoshitha Gamage"/>
   <ParameterDeclarations>
-    <ParameterDeclaration name="leadingSpeed" parameterType="double" value="2.0"/>
+    <ParameterDeclaration name="leadingSpeed" parameterType="double" value="8.33"/>
   </ParameterDeclarations>
   <CatalogLocations/>
   <RoadNetwork>
-    <LogicFile filepath="Town01"/>
+    <LogicFile filepath="Town05"/>
     <SceneGraphFile filepath=""/>
   </RoadNetwork>
   <Entities>
     <ScenarioObject name="hero">
-      <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
+      <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
         <ParameterDeclarations/>
-        <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
+        <Performance maxSpeed="30.0" maxAcceleration="200.0" maxDeceleration="200.0"/>
         <BoundingBox>
           <Center x="1.5" y="0.0" z="0.9"/>
           <Dimensions width="2.1" length="4.5" height="1.8"/>
@@ -24,14 +24,13 @@
         </Axles>
         <Properties>
           <Property name="type" value="ego_vehicle"/>
-          <Property name="color" value="0,0,255"/>
         </Properties>
       </Vehicle>
     </ScenarioObject>
     <ScenarioObject name="adversary">
-      <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
+      <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
         <ParameterDeclarations/>
-        <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
+        <Performance maxSpeed="30.0" maxAcceleration="100.0" maxDeceleration="100.0"/>
         <BoundingBox>
           <Center x="1.5" y="0.0" z="0.9"/>
           <Dimensions width="2.1" length="4.5" height="1.8"/>
@@ -55,7 +54,7 @@
             <Environment name="Environment1">
               <TimeOfDay animation="false" dateTime="2020-03-20T12:00:00"/>
               <Weather cloudState="free">
-                <Sun intensity="0.85" azimuth="0" elevation="1.31"/>
+                <Sun intensity="0.85" azimuth="0.6" elevation="1.31"/>
                 <Fog visualRange="100000.0"/>
                 <Precipitation precipitationType="dry" intensity="0.0"/>
               </Weather>
@@ -67,9 +66,9 @@
           <PrivateAction>
             <TeleportAction>
               <Position>
-                <RoadPosition roadId="4" s="48.58" t="2.75"/>
-<!--                <LanePosition roadId="4" laneId="-1" offset="1.0" s="48.58"/>-->
-<!--<WorldPosition x="150" y="133" z="0" h="0"/> -->
+                <WorldPosition x="45.0" y="209.0" z="0" h="0"/>
+                <!--<RoadPosition roadId="4" s="48.58" t="2.75"/>
+                <LanePosition roadId="4" laneId="-1" offset="1.0" s="48.58"/>-->
               </Position>
             </TeleportAction>
           </PrivateAction>          
@@ -97,9 +96,9 @@
           <PrivateAction>
               <LongitudinalAction>
                   <SpeedAction>
-                      <SpeedActionDynamics dynamicsShape="step" value="10" dynamicsDimension="distance"/>
+                      <SpeedActionDynamics dynamicsShape="step" value="20" dynamicsDimension="distance"/>
                       <SpeedActionTarget>
-                          <AbsoluteTargetSpeed value="8.33"/>
+                          <AbsoluteTargetSpeed value="25.0"/>
                       </SpeedActionTarget>
                   </SpeedAction>
               </LongitudinalAction>
@@ -109,7 +108,7 @@
           <PrivateAction>
             <TeleportAction>
               <Position>
-                <RelativeRoadPosition entityRef="hero" ds="50" dt="-1.0"/>
+                <RelativeRoadPosition entityRef="hero" ds="45" dt="-1.0"/>
 <!--                <WorldPosition x="190" y="133" z="0" h="0"/>-->
               </Position>
             </TeleportAction>
@@ -129,7 +128,7 @@
                 <PrivateAction>
                   <LongitudinalAction>
                     <SpeedAction>
-                      <SpeedActionDynamics dynamicsShape="step" value="20" dynamicsDimension="distance"/>
+                      <SpeedActionDynamics dynamicsShape="step" value="200" dynamicsDimension="distance"/>
                       <SpeedActionTarget>
                         <AbsoluteTargetSpeed value="$leadingSpeed"/>
                       </SpeedActionTarget>
@@ -149,6 +148,29 @@
                         <RelativeDistanceCondition entityRef="adversary" relativeDistanceType="longitudinal" value="40.0" freespace="true" rule="lessThan"/>
                       </EntityCondition>
                     </ByEntityCondition>
+                  </Condition>
+                </ConditionGroup>
+              </StartTrigger>
+            </Event>
+            <Event name="LeadingVehicleWaits" priority="overwrite">
+              <Action name="LeadingVehicleWaits">
+                <PrivateAction>
+                  <LongitudinalAction>
+                    <SpeedAction>
+                      <SpeedActionDynamics dynamicsShape="step" value="10" dynamicsDimension="time"/>
+                      <SpeedActionTarget>
+                        <AbsoluteTargetSpeed value="0.0"/>
+                      </SpeedActionTarget>
+                    </SpeedAction>
+                  </LongitudinalAction>
+                </PrivateAction>
+              </Action>
+              <StartTrigger>
+                <ConditionGroup>
+                  <Condition name="AfterLeadingVehicleKeepsVelocity" delay="0" conditionEdge="rising">
+                    <ByValueCondition>
+                      <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadingVehicleKeepsVelocity" state="endTransition"/>
+                    </ByValueCondition>
                   </Condition>
                 </ConditionGroup>
               </StartTrigger>
@@ -182,7 +204,7 @@
                   <EntityRef entityRef="hero"/>
                 </TriggeringEntities>
                 <EntityCondition>
-                  <TraveledDistanceCondition value="150.0"/>
+                  <TraveledDistanceCondition value="200.0"/>
                 </EntityCondition>
               </ByEntityCondition>
             </Condition>
