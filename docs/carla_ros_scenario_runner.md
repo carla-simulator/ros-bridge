@@ -23,7 +23,7 @@ sudo apt install python-pexpect
 
 ## Using ROS Scenario Runner
 
-The ROS Scenario Runner is best used from within the [`rviz_carla_plugin`](rviz_plugin.md), that provides functionality to load and/or execute(start) select scenarios. 
+The ROS Scenario Runner is best used from within the [`rviz_carla_plugin`](rviz_plugin.md), which provides functionality to `Load` scenarios that are ready to execute. 
 
 
 An example scenario is found [here](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ad_demo/config/FollowLeadingVehicle.xosc). Of particular importance is the setup of the [ROS controller](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ad_demo/config/FollowLeadingVehicle.xosc#L78):
@@ -67,13 +67,13 @@ rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_fil
 ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{scenario: {scenario_file: <full-path-to-.xosc-file>}}"
 ```
 
-__3.__ (Optional) Start the Ego Vehicle
+__3.__ Start the Ego Vehicle to Trigger the Scenario Execution.
 
-_Start the Ego Vehicle by publishing a positive speed value to the `/carla/<ROLE_NAME>/target_speed` topic._
+_Start the Ego Vehicle by publishing a positive speed value to the `/carla/<ROLE_NAME>/target_speed` topic. This will trigger executing the whole scenario._
 
 ```sh
 # ROS 2
-ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: <speed>}" 
+ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 20.0}" 
 ```
 ---
 ## Example of Running a Scenario
@@ -90,7 +90,7 @@ ros2 launch carla_ad_demo carla_ad_demo_with_scenario.launch.py town:=Town04 tar
 
 ```
 
- - The above command will load RVIZ 2 with the `rviz_carla_plugin`. Select the desired Scenario and press the `execute` button. This will setup the scenario of choice. This example assumes `RevealScenario` is selected.
+ - The above command will load RVIZ 2 with the `rviz_carla_plugin`. Select the desired scenario from the `Scenario List` and press the `Load` button. The simulator will Load the selected scenario ready to be executed/started. This example assumes selecting the `RevealScenario` scenario.
  - Set the Ego Vehicle Goal Pose by publishing to `/carla/ego/goal_pose`. 
    ```sh
    ros2 topic pub --once /carla/hero/goal_pose geometry_msgs/msg/PoseStamped  "{pose: {position: {x: 6.0, y: 42.00}, orientation: {z: 0.67, w: 0.74}}}"
@@ -98,12 +98,9 @@ ros2 launch carla_ad_demo carla_ad_demo_with_scenario.launch.py town:=Town04 tar
    
 __3.__ Start the Ego Vehicle
 ```sh
-#NOTE: Load the Approprite map of the desired scenario and set the ego_vehicle initial speed to zero
+#NOTE: This will start moving the ego vehicle, which typically triggers the scenario execution.
 ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 20.0}"
 ```
-
-
-
 ---
 
 ---
