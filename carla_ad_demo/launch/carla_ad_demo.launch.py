@@ -30,7 +30,7 @@ def launch_target_speed_publisher(context, *args, **kwargs):
     return [
         launch.actions.ExecuteProcess(
             output="screen",
-            cmd=["ros2", "topic", "pub", topic_name,
+            cmd=["ros2", "topic", "pub", "--once", topic_name,
                  "std_msgs/msg/Float64", data_string, "--qos-durability", "transient_local"],
             name='topic_pub_target_speed')]
 
@@ -65,12 +65,12 @@ def generate_launch_description():
             default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='spawn_point',
-            default_value='-38.59,-51.58,0,0,0.7,0.7'
+            name='spawn_point', # this acts like the goal_pose (??)
+            default_value='45.0,-209.0,0,0,0,0,1'
         ),
         launch.actions.DeclareLaunchArgument(
             name='target_speed',
-            default_value='8.33' # in m/s (8.3 = 30, 12.5 = 45)
+            default_value='12.5' # in m/s (8.3 = 30, 12.5 = 45, 26.8224 = 60, 40.2336 = 90)
         ),
         launch.actions.DeclareLaunchArgument(
             name='avoid_risk',
