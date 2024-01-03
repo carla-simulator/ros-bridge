@@ -11,7 +11,7 @@ ROS Vehicle Control usable by scenario-runner
 
 import os
 
-from srunner.scenariomanager.actorcontrols.basic_control import BasicControl  # pylint: disable=import-error
+from carla_ros_scenario_runner.basic_control import BasicControl  # pylint: disable=import-error
 
 import carla_common.transforms as trans
 import ros_compatibility as roscomp
