@@ -76,7 +76,7 @@ _Start the Ego Vehicle by publishing a positive speed value to the `/carla/<ROLE
 ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 20.0}" 
 ```
 ---
-## Example of Running a Scenario
+### An Example of Running a Scenario
 
 __1.__ Start CARLA server
 ```sh
