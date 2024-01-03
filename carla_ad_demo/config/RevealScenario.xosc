@@ -181,7 +181,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="60.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="40.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -190,7 +190,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="100.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="85.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -375,7 +375,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="14.72"/> <!-- 14.72 m/s = 53mph -->
+                                                <AbsoluteTargetSpeed value="13.89"/> <!-- 13.89 m/s = 50mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
