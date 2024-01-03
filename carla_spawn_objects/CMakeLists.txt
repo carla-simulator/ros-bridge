@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(carla_spawn_objects)
 
 find_package(ros_environment REQUIRED)
@@ -27,4 +27,16 @@ if(${ROS_VERSION} EQUAL 1)
   install(DIRECTORY config/
           DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
 
+elseif(${ROS_VERSION} EQUAL 2)
+
+  find_package(ament_cmake REQUIRED)
+  find_package(rclpy REQUIRED)
+  ament_export_dependencies(rclpy)
+  
+  install(DIRECTORY config/ DESTINATION share/${PROJECT_NAME}/config)
+  
+  install(DIRECTORY launch/ DESTINATION share/${PROJECT_NAME})
+        
+  ament_package()
+        
 endif()
