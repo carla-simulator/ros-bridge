@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(ros_compatibility)
 
 # Update the policy setting to avoid an error when loading the ament_cmake

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(rqt_carla_control)
 
 find_package(ros_environment REQUIRED)

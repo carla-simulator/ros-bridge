@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(carla_ros_bridge)
 
 find_package(ros_environment REQUIRED)
