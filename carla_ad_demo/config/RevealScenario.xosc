@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="0" date="2023-07-14T12:00:00" description="NIST::RevealScenario" author="GCAPS"/>
+    <ParameterDeclarations/>
+    <CatalogLocations/>
+    <RoadNetwork>
+        <LogicFile filepath="Town04"/>
+        <SceneGraphFile filepath=""/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="hero">
+            <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
+                <BoundingBox>
+                    <Center x="1.5" y="0.0" z="0.9"/>
+                    <Dimensions width="2.1" length="4.5" height="1.8"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.6" trackWidth="1.8" positionX="3.1" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="type" value="ego_vehicle"/>
+                    <Property name="color" value="0,0,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle1">
+            <Vehicle name="vehicle.mini.cooper_s_2021" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="0,0,255"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle2">
+            <Vehicle name="vehicle.nissan.patrol_2021" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="0,255,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle3">
+            <Vehicle name="vehicle.volkswagen.t2" vehicleCategory="van">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="255,0,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle4">
+            <Vehicle name="vehicle.carlamotors.carlacola" vehicleCategory="truck">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="255,0,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle5">
+            <Vehicle name="vehicle.carlamotors.firetruck" vehicleCategory="truck">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="255,0,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Vehicle6">
+            <Vehicle name="vehicle.mercedes.coupe_2020" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="255,0,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <GlobalAction>
+                    <EnvironmentAction>
+                        <Environment name="Environment1">
+                            <TimeOfDay animation="false" dateTime="2023-06-01T12:00:00"/>
+                            <Weather cloudState="free">
+                                <Sun intensity="0.85" azimuth="0.7" elevation="1.31"/>
+                                <Fog visualRange="100000.0"/>
+                                <Precipitation precipitationType="dry" intensity="0.0"/>
+                            </Weather>
+                            <RoadCondition frictionScaleFactor="1.0"/>
+                        </Environment>
+                    </EnvironmentAction>
+                </GlobalAction>
+                <Private entityRef="hero">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="5.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ControllerAction>
+                            <AssignControllerAction>
+                                <Controller name="ego_vehicleController">
+                                <Properties>
+                                    <!--Property name="module" value="external_control"/-->
+                                    <Property name="module" value="carla_ros_scenario_runner.ros_vehicle_control" />
+                                    <Property name="launch" value="carla_ad_agent.launch"/>
+                                    <Property name="launch-package" value="carla_ad_agent"/>
+                                </Properties>
+                                </Controller>
+                            </AssignControllerAction>
+                            <OverrideControllerValueAction>
+                                <Throttle value="0" active="false"/>
+                                <Brake value="0" active="false"/>
+                                <Clutch value="0" active="false"/>
+                                <ParkingBrake value="0" active="false"/>
+                                <SteeringWheel value="0" active="false"/>
+                                <Gear number="0" active="false"/>
+                            </OverrideControllerValueAction>
+                        </ControllerAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1072" laneId="-1" offset="0.0" s="40.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1072" laneId="-1" offset="0.0" s="15.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle3">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="65.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle4">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="95.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle5">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="135.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Vehicle6">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1072" laneId="-2" offset="0.0" s="20.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Reveal">
+            <Act name="Act1">
+                <ManeuverGroup name="Vehicle1_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle1"/>
+                    </Actors>
+                    <Maneuver name="Vehicle1_speed_change1">
+                        <Event name="Vehicle1_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle1_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="80.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle1_StartTime" conditionEdge="none" delay="0">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Vehicle1"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeDistanceCondition entityRef="hero" relativeDistanceType="cartesianDistance" value="110.0" freespace="true" rule="lessThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle2_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle2"/>
+                    </Actors>
+                    <Maneuver name="Vehicle2_speed_change1">
+                        <Event name="Vehicle2_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle2_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="90.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle2_StartTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle3_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle3"/>
+                    </Actors>
+                    <Maneuver name="Vehicle3_speed_change1">
+                        <Event name="Vehicle3_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle3_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="80.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle3_StartTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle4_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle4"/>
+                    </Actors>
+                    <Maneuver name="Vehicle4_speed_change1">
+                        <Event name="Vehicle4_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle4_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="85.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle4_StartTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle5_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle5"/>
+                    </Actors>
+                    <Maneuver name="Vehicle5_speed_change1">
+                        <Event name="Vehicle5_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle5_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="80.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle5_StartTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle6_SetInitSpeed" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle6"/>
+                    </Actors>
+                    <Maneuver name="Vehicle6_speed_change1">
+                        <Event name="Vehicle6_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle6_speed_change1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="60.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle6_StartTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle6_SpeedChange2" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle6"/>
+                    </Actors>
+                    <Maneuver name="Vehicle6_speed_change2">
+                        <Event name="Vehicle6_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle6_speed_change2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="60.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle6_SlowdownTime" conditionEdge="none" delay="0">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Vehicle6"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeDistanceCondition entityRef="Vehicle1" relativeDistanceType="cartesianDistance" value="26.0" freespace="true" rule="greaterThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                        <!--<ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle6_speed_change1" state="endTransition"/>
+                                        </ByValueCondition> -->
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle1_Stop" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle1"/>
+                    </Actors>
+                    <Maneuver name="Vehicle1_speed_change2">
+                        <Event name="Vehicle1_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle1_speed_change2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="0.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle1_StopTime" conditionEdge="none" delay="0">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle6_speed_change2" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle2_EmergencyLaneChange" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle2"/>
+                    </Actors>
+                    <Maneuver name="Vehicle2_lane_change1">
+                        <Event name="Vehicle2_lane_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle2_lane_change1">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="linear" value="15" dynamicsDimension="distance"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane entityRef="vehicle2" value="-1"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle2_LaneChangeTime" conditionEdge="none" delay="0">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Vehicle2"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeDistanceCondition entityRef="Vehicle1" relativeDistanceType="longitudinal" value="15.0" freespace="true" rule="lessThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Vehicle2_SetSpeed1" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Vehicle2"/>
+                    </Actors>
+                    <Maneuver name="Vehicle2_speed_change2">
+                        <Event name="Vehicle2_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="Vehicle2_speed_change2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="40" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="90.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Vehicle2_SpeedChange1Time" conditionEdge="none" delay="30">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle2_lane_change1" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="SimulationStart" conditionEdge="none" delay="0">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="equalTo"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="SimulationEndTime" conditionEdge="none" delay="0">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="30" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
