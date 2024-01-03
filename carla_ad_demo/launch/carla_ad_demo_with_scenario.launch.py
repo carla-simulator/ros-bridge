@@ -4,11 +4,20 @@ import launch
 import launch_ros.actions
 from ament_index_python.packages import get_package_share_directory
 
+# Get the value of the SCENARIO_RUNNER_ROOT environment variable
+scenario_runner_root = os.getenv('SCENARIO_RUNNER_ROOT')
+
 # string with message to publish on topic /carla/available/scenarios
-#ros_topic_msg_string = "{{ 'scenarios': [{{ 'name': 'IntersectionCollisionAvoidance', 'scenario_file': '{}'}}] }}".format(
-#    os.path.join(get_package_share_directory('carla_ad_demo'), 'config/IntersectionCollisionAvoidance.xosc')) 
-ros_topic_msg_string = "{{ 'scenarios': [{{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}] }}".format(
-    os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc'))
+# This topic expects dictionary-like messages
+
+follow_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc')
+reveal_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/RevealScenario.xosc')
+
+ros_topic_msg_string = "{{ 'scenarios': \
+    [\
+        {{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}, \
+        {{ 'name': 'RevealScenario', 'scenario_file': '{}'}}\
+    ] }}".format(follow_scenario_file, reveal_scenario_file)
 
 
 def generate_launch_description():
@@ -39,7 +48,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='scenario_runner_path',
-            default_value=os.environ.get('SCENARIO_RUNNER_ROOT')
+            default_value=scenario_runner_root
         ),
         launch.actions.DeclareLaunchArgument(
             name='role_name',
@@ -66,7 +75,7 @@ def generate_launch_description():
         launch.actions.ExecuteProcess(
             cmd=["ros2", "topic", "pub", "/carla/available_scenarios",
                  "carla_ros_scenario_runner_types/CarlaScenarioList", ros_topic_msg_string],
-            name='topic_pub_vailable_scenarios',
+            name='topic_pub_available_scenarios',
         ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(

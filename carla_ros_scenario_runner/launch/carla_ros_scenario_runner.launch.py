@@ -1,5 +1,9 @@
 import launch
+import os
 import launch_ros.actions
+
+# Get the value of the SCENARIO_RUNNER_ROOT environment variable
+scenario_runner_root = os.getenv('SCENARIO_RUNNER_ROOT')
 
 
 def generate_launch_description():
@@ -17,7 +21,8 @@ def generate_launch_description():
             default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='scenario_runner_path'
+            name='scenario_runner_path',
+            default_value=scenario_runner_root
         ),
         launch.actions.DeclareLaunchArgument(
             name='wait_for_ego',
