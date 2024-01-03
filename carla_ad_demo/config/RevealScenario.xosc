@@ -27,7 +27,7 @@
             </Vehicle>
         </ScenarioObject>
         <ScenarioObject name="LeadCar">
-            <Vehicle name="vehicle.mini.cooper_s_2021" vehicleCategory="car">
+            <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
                 <ParameterDeclarations/>
                 <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
@@ -60,59 +60,8 @@
                 </Properties>
             </Vehicle>
         </ScenarioObject>
-        <ScenarioObject name="AuxTailCar">
-            <Vehicle name="vehicle.carlamotors.firetruck" vehicleCategory="truck">
-                <ParameterDeclarations/>
-                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
-                <BoundingBox>
-                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
-                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
-                </BoundingBox>
-                <Axles>
-                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                </Axles>
-                <Properties>
-                    <Property name="color" value="255,0,0"/>
-                </Properties>
-            </Vehicle>
-        </ScenarioObject>
-        <ScenarioObject name="Vehicle4">
-            <Vehicle name="vehicle.carlamotors.carlacola" vehicleCategory="truck">
-                <ParameterDeclarations/>
-                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
-                <BoundingBox>
-                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
-                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
-                </BoundingBox>
-                <Axles>
-                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                </Axles>
-                <Properties>
-                    <Property name="color" value="255,0,0"/>
-                </Properties>
-            </Vehicle>
-        </ScenarioObject>
-        <ScenarioObject name="Vehicle5">
-            <Vehicle name="vehicle.volkswagen.t2" vehicleCategory="van">
-                <ParameterDeclarations/>
-                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
-                <BoundingBox>
-                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
-                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
-                </BoundingBox>
-                <Axles>
-                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
-                </Axles>
-                <Properties>
-                    <Property name="color" value="255,0,0"/>
-                </Properties>
-            </Vehicle>
-        </ScenarioObject>
         <ScenarioObject name="ParallelCar">
-            <Vehicle name="vehicle.mercedes.coupe_2020" vehicleCategory="car">
+            <Vehicle name="vehicle.mini.cooper_s_2021" vehicleCategory="car">
                 <ParameterDeclarations/>
                 <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
@@ -125,6 +74,40 @@
                 </Axles>
                 <Properties>
                     <Property name="color" value="170,255,0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="AuxMidCar">
+            <Vehicle name="vehicle.mitsubishi.fusorosa" vehicleCategory="bus">
+                <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <!--Property name="color" value="255,0,0"/-->
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="AuxTailCar">
+            <Vehicle name="vehicle.carlamotors.european_hgv" vehicleCategory="truck">
+                <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
+                <BoundingBox>
+                    <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
+                    <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                    <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
+                </Axles>
+                <Properties>
+                    <Property name="color" value="51,113,255"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -149,7 +132,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="0.0"/>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="20.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -189,7 +172,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="105.0"/>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="115.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -198,25 +181,16 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="0.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="40.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Vehicle4">
+                <Private entityRef="AuxMidCar">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="30.0"/>
-                            </Position>
-                        </TeleportAction>
-                    </PrivateAction>
-                </Private>
-                <Private entityRef="Vehicle5">
-                    <PrivateAction>
-                        <TeleportAction>
-                            <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="65.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="80.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -225,7 +199,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="130.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="120.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -329,13 +303,13 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle4_SetInitSpeed" maximumExecutionCount="1">
+                <ManeuverGroup name="AuxMidCar_SetInitSpeed" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle4"/>
+                        <EntityRef entityRef="AuxMidCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle4_speed_change1">
-                        <Event name="Vehicle4_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle4_speed_change1">
+                    <Maneuver name="AuxMidCar_speed_change1">
+                        <Event name="AuxMidCar_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="AuxMidCar_speed_change1">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
@@ -349,37 +323,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle4_StartTime" conditionEdge="none" delay="0">
-                                        <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Vehicle5_SetInitSpeed" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle5"/>
-                    </Actors>
-                    <Maneuver name="Vehicle5_speed_change1">
-                        <Event name="Vehicle5_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle5_speed_change1">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
-                                            <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
-                                            </SpeedActionTarget>
-                                        </SpeedAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="Vehicle5_StartTime" conditionEdge="none" delay="0">
+                                    <Condition name="AuxMidCar_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
                                             <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>

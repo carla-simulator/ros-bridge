@@ -15,8 +15,8 @@ reveal_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo')
 
 ros_topic_msg_string = "{{ 'scenarios': \
     [\
-        {{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}, \
         {{ 'name': 'RevealScenario', 'scenario_file': '{}'}}\
+        {{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}}, \
     ] }}".format(follow_scenario_file, reveal_scenario_file)
 
 

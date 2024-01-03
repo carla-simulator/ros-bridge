@@ -94,14 +94,14 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   mScenarioSelection = new QComboBox();
   carlaRow1Layout->addWidget(mScenarioSelection, 10);
 
-  mTriggerScenarioButton = new QPushButton("Execute");
+  mTriggerScenarioButton = new QPushButton("Load");
   carlaRow1Layout->addWidget(mTriggerScenarioButton);
 
   mIndicatorWidget = new IndicatorWidget();
   carlaRow1Layout->addWidget(mIndicatorWidget);
   connect(mTriggerScenarioButton, SIGNAL(released()), this, SLOT(executeScenario()));
 
-  carlaLayout->addRow("Scenario Execution", carlaRow1Layout);
+  carlaLayout->addRow("Scenario List", carlaRow1Layout);
 
   QHBoxLayout *synchronous_layout = new QHBoxLayout;
   QPixmap pixmap(":/icons/play.png");
