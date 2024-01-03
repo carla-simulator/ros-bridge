@@ -87,7 +87,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         """
         Callback for application logs
         """
-        self.logwarn("[SC]{}".format(log))
+        self.logwarn("[scenario-runner-log]{}".format(log))
 
     def scenario_runner_status_updated(self, status):
         """
