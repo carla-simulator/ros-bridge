@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2023-07-14T12:00:00" description="NIST::RevealScenario" author="GCAPS"/>
+    <FileHeader revMajor="1" revMinor="0" date="2024-01-02T23:33:00" description="NIST::RevealScenario" author="Thoshitha Gamage"/>
     <ParameterDeclarations/>
     <CatalogLocations/>
     <RoadNetwork>
@@ -11,7 +11,7 @@
         <ScenarioObject name="hero">
             <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
                 <ParameterDeclarations/>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="1.5" y="0.0" z="0.9"/>
                     <Dimensions width="2.1" length="4.5" height="1.8"/>
@@ -22,52 +22,52 @@
                 </Axles>
                 <Properties>
                     <Property name="type" value="ego_vehicle"/>
-                    <Property name="color" value="0,0,0"/>
+                    <!--Property name="color" value="0,0,0"/-->
                 </Properties>
             </Vehicle>
         </ScenarioObject>
-        <ScenarioObject name="Vehicle1">
+        <ScenarioObject name="LeadCar">
             <Vehicle name="vehicle.mini.cooper_s_2021" vehicleCategory="car">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="0,0,255"/>
+                    <Property name="color" value="255,255,0"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
-        <ScenarioObject name="Vehicle2">
+        <ScenarioObject name="FollowCar">
             <Vehicle name="vehicle.nissan.patrol_2021" vehicleCategory="car">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="120"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="0,255,0"/>
+                    <!--Property name="color" value="0,255,0"/-->
                 </Properties>
             </Vehicle>
         </ScenarioObject>
-        <ScenarioObject name="Vehicle3">
-            <Vehicle name="vehicle.volkswagen.t2" vehicleCategory="van">
+        <ScenarioObject name="AuxTailCar">
+            <Vehicle name="vehicle.carlamotors.firetruck" vehicleCategory="truck">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
@@ -80,11 +80,11 @@
         <ScenarioObject name="Vehicle4">
             <Vehicle name="vehicle.carlamotors.carlacola" vehicleCategory="truck">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
@@ -95,13 +95,13 @@
             </Vehicle>
         </ScenarioObject>
         <ScenarioObject name="Vehicle5">
-            <Vehicle name="vehicle.carlamotors.firetruck" vehicleCategory="truck">
+            <Vehicle name="vehicle.volkswagen.t2" vehicleCategory="van">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
@@ -111,20 +111,20 @@
                 </Properties>
             </Vehicle>
         </ScenarioObject>
-        <ScenarioObject name="Vehicle6">
+        <ScenarioObject name="ParallelCar">
             <Vehicle name="vehicle.mercedes.coupe_2020" vehicleCategory="car">
                 <ParameterDeclarations/>
+                <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
                     <Center x="-0.00706172" y="5.96046e-08" z="0.727468"/>
                     <Dimensions height="1.45382" length="4.55561" width="1.93778"/>
                 </BoundingBox>
-                <Performance maxAcceleration="15" maxDeceleration="5" maxSpeed="100"/>
                 <Axles>
                     <FrontAxle maxSteering="0.698132" positionX="1.38385" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="255,0,0"/>
+                    <Property name="color" value="170,255,0"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -135,7 +135,7 @@
                 <GlobalAction>
                     <EnvironmentAction>
                         <Environment name="Environment1">
-                            <TimeOfDay animation="false" dateTime="2023-06-01T12:00:00"/>
+                            <TimeOfDay animation="false" dateTime="2024-01-02T23:43:00"/>
                             <Weather cloudState="free">
                                 <Sun intensity="0.85" azimuth="0.7" elevation="1.31"/>
                                 <Fog visualRange="100000.0"/>
@@ -149,7 +149,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="5.0"/>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -176,29 +176,29 @@
                         </ControllerAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Vehicle1">
+                <Private entityRef="LeadCar">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1072" laneId="-1" offset="0.0" s="40.0"/>
+                                <LanePosition roadId="1072" laneId="-1" offset="0.0" s="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Vehicle2">
+                <Private entityRef="FollowCar">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1072" laneId="-1" offset="0.0" s="15.0"/>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="105.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Vehicle3">
+                <Private entityRef="AuxTailCar">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="65.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -207,7 +207,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="95.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="30.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -216,16 +216,16 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="135.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="65.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Vehicle6">
+                <Private entityRef="ParallelCar">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1072" laneId="-2" offset="0.0" s="20.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="130.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -234,19 +234,19 @@
         </Init>
         <Story name="Reveal">
             <Act name="Act1">
-                <ManeuverGroup name="Vehicle1_SetInitSpeed" maximumExecutionCount="1">
+                <ManeuverGroup name="LeadCar_SetInitSpeed" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle1"/>
+                        <EntityRef entityRef="LeadCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle1_speed_change1">
-                        <Event name="Vehicle1_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle1_speed_change1">
+                    <Maneuver name="LeadCar_speed_change1">
+                        <Event name="LeadCar_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="LeadCar_speed_change1">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="80.0"/>
+                                                <AbsoluteTargetSpeed value="19.44"/> <!-- 19.44 m/s = 70mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -254,10 +254,10 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle1_StartTime" conditionEdge="none" delay="0">
+                                    <Condition name="LeadCar_StartTime" conditionEdge="none" delay="0">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Vehicle1"/>
+                                                <EntityRef entityRef="LeadCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
                                                 <RelativeDistanceCondition entityRef="hero" relativeDistanceType="cartesianDistance" value="110.0" freespace="true" rule="lessThan"/>
@@ -269,19 +269,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle2_SetInitSpeed" maximumExecutionCount="1">
+                <ManeuverGroup name="FollowCar_SetInitSpeed" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle2"/>
+                        <EntityRef entityRef="FollowCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle2_speed_change1">
-                        <Event name="Vehicle2_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle2_speed_change1">
+                    <Maneuver name="FollowCar_speed_change1">
+                        <Event name="FollowCar_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="FollowCar_speed_change1">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="90.0"/>
+                                                <AbsoluteTargetSpeed value="19.44"/> <!-- 19.44 m/s = 70mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -289,9 +289,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle2_StartTime" conditionEdge="none" delay="0">
+                                    <Condition name="FollowCar_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -299,19 +299,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle3_SetInitSpeed" maximumExecutionCount="1">
+                <ManeuverGroup name="AuxTailCar_SetInitSpeed" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle3"/>
+                        <EntityRef entityRef="AuxTailCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle3_speed_change1">
-                        <Event name="Vehicle3_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle3_speed_change1">
+                    <Maneuver name="AuxTailCar_speed_change1">
+                        <Event name="AuxTailCar_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="AuxTailCar_speed_change1">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="80.0"/>
+                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -319,9 +319,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle3_StartTime" conditionEdge="none" delay="0">
+                                    <Condition name="AuxTailCar_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -341,7 +341,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="85.0"/>
+                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -351,7 +351,7 @@
                                 <ConditionGroup>
                                     <Condition name="Vehicle4_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -371,7 +371,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="80.0"/>
+                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -381,7 +381,7 @@
                                 <ConditionGroup>
                                     <Condition name="Vehicle5_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -389,19 +389,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle6_SetInitSpeed" maximumExecutionCount="1">
+                <ManeuverGroup name="ParallelCar_SetInitSpeed" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle6"/>
+                        <EntityRef entityRef="ParallelCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle6_speed_change1">
-                        <Event name="Vehicle6_speed_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle6_speed_change1">
+                    <Maneuver name="ParallelCar_speed_change1">
+                        <Event name="ParallelCar_speed_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="ParallelCar_speed_change1">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="60.0"/>
+                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -409,9 +409,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle6_StartTime" conditionEdge="none" delay="0">
+                                    <Condition name="ParallelCar_StartTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle1_speed_change1" state="startTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="LeadCar_speed_change1" state="startTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -419,19 +419,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle6_SpeedChange2" maximumExecutionCount="1">
+                <ManeuverGroup name="ParallelCar_SpeedChange2" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle6"/>
+                        <EntityRef entityRef="ParallelCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle6_speed_change2">
-                        <Event name="Vehicle6_speed_change2" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle6_speed_change2">
+                    <Maneuver name="ParallelCar_speed_change2">
+                        <Event name="ParallelCar_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="ParallelCar_speed_change2">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="60.0"/>
+                                                <AbsoluteTargetSpeed value="15.277"/> <!-- 15.277 m/s = 55mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -439,17 +439,17 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle6_SlowdownTime" conditionEdge="none" delay="0">
+                                    <Condition name="ParallelCar_SlowdownTime" conditionEdge="none" delay="0">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Vehicle6"/>
+                                                <EntityRef entityRef="ParallelCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="Vehicle1" relativeDistanceType="cartesianDistance" value="26.0" freespace="true" rule="greaterThan"/>
+                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="cartesianDistance" value="23.0" freespace="true" rule="greaterThan"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                         <!--<ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle6_speed_change1" state="endTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="ParallelCar_speed_change1" state="endTransition"/>
                                         </ByValueCondition> -->
                                     </Condition>
                                 </ConditionGroup>
@@ -457,19 +457,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle1_Stop" maximumExecutionCount="1">
+                <ManeuverGroup name="LeadCar_Stop" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle1"/>
+                        <EntityRef entityRef="LeadCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle1_speed_change2">
-                        <Event name="Vehicle1_speed_change2" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle1_speed_change2">
+                    <Maneuver name="LeadCar_speed_change2">
+                        <Event name="LeadCar_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="LeadCar_speed_change2">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0.0"/>
+                                                <AbsoluteTargetSpeed value="1.0"/>
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -477,9 +477,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle1_StopTime" conditionEdge="none" delay="0">
+                                    <Condition name="LeadCar_StopTime" conditionEdge="none" delay="0">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle6_speed_change2" state="endTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="ParallelCar_speed_change2" state="endTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -487,19 +487,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle2_EmergencyLaneChange" maximumExecutionCount="1">
+                <ManeuverGroup name="FollowCar_EmergencyLaneChange" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle2"/>
+                        <EntityRef entityRef="FollowCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle2_lane_change1">
-                        <Event name="Vehicle2_lane_change1" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle2_lane_change1">
+                    <Maneuver name="FollowCar_lane_change1">
+                        <Event name="FollowCar_lane_change1" priority="parallel" maximumExecutionCount="1">
+                            <Action name="FollowCar_lane_change1">
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
                                             <LaneChangeActionDynamics dynamicsShape="linear" value="15" dynamicsDimension="distance"/>
                                             <LaneChangeTarget>
-                                                <RelativeTargetLane entityRef="vehicle2" value="-1"/>
+                                                <RelativeTargetLane entityRef="FollowCar" value="-1"/>
                                             </LaneChangeTarget>
                                         </LaneChangeAction>
                                     </LateralAction>
@@ -507,13 +507,13 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle2_LaneChangeTime" conditionEdge="none" delay="0">
+                                    <Condition name="FollowCar_LaneChangeTime" conditionEdge="none" delay="0">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Vehicle2"/>
+                                                <EntityRef entityRef="FollowCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="Vehicle1" relativeDistanceType="longitudinal" value="15.0" freespace="true" rule="lessThan"/>
+                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="longitudinal" value="15.0" freespace="true" rule="lessThan"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
@@ -522,19 +522,19 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup name="Vehicle2_SetSpeed1" maximumExecutionCount="1">
+                <ManeuverGroup name="FollowCar_SetSpeed1" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Vehicle2"/>
+                        <EntityRef entityRef="FollowCar"/>
                     </Actors>
-                    <Maneuver name="Vehicle2_speed_change2">
-                        <Event name="Vehicle2_speed_change2" priority="parallel" maximumExecutionCount="1">
-                            <Action name="Vehicle2_speed_change2">
+                    <Maneuver name="FollowCar_speed_change2">
+                        <Event name="FollowCar_speed_change2" priority="parallel" maximumExecutionCount="1">
+                            <Action name="FollowCar_speed_change2">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="40" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="90.0"/>
+                                                <AbsoluteTargetSpeed value="20.83"/> <!-- 20.83 m/s = 75mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -542,9 +542,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Vehicle2_SpeedChange1Time" conditionEdge="none" delay="30">
+                                    <Condition name="FollowCar_SpeedChange1Time" conditionEdge="none" delay="30">
                                         <ByValueCondition>
-                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="Vehicle2_lane_change1" state="endTransition"/>
+                                            <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="FollowCar_lane_change1" state="endTransition"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -567,7 +567,7 @@
             <ConditionGroup>
                 <Condition name="SimulationEndTime" conditionEdge="none" delay="0">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="30" rule="greaterThan"/>
+                        <SimulationTimeCondition value="20" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

@@ -13,7 +13,7 @@
     <ScenarioObject name="hero">
       <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
         <ParameterDeclarations/>
-        <Performance maxSpeed="30.0" maxAcceleration="200.0" maxDeceleration="200.0"/>
+        <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
         <BoundingBox>
           <Center x="1.5" y="0.0" z="0.9"/>
           <Dimensions width="2.1" length="4.5" height="1.8"/>
