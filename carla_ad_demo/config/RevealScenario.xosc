@@ -132,7 +132,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="20.0"/>
+                                <LanePosition roadId="46" laneId="-1" offset="0.0" s="40.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -181,7 +181,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="40.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="60.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -190,7 +190,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="80.0"/>
+                                <LanePosition roadId="46" laneId="-2" offset="0.0" s="100.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -234,7 +234,7 @@
                                                 <EntityRef entityRef="LeadCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="hero" relativeDistanceType="cartesianDistance" value="110.0" freespace="true" rule="lessThan"/>
+                                                <RelativeDistanceCondition entityRef="hero" relativeDistanceType="cartesianDistance" value="90.0" freespace="true" rule="lessThan"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
@@ -375,7 +375,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="15.277"/> <!-- 15.277 m/s = 55mph -->
+                                                <AbsoluteTargetSpeed value="14.72"/> <!-- 14.72 m/s = 53mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -413,7 +413,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="1.0"/>
+                                                <AbsoluteTargetSpeed value="0.0"/>
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
