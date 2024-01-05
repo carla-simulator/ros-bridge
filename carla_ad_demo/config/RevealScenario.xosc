@@ -120,7 +120,7 @@
                         <Environment name="Environment1">
                             <TimeOfDay animation="false" dateTime="2024-01-02T23:43:00"/>
                             <Weather cloudState="free">
-                                <Sun intensity="0.85" azimuth="0.7" elevation="1.31"/>
+                                <Sun intensity="0.7" azimuth="0.0" elevation="0.5"/>
                                 <Fog visualRange="100000.0"/>
                                 <Precipitation precipitationType="dry" intensity="0.0"/>
                             </Weather>
