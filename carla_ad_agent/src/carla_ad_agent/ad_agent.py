@@ -50,7 +50,7 @@ class CarlaAdAgent(Agent):
         self._objects = {}
         self._lights_status = {}
         self._lights_info = {}
-        self._target_speed = 0.
+        self._target_speed = 0.0
 
         self.speed_command_publisher = self.new_publisher(
             Float64, "/carla/{}/speed_command".format(role_name),
@@ -98,7 +98,9 @@ class CarlaAdAgent(Agent):
 
     def target_speed_cb(self, target_speed_msg):
         with self.data_lock:
-            self._target_speed = target_speed_msg.data * 3.6 # target speed from scenario is in m/s
+            # target speed from scenario is in 
+            # m/s * 3.6 = km/h
+            self._target_speed = target_speed_msg.data * 3.6 
 
     def objects_cb(self, objects_msg):
         objects = {}

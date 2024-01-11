@@ -509,11 +509,9 @@ class HUD(object):
                         pygame.draw.rect(display, (255, 255, 255), rect_border, 1)
                         f = (item[1] - item[2]) / (item[3] - item[2])
                         if item[2] < 0.0:
-                            rect = pygame.Rect((bar_h_offset + int(f * (bar_width - 6)), v_offset + 8),
-                                               (6, 6))
+                            rect = pygame.Rect((bar_h_offset + int(f * (bar_width - 6)), v_offset + 8), (6, 6))
                         else:
-                            rect = pygame.Rect((bar_h_offset, v_offset + 8),
-                                               (int(f * bar_width), 6))
+                            rect = pygame.Rect((bar_h_offset, v_offset + 8), (int(f * bar_width), 6))
                         pygame.draw.rect(display, (255, 255, 255), rect)
                     item = item[0]
                 if item:  # At this point has to be a str.
@@ -579,14 +577,15 @@ class HelpText(object):
     def __init__(self, font, width, height):
         lines = __doc__.split('\n')
         self.font = font
-        self.dim = (680, len(lines) * 22 + 12)
+        self.line_space = 22
+        self.dim = (780, len(lines) * self.line_space + 12)
         self.pos = (0.5 * width - 0.5 * self.dim[0], 0.5 * height - 0.5 * self.dim[1])
         self.seconds_left = 0
         self.surface = pygame.Surface(self.dim)
         self.surface.fill((0, 0, 0, 0))
         for n, line in enumerate(lines):
             text_texture = self.font.render(line, True, (255, 255, 255))
-            self.surface.blit(text_texture, (22, n * 22))
+            self.surface.blit(text_texture, (22, n * self.line_space))
             self._render = False
         self.surface.set_alpha(220)
 
@@ -615,7 +614,8 @@ def main(args=None):
     roscomp.init("manual_control", args=args)
 
     # resolution should be similar to spawned camera with role-name 'view'
-    resolution = {"width": 800, "height": 600}
+    # Refer Spawn Objects
+    resolution = {"width": 1024, "height": 768}
 
     pygame.init()
     pygame.font.init()

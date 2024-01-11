@@ -23,10 +23,8 @@ sudo apt install python-pexpect
 
 ## Using ROS Scenario Runner
 
-The ROS Scenario Runner is best used from within the [`rviz_carla_plugin`](rviz_plugin.md).
+The ROS Scenario Runner is best used from within the [`rviz_carla_plugin`](rviz_plugin.md), which provides functionality to `Load` scenarios that are ready to execute. 
 
-!!! Note
-    It is currently not supported to change the map. Each scenario will need to use the currently active map.
 
 An example scenario is found [here](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ad_demo/config/FollowLeadingVehicle.xosc). Of particular importance is the setup of the [ROS controller](https://github.com/carla-simulator/ros-bridge/blob/master/carla_ad_demo/config/FollowLeadingVehicle.xosc#L78):
 
@@ -49,12 +47,14 @@ The above code example shows an instance of [`carla_ad_agent`](carla_ad_agent.md
 
 __1.__ Run the ROS Scenario Runner package:
 
+_NOTE: Following commands expects the `SCENARIO_RUNNER_ROOT` environment variable point to where [Scenario Runner](https://github.com/carla-simulator/scenario_runner/releases/tag/v0.9.15) is locally installed._ 
+
 ```sh
 # ROS 1
-roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_runner_path:=<path_to_scenario_runner>
+roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch
 
 # ROS 2
-ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py scenario_runner_path:=<path_to_scenario_runner>
+ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py
 ```
 
 __2.__ Run a scenario:
@@ -64,8 +64,44 @@ __2.__ Run a scenario:
 rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
 
 # ROS 2
-ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
+ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{scenario: {scenario_file: <full-path-to-.xosc-file>}}"
 ```
+
+__3.__ Start the Ego Vehicle to Trigger the Scenario Execution.
+
+_Start the Ego Vehicle by publishing a positive speed value to the `/carla/<ROLE_NAME>/target_speed` topic. This will trigger executing the whole scenario._
+
+```sh
+# ROS 2
+ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 20.0}" 
+```
+---
+### An Example of Running a Scenario
+
+__1.__ Start CARLA server
+```sh
+sh $CARLA_ROOT/CarlaUE4.sh -RenderOffScreen
+```
+__2.__ Launch Carla AD Demo
+
+```sh
+#NOTE: Load the Approprite map of the desired scenario and set the ego_vehicle initial speed to zero
+ros2 launch carla_ad_demo carla_ad_demo_with_scenario.launch.py town:=Town04 target_speed:=0.0
+
+```
+
+ - The above command will load RVIZ 2 with the `rviz_carla_plugin`. Select the desired scenario from the `Scenario List` and press the `Load` button. The simulator will Load the selected scenario ready to be executed/started. This example assumes selecting the `RevealScenario` scenario.
+ - Set the Ego Vehicle Goal Pose by publishing to `/carla/ego/goal_pose`. 
+   ```sh
+   ros2 topic pub --once /carla/hero/goal_pose geometry_msgs/msg/PoseStamped  "{pose: {position: {x: 6.0, y: -75.0}, orientation: {z: 0.71, w: 0.7}}}"
+   ```
+   
+__3.__ Start the Ego Vehicle
+```sh
+#NOTE: This will start moving the ego vehicle, which typically triggers the scenario execution.
+ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 20.0}"
+```
+---
 
 ---
 
