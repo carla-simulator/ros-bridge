@@ -58,7 +58,7 @@
                     "points_per_second": 320000,
                     "upper_fov": 2.0,
                     "lower_fov": -26.8,
-                    "rotation_frequency": 20,
+                    "rotation_frequency": 30,
                     "noise_stddev": 0.0
                 },
                 {
@@ -70,7 +70,7 @@
                     "points_per_second": 320000,
                     "upper_fov": 2.0,
                     "lower_fov": -26.8,
-                    "rotation_frequency": 20
+                    "rotation_frequency": 30
                 },
                 {
                     "type": "sensor.other.radar",
@@ -87,7 +87,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "fov": 90.0,
                     "image_size_x": 400,
-                    "image_size_y": 70
+                    "image_size_y": 80
                 },
                 {
                     "type": "sensor.camera.depth",
@@ -95,7 +95,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "fov": 90.0,
                     "image_size_x": 400,
-                    "image_size_y": 70
+                    "image_size_y": 80
                 },
                 {
                     "type": "sensor.camera.dvs",
@@ -103,7 +103,7 @@
                     "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "fov": 90.0,
                     "image_size_x": 400,
-                    "image_size_y": 70,
+                    "image_size_y": 80,
                     "positive_threshold": 0.3,
                     "negative_threshold": 0.3,
                     "sigma_positive_threshold": 0.0,
