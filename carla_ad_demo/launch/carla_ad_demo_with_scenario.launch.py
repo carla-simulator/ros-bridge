@@ -7,9 +7,19 @@ from ament_index_python.packages import get_package_share_directory
 # Get the value of the SCENARIO_RUNNER_ROOT environment variable
 scenario_runner_root = os.getenv('SCENARIO_RUNNER_ROOT')
 
+# Default Goal Pose for the Ego Vehicle (Town04). Stored as Dictionary
+default_goal_pose = {
+    'px': float('6.0'),
+    'py': float('-75.0'),
+    'pz': float('0'),
+    'ox': float('0'),
+    'oy': float('0'),
+    'oz': float('0.71'),
+    'ow': float('0.7'),
+}
+
 # string with message to publish on topic /carla/available/scenarios
 # This topic expects dictionary-like messages
-
 follow_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc')
 reveal_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/RevealScenario.xosc')
 
@@ -53,6 +63,10 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='role_name',
             default_value='hero'
+        ),
+        launch.actions.DeclareLaunchArgument(
+            name='goal_pose',
+            default_value=default_goal_pose
         ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
@@ -140,7 +154,24 @@ def generate_launch_description():
             arguments=[
                 '-d', os.path.join(get_package_share_directory('carla_ad_demo'), 'config/carla_ad_demo_ros2.rviz')],
             on_exit=launch.actions.Shutdown()
-        )
+        ),
+        launch.actions.ExecuteProcess(
+            cmd=[
+                "ros2", "topic", "pub", "--once", "/carla/hero/goal_pose", "geometry_msgs/msg/PoseStamped", 
+                '{{ "pose": {{ \
+                    "position": {{"x": {px}, "y": {py}, "z": {pz}}}, \
+                    "orientation": {{"x": {ox}, "y": {oy}, "z": {oz}, "w": {ow}\
+                }}}}}}'.format(
+                    px=default_goal_pose['px'],
+                    py=default_goal_pose['py'],
+                    pz=default_goal_pose['pz'],
+                    ox=default_goal_pose['ox'],
+                    oy=default_goal_pose['oy'],
+                    oz=default_goal_pose['oz'],
+                    ow=default_goal_pose['ow'])
+            ],
+            name='execute_topic_pub_goal_pose',
+        ),
     ])
     return ld
 
