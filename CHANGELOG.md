@@ -1,5 +1,15 @@
 ## Latest
 
+## CARLA-ROS-Bridge 0.9.15
+
+*   Removed ROS 1 Support. Only intended to work with ROS 2 Humble (and beyond)
+*   Upgraded CMake Version
+*   Upgrade C++ Version to 17
+*   Fixed SCENARIO_RUNNER Path
+*   Fixed RVIZ2 CARLA Control Plugin Compilation Error
+*   Fixed Waypoint Publisher topic mismatches. The Ego Vehicle now able to exhibit Agent Behavior given `init_pose` and `goal_pose`
+*   Fixed Ego Vehicle role name inconsistency. Now follows CARLA v0.9.15 standard. Ego Vehicle's role name is `hero`.
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy
