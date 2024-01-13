@@ -14,7 +14,7 @@ def generate_launch_description():
                 'carla_spawn_objects'), 'config', 'objects.json')
         ),
         launch.actions.DeclareLaunchArgument(
-            name='spawn_point_ego_vehicle',
+            name='spawn_point_hero',
             default_value='None'
         ),
         launch.actions.DeclareLaunchArgument(
@@ -33,7 +33,7 @@ def generate_launch_description():
                     'objects_definition_file': launch.substitutions.LaunchConfiguration('objects_definition_file')
                 },
                 {
-                    'spawn_point_ego_vehicle': launch.substitutions.LaunchConfiguration('spawn_point_ego_vehicle')
+                    'spawn_point_hero': launch.substitutions.LaunchConfiguration('spawn_point_hero')
                 },
                 {
                     'spawn_sensors_only': launch.substitutions.LaunchConfiguration('spawn_sensors_only')

@@ -28,17 +28,7 @@
   <exec_depend condition="$ROS_VERSION == 2">tf2_ros</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
-  <!-- ROS 1 DEPENDENCIES-->
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  <build_depend condition="$ROS_VERSION == 1">roslaunch</build_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rospy</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">tf</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">tf2</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rosbag_storage</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
-
   <export>
-    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
     <build_type condition="$ROS_VERSION == 2">ament_python</build_type>
   </export>
 </package>

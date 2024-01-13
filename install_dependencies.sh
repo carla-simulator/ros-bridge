@@ -9,15 +9,7 @@ fi
 ROS_DISTRO=humble
 echo ${ROS_DISTRO}
 
-if [ "${ROS_VERSION}" = "1" ]; then
-    ADDITIONAL_PACKAGES="ros-${ROS_DISTRO}-rviz
-                         ros-${ROS_DISTRO}-opencv-apps
-                         ros-${ROS_DISTRO}-rospy
-                         ros-${ROS_DISTRO}-rospy-message-converter
-                         ros-${ROS_DISTRO}-pcl-ros"
-else
-    ADDITIONAL_PACKAGES="ros-${ROS_DISTRO}-rviz2"    
-fi
+ADDITIONAL_PACKAGES="ros-${ROS_DISTRO}-rviz2"    
 
 if [ "$(lsb_release -sc)" = "focal" ]; then
     ADDITIONAL_PACKAGES="$ADDITIONAL_PACKAGES

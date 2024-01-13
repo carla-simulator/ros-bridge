@@ -15,14 +15,13 @@ The ROS bridge boasts the following features:
 
 ## Get started
 
-- [__Installing ROS bridge for ROS 1__](ros_installation_ros1.md)
 - [__Installing ROS bridge for ROS 2__](ros_installation_ros2.md)
 
 ---
 
 ## Learn about the main ROS bridge package
 
-- [__CARLA ROS bridge__](run_ros.md) - The main package required to run the ROS bridge
+- [__CARLA ROS bridge__](run_ros_bridge.md) - The main package required to run the ROS bridge
 - [__ROS Compatiblity Node__](ros_compatibility.md) - The interface that allows the same API to call either ROS 1 or ROS 2 functions
 
 ---

@@ -1,3 +1,3 @@
 # ROS Scenario Runner
 
-Find documentation about the ROS Scenario Runner package [__here__](https://carla.readthedocs.io/projects/ros-bridge/en/latest/carla_ros_scenario_runner/).
+This is a heavily modified version of the ROS Scenario Runner package. This modifed version __*ONLY*__ supports ROS 2 Humble (and above). The documentation for the original version can be found[__here__](https://carla.readthedocs.io/projects/ros-bridge/en/latest/carla_ros_scenario_runner/).

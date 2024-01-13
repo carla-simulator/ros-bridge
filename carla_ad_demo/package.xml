@@ -15,20 +15,11 @@
   <exec_depend>rviz_carla_plugin</exec_depend>
   <exec_depend>carla_twist_to_control</exec_depend>
   <exec_depend>carla_ros_scenario_runner</exec_depend>
-  
 
-  <!-- ROS 2 DEPENDENCIES-->
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
-
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_python</buildtool_depend>
   <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
 
-  <!-- ROS 1 DEPENDENCIES-->
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rviz</exec_depend>
-  <exec_depend condition="$ROS_VERSION == 1">rostopic</exec_depend>
-
   <export>
-    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
     <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>

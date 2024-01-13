@@ -3,8 +3,6 @@
 The `carla_ros_bridge` package is the main package needed to run the basic ROS bridge functionality. In this section you will learn how to prepare the ROS environment, run the ROS bridge, how to configure the settings, usage of synchronous mode, controlling the ego vehicle and a summary of the subscriptions, publications and services available.
 
 - [__Setting the ROS environment__](#setting-the-ros-environment)
-    - [Prepare ROS 1 environment](#prepare-ros-1-environment)
-    - [Prepare ROS 2 environment](#prepare-ros-2-environment)
 - [__Running the ROS bridge__](#running-the-ros-bridge)
 - [__Configuring CARLA settings__](#configuring-carla-settings)
 - [__Using the ROS bridge in synchronous mode__](#using-the-ros-bridge-in-synchronous-mode)
@@ -17,24 +15,12 @@ The `carla_ros_bridge` package is the main package needed to run the basic ROS b
 
 ## Setting the ROS environment
 
-The ROS bridge supports both ROS 1 and ROS 2 using separate implementations with a common interface. When you want to run the ROS bridge you will have to set your ROS environment according to your ROS version in every terminal that you use:
-
-#### Prepare ROS 1 environment:
-
-The command to run depends on whether you installed the ROS bridge via the Debian package or via the source build. You will also need to change the ROS version in the path for the Debian option:
-
-```sh
-    # For debian installation of ROS bridge. Change the command according to your installed version of ROS.
-    source /opt/carla-ros-bridge/{melodic/noetic}/setup.{bash|zsh}
-
-    # For GitHub repository installation of ROS bridge
-    source ~/carla-ros-bridge/catkin_ws/devel/setup.{bash|zsh}
-```
+This modified version of the ROS Bridge __*only*__ supports ROS2. When you want to run the ROS bridge you will have to set your ROS environment according to your ROS version in every terminal that you use (or set it in your `{.zshrc|.bashrc}` file):
 
 #### Prepare ROS 2 environment:
 
 ```sh
-    source ./install/setup.{bash|zsh}
+    source ./install/setup.{zsh|bash}
 ```
 
 ## Running the ROS bridge
@@ -42,16 +28,13 @@ The command to run depends on whether you installed the ROS bridge via the Debia
 Once you have set your ROS environment and have a CARLA server running, you will need to start the `carla_ros_bridge` package before being able to use any of the other packages. To do that, run the following command:
 
 ```sh
-    # ROS 1
-    roslaunch carla_ros_bridge carla_ros_bridge.launch
-
     # ROS 2
     ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
 ```
 
 There are other launchfiles that combine the above functionality of starting the ROS bridge at the same time as starting other packges or plugins:
 
-- `carla_ros_bridge_with_example_ego_vehicle.launch` (ROS 1) and `carla_ros_bridge_with_example_ego_vehicle.launch.py` (ROS 2) start the ROS bridge along with the [`carla_spawn_objects`](carla_spawn_objects.md) and [`carla_manual_control`](carla_manual_control.md) packages.
+- `carla_ros_bridge_with_example_ego_vehicle.launch.py` start the ROS bridge along with the [`carla_spawn_objects`](carla_spawn_objects.md) and [`carla_manual_control`](carla_manual_control.md) packages.
 ---
 
 ## Configuring CARLA settings
@@ -114,9 +97,6 @@ To test steering from the command line:
 __1.__ Launch the ROS Bridge with an ego vehicle:
 
 ```sh
-    # ROS 1
-    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
-
     # ROS 2
     ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py
 ```
@@ -124,12 +104,8 @@ __1.__ Launch the ROS Bridge with an ego vehicle:
 __2.__ In another terminal, publish to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`
 
 ```sh
-    # Max forward throttle with max steering to the right
+    # Max forward throttle with max steering to the right. ROS 2
 
-    # for ros1
-    rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
-
-    # for ros2
     ros2 topic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 ```

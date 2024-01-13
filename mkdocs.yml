@@ -8,9 +8,8 @@ extra_css: [extra.css]
 nav:
 - Home: 'index.md'
 - Getting started:
-  - Install ROS Bridge for ROS 1: 'ros_installation_ros1.md'
   - Install ROS Bridge for ROS 2: 'ros_installation_ros2.md'
-  - The ROS bridge package: 'run_ros.md'
+  - The ROS bridge package: 'run_ros_bridge.md'
   - ROS Compatiblity Node: 'ros_compatibility.md'
 - ROS Bridge Packages:
   - CARLA Spawn Objects: 'carla_spawn_objects.md'

@@ -20,14 +20,12 @@ default_goal_pose = {
 
 # string with message to publish on topic /carla/available/scenarios
 # This topic expects dictionary-like messages
-follow_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/FollowLeadingVehicle.xosc')
 reveal_scenario_file = os.path.join(get_package_share_directory('carla_ad_demo'), 'config/RevealScenario.xosc')
 
 ros_topic_msg_string = "{{ 'scenarios': \
     [\
-         {{ 'name': 'RevealScenario', 'scenario_file': '{}'}},\
-         {{ 'name': 'FollowLeadingVehicle', 'scenario_file': '{}'}} \
-    ] }}".format(reveal_scenario_file, follow_scenario_file)
+         {{ 'name': 'RevealScenario', 'scenario_file': '{}'}}\
+    ] }}".format(reveal_scenario_file)
 
 
 def generate_launch_description():
@@ -42,11 +40,11 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value='Town10HD'
+            default_value='Town04'
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='30'
+            default_value='15'
         ),
         launch.actions.DeclareLaunchArgument(
             name='synchronous_mode_wait_for_vehicle_control_command',

@@ -16,8 +16,8 @@ def generate_launch_description():
             default_value='hero'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='spawn_point_ego_vehicle',
-            default_value='None'
+            name='spawn_point_hero',
+            default_value='5.09,-240.45,0,0,0,0.67,0.74'
         ),
         launch.actions.DeclareLaunchArgument(
             name='spawn_sensors_only',
@@ -34,7 +34,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 'objects_definition_file': launch.substitutions.LaunchConfiguration('objects_definition_file'),
-                'spawn_point_ego_vehicle': launch.substitutions.LaunchConfiguration('spawn_point_ego_vehicle'),
+                'spawn_point_hero': launch.substitutions.LaunchConfiguration('spawn_point_hero'),
                 'spawn_sensors_only': launch.substitutions.LaunchConfiguration('spawn_sensors_only')
             }.items()
         ),

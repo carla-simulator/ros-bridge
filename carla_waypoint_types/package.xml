@@ -7,16 +7,13 @@
   <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
 
-  <build_depend condition="$ROS_VERSION == 1">message_generation</build_depend>
   <build_depend condition="$ROS_VERSION == 2">rosidl_default_generators</build_depend>
   <build_depend>ros_environment</build_depend>
 
   <depend>nav_msgs</depend>
 
-  <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
   <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
 
   <test_depend condition="$ROS_VERSION == 2">ament_lint_auto</test_depend>
@@ -25,7 +22,6 @@
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
-    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
     <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>

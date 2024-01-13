@@ -16,7 +16,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='30',
+            default_value='15',
             description='Time to wait for a successful connection to the CARLA server'
         ),
         launch.actions.DeclareLaunchArgument(
@@ -41,8 +41,12 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='town',
-            default_value='Town10HD',
+            default_value='Town04',
             description='Either use an available CARLA town (eg. "Town01") or an OpenDRIVE file (ending in .xodr)'
+        ),
+        launch.actions.DeclareLaunchArgument(
+            name='spawn_point',
+            default_value='5.09,-240.45,0,0,0,0.67,0.74'
         ),
         launch.actions.DeclareLaunchArgument(
             name='register_all_sensors',
