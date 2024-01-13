@@ -44,9 +44,9 @@ You will need to fulfill the following software requirements before using the RO
 __1.__ Set up the project directory and clone the ROS bridge repository and submodules:
 
 ```sh
-    mkdir -p ~Workspace/carla-ros-bridge && cd ~/carla-ros-bridge
-    git clone --recurse-submodules https://github.com/ttgamage/carla-ros-bridge
-    mv carla-ros-bridge src
+    mkdir -p ~Workspace/ros-bridge && cd ~/ros-bridge
+    git clone --recurse-submodules https://github.com/ttgamage/ros-bridge
+    mv ros-bridge src
 ```
 
 __2.__ Set up the ROS environment and install dependencies:
@@ -77,7 +77,7 @@ __1.__ Start a CARLA server according to the installation method used to install
 __2.__ Add the source path for the ROS bridge workspace:
 
 ```sh
-    cd ~/Workspace/carla-ros-bridge
+    cd ~/Workspace/ros-bridge
     source ./install/setup.{zsh|bash}
 ```
 
