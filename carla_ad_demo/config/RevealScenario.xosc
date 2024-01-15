@@ -39,7 +39,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="255,255,0"/>
+                    <Property name="color" value="204,0,0"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>

@@ -30,7 +30,6 @@ The ROS bridge boasts the following features:
 
 - [__CARLA Spawn Objects__](carla_spawn_objects.md) - Provides a generic way to spawn actors
 - [__CARLA Manual Control__](carla_manual_control.md)- A ROS-based visualization and control tool for an ego vehicle (similar to `carla_manual_control.py` provided by CARLA)
-- [__CARLA Ackerman Control__](carla_ackermann_control.md) - A controller to convert ackermann commands to steer/throttle/brake
 - [__CARLA Waypoint Publisher__](carla_waypoint.md) - Publish and query CARLA waypoints
 - [__CARLA AD Agent__](carla_ad_agent.md) - An example agent that follows a route, avoids collisions and respects traffic lights
 - [__CARLA AD Demo__](carla_ad_demo.md) - An example package that provides everything needed to launch a CARLA ROS environment with an AD vehicle
@@ -38,8 +37,6 @@ The ROS bridge boasts the following features:
 - [__CARLA Twist to Control__](carla_twist_to_control.md) - Convert twist controls to CARLA vehicle controls
 - [__RVIZ plugin__](rviz_plugin.md) - An RVIZ plugin to visualize/control CARLA
 - [__RQT Plugin__](rqt_plugin.md) - A RQT plugin to control CARLA
-- [__PCL Recorder__](pcl_recorder.md) - Create point cloud maps from data captured from simulations
-
 ---
 
 ## Explore the reference material
