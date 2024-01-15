@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(carla_ad_demo)
+project(carla_abf_demo)
 
 find_package(ros_environment REQUIRED)
 set(ROS_VERSION $ENV{ROS_VERSION})

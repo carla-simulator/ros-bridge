@@ -32,7 +32,7 @@ The ROS bridge boasts the following features:
 - [__CARLA Manual Control__](carla_manual_control.md)- A ROS-based visualization and control tool for an ego vehicle (similar to `carla_manual_control.py` provided by CARLA)
 - [__CARLA Waypoint Publisher__](carla_waypoint.md) - Publish and query CARLA waypoints
 - [__CARLA AD Agent__](carla_ad_agent.md) - An example agent that follows a route, avoids collisions and respects traffic lights
-- [__CARLA AD Demo__](carla_ad_demo.md) - An example package that provides everything needed to launch a CARLA ROS environment with an AD vehicle
+- [__CARLA Automated Breaking Feature Demo__](carla_nist_abf_demo.md) - Automated Breaking Feature Demonstration
 - [__CARLA ROS Scenario Runner__](carla_ros_scenario_runner.md) - A wrapper to execute OpenScenarios with the CARLA Scenario Runner via ROS
 - [__CARLA Twist to Control__](carla_twist_to_control.md) - Convert twist controls to CARLA vehicle controls
 - [__RVIZ plugin__](rviz_plugin.md) - An RVIZ plugin to visualize/control CARLA

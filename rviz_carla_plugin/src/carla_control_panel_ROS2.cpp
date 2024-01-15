@@ -43,6 +43,7 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   QVBoxLayout *layout = new QVBoxLayout;
   QHBoxLayout *vehicleLayout = new QHBoxLayout;
 
+  // Vehicle Control Status
   QFormLayout *egoCtrlStatusLayout = new QFormLayout;
 
   mThrottleBar = new QProgressBar();
@@ -56,22 +57,34 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   egoCtrlStatusLayout->addRow("Steer", mSteerBar);
   vehicleLayout->addLayout(egoCtrlStatusLayout);
 
+  // Vehicle Status
   QFormLayout *egoStatusLayout = new QFormLayout;
-  mSpeedLabel = new QLineEdit();
-  mSpeedLabel->setDisabled(true);
-  egoStatusLayout->addRow("Speed", mSpeedLabel);
+  //Position
+  mPosLabel = new QLineEdit();
+  mPosLabel->setDisabled(true);
+  //mPosLabel->setFixedWidth(160);
+  egoStatusLayout->addRow("Position", mPosLabel);
 
+  //Heading
   mHeadingLabel = new QLineEdit();
   mHeadingLabel->setDisabled(true);
   egoStatusLayout->addRow("Heading", mHeadingLabel);
 
+  //Speed
+  mSpeedLabel = new QLineEdit();
+  mSpeedLabel->setDisabled(true);
+  egoStatusLayout->addRow("Speed", mSpeedLabel);
+
   vehicleLayout->addLayout(egoStatusLayout);
 
+  /*
   QFormLayout *egoPositionLayout = new QFormLayout;
   mPosLabel = new QLineEdit();
   mPosLabel->setDisabled(true);
+  mPosLabel->setFixedWidth(160);
   egoPositionLayout->addRow("Position", mPosLabel);
   layout->addLayout(egoPositionLayout);
+  */
  
   QVBoxLayout *egoCtrlLayout = new QVBoxLayout;
   mOverrideVehicleControl = new QCheckBox("Manual control");
@@ -88,10 +101,11 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
 
   QFormLayout *carlaLayout = new QFormLayout;
 
-  // row1
+  // Scenario Runner Buttons
   QHBoxLayout *carlaRow1Layout = new QHBoxLayout;
 
   mScenarioSelection = new QComboBox();
+  mScenarioSelection->setFixedWidth(160);
   carlaRow1Layout->addWidget(mScenarioSelection, 10);
 
   mTriggerScenarioButton = new QPushButton("Load");
@@ -229,7 +243,7 @@ void CarlaControlPanel::executeScenario()
       request->scenario = scenario;
       // Check if service is available
       if (!mExecuteScenarioClient->wait_for_service(std::chrono::seconds(1))) {
-        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Failed to call service executeScenario1");
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Failed to call service executeScenario");
         mIndicatorWidget->setState(IndicatorWidget::State::Error);
       }
       auto result = mExecuteScenarioClient->async_send_request(request);
@@ -260,14 +274,17 @@ void CarlaControlPanel::scenarioRunnerStatusChanged(
   if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::STOPPED)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Stopped);
+    mTriggerScenarioButton->setText("Load");
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::STARTING)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Starting);
+    mTriggerScenarioButton->setText("Starting");
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::RUNNING)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Running);
+    mTriggerScenarioButton->setText("Reload");
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::SHUTTINGDOWN)
   {
@@ -276,12 +293,13 @@ void CarlaControlPanel::scenarioRunnerStatusChanged(
   else
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Error);
+    mTriggerScenarioButton->setText("Error");
   }
 }
 
 void CarlaControlPanel::setScenarioRunnerStatus(bool active)
 {
-  mScenarioSelection->setEnabled(active);
+  //mScenarioSelection->setEnabled(active); // Uncomment if the Dropdown Menu needs to be Active
   mTriggerScenarioButton->setEnabled(active);
   mIndicatorWidget->setEnabled(active);
 }

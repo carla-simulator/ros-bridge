@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>carla_ad_demo</name>
+  <name>carla_abf_demo</name>
   <version>0.0.1</version>
-  <description>The carla_ad_demo package</description>
-  <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
+  <description>The carla_abf_demo package</description>
+  <maintainer email="ttgamage@siue.edu"> Thoshitha Gamage</maintainer>
   <license>MIT</license>
 
   

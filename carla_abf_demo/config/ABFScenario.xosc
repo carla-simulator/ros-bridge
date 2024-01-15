@@ -285,7 +285,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="5" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="16.667"/> <!-- 16.667 m/s = 60mph -->
+                                                <AbsoluteTargetSpeed value="19.44"/> <!-- 19.44 m/s = 70mph -->
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
