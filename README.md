@@ -25,7 +25,7 @@ mv carla-ros-bridge src
 ```
 2. Set up ROS environment and install dependencies:
 ```
-source /opt/ros/humble/setup.bash
+source /opt/ros/humble/setup.{zsh|bash}
 rosdep update
 rosdep install --from-paths src --ignore-src -r
 ```
