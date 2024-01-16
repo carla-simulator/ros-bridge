@@ -19,7 +19,7 @@ The [Automatic Breaking Feature Demo](https://github.com/ttgamage/carla-ros-brid
 
 ## Run the demo
 
-You will require 2 Linux Terminals to Run this demo
+You will require 3 Linux Terminals to Run this demo
 
 1. Terminal 01: Start CARLA Server
   ```sh
