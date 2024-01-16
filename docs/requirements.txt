@@ -1,9 +1,1 @@
-pep8
-autopep8
-cmake_format==0.6.11
-pylint
-transforms3d
-pygame
-pexpect
-simple-pid
-networkx
+mkdocs == 1.1
