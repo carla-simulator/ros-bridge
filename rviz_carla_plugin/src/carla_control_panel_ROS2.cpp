@@ -100,7 +100,7 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   scenarioCtrlLayout->addRow("Scenario List", scenarioListLine);
 
   QHBoxLayout *targetSpeedLine = new QHBoxLayout;
-  mTargetSpeedVal = new QLineEdit();
+  mTargetSpeedVal = new QLineEdit("0.0");
   mTargetSpeedVal->setEnabled(true);
   mTargetSpeedVal->setFixedWidth(160);
 
@@ -464,21 +464,25 @@ void CarlaControlPanel::sendVel()
 
 void CarlaControlPanel::setTargetSpeed()
 {
-  bool convertible;
+  bool isNumeric;
   QString text = mTargetSpeedVal->text();
-  float targetSpeed = text.toFloat(&convertible);  
+  text.toFloat(&isNumeric);
 
-  if (convertible)
-  {
-    // Publish the target speed to the topic
-    std_msgs::msg::Float64 targetSpeedMsg;
-    targetSpeedMsg.data = targetSpeed;
-    mTargetSpeedPublisher->publish(targetSpeedMsg);
-  }
-    
+  //If not a number, set it to zero
+  if (!isNumeric)
+    text = "0.0";
   
-  
+  QString formattedText = QString("%1").arg(text.toFloat(), 0, 'f', 1);
 
+  // Set the formatted text back to mTargetSpeedVal
+  mTargetSpeedVal->setText(formattedText);
+
+  float targetSpeed = formattedText.toFloat();
+  
+  // Publish the target speed to the topic
+  std_msgs::msg::Float64 targetSpeedMsg;
+  targetSpeedMsg.data = targetSpeed;
+  mTargetSpeedPublisher->publish(targetSpeedMsg);
 }
 
 } // end namespace rviz_carla_plugin
