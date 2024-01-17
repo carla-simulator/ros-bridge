@@ -16,6 +16,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <rviz_common/panel.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <carla_ros_scenario_runner_types/srv/execute_scenario.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -27,6 +28,8 @@ class QPushButton;
 class QProgressBar;
 class QCheckBox;
 class QComboBox;
+class QPushButton;
+class QDebug;
 
 namespace rviz {
 class ViewController;
@@ -58,6 +61,8 @@ protected Q_SLOTS:
   void updateCameraPos();
   void currentViewControllerChanged();
 
+  void setTargetSpeed();
+
 protected:
   virtual void cameraPreRenderScene(Ogre::Camera *cam) override;
 
@@ -78,12 +83,14 @@ protected:
   QPushButton *mTriggerScenarioButton;
   QPushButton *mPlayPauseButton;
   QPushButton *mStepOnceButton;
+  QPushButton *mSetTargetSpeedButton;
   QProgressBar *mThrottleBar;
   QProgressBar *mBrakeBar;
   QProgressBar *mSteerBar;
   QLineEdit *mPosLabel;
   QLineEdit *mSpeedLabel;
   QLineEdit *mHeadingLabel;
+  QLineEdit *mTargetSpeedVal;
   QCheckBox *mOverrideVehicleControl;
   QComboBox *mScenarioSelection;
   IndicatorWidget *mIndicatorWidget;
@@ -97,6 +104,7 @@ protected:
   rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>::SharedPtr mScenarioSubscriber;
   rclcpp::Subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus>::SharedPtr mScenarioRunnerStatusSubscriber;
   rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr mCameraPosePublisher;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr mTargetSpeedPublisher;
 
   carla_ros_scenario_runner_types::msg::CarlaScenarioList::SharedPtr mCarlaScenarios;
 

@@ -41,11 +41,11 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   : rviz_common::Panel(parent)
 {
   QVBoxLayout *layout = new QVBoxLayout;
-  QHBoxLayout *vehicleLayout = new QHBoxLayout;
+  QHBoxLayout *vehicleStatusLayout = new QHBoxLayout;
+  QHBoxLayout *scenarioRunnerLayout = new QHBoxLayout;
 
-  // Vehicle Control Status
+  // Throttle, Brake, and Steer Info
   QFormLayout *egoCtrlStatusLayout = new QFormLayout;
-
   mThrottleBar = new QProgressBar();
   mThrottleBar->setRange(0, 100);
   egoCtrlStatusLayout->addRow("Throttle", mThrottleBar);
@@ -55,84 +55,81 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   mSteerBar = new QProgressBar();
   mSteerBar->setRange(-100, 100);
   egoCtrlStatusLayout->addRow("Steer", mSteerBar);
-  vehicleLayout->addLayout(egoCtrlStatusLayout);
+  vehicleStatusLayout->addLayout(egoCtrlStatusLayout);
 
-  // Vehicle Status
-  QFormLayout *egoStatusLayout = new QFormLayout;
-  //Position
-  mPosLabel = new QLineEdit();
+  // Position, Heading, and Speed Info
+  QFormLayout *egoInfoStatusLayout = new QFormLayout;
+  mPosLabel = new QLineEdit();   //Position
   mPosLabel->setDisabled(true);
   //mPosLabel->setFixedWidth(160);
-  egoStatusLayout->addRow("Position", mPosLabel);
-
-  //Heading
-  mHeadingLabel = new QLineEdit();
+  egoInfoStatusLayout->addRow("Position", mPosLabel);
+  mHeadingLabel = new QLineEdit(); //Heading
   mHeadingLabel->setDisabled(true);
-  egoStatusLayout->addRow("Heading", mHeadingLabel);
-
-  //Speed
-  mSpeedLabel = new QLineEdit();
+  egoInfoStatusLayout->addRow("Heading", mHeadingLabel);
+  mSpeedLabel = new QLineEdit(); //Speed
   mSpeedLabel->setDisabled(true);
-  egoStatusLayout->addRow("Speed", mSpeedLabel);
+  egoInfoStatusLayout->addRow("Speed", mSpeedLabel);
+  vehicleStatusLayout->addLayout(egoInfoStatusLayout);
 
-  vehicleLayout->addLayout(egoStatusLayout);
-
-  /*
-  QFormLayout *egoPositionLayout = new QFormLayout;
-  mPosLabel = new QLineEdit();
-  mPosLabel->setDisabled(true);
-  mPosLabel->setFixedWidth(160);
-  egoPositionLayout->addRow("Position", mPosLabel);
-  layout->addLayout(egoPositionLayout);
-  */
- 
-  QVBoxLayout *egoCtrlLayout = new QVBoxLayout;
+  // Manual Control Widget
+  QVBoxLayout *egoManualCtrlLayout = new QVBoxLayout;
   mOverrideVehicleControl = new QCheckBox("Manual control");
   mOverrideVehicleControl->setDisabled(true);
-  egoCtrlLayout->addWidget(mOverrideVehicleControl);
+  egoManualCtrlLayout->addWidget(mOverrideVehicleControl);
   mDriveWidget = new DriveWidget;
   mDriveWidget->setDisabled(true);
-  egoCtrlLayout->addWidget(mDriveWidget);
+  egoManualCtrlLayout->addWidget(mDriveWidget);
   connect(mOverrideVehicleControl, SIGNAL(stateChanged(int)), this, SLOT(overrideVehicleControl(int)));
+  vehicleStatusLayout->addLayout(egoManualCtrlLayout); 
 
-  vehicleLayout->addLayout(egoCtrlLayout);
+  layout->addLayout(vehicleStatusLayout);
 
-  layout->addLayout(vehicleLayout);
+  // Scenario Control Status
+  QFormLayout *scenarioCtrlLayout = new QFormLayout;
 
-  QFormLayout *carlaLayout = new QFormLayout;
-
-  // Scenario Runner Buttons
-  QHBoxLayout *carlaRow1Layout = new QHBoxLayout;
-
+  QHBoxLayout *scenarioListLine = new QHBoxLayout;
   mScenarioSelection = new QComboBox();
   mScenarioSelection->setFixedWidth(160);
-  carlaRow1Layout->addWidget(mScenarioSelection, 10);
-
+  scenarioListLine->addWidget(mScenarioSelection);
   mTriggerScenarioButton = new QPushButton("Load");
-  carlaRow1Layout->addWidget(mTriggerScenarioButton);
-
+  mTriggerScenarioButton->setFixedWidth(96);
+  scenarioListLine->addWidget(mTriggerScenarioButton);
   mIndicatorWidget = new IndicatorWidget();
-  carlaRow1Layout->addWidget(mIndicatorWidget);
+  scenarioListLine->addWidget(mIndicatorWidget);
   connect(mTriggerScenarioButton, SIGNAL(released()), this, SLOT(executeScenario()));
+  scenarioCtrlLayout->addRow("Scenario List", scenarioListLine);
 
-  carlaLayout->addRow("Scenario List", carlaRow1Layout);
+  QHBoxLayout *targetSpeedLine = new QHBoxLayout;
+  mTargetSpeedVal = new QLineEdit();
+  mTargetSpeedVal->setEnabled(true);
+  mTargetSpeedVal->setFixedWidth(160);
 
-  QHBoxLayout *synchronous_layout = new QHBoxLayout;
+  targetSpeedLine->addWidget(mTargetSpeedVal);
+  mSetTargetSpeedButton = new QPushButton("Go");
+  mSetTargetSpeedButton->setFixedWidth(96);
+  mSetTargetSpeedButton->setDisabled(true);
+  targetSpeedLine->addWidget(mSetTargetSpeedButton);
+  connect(mSetTargetSpeedButton, SIGNAL(released()), this, SLOT(setTargetSpeed()));
+  connect(mTargetSpeedVal, SIGNAL(returnPressed()), this, SLOT(setTargetSpeed()));
+  scenarioCtrlLayout->addRow("Target Speed", targetSpeedLine);
+
+  QHBoxLayout *timeCtrlLine = new QHBoxLayout;
   QPixmap pixmap(":/icons/play.png");
   QIcon iconPlay(pixmap);
   mPlayPauseButton = new QPushButton(iconPlay, "");
-  synchronous_layout->addWidget(mPlayPauseButton);
+  timeCtrlLine->addWidget(mPlayPauseButton);
   connect(mPlayPauseButton, SIGNAL(released()), this, SLOT(carlaTogglePlayPause()));
 
   QPixmap pixmapStepOnce(":/icons/step_once.png");
   QIcon iconStepOnce(pixmapStepOnce);
   mStepOnceButton = new QPushButton(iconStepOnce, "");
   connect(mStepOnceButton, SIGNAL(released()), this, SLOT(carlaStepOnce()));
+  timeCtrlLine->addWidget(mStepOnceButton);
+  scenarioCtrlLayout->addRow("Time Control", timeCtrlLine);
 
-  synchronous_layout->addWidget(mStepOnceButton);
-  carlaLayout->addRow("Carla Control", synchronous_layout);
+  scenarioRunnerLayout->addLayout(scenarioCtrlLayout);
 
-  layout->addLayout(carlaLayout);
+  layout->addLayout(scenarioRunnerLayout);
 
   setLayout(layout);
 
@@ -215,6 +212,9 @@ void CarlaControlPanel::onInitialize()
 
   mTwistPublisher = _node->create_publisher<geometry_msgs::msg::Twist>("/carla/hero/twist", 1);
 
+  mTargetSpeedPublisher = _node->create_publisher<std_msgs::msg::Float64>("/carla/hero/target_speed", qos_latch_1);
+
+
   mScenarioSubscriber
     = _node->create_subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>("/carla/available_scenarios", 1, std::bind(&CarlaControlPanel::carlaScenariosChanged, this, _1));
 }
@@ -275,20 +275,27 @@ void CarlaControlPanel::scenarioRunnerStatusChanged(
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Stopped);
     mTriggerScenarioButton->setText("Load");
+    mSetTargetSpeedButton->setDisabled(true);
+
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::STARTING)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Starting);
-    mTriggerScenarioButton->setText("Starting");
+    mTriggerScenarioButton->setText("Loading");
+    mSetTargetSpeedButton->setDisabled(true);
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::RUNNING)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::Running);
     mTriggerScenarioButton->setText("Reload");
+    mSetTargetSpeedButton->setEnabled(true);
+
   }
   else if (msg->status == carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus::SHUTTINGDOWN)
   {
     mIndicatorWidget->setState(IndicatorWidget::State::ShuttingDown);
+    mTriggerScenarioButton->setText("Clearing");
+    mSetTargetSpeedButton->setDisabled(true);
   }
   else
   {
@@ -453,6 +460,25 @@ void CarlaControlPanel::sendVel()
     msg.angular.z = mAngularVelocity;
     mTwistPublisher->publish(msg);
   }
+}
+
+void CarlaControlPanel::setTargetSpeed()
+{
+  bool convertible;
+  QString text = mTargetSpeedVal->text();
+  float targetSpeed = text.toFloat(&convertible);  
+
+  if (convertible)
+  {
+    // Publish the target speed to the topic
+    std_msgs::msg::Float64 targetSpeedMsg;
+    targetSpeedMsg.data = targetSpeed;
+    mTargetSpeedPublisher->publish(targetSpeedMsg);
+  }
+    
+  
+  
+
 }
 
 } // end namespace rviz_carla_plugin

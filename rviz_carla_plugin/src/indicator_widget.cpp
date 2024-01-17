@@ -50,4 +50,9 @@ void IndicatorWidget::setState(IndicatorWidget::State state)
   repaint();
 }
 
+IndicatorWidget::State IndicatorWidget::getState() const
+{
+  return mCurrentState;
+}
+
 } // end namespace rviz_carla_plugin

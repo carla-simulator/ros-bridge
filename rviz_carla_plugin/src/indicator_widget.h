@@ -29,6 +29,8 @@ public:
 
   void setState(IndicatorWidget::State state);
 
+  State getState() const;
+
 private:
   State mCurrentState{State::Stopped};
 };

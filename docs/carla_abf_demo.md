@@ -29,11 +29,13 @@ You will require 3 Linux Terminals to Run this demo
   ```sh
     ros2 launch carla_abf_demo carla_abf_demo.launch.py
   ```
-3. Terminal 03: Start the Demo (by setting Ego Vehicle's Target Speed)
-  ```sh
-    ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 21.0}" 
-  ```
-4. (optional) Terminal 04: Launch Spectator View
+  The demo can triggered by entering the target speed value and either hitting "Enter" or by clicking the "Go" button.
+
+3. (optional) Terminal 03: Launch Spectator View
   ```sh
     ros2 launch carla_manual_control carla_manual_control.launch.py
+  ```
+It is also possible to start the Demo by directly setting the target Speed from the Terminal
+  ```sh
+    ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 21.0}" 
   ```
