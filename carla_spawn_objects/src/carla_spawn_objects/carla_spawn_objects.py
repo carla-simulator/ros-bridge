@@ -251,7 +251,7 @@ class CarlaSpawnObjects(CompatibleNode):
                 response_id = self.spawn_object(spawn_object_request)
 
                 if response_id == -1:
-                    raise RuntimeError(response.error_string)
+                    raise RuntimeError(response_id.error_string)
 
                 if attached_objects:
                     # spawn the attached objects
