@@ -39,8 +39,9 @@ class ScenarioRunnerRunner(ApplicationRunner):
             python_path = "/usr/bin/python3"
         cmdline = [python_path, "{}/scenario_runner.py".format(self._path),
                    "--openscenario", "{}".format(scenario_file),
-                   "--timeout", "1000000",
+                   "--timeout", "1000",
                    "--host", self._host,
+                   "--sync",
                    "--port", str(self._port)]
         if self._wait_for_ego:
             cmdline.append("--waitForEgo")
