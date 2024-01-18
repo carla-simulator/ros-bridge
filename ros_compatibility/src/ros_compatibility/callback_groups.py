@@ -10,24 +10,10 @@
 from ros_compatibility.core import get_ros_version
 ROS_VERSION  = get_ros_version()
 
-if ROS_VERSION == 1:
+import rclpy.callback_groups
 
-    class CallbackGroup(object):
-        pass
+class ReentrantCallbackGroup(rclpy.callback_groups.ReentrantCallbackGroup):
+    pass
 
-    class ReentrantCallbackGroup(CallbackGroup):
-        pass
-
-    class MutuallyExclusiveCallbackGroup(CallbackGroup):
-        pass
-
-
-elif ROS_VERSION == 2:
-
-    import rclpy.callback_groups
-
-    class ReentrantCallbackGroup(rclpy.callback_groups.ReentrantCallbackGroup):
-        pass
-
-    class MutuallyExclusiveCallbackGroup(rclpy.callback_groups.MutuallyExclusiveCallbackGroup):
-        pass
+class MutuallyExclusiveCallbackGroup(rclpy.callback_groups.MutuallyExclusiveCallbackGroup):
+    pass

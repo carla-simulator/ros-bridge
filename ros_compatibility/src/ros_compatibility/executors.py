@@ -10,26 +10,11 @@
 from ros_compatibility.core import get_ros_version
 ROS_VERSION  = get_ros_version()
 
-if ROS_VERSION == 1:
+import rclpy.executors
 
-    class Executor(object):
-        def add_node(self, node):
-            pass
+class SingleThreadedExecutor(rclpy.executors.SingleThreadedExecutor):
+    pass
 
-    class SingleThreadedExecutor(Executor):
-        pass
-
-    class MultiThreadedExecutor(Executor):
-        pass
-
-
-elif ROS_VERSION == 2:
-
-    import rclpy.executors
-
-    class SingleThreadedExecutor(rclpy.executors.SingleThreadedExecutor):
-        pass
-
-    class MultiThreadedExecutor(rclpy.executors.MultiThreadedExecutor):
-        pass
+class MultiThreadedExecutor(rclpy.executors.MultiThreadedExecutor):
+    pass
 
