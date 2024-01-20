@@ -206,7 +206,7 @@ class Sensor(Actor):
             try:
                 carla_sensor_data = self.queue.get(block=False)
                 if carla_sensor_data.frame != frame:
-                    self.node.logwarn("{}({}): Received event for frame {}"
+                    self.node.logdebug("{}({}): Received event for frame {}"
                                       " (expected {}). Process it anyways.".format(
                                           self.__class__.__name__, self.get_id(),
                                           carla_sensor_data.frame, frame))

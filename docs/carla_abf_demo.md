@@ -14,6 +14,15 @@ The [Automatic Breaking Feature Demo](https://github.com/ttgamage/carla-ros-brid
     echo $SCENARIO_RUNNER_ROOT
   ```
   The output of the above command should list your Scenario Runner directory.
+- Ensure scenario runner is executed in passive mode (i.e. `--sync` is not set)
+- __!!! BUG NOTICE:__ In the latest version of Scenario Runner (v.0.9.15), there is a bug in `scenario_manager.py` which causes an extra `world.tick()`. Because of this, every other sensor frame get's skipped, affecting the acuracy and the performance of the simulation. A short term hack is to comment out the relevant line as follows:
+  ```python
+      185 if self._sync_mode and self._running and self._watchdog.get_status():
+      186      #CarlaDataProvider.get_world().tick() 
+      187      pass
+  ```
+  This hack, unfortunately, has consequences in standalone scenario runner execution. As such, it's a __HACK!!__
+
 
 ---
 

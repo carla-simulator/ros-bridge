@@ -135,8 +135,7 @@ class CarlaRosBridge(CompatibleNode):
                                       lambda control: self.carla_control_queue.put(control.command),
                                       qos_profile=10, callback_group=self.callback_group)
 
-            self.synchronous_mode_update_thread = Thread(
-                target=self._synchronous_mode_update)
+            self.synchronous_mode_update_thread = Thread(target=self._synchronous_mode_update)
             self.synchronous_mode_update_thread.start()
         else:
             self.timestamp_last_run = 0.0
@@ -259,18 +258,18 @@ class CarlaRosBridge(CompatibleNode):
                 with self._expected_ego_vehicle_control_command_ids_lock:
                     for actor_id, actor in self.actor_factory.actors.items():
                         if isinstance(actor, EgoVehicle):
-                            self._expected_ego_vehicle_control_command_ids.append(
-                                actor_id)
+                            self._expected_ego_vehicle_control_command_ids.append(actor_id)
 
             self.actor_factory.update_available_objects()
             frame = self.carla_world.tick()
+            self.logdebug("Frame: {}".format(frame))
+
 
             world_snapshot = self.carla_world.get_snapshot()
 
             self.status_publisher.set_frame(frame)
             self.update_clock(world_snapshot.timestamp)
-            self.logdebug("Tick for frame {} returned. Waiting for sensor data...".format(
-                frame))
+            self.logdebug("Tick for frame {} returned @timestamp: {}. Waiting for sensor data...".format(frame, world_snapshot.timestamp))
             self._update(frame, world_snapshot.timestamp.elapsed_seconds)
             self.logdebug("Waiting for sensor data finished.")
 
