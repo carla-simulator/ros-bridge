@@ -17,7 +17,7 @@ The [Automatic Breaking Feature Demo](https://github.com/ttgamage/carla-ros-brid
 - Ensure scenario runner is executed in passive mode (i.e. `--sync` is not set). This is the default behavior, unless explicitly changed.
 - __!!! BUG NOTICE:__ In the latest version of Scenario Runner (v.0.9.15), there doesn't appear to be a condition to `wait_for_tick()` when running in passive mode. Because of this, every other sensor frame get's skipped, affecting the accuracy and the performance of the simulation. To fix the issue, modify the code as follows:
   ```python
-      185 if self._sync_mode and self._running and self._watchdog.get_status():0
+      185 if self._sync_mode and self._running and self._watchdog.get_status():
       186   CarlaDataProvider.get_world().tick()
       187 else:
       188   CarlaDataProvider.get_world().wait_for_tick()
