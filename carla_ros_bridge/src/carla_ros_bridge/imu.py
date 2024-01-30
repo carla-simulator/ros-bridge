@@ -49,7 +49,7 @@ class ImuSensor(Sensor):
                                         carla_actor=carla_actor,
                                         synchronous_mode=synchronous_mode)
 
-        #self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix(), qos_profile=10)
+        self.imu_publisher = node.new_publisher(Imu, self.get_topic_prefix(), qos_profile=10)
         self.listen()
 
     def destroy(self):
@@ -85,4 +85,4 @@ class ImuSensor(Sensor):
         imu_msg.orientation.y = quat[2]
         imu_msg.orientation.z = quat[3]
 
-        #self.imu_publisher.publish(imu_msg)
+        self.imu_publisher.publish(imu_msg)
