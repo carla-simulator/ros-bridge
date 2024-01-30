@@ -1,6 +1,7 @@
 import rclpy
 from derived_object_msgs.msg import ObjectArray
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, DurabilityPolicy
 from rcl_interfaces.msg import SetParametersResult
 from rosgraph_msgs.msg import Clock
 from std_msgs.msg import Float64
@@ -29,7 +30,7 @@ class NetworkSimulatorBridge(Node):
         self.create_subscription(ObjectArray, '/carla/objects', self.callback_carla_objects, 10)
 
         # Create Publications
-        self.publish_target_speed = self.create_publisher(Float64, '/carla/hero/target_speed', 10)
+        self.publish_target_speed = self.create_publisher(Float64, '/carla/hero/target_speed', QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # Setup the CARLA Client
         host = self.get_parameter('carla_host').value
@@ -113,8 +114,6 @@ class NetworkSimulatorBridge(Node):
                 data_string = ','.join(str(d) for d in data)
                 packet_string += role + ',' + data_string + '\n'
         self.get_logger().debug("constructed packet: {}".format(repr(packet_string)))
-
-        self.set_target_speed(8)
 
         self.received_clock = False
         self.received_objects = False
