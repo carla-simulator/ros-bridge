@@ -6,7 +6,7 @@
   <!-- the network connection for the python connection to CARLA -->
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
-  <arg name='timeout' default='2'/>
+  <arg name='timeout' default='20'/>
   <!-- 
     enable/disable synchronous mode. If enabled ros-bridge waits until
     expected data is received for all sensors

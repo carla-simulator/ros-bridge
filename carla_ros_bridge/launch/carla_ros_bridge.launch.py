@@ -16,7 +16,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='timeout',
-            default_value='2',
+            default_value='20',
             description='Time to wait for a successful connection to the CARLA server'
         ),
         launch.actions.DeclareLaunchArgument(
