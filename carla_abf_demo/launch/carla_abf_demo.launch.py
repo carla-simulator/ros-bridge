@@ -173,8 +173,7 @@ def generate_launch_description():
                     'ns3_ros_bridge'), 'ns3_ros_bridge.launch.py')
             ),
             launch_arguments={
-                'delay_ms': '0',
-                'stoptime': '-1'
+                'delay_ms': '0'
             }.items()
         ),
 
