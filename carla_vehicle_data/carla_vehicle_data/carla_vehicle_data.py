@@ -45,8 +45,9 @@ class CarlaVehicleDataPublisher(Node):
                 x = object.pose.position.x
                 y = object.pose.position.y
                 z = object.pose.position.z
-                accel_x = object.accel.linear.x
-                vehicle_data = f'[{role_name}] [x={x}, y={y}, z={z}, accel_x={accel_x}]'
+                # accel_x = object.accel.linear.x
+                accel_y = object.accel.linear.y
+                vehicle_data = f'[{role_name}] [x={x}, y={y}, z={z}, accel_y={accel_y}]'
                 self.get_logger().info(vehicle_data)
 
 def main(args=None):
