@@ -221,15 +221,7 @@ def generate_launch_description():
                     ow=default_goal_pose['ow'])
             ],
             name='execute_topic_pub_goal_pose',
-        ),
-
-        # launch carla_vehicle_data
-        launch_ros.actions.Node(
-            package='carla_vehicle_data',
-            executable='carla_vehicle_data',
-            name='carla_vehicle_data',
-            #output='screen'
-        ),
+        )
     ])
     return ld
 

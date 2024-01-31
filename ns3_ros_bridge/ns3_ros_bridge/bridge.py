@@ -7,6 +7,9 @@ from rosgraph_msgs.msg import Clock
 from std_msgs.msg import Float64
 
 import carla
+import socket
+
+from queue import Queue
 
 # TODO: stop ns-3 on exit
 # TODO: handle objects added to or removed from /carla/objects
@@ -36,10 +39,19 @@ class NetworkSimulatorBridge(Node):
         host = self.get_parameter('carla_host').value
         port = self.get_parameter('carla_port').value
 
-        self.get_logger().debug("trying to connect to CARLA server at {}:{}".format(host, port))
+        self.get_logger().debug("trying to connect to CARLA server at {}:{}...".format(host, port))
         self.carla_client = carla.Client(host, port)
         self.carla_client.set_timeout(2.0)
         self.get_logger().info("connected to CARLA server running version {}".format(self.carla_client.get_server_version()))
+
+        # Setup the TCP Server for ns-3
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # allow immediate re-use of address if code restarted
+        self.server_socket.bind(('127.0.0.1', 1111))
+        self.server_socket.listen(1)
+        self.get_logger().info("TCP/IP server at 127.0.0.1:1111 waiting for client connection...")
+        self.client_socket, client_address = self.server_socket.accept()
+        self.get_logger().info("accepted client with address {}".format(client_address))
 
         # Initialize Variables
         self.delay_ms = self.get_parameter('delay_ms').value
@@ -49,6 +61,9 @@ class NetworkSimulatorBridge(Node):
 
         self.tracked_roles = ['hero', 'FollowCar', 'LeadCar']
         self.vehicle_id_to_role = {}
+
+        self.response_queue = Queue()
+        self.last_received_bsm = 0
 
         self.received_clock = False
         self.received_objects = False
@@ -99,7 +114,8 @@ class NetworkSimulatorBridge(Node):
         clock_ms = (self.clock_sec * 1000) + (self.clock_nanosec // 1000000)
         self.get_logger().info("current time = {} ms".format(clock_ms))
 
-        packet_string = str(self.clock_sec) + ',' + str(self.clock_nanosec) + '\n'
+        num_objects = 0
+        packet_string = str(self.clock_sec) + ',' + str(self.clock_nanosec)
         for obj in self.objects:
             if obj.id in self.vehicle_id_to_role:
                 role = self.vehicle_id_to_role[obj.id]
@@ -112,8 +128,29 @@ class NetworkSimulatorBridge(Node):
                     obj.accel.linear.z
                 ]
                 data_string = ','.join(str(d) for d in data)
-                packet_string += role + ',' + data_string + '\n'
+                packet_string += '\n' + role + ',' + data_string
+                num_objects += 1
+        packet_string += '\r\n'
         self.get_logger().debug("constructed packet: {}".format(repr(packet_string)))
+
+        if num_objects != len(self.tracked_roles): # will happen one tick during initialization
+            self.get_logger().warn("skipped update: received {} out of {} vehicle objects".format(str(num_objects), str(len(self.tracked_roles))))
+            return
+
+        self.client_socket.send(packet_string.encode())
+        response = self.client_socket.recv(4096).decode()
+        self.get_logger().debug("received response: {}".format(response))
+
+        hero_bsm_timestamp = float(response.split(',')[0]) # format: ts_hero,ts_FollowCar,ts_LeadCar
+        self.response_queue.put([clock_ms + self.delay_ms, hero_bsm_timestamp]) # TODO: if delay_ms changes this is no longer sorted
+
+        timestamp = 0 # default value
+        while not self.response_queue.empty() and self.response_queue.queue[0][0] <= clock_ms:
+            timestamp = self.response_queue.get()[1]
+        if timestamp > self.last_received_bsm: # we've received a new BSM
+            self.get_logger().info("sending target_speed = 0 because of BSM received at {}".format(timestamp))
+            self.set_target_speed(0)
+            self.last_received_bsm = timestamp
 
         self.received_clock = False
         self.received_objects = False
