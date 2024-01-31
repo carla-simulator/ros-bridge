@@ -50,7 +50,7 @@ class CollisionSensor(Sensor):
                                               is_event_sensor=True)
 
         self.collision_publisher = node.new_publisher(CarlaCollisionEvent,
-                                                      self.get_topic_prefix(),
+                                                      self.get_topic_prefix() + "_collision",
                                                       qos_profile=10)
         self.listen()
 
