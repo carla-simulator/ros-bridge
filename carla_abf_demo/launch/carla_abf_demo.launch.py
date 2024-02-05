@@ -216,7 +216,6 @@ def generate_launch_description():
             package='carla_vehicle_data',
             executable='carla_vehicle_data',
             name='carla_vehicle_data',
-            #output='screen'
         ),
     ])
     return ld
