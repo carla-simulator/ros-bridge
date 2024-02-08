@@ -9,8 +9,8 @@ scenario_runner_root = os.getenv('SCENARIO_RUNNER_ROOT')
 
 # Default Goal Pose for the Ego Vehicle (Town04). Stored as Dictionary
 default_goal_pose = {
-    'px': float('6.0'),
-    'py': float('-80.0'),
+    'px': float('5.0'),
+    'py': float('-60.0'),
     'pz': float('0'),
     'ox': float('0'),
     'oy': float('0'),

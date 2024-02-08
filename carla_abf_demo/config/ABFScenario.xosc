@@ -9,6 +9,7 @@
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="hero">
+            <!--NOTE: Hero is spawned by carla_spawn_objects.-->
             <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
                 <ParameterDeclarations/>
                 <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
@@ -27,7 +28,7 @@
             </Vehicle>
         </ScenarioObject>
         <ScenarioObject name="LeadCar">
-            <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
+            <Vehicle name="vehicle.lincoln.mkz_2020" vehicleCategory="car"> 
                 <ParameterDeclarations/>
                 <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>
@@ -39,7 +40,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="204,0,0"/>
+                    <Property name="color" value="158,127,102"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -73,7 +74,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="170,255,0"/>
+                    <Property name="color" value="0,66,37"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -90,7 +91,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <!--Property name="color" value="255,0,0"/-->
+                    <Property name="color" value="255,216,0"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -389,7 +390,7 @@
                                                 <EntityRef entityRef="ParallelCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="cartesianDistance" value="23.0" freespace="true" rule="greaterThan"/>
+                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="cartesianDistance" value="18.0" freespace="true" rule="greaterThan"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                         <!--<ByValueCondition>
@@ -457,7 +458,7 @@
                                                 <EntityRef entityRef="FollowCar"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="longitudinal" value="15.0" freespace="true" rule="lessThan"/>
+                                                <RelativeDistanceCondition entityRef="LeadCar" relativeDistanceType="longitudinal" value="13.0" freespace="true" rule="lessThan"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
