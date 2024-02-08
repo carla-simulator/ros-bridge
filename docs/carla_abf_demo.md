@@ -24,26 +24,45 @@ The [Automatic Breaking Feature Demo](https://github.com/ttgamage/carla-ros-brid
   ```
 ---
 
+## Integrate with ns-3
+
+1. Clone the feature/ROS2 branch of the UCEFwithNS3 repository at https://github.com/tpr1/UCEFwithNS3/tree/feature/ROS2
+
+2. Install the ns-3 requirements:
+```
+  sudo apt install cmake
+  sudo apt install build-essential
+  sudo apt install libsqlite3-dev
+```
+
+3. Compile the ns-3 code from the UCEFwithNS3/av-ns3 directory:
+```
+  ./ns3 configure --enable-examples
+  ./ns3 build
+```
+
 ## Run the demo
 
-You will require 2 Linux Terminals to Run this demo
+You will require 4 Linux Terminals to Run this demo
 
 1. Terminal 01: Start CARLA Server
   ```sh
     sh $CARLA_ROOT/CarlaUE4.sh -RenderOffScreen
   ```
-2. Terminal 02: Launch the Demo
+
+2. Terminal 02: Launch the ROS2 Nodes
   ```sh
     ros2 launch carla_abf_demo carla_abf_demo.launch.py
   ```
-  The demo can triggered by entering the target speed value and either hitting "Enter" or by clicking the "Go" button.
 
-3. (optional) Terminal 03: Launch Spectator View
+3. Terminal 03: Run ns-3
   ```sh
-    ros2 launch carla_manual_control carla_manual_control.launch.py
+    cd UCEFwithNS3/av-ns3
+    ./ns3 run automated-vehicles
   ```
-It is also possible to start the Demo by directly setting the target Speed from the Terminal
-  ```sh
-    ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 21.0}" 
-  ```
+  The ns-3 code must run after ns3_ros_bridge completes initialization. This is launched during the carla_abf_demo with the other ROS2 nodes. In general, it will be initialized by the time the rviz GUI loads.
 
+4. Terminal 04: Publish the Target Speed
+  ```sh
+    ros2 topic pub --once /carla/hero/target_speed std_msgs/msg/Float64 "{data: 21.0}"
+  ```

@@ -166,6 +166,18 @@ def generate_launch_description():
             }.items()
         ),
 
+        # Launch ns-3 Bridge
+        launch.actions.IncludeLaunchDescription(
+            launch.launch_description_sources.PythonLaunchDescriptionSource(
+                os.path.join(get_package_share_directory(
+                    'ns3_ros_bridge'), 'ns3_ros_bridge.launch.py')
+            ),
+            launch_arguments={
+                'delay_ms': '0'
+            }.items()
+        ),
+
+
         # Service Call to Load the Scenario
         launch.actions.ExecuteProcess(
             cmd=["ros2", "service", "call", "/scenario_runner/execute_scenario",
@@ -209,14 +221,7 @@ def generate_launch_description():
                     ow=default_goal_pose['ow'])
             ],
             name='execute_topic_pub_goal_pose',
-        ),
-
-        # launch carla_vehicle_data
-        launch_ros.actions.Node(
-            package='carla_vehicle_data',
-            executable='carla_vehicle_data',
-            name='carla_vehicle_data',
-        ),
+        )
     ])
     return ld
 
