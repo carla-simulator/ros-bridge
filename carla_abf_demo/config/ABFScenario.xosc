@@ -40,7 +40,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="158,127,102"/>
+                    <Property name="color" value="154,134,110"/>
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -57,7 +57,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <!--Property name="color" value="0,255,0"/-->
+                    <Property name="color" value="170,169,173"/> <!--Silver Metallic-->
                 </Properties>
             </Vehicle>
         </ScenarioObject>
@@ -108,7 +108,7 @@
                     <RearAxle maxSteering="0" positionX="-1.32946" positionZ="0.34415" trackWidth="1.13434" wheelDiameter="0.688299"/>
                 </Axles>
                 <Properties>
-                    <Property name="color" value="51,113,255"/>
+                    <!--Property name="color" value="51,113,255"/-->
                 </Properties>
             </Vehicle>
         </ScenarioObject>
