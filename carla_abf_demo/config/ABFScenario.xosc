@@ -10,7 +10,7 @@
     <Entities>
         <ScenarioObject name="hero">
             <!--NOTE: Hero is spawned by carla_spawn_objects.-->
-            <Vehicle name="vehicle.dodge.charger_police_2020" vehicleCategory="car">
+            <Vehicle name="vehicle.tesla.model3" vehicleCategory="car">
                 <ParameterDeclarations/>
                 <Performance maxAcceleration="15" maxDeceleration="15" maxSpeed="50.0"/>
                 <BoundingBox>

@@ -1,6 +1,6 @@
-# CARLA Automatic Emergency Breaking Feature Demo
+# CARLA Automatic Emergency Braking Feature Demo
 
-The [Automatic Emergency Breaking Feature Demo](https://github.com/ttgamage/carla-ros-bridge/tree/AutoBrakeFeature) is a CARLA simulation used to evaluate the behavior competency of Automatic Emergency Breaking Feature of automated vehicles.
+The [Automatic Emergency Braking Feature Demo](https://github.com/ttgamage/carla-ros-bridge/tree/AutoBrakeFeature) is a CARLA simulation used to evaluate the behavior competency of Automatic Emergency Braking Feature of automated vehicles.
 
 - [__Before you begin__](#before-you-begin)
 - [__Run the demo__](#run-the-demo)
