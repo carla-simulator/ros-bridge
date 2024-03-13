@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ROS_DISTRO="foxy"
+ROS_DISTRO="humbl"
 CARLA_VERSION=$(cat ${SCRIPT_DIR}/../carla_ros_bridge/src/carla_ros_bridge/CARLA_VERSION)
 
 while getopts r:c: flag
