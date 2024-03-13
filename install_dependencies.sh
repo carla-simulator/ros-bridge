@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROS_PYTHON_VERSION="${ROS_PYTHON_VERSION:=3}"
+ROS_VERSION="${ROS_VERSION:=2}"
 PYTHON_SUFFIX=""
 if [ "$ROS_PYTHON_VERSION" = "3" ]; then
     PYTHON_SUFFIX=3
