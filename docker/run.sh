@@ -4,7 +4,7 @@ usage() { echo "Usage: $0 [-t <tag>] [-i <image>]" 1>&2; exit 1; }
 
 # Defaults
 DOCKER_IMAGE_NAME="carla-ros-bridge"
-TAG="foxy"
+TAG="humble"
 
 while getopts ":ht:i:" opt; do
   case $opt in

@@ -25,6 +25,8 @@ RUN /bin/bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
     echo "export PYTHONPATH=\$PYTHONPATH:/opt/carla/PythonAPI/carla" >> /opt/carla/setup.bash'
 
 COPY . /opt/carla-ros-bridge/src/
+RUN /bin/bash -c 'apt install ros-$ROS_DISTRO-rviz2 python3-pip -y'
+RUN /bin/bash -c 'rosdep install --from-paths src --ignore-src -r -y'
 RUN /bin/bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
     if [ "$ROS_VERSION" == "2" ]; then colcon build; else catkin_make install; fi'
 
