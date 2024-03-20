@@ -1,0 +1,36 @@
+ARG CARLA_VERSION
+ARG ROS_DISTRO
+
+FROM ros:$ROS_DISTRO-ros-base
+
+ARG CARLA_VERSION
+ARG ROS_DISTRO
+
+ENV CARLA_VERSION=$CARLA_VERSION
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt update && apt upgrade -y
+RUN apt install sudo -y
+RUN sudo apt install --no-install-recommends wget -y
+RUN apt install sudo -y
+
+RUN mkdir -p /opt/carla-ros-bridge/src
+WORKDIR /opt/carla-ros-bridge
+
+COPY . /opt/carla-ros-bridge/src/
+
+RUN sudo apt install python3-pip -y
+RUN /bin/bash -c 'sudo apt-get install ros-$ROS_DISTRO-rviz2 -y'
+RUN /bin/bash -c 'python3 -m pip install carla==0.9.15; \
+                    python3 -m pip install pygame; \
+                    sudo apt install ros-humble-derived-object-msgs -y; \
+                    python3 -m pip install numpy==1.23.1'
+RUN /bin/bash -c 'rosdep update'
+RUN /bin/bash -c 'rosdep install --from-paths src --ignore-src -r -y'
+RUN /bin/bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+    colcon build --symlink-install'
+
+# replace entrypoint
+COPY ./docker/content/ros_entrypoint_humble.sh /
