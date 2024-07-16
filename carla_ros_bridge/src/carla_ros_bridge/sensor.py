@@ -202,14 +202,15 @@ class Sensor(Actor):
             "This function has to be implemented by the derived classes")
 
     def _update_synchronous_event_sensor(self, frame, timestamp):
+        buffer_size = 5
         while True:
             try:
                 carla_sensor_data = self.queue.get(block=False)
-                if carla_sensor_data.frame != frame:
-                    self.node.logwarn("{}({}): Received event for frame {}"
-                                      " (expected {}). Process it anyways.".format(
-                                          self.__class__.__name__, self.get_id(),
-                                          carla_sensor_data.frame, frame))
+                frame_difference = abs(carla_sensor_data.frame - frame)
+                if frame_difference > buffer_size:
+                    self.node.logwarn("{}({}): Received event for frame {} (expected {}). Process it anyways.".format(
+                        self.__class__.__name__, self.get_id(),
+                        carla_sensor_data.frame, frame))
                 self.node.logdebug("{}({}): process {}".format(
                     self.__class__.__name__, self.get_id(), frame))
                 self.publish_tf(trans.carla_transform_to_ros_pose(

@@ -11,7 +11,7 @@
   <arg name="spawn_point" default=""/><!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
 
   <!-- Map to load on startup (either a predefined CARLA town (e.g. 'Town01'), or a OpenDRIVE map file) -->
-  <arg name="town" default=''/>
+  <arg name="town" default='Town05'/>
 
   <!-- Enable/disable passive mode -->
   <arg name='passive' default=''/>
