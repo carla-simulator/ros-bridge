@@ -21,3 +21,7 @@
 ## Getting started and documentation
 
 Installation instructions and further documentation of the ROS bridge and additional packages are found [__here__](https://carla.readthedocs.io/projects/ros-bridge/en/latest/).
+
+## Run with Docker
+
+See [Docker](./docs/run_docker.md).

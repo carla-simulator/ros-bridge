@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ROS_DISTRO="foxy"
+ROS_DISTRO="humble"
 CARLA_VERSION=$(cat ${SCRIPT_DIR}/../carla_ros_bridge/src/carla_ros_bridge/CARLA_VERSION)
 
 while getopts r:c: flag
@@ -14,8 +14,17 @@ do
     esac
 done
 
+if [[ "$ROS_DISTRO" == "humble" ]]
+then
+docker build \
+    -t carla-ros-bridge:$ROS_DISTRO \
+    -f Dockerfile_humble ${SCRIPT_DIR}/.. \
+    --build-arg ROS_DISTRO=$ROS_DISTRO \
+    --build-arg CARLA_VERSION=$CARLA_VERSION
+else
 docker build \
     -t carla-ros-bridge:$ROS_DISTRO \
     -f Dockerfile ${SCRIPT_DIR}/.. \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
     --build-arg CARLA_VERSION=$CARLA_VERSION
+fi
