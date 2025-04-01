@@ -39,6 +39,8 @@ sudo apt-get install --no-install-recommends -y \
     ros-$ROS_DISTRO-vision-opencv \
     ros-$ROS_DISTRO-rqt-image-view \
     ros-$ROS_DISTRO-rqt-gui-py \
+    ros-$ROS_DISTRO-tf2 \
+    ros-$ROS_DISTRO-tf2-eigen \
     wget \
     qt5-default \
     ros-$ROS_DISTRO-pcl-conversions \
