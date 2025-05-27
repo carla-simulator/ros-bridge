@@ -35,4 +35,5 @@ echo "Using $DOCKER_IMAGE_NAME:$TAG"
 docker run \
     -it --rm \
     --net=host \
+    --ipc=host \
     "$DOCKER_IMAGE_NAME:$TAG" "$@"
