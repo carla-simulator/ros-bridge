@@ -1,10 +1,21 @@
 cmake_minimum_required(VERSION 3.3)
 project(rviz_carla_plugin)
 
+find_package(PkgConfig)
+pkg_check_modules(log4cxx liblog4cxx)
+
 set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+
+if(log4cxx_VERSION VERSION_GREATER_EQUAL "0.12.0")
+  message("Setting CXX standard to 17")
+  set(CMAKE_CXX_STANDARD 17)
+else()
+  message("Setting CXX standard to 14")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
 find_package(ros_environment REQUIRED)
+
 set(ROS_VERSION $ENV{ROS_VERSION})
 
 if(${ROS_VERSION} EQUAL 1)
