@@ -452,7 +452,7 @@ class DVSCamera(Camera):
                                                 ('x', numpy.uint16),
                                                 ('y', numpy.uint16),
                                                 ('t', numpy.int64),
-                                                ('pol', numpy.bool)
+                                                ('pol', numpy.bool_)
                                             ]))
         carla_image_data_array = numpy.zeros(
             (carla_dvs_event_array.height, carla_dvs_event_array.width, 3),

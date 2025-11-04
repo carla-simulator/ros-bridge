@@ -346,25 +346,36 @@ class CarlaRosBridge(CompatibleNode):
         :return:
         """
         self.loginfo("Shutting down...")
-        self.shutdown.set()
-        if not self.sync_mode:
-            if self.on_tick_id:
+        if hasattr(self, 'shutdown'):
+            self.shutdown.set()
+        if not hasattr(self, 'sync_mode') or not self.sync_mode:
+            if hasattr(self, 'on_tick_id') and self.on_tick_id:
                 self.carla_world.remove_on_tick(self.on_tick_id)
-            self.actor_factory.thread.join()
+            if hasattr(self, 'actor_factory'):
+                self.actor_factory.thread.join()
         else:
-            self.synchronous_mode_update_thread.join()
+            if hasattr(self, 'synchronous_mode_update_thread'):
+                self.synchronous_mode_update_thread.join()
         self.loginfo("Object update finished.")
-        self.debug_helper.destroy()
-        self.status_publisher.destroy()
-        self.destroy_service(self.spawn_object_service)
-        self.destroy_service(self.destroy_object_service)
-        self.destroy_subscription(self.carla_weather_subscriber)
-        self.carla_control_queue.put(CarlaControl.STEP_ONCE)
+        if hasattr(self, 'debug_helper'):
+            self.debug_helper.destroy()
+        if hasattr(self, 'status_publisher'):
+            self.status_publisher.destroy()
+        if hasattr(self, 'spawn_object_service'):
+            self.destroy_service(self.spawn_object_service)
+        if hasattr(self, 'destroy_object_service'):
+            self.destroy_service(self.destroy_object_service)
+        if hasattr(self, 'carla_weather_subscriber'):
+            self.destroy_subscription(self.carla_weather_subscriber)
+        if hasattr(self, 'carla_control_queue'):
+            self.carla_control_queue.put(CarlaControl.STEP_ONCE)
 
-        for uid in self._registered_actors:
-            self.actor_factory.destroy_actor(uid)
-        self.actor_factory.update_available_objects()
-        self.actor_factory.clear()
+        if hasattr(self, '_registered_actors'):
+            for uid in self._registered_actors:
+                self.actor_factory.destroy_actor(uid)
+        if hasattr(self, 'actor_factory'):
+            self.actor_factory.update_available_objects()
+            self.actor_factory.clear()
         super(CarlaRosBridge, self).destroy()
 
 
@@ -435,10 +446,21 @@ def main(args=None):
                     data = od_file.read()
                 carla_world = carla_client.generate_opendrive_world(str(data))
             else:
-                if carla_world.get_map().name != parameters["town"]:
+                current_map_name = carla_world.get_map().name
+                target_town = parameters["town"]
+                # Compare map names (handle both short name and full path)
+                # e.g., 'Town01' should match 'Carla/Maps/Town01' or '/Game/Carla/Maps/Town01'
+                is_same_map = (current_map_name == target_town or 
+                              current_map_name.endswith('/' + target_town) or
+                              current_map_name.split('/')[-1] == target_town)
+                
+                if not is_same_map:
                     carla_bridge.loginfo("Loading town '{}' (previous: '{}').".format(
-                        parameters["town"], carla_world.get_map().name))
-                    carla_world = carla_client.load_world(parameters["town"])
+                        target_town, current_map_name))
+                    carla_world = carla_client.load_world(target_town)
+                else:
+                    carla_bridge.loginfo("Town '{}' is already loaded, skipping map reload.".format(
+                        target_town))
             carla_world.tick()
 
         carla_bridge.initialize_bridge(carla_client.get_world(), parameters)

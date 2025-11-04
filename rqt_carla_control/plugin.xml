@@ -1,4 +1,4 @@
-<library path="src">
+<library path="">
   <class name="CARLA Control" type="rqt_carla_control.rqt_carla_control.CarlaControlPlugin" base_class_type="rqt_gui_py::Plugin">
     <description>
       Control CARLA synchronous mode.

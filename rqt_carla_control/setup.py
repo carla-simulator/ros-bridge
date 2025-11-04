@@ -29,6 +29,7 @@ elif ROS_VERSION == 2:
         package_dir={'': 'src'},
         data_files=[
             ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+            ('share/ament_index/resource_index/rqt_gui', ['resource/' + package_name]),
             (os.path.join('share', package_name), ['package.xml']),
             (os.path.join('share', package_name), ['plugin.xml']),
             ('share/' + package_name + '/resource',
