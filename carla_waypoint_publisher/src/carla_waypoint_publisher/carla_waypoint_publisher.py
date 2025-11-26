@@ -10,10 +10,10 @@ Generates a plan of waypoints to follow
 It uses the current pose of the ego vehicle as starting point. If the
 vehicle is respawned or move, the route is newly calculated.
 
-The goal is either read from the ROS topic `/carla/<ROLE NAME>/move_base_simple/goal`, if available
+The goal is either read from the ROS topic `/carla/vehicles/<ROLE NAME>/move_base_simple/goal`, if available
 (e.g. published by RVIZ via '2D Nav Goal') or a fixed point is used.
 
-The calculated route is published on '/carla/<ROLE NAME>/waypoints'
+The calculated route is published on '/carla/vehicles/<ROLE NAME>/waypoints'
 
 Additionally, services are provided to interface CARLA waypoints.
 """
@@ -60,7 +60,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.role_name = self.get_param("role_name", 'ego_vehicle')
         self.waypoint_publisher = self.new_publisher(
             Path,
-            '/carla/{}/waypoints'.format(self.role_name),
+            '/carla/vehicles/{}/waypoints'.format(self.role_name),
             QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # initialize ros services
@@ -79,7 +79,7 @@ class CarlaToRosWaypointConverter(CompatibleNode):
         self.current_route = None
         self.goal_subscriber = self.new_subscription(
             PoseStamped,
-            "/carla/{}/goal".format(self.role_name),
+            "/carla/vehicles/{}/goal".format(self.role_name),
             self.on_goal,
             qos_profile=10)
 

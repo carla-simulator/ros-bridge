@@ -85,7 +85,11 @@ All sensor attributes are defined as described in the [blueprint library](https:
 
 ### Respawning vehicles
 
-A vehicle can be respawned to a different location during a simulation by publishing to the topic `/carla/<ROLE NAME>/<CONTROLLER_ID>/initialpose`. To use this functionality:
+!!!
+TODO: this is not working anymore with new ROS2 interface, needs some replacement
+!!!
+
+A vehicle can be respawned to a different location during a simulation by publishing to the topic `/carla/vehicles/<ROLE NAME>/<CONTROLLER_ID>/initialpose`. To use this functionality:
 
 1. Attach an `actor.pseudo.control` pseudo-actor to the vehicle in the `.json` file. It should have the same `id` value as the value passed as `<CONTROLLER_ID>` used to publish to the topic:
 
@@ -120,14 +124,7 @@ A vehicle can be respawned to a different location during a simulation by publis
 
 Sensors can be attached to an already existing vehicle. To do so:
 
-1. Define the pseudo sensor `sensor.pseudo.actor_list` in the `.json` file. This will give access to a list of already existing actors.
-
-        ...
-        {
-            "type": "sensor.pseudo.actor_list",
-            "id": "actor_list"
-        },
-
+1. The list of already existing actors is provided under '/carla/world/actor_list'
 2. Define the rest of the sensors as required.
 3. Launch the node with the `spawn_sensors_only` parameter set to True. This will check if an actor with the same `id` and `type` as the one specified in the `.json` file is already active and if so, attach the sensors to this actor.
 

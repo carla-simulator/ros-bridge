@@ -23,7 +23,7 @@ from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
 from carla_ad_agent.misc import is_within_distance_ahead  # pylint: disable=relative-import
 
-from carla_msgs.msg import CarlaEgoVehicleInfo, CarlaTrafficLightStatus
+from carla_msgs.msg import CarlaVehicleInfo, CarlaTrafficLightStatus
 from carla_waypoint_types.srv import GetWaypoint
 from derived_object_msgs.msg import Object
 
@@ -59,8 +59,8 @@ class Agent(CompatibleNode):
         role_name = self.get_param("role_name", "ego_vehicle")
         self.loginfo("Waiting for vehicle_info...")
         vehicle_info = self.wait_for_message(
-            "/carla/{}/vehicle_info".format(role_name),
-            CarlaEgoVehicleInfo,
+            "/carla/vehicles/{}/vehicle_info".format(role_name),
+            CarlaVehicleInfo,
             qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
         self.loginfo("Vehicle info received.")
         self._ego_vehicle_id = vehicle_info.id

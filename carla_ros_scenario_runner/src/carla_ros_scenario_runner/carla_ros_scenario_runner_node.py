@@ -64,6 +64,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         wait_for_ego = self.get_param("wait_for_ego", "True")
         host = self.get_param("host", "localhost")
         port = self.get_param("port", 2000)
+        debug = self.get_param("debug", "False")
 
         self._status_publisher = self.new_publisher(
             CarlaScenarioRunnerStatus,
@@ -75,6 +76,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
             host,
             port,
             wait_for_ego,
+            debug,
             self.scenario_runner_status_updated,
             self.scenario_runner_log)
         self._request_queue = queue.Queue()

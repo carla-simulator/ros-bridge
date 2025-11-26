@@ -19,15 +19,6 @@ The PID parameters were gathered by [Ziegler-Nichols method](https://en.wikipedi
 
 ---
 
-## Requirements
-
-To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spawned (see [Carla Spawn Objects](carla_spawn_objects.md) for information on how to spawn sensors):
-
-- An odometry pseudo sensor (`sensor.pseudo.odom`) with role-name `odometry` attached to the vehicle.
-- An object pseudo sensor (`sensor.pseudo.objects`) with role-name `objects` attached to the vehicle.
-- A traffic light pseudo sensor (`sensor.pseudo.traffic_lights`) with role-name `traffic_lights`.
-
----
 
 ## ROS API 
 
@@ -46,10 +37,10 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ROLE NAME>/target_speed` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed of the ego vehicle |
-| `/carla/<ROLE NAME>/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Odometry of the ego vehicle |
-| `/carla/<ROLE NAME>/vehicle_info` | [carla_msgs/CarlaEgoVehicleInfo](ros_msgs.md#carlaegovehicleinfomsg) | Identify the CARLA actor id of the ego vehicle |
-| `/carla/<ROLE NAME>/objects` | [derived_object_msgs/ObjectArray](https://docs.ros.org/en/melodic/api/derived_object_msgs/html/msg/ObjectArray.html) | Information about other actors |
+| `/carla/vehicles/<ROLE NAME>/target_speed` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed of the ego vehicle |
+| `/carla/vehicles/<ROLE NAME>/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Odometry of the ego vehicle |
+| `/carla/vehicles/<ROLE NAME>/vehicle_info` | [carla_msgs/CarlaVehicleInfo](ros_msgs.md#carlavehicleinfomsg) | Identify the CARLA actor id of the ego vehicle |
+| `/carla/vehicles/<ROLE NAME>/objects` | [derived_object_msgs/ObjectArray](https://docs.ros.org/en/melodic/api/derived_object_msgs/html/msg/ObjectArray.html) | Information about other actors |
 | `/carla/traffic_lights/status` | [carla_msgs/CarlaTrafficLightStatusList](ros_msgs.md#carlatrafficlightstatuslistmsg) | Get the current state of the traffic lights |
 | `/carla/traffic_lights/info` | [carla_msgs/CarlaTrafficLightInfoList](ros_msgs.md#carlatrafficlightinfolistmsg) | Get info about traffic lights |
 
@@ -59,7 +50,7 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ROLE NAME>/speed_command` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed |
+| `/carla/vehicles/<ROLE NAME>/speed_command` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed |
 
 <br>
 
@@ -84,9 +75,9 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ROLE NAME>/waypoints` | [nav_msgs/Path](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | Route to follow |
-| `/carla/<ROLE NAME>/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Odometry of the ego vehicle |
-| `/carla/<ROLE NAME>/speed_command` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed |
+| `/carla/vehicles/<ROLE NAME>/waypoints` | [nav_msgs/Path](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | Route to follow |
+| `/carla/vehicles/<ROLE NAME>/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Odometry of the ego vehicle |
+| `/carla/vehicles/<ROLE NAME>/speed_command` | [std_msgs/Float64](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | Target speed |
 
 <br>
 
@@ -94,7 +85,7 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ROLE NAME>/next_target` | [visualization_msgs/Marker](http://docs.ros.org/en/api/visualization_msgs/html/msg/Marker.html) | Next target pose marker |
-| `/carla/<ROLE NAME>/vehicle_control_cmd` | [carla_msgs/CarlaEgoVehicleControl](ros_msgs.md#carlaegovehiclecontrolmsg) | Vehicle control command |
+| `/carla/vehicles/<ROLE NAME>/next_target` | [visualization_msgs/Marker](http://docs.ros.org/en/api/visualization_msgs/html/msg/Marker.html) | Next target pose marker |
+| `/carla/vehicles/<ROLE NAME>/control/vehicle_control_cmd` | [carla_msgs/CarlaVehicleControl](ros_msgs.md#carlavehiclecontrolmsg) | Vehicle control command |
 
 <br>

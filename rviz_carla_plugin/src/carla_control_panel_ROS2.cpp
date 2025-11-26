@@ -43,6 +43,11 @@ CarlaControlPanel::CarlaControlPanel(QWidget *parent)
   QVBoxLayout *layout = new QVBoxLayout;
   QHBoxLayout *vehicleLayout = new QHBoxLayout;
 
+  QVBoxLayout *egoSelectionLayout = new QVBoxLayout;
+  mEgoVehileSelection = new QComboBox();
+  egoSelectionLayout->addWidget(mEgoVehileSelection, 10);
+  layout->addLayout(egoSelectionLayout);
+
   QFormLayout *egoCtrlStatusLayout = new QFormLayout;
 
   mThrottleBar = new QProgressBar();
@@ -174,33 +179,62 @@ void CarlaControlPanel::onInitialize()
   connect(getDisplayContext()->getViewManager(), SIGNAL(currentChanged()), this, SLOT(currentViewControllerChanged()));
   _node = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
-  // set up ros subscriber and publishers
-  mCarlaStatusSubscriber = _node->create_subscription<carla_msgs::msg::CarlaStatus>("/carla/status", 1000, std::bind(&CarlaControlPanel::carlaStatusChanged, this, _1));
-  mCarlaControlPublisher = _node->create_publisher<carla_msgs::msg::CarlaControl>("/carla/control", 10);
-  mEgoVehicleStatusSubscriber 
-    = _node->create_subscription<carla_msgs::msg::CarlaEgoVehicleStatus>("/carla/ego_vehicle/vehicle_status", 1000, std::bind(&CarlaControlPanel::egoVehicleStatusChanged, this, _1));
-  mEgoVehicleOdometrySubscriber
-    = _node->create_subscription<nav_msgs::msg::Odometry>("/carla/ego_vehicle/odometry", 1000, std::bind(&CarlaControlPanel::egoVehicleOdometryChanged, this, _1));
+  connect(mEgoVehileSelection, SIGNAL(currentTextChanged(const QString &)), this, SLOT( onConnectToVehicle(const QString &) ));
 
-  auto qos_latch_10 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10));
-  qos_latch_10.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-  mCameraPosePublisher
-    = _node->create_publisher<geometry_msgs::msg::Pose>("/carla/ego_vehicle/spectator_pose", qos_latch_10);
+  auto empty_actor_list = std::make_shared<carla_msgs::msg::CarlaActorList>();
+  carlaActorListChanged(empty_actor_list);
 
-  auto qos_latch_1 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1));
-  qos_latch_1.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-  mEgoVehicleControlManualOverridePublisher
-    = _node->create_publisher<std_msgs::msg::Bool>("/carla/ego_vehicle/vehicle_control_manual_override", qos_latch_1);
-
+  mCarlaStatusSubscriber = _node->create_subscription<carla_msgs::msg::CarlaStatus>("/carla/world/status", rclcpp::SensorDataQoS().keep_last(10).transient_local(), std::bind(&CarlaControlPanel::carlaStatusChanged, this, _1));
+  mCarlaActorListSubscriber = _node->create_subscription<carla_msgs::msg::CarlaActorList>("/carla/world/actor_list", rclcpp::QoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1)).transient_local(), std::bind(&CarlaControlPanel::carlaActorListChanged, this, _1));
+  mCarlaControlPublisher = _node->create_publisher<carla_msgs::msg::CarlaControl>("/carla/world/control/carla_control", 10);
   mExecuteScenarioClient
     = _node->create_client<carla_ros_scenario_runner_types::srv::ExecuteScenario>("/scenario_runner/execute_scenario");
   mScenarioRunnerStatusSubscriber
     = _node->create_subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioRunnerStatus>("/scenario_runner/status", 10, std::bind(&CarlaControlPanel::scenarioRunnerStatusChanged, this, _1));
 
-  mTwistPublisher = _node->create_publisher<geometry_msgs::msg::Twist>("/carla/ego_vehicle/twist", 1);
-
   mScenarioSubscriber
     = _node->create_subscription<carla_ros_scenario_runner_types::msg::CarlaScenarioList>("/carla/available_scenarios", 1, std::bind(&CarlaControlPanel::carlaScenariosChanged, this, _1));
+}
+
+void CarlaControlPanel::onConnectToVehicle(const QString &vehicleTopicName)
+{
+  std::string vehicleTopicPrefix = "/carla/vehicles/";
+  if ( vehicleTopicName.length()>0u )
+  {
+    vehicleTopicPrefix += vehicleTopicName.toStdString();
+  }
+  else
+  {
+    vehicleTopicPrefix += "hero";
+  }
+
+  if ( mVehicleTopicPrefix != vehicleTopicPrefix )
+  {
+    mVehicleTopicPrefix = vehicleTopicPrefix;
+    auto sensorDataQos = rclcpp::SensorDataQoS(rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10));
+    mVehicleControlStatusSubscriber 
+      = _node->create_subscription<carla_msgs::msg::CarlaVehicleControlStatus>( 
+        vehicleTopicPrefix + "/vehicle_control_status", sensorDataQos, 
+        std::bind(&CarlaControlPanel::vehicleControlStatusChanged, this, _1));
+    mVehicleOdometrySubscriber = _node->create_subscription<nav_msgs::msg::Odometry>(
+      vehicleTopicPrefix + "/odometry", sensorDataQos,
+      std::bind(&CarlaControlPanel::vehicleOdometryChanged, this, _1));
+    mVehicleSpeedSubscriber = _node->create_subscription<std_msgs::msg::Float32>(
+      vehicleTopicPrefix + "/speed", sensorDataQos,
+      std::bind(&CarlaControlPanel::vehicleSpeedChanged, this, _1));
+
+    auto qos_latch_10 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10));
+    qos_latch_10.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
+    mCameraPosePublisher
+      = _node->create_publisher<geometry_msgs::msg::Pose>(vehicleTopicPrefix + "/spectator_pose", qos_latch_10);
+
+    auto qos_latch_1 = rclcpp::QoS( rclcpp::QoSInitialization(RMW_QOS_POLICY_HISTORY_KEEP_LAST, 1));
+    qos_latch_1.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
+    mVehicleControlManualOverridePublisher
+      = _node->create_publisher<std_msgs::msg::Bool>(vehicleTopicPrefix + "/vehicle_control_manual_override", qos_latch_1);
+
+    mTwistPublisher = _node->create_publisher<geometry_msgs::msg::Twist>(vehicleTopicPrefix + "/twist", 1);
+  }
 }
 
 void CarlaControlPanel::currentViewControllerChanged()
@@ -249,7 +283,7 @@ void CarlaControlPanel::overrideVehicleControl(int state)
     boolMsg.data = false;
     mDriveWidget->setEnabled(false);
   }
-  mEgoVehicleControlManualOverridePublisher->publish(boolMsg);
+  mVehicleControlManualOverridePublisher->publish(boolMsg);
 }
 
 void CarlaControlPanel::scenarioRunnerStatusChanged(
@@ -303,32 +337,66 @@ void CarlaControlPanel::carlaScenariosChanged(const carla_ros_scenario_runner_ty
   setScenarioRunnerStatus(mScenarioSelection->count() > 0);
 }
 
-void CarlaControlPanel::egoVehicleStatusChanged(const carla_msgs::msg::CarlaEgoVehicleStatus::SharedPtr msg)
+void CarlaControlPanel::carlaActorListChanged(const carla_msgs::msg::CarlaActorList::SharedPtr msg)
+{
+  auto currentSelection = mEgoVehileSelection->currentText();
+  mEgoVehileSelection->clear();
+  int idx = 0;
+  for (auto actorInfo: msg->actors)
+  {
+    if ( actorInfo.topic_prefix.find("carla/vehicles/") == 0u )
+    {
+      QString const vehicleTopicName(actorInfo.topic_prefix.substr(15).c_str());
+      mEgoVehileSelection->addItem(vehicleTopicName);
+      if (currentSelection == vehicleTopicName)
+      {
+         mEgoVehileSelection->setCurrentIndex(idx);
+      }
+      ++idx;
+    }
+  }
+  if (mEgoVehileSelection->count() == 0)
+  {
+    mEgoVehileSelection->addItem("hero");
+    mEgoVehileSelection->setCurrentIndex(0);
+  }
+}
+
+
+void CarlaControlPanel::vehicleControlStatusChanged(const carla_msgs::msg::CarlaVehicleControlStatus::SharedPtr msg)
 {
   mOverrideVehicleControl->setEnabled(true);
-  mSteerBar->setValue(msg->control.steer * 100);
-  mThrottleBar->setValue(msg->control.throttle * 100);
-  mBrakeBar->setValue(msg->control.brake * 100);
+  mSteerBar->setValue(msg->last_applied_vehicle_control.steer * 100);
+  mThrottleBar->setValue(msg->last_applied_vehicle_control.throttle * 100);
+  mBrakeBar->setValue(msg->last_applied_vehicle_control.brake * 100);
+}
 
+void CarlaControlPanel::vehicleSpeedChanged(const std_msgs::msg::Float32::SharedPtr msg)
+{
   std::stringstream speedStream;
-  speedStream << std::fixed << std::setprecision(2) << msg->velocity * 3.6;
+  speedStream << std::fixed << std::setprecision(2) << msg->data * 3.6;
   mSpeedLabel->setText(speedStream.str().c_str());
 }
 
-void CarlaControlPanel::egoVehicleOdometryChanged(const nav_msgs::msg::Odometry::SharedPtr msg)
+void CarlaControlPanel::vehicleOdometryChanged(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   std::stringstream posStream;
   posStream << std::fixed << std::setprecision(2) << msg->pose.pose.position.x << ", " << msg->pose.pose.position.y;
   mPosLabel->setText(posStream.str().c_str());
 
   std::stringstream headingStream;
-  headingStream << std::fixed << std::setprecision(2) << tf2::getYaw(msg->pose.pose.orientation);
+  auto quaternion = tf2::Quaternion(
+    msg->pose.pose.orientation.x, 
+    msg->pose.pose.orientation.y, 
+    msg->pose.pose.orientation.z, 
+    msg->pose.pose.orientation.w);
+  headingStream << std::fixed << std::setprecision(2) << tf2::getYaw(quaternion);
   mHeadingLabel->setText(headingStream.str().c_str());
 }
 
 void CarlaControlPanel::setSimulationButtonStatus(bool active)
 {
-  if (active)
+  if (true)
   {
     mPlayPauseButton->setDisabled(false);
     mPlayPauseButton->setToolTip("Play/Pause the CARLA world.");
@@ -347,11 +415,11 @@ void CarlaControlPanel::setSimulationButtonStatus(bool active)
 void CarlaControlPanel::carlaStatusChanged(const carla_msgs::msg::CarlaStatus::SharedPtr msg)
 {
   mCarlaStatus = msg;
-  setSimulationButtonStatus(mCarlaStatus->synchronous_mode);
+  setSimulationButtonStatus(mCarlaStatus->episode_settings.synchronous_mode);
 
-  if (mCarlaStatus->synchronous_mode)
+  if (mCarlaStatus->episode_settings.synchronous_mode)
   {
-    if (mCarlaStatus->synchronous_mode_running)
+    if (mCarlaStatus->game_running)
     {
       QPixmap pixmap(":/icons/pause.png");
       QIcon iconPause(pixmap);
@@ -378,7 +446,7 @@ void CarlaControlPanel::carlaTogglePlayPause()
   if (mCarlaStatus)
   {
     carla_msgs::msg::CarlaControl ctrl;
-    if (mCarlaStatus->synchronous_mode_running)
+    if (mCarlaStatus->game_running)
     {
       ctrl.command = carla_msgs::msg::CarlaControl::PAUSE;
     }

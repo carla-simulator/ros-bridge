@@ -25,7 +25,7 @@ ros2 launch carla_waypoint_publisher carla_waypoint_publisher.launch.py
 
 ### Set a goal
 
-If available a goal is read from the topic `/carla/<ROLE NAME>/goal`, otherwise a fixed spawn point is used. 
+If available a goal is read from the topic `/carla/vehicles/<ROLE NAME>/goal`, otherwise a fixed spawn point is used. 
 
 The preferred way of setting a goal is to click '2D Nav Goal` in RVIZ.
 

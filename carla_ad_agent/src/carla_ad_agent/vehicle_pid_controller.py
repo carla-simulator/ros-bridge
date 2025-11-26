@@ -13,7 +13,7 @@ import math
 import numpy as np
 from transforms3d.euler import quat2euler
 from geometry_msgs.msg import Point  # pylint: disable=import-error
-from carla_msgs.msg import CarlaEgoVehicleControl  # pylint: disable=import-error
+from carla_msgs.msg import CarlaVehicleControl  # pylint: disable=import-error
 
 
 class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
@@ -54,7 +54,7 @@ class VehiclePIDController(object):  # pylint: disable=too-few-public-methods
         :param waypoint: target location encoded as a waypoint
         :return: control signal (throttle and steering)
         """
-        control = CarlaEgoVehicleControl()
+        control = CarlaVehicleControl()
         throttle = self._lon_controller.run_step(target_speed, current_speed)
         steering = self._lat_controller.run_step(current_pose, waypoint)
         control.steer = -steering

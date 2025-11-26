@@ -49,6 +49,9 @@ elseif(${ROS_VERSION} EQUAL 2)
   find_package(rviz_common REQUIRED)
   find_package(carla_msgs REQUIRED)
   find_package(nav_msgs COMPONENTS)
+  find_package(geometry_msgs REQUIRED)
+  find_package(tf2 REQUIRED)
+  find_package(tf2_geometry_msgs REQUIRED)
   find_package(carla_ros_scenario_runner_types COMPONENTS)
   find_package(pluginlib REQUIRED)
   find_package(rviz_ogre_vendor REQUIRED)
@@ -73,7 +76,7 @@ elseif(${ROS_VERSION} EQUAL 2)
   pluginlib_export_plugin_description_file(rviz_common
                                            plugin_description_ros2.xml)
 
-  ament_target_dependencies(rviz_carla_plugin rclcpp carla_msgs nav_msgs
+  ament_target_dependencies(rviz_carla_plugin rclcpp carla_msgs nav_msgs geometry_msgs tf2_geometry_msgs tf2
                             carla_ros_scenario_runner_types rviz_common)
 
   ament_export_libraries(${PROJECT_NAME})

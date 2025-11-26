@@ -49,10 +49,10 @@ def generate_launch_description():
             name='carla_twist_to_control',
             remappings=[
                 (
-                    ["/carla/",
-                        launch.substitutions.LaunchConfiguration('role_name'), "/vehicle_control_cmd"],
-                    ["/carla/",
-                        launch.substitutions.LaunchConfiguration('role_name'), "/vehicle_control_cmd_manual"]
+                    ["/carla/vehicles/",
+                        launch.substitutions.LaunchConfiguration('role_name'), "/control/vehicle_control_cmd"],
+                    ["/carla/vehicles/",
+                        launch.substitutions.LaunchConfiguration('role_name'), "/control/vehicle_control_cmd_manual"]
                 )
             ],
             parameters=[

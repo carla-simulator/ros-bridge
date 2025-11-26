@@ -47,7 +47,6 @@
 
   <!-- To be able to maneuver with rviz, this node converts twist to vehicle control commands -->
   <node pkg="carla_twist_to_control" type="carla_twist_to_control.py" name="carla_twist_to_control">
-    <remap from="/carla/$(arg role_name)/vehicle_control_cmd" to="/carla/$(arg role_name)/vehicle_control_cmd_manual"/>
     <param name="role_name" value="$(arg role_name)"/>
   </node>
 

@@ -19,11 +19,12 @@ class ScenarioRunnerRunner(ApplicationRunner):
     Executes scenario runner
     """
 
-    def __init__(self, path, host, port, wait_for_ego, status_updated_fct, log_fct):  # pylint: disable=too-many-arguments
+    def __init__(self, path, host, port, wait_for_ego, debug, status_updated_fct, log_fct):  # pylint: disable=too-many-arguments
         self._path = path
         self._host = host
         self._port = port
         self._wait_for_ego = wait_for_ego
+        self._debug = debug
         super(ScenarioRunnerRunner, self).__init__(
             status_updated_fct,
             log_fct,
@@ -44,4 +45,6 @@ class ScenarioRunnerRunner(ApplicationRunner):
                    "--port", str(self._port)]
         if self._wait_for_ego:
             cmdline.append("--waitForEgo")
+        if self._debug:
+            cmdline.append("--debug")
         return self.execute(cmdline, env=os.environ)

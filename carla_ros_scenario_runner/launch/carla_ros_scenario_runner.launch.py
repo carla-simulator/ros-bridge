@@ -3,6 +3,7 @@ import launch_ros.actions
 
 
 def generate_launch_description():
+    
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='host',
@@ -22,6 +23,10 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='wait_for_ego',
             default_value='True'
+        ),
+        launch.actions.DeclareLaunchArgument(
+            name='debug',
+            default_value='False'
         ),
         launch_ros.actions.Node(
             package='carla_ros_scenario_runner',
@@ -45,6 +50,9 @@ def generate_launch_description():
                 },
                 {
                     'wait_for_ego': launch.substitutions.LaunchConfiguration('wait_for_ego')
+                },
+                {
+                    'debug': launch.substitutions.LaunchConfiguration('debug')
                 }
             ]
         )

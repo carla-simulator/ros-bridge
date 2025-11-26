@@ -5,7 +5,7 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 """
-receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
+receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaVehicleControl
 
 use max wheel steer angle
 """
@@ -17,13 +17,13 @@ from ros_compatibility.exceptions import ROSException
 from ros_compatibility.node import CompatibleNode
 from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 
-from carla_msgs.msg import CarlaEgoVehicleControl, CarlaEgoVehicleInfo  # pylint: disable=import-error
+from carla_msgs.msg import CarlaVehicleControl, CarlaVehicleInfo  # pylint: disable=import-error
 from geometry_msgs.msg import Twist  # pylint: disable=import-error
 
 
 class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-methods
     """
-    receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaEgoVehicleControl
+    receive geometry_nav_msgs::Twist and publish carla_msgs::CarlaVehicleControl
 
     use max wheel steer angle
     """
@@ -37,23 +37,24 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         super(TwistToVehicleControl, self).__init__("twist_to_control")
 
         self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.control_priority = self.get_param("control_priority", "6")
         self.max_steering_angle = None
 
         self.new_subscription(
-            CarlaEgoVehicleInfo,
-            "/carla/{}/vehicle_info".format(self.role_name),
+            CarlaVehicleInfo,
+            "/carla/vehicles/{}/vehicle_info".format(self.role_name),
             self.update_vehicle_info,
             qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         self.new_subscription(
             Twist,
-            "/carla/{}/twist".format(self.role_name),
+            "/carla/vehicles/{}/twist".format(self.role_name),
             self.twist_received,
             qos_profile=10)
 
         self.pub = self.new_publisher(
-            CarlaEgoVehicleControl,
-            "/carla/{}/vehicle_control_cmd".format(self.role_name),
+            CarlaVehicleControl,
+            "/carla/vehicles/{}/control/vehicle_control_cmd".format(self.role_name),
             qos_profile=10)
 
     def update_vehicle_info(self, vehicle_info):
@@ -79,7 +80,8 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
             self.logwarn("Did not yet receive vehicle info.")
             return
 
-        control = CarlaEgoVehicleControl()
+        control = CarlaVehicleControl()
+        control.control_priority = self.control_priority
         if twist == Twist():
             # stop
             control.throttle = 0.

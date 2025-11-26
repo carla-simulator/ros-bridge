@@ -1,9 +1,6 @@
 # Carla Ackermann Control
 
-The [`carla_ackermann_control` package](https://github.com/carla-simulator/ros-bridge/tree/master/carla_ackermann_control) is used to control a CARLA vehicle with [Ackermann messages][ackermanncontrolmsg]. The package converts the Ackermann messages into [CarlaEgoVehicleControl][carlaegovehiclecontrolmsg] messages. It reads vehicle information from CARLA and passes that information to a Python based PID controller called `simple-pid` to control the acceleration and velocity.
-
-[ackermanncontrolmsg]: https://docs.ros.org/en/api/ackermann_msgs/html/msg/AckermannDrive.html
-[carlaegovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#carlaegovehiclecontrolmsg
+[carlavehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#carlavehiclecontrolmsg
 
 - [__Configuration__](#configuration)
 - [__Testing control messages__](#testing-control-messages)
@@ -24,7 +21,7 @@ Parameters can be set both initially in a [configuration file][ackermanconfig] w
 
 ### Testing control messages
 
-Test the setup by sending commands to the car via the topic `/carla/<ROLE NAME>/ackermann_cmd`. For example, move an ego vehicle with the role name of `ego_vehicle` forward at a speed of 10 meters/sec by running this command:
+Test the setup by sending commands to the car via the topic `/carla/vehicles/<ROLE NAME>/ackermann_cmd`. For example, move an ego vehicle with the role name of `ego_vehicle` forward at a speed of 10 meters/sec by running this command:
 
 ```bash
 
@@ -56,7 +53,7 @@ ros2 topic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{
 
 |Topic|Type|Description|
 |--|--|--|
-|`/carla/<ROLE NAME>/ackermann_cmd` | [ackermann_msgs.AckermannDrive][ackermanncontrolmsg] | __Subscriber__ for steering commands |
+|`/carla/vehicles/<ROLE NAME>/ackermann_cmd` | [ackermann_msgs.AckermannDrive][ackermanncontrolmsg] | __Subscriber__ for steering commands |
 
 <br>
 
@@ -64,7 +61,7 @@ ros2 topic pub /carla/ego_vehicle/ackermann_cmd ackermann_msgs/AckermannDrive "{
 
 |Topic|Type|Description|
 |--|--|--|
-| `/carla/<ROLE NAME>/ackermann_control/control_info` | [carla_ackermann_control.EgoVehicleControlInfo][egovehiclecontrolmsg] | The current values used within the controller (useful for debugging) |
+| `/carla/vehicles/<ROLE NAME>/ackermann_control/control_info` | [carla_ackermann_control.EgoVehicleControlInfo][egovehiclecontrolmsg] | The current values used within the controller (useful for debugging) |
 
 [egovehiclecontrolmsg]: https://carla.readthedocs.io/en/latest/ros_msgs/#egovehiclecontrolinfomsg
 

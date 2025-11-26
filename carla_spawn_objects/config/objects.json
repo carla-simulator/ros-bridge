@@ -2,26 +2,6 @@
     "objects": 
     [
         {
-            "type": "sensor.pseudo.traffic_lights",
-            "id": "traffic_lights"
-        },
-        {
-            "type": "sensor.pseudo.objects",
-            "id": "objects"
-        },
-        {
-            "type": "sensor.pseudo.actor_list",
-            "id": "actor_list"
-        },
-        {
-            "type": "sensor.pseudo.markers",
-            "id": "markers"
-        },
-        {
-            "type": "sensor.pseudo.opendrive_map",
-            "id": "map"
-        },
-        {
             "type": "vehicle.tesla.model3",
             "id": "ego_vehicle",
             "sensors": 
@@ -41,13 +21,6 @@
                     "image_size_x": 800,
                     "image_size_y": 600,
                     "fov": 90.0,
-                    "attached_objects":
-                    [
-                        {
-                            "type": "actor.pseudo.control",
-                            "id": "control"
-                        }
-                    ]
                 },
                 {
                     "type": "sensor.lidar.ray_cast",
@@ -135,26 +108,6 @@
                     "type": "sensor.other.lane_invasion",
                     "id": "lane_invasion",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 0.0}
-                },
-                {
-                    "type": "sensor.pseudo.tf",
-                    "id": "tf"
-                },
-                {
-                    "type": "sensor.pseudo.objects",
-                    "id": "objects"
-                },
-                {
-                    "type": "sensor.pseudo.odom",
-                    "id": "odometry"
-                },
-                {
-                    "type": "sensor.pseudo.speedometer",
-                    "id": "speedometer"
-                },
-                {
-                    "type": "actor.pseudo.control",
-                    "id": "control"
                 }
             ]
         }

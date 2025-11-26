@@ -4,6 +4,7 @@
 
   <node pkg="carla_twist_to_control" type="carla_twist_to_control.py" name="carla_twist_to_control_$(arg role_name)" output="screen">
     <param name="role_name" value="$(arg role_name)"/>
+    <param name="control_priority" value="$(arg control_priority)"/>
   </node>
 
 </launch>

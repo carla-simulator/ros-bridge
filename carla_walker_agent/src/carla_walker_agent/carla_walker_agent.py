@@ -44,31 +44,31 @@ class CarlaWalkerAgent(CompatibleNode):
 
         # wait for ros bridge to create relevant topics
         try:
-            self.wait_for_message("/carla/{}/odometry".format(role_name), Odometry, qos_profile=10)
+            self.wait_for_message("/carla/walkers/{}/object".format(role_name), Odometry, qos_profile=10)
         except ROSInterruptException as e:
             if not roscomp.ok:
                 raise e
 
-        self._odometry_subscriber = self.new_subscription(
+        self._object_subscriber = self.new_subscription(
             Odometry,
-            "/carla/{}/odometry".format(role_name),
-            self.odometry_updated,
+            "/carla/walkers/{}/object".format(role_name),
+            self.object_updated,
             qos_profile=10)
 
         self.control_publisher = self.new_publisher(
             CarlaWalkerControl,
-            "/carla/{}/walker_control_cmd".format(role_name),
+            "/carla/walkers/{}/control/walker_control_cmd".format(role_name),
             qos_profile=1)
 
         self._route_subscriber = self.new_subscription(
             Path,
-            "/carla/{}/waypoints".format(role_name),
+            "/carla/walkers/{}/waypoints".format(role_name),
             self.path_updated,
             qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         self._target_speed_subscriber = self.new_subscription(
             Float64, 
-            "/carla/{}/target_speed".format(role_name),
+            "/carla/walkers/{}/target_speed".format(role_name),
             self.target_speed_updated,
             qos_profile=10)
 
@@ -97,9 +97,9 @@ class CarlaWalkerAgent(CompatibleNode):
         for elem in path.poses:
             self._waypoints.append(elem.pose)
 
-    def odometry_updated(self, odo):
+    def object_updated(self, odo):
         """
-        callback on new odometry
+        callback on new object
         """
         self._current_pose = odo.pose.pose
 

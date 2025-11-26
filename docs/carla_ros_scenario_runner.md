@@ -89,7 +89,7 @@ ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_ty
 The controller `ros_vehicle_control` provides the following topics:
 | Topic | Type | Description |
 |-------|------|-------------|
-| `/carla/<ROLE NAME>/waypoints` | [`nav_msgs.Path`](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | the path defined within the scenario. Note: The topic name can be changed by modifying the parameter `path_topic_name` |
-| `/carla/<ROLE NAME>/target_speed` | [`std_msgs.Float64`](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | the target speed as defined within the scenario |
+| `/carla/vehicles/<ROLE NAME>/waypoints` | [`nav_msgs.Path`](https://docs.ros.org/en/api/nav_msgs/html/msg/Path.html) | the path defined within the scenario. Note: The topic name can be changed by modifying the parameter `path_topic_name` |
+| `/carla/vehicles/<ROLE NAME>/target_speed` | [`std_msgs.Float64`](https://docs.ros.org/en/api/std_msgs/html/msg/Float64.html) | the target speed as defined within the scenario |
 
 <br>

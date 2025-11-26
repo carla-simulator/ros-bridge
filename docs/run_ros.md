@@ -42,10 +42,6 @@ The command to run depends on whether you installed the ROS bridge via the Debia
 Once you have set your ROS environment and have a CARLA server running, you will need to start the `carla_ros_bridge` package before being able to use any of the other packages. To do that, run the following command:
 
 ```sh
-    # ROS 1
-    roslaunch carla_ros_bridge carla_ros_bridge.launch
-
-    # ROS 2
     ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
 ```
 
@@ -106,39 +102,31 @@ If the ROS bridge is not in passive mode (ROS bridge is the one ticking the worl
 
 There are two modes to control the ego vehicle:
 
-1. Normal mode - reading commands from `/carla/<ROLE NAME>/vehicle_control_cmd`
-2. Manual mode - reading commands from  `/carla/<ROLE NAME>/vehicle_control_cmd_manual`. This allows to manually override Vehicle Control Commands published by a software stack.
-
-You can toggle between the two modes by publishing to `/carla/<ROLE NAME>/vehicle_control_manual_override`. For an example of this being used see [Carla Manual Control](carla_manual_control.md).
+1. Normal mode - reading commands from `/carla/vehicles/<ROLE NAME>/control/vehicle_control_cmd`. The 
 
 To test steering from the command line:
 
 __1.__ Launch the ROS Bridge with an ego vehicle:
 
 ```sh
-    # ROS 1
-    roslaunch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch
-
-    # ROS 2
     ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py
 ```
 
-__2.__ In another terminal, publish to the topic `/carla/<ROLE NAME>/vehicle_control_cmd`
+__2.__ In another terminal, publish to the topic `/carla/vehicles/<ROLE NAME>/control/vehicle_control_cmd`
 
 ```sh
     # Max forward throttle with max steering to the right
-
-    # for ros1
-    rostopic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
-
-    # for ros2
-    ros2 topic pub /carla/ego_vehicle/vehicle_control_cmd carla_msgs/CarlaEgoVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
+    ros2 topic pub /carla/ego_vehicle/control/vehicle_control_cmd carla_msgs/CarlaVehicleControl "{throttle: 1.0, steer: 1.0}" -r 10
 
 ```
 
-The current status of the vehicle can be received via topic `/carla/<ROLE NAME>/vehicle_status`. Static information about the vehicle can be received via `/carla/<ROLE NAME>/vehicle_info`.
+The current control status of the vehicle can be received via topic `/carla/vehicles/<ROLE NAME>/vehicle_constrol_status`. Static information about the vehicle can be received via `/carla/vehicles/<ROLE NAME>/vehicle_info`.
 
-It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msgs/html/msg/AckermannDrive.html) messages to control the ego vehicles. This can be achieved through the use of the [CARLA Ackermann Control](carla_ackermann_control.md) package.
+It is possible to use [AckermannDrive](https://docs.ros.org/en/api/ackermann_msgs/html/msg/AckermannDrive.html) messages to control the ego vehicles. This can be achieved by publishing to the topic 
+```sh
+    ros2 topic pub /carla/ego_vehicle/control/ackermann_control_cmd  ackermann_msgs/AckermannDrive "{speed: 10., acceleration: 1., jerk: 1., steering_angle: 0.1, steering_angle_velocity: 0.1}" -r 10
+
+```
 
 ---
 

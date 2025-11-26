@@ -7,7 +7,7 @@
 #pragma once
 
 #include <OgreCamera.h>
-#include <carla_msgs/CarlaEgoVehicleStatus.h>
+#include <carla_msgs/CarlaVehicleStatus.h>
 #include <carla_msgs/CarlaStatus.h>
 #include <carla_ros_scenario_runner_types/CarlaScenarioList.h>
 #include <carla_ros_scenario_runner_types/CarlaScenarioRunnerStatus.h>
@@ -60,8 +60,8 @@ protected:
 
   void scenarioRunnerStatusChanged(const carla_ros_scenario_runner_types::CarlaScenarioRunnerStatus::ConstPtr &msg);
   void carlaStatusChanged(const carla_msgs::CarlaStatus::ConstPtr &msg);
-  void egoVehicleStatusChanged(const carla_msgs::CarlaEgoVehicleStatus::ConstPtr &msg);
-  void egoVehicleOdometryChanged(const nav_msgs::Odometry::ConstPtr &msg);
+  void vehicleStatusChanged(const carla_msgs::CarlaVehicleStatus::ConstPtr &msg);
+  void vehicleOdometryChanged(const nav_msgs::Odometry::ConstPtr &msg);
   void carlaScenariosChanged(const carla_ros_scenario_runner_types::CarlaScenarioList::ConstPtr &msg);
   carla_msgs::CarlaStatus::ConstPtr mCarlaStatus{nullptr};
 
@@ -80,10 +80,10 @@ protected:
   IndicatorWidget *mIndicatorWidget;
   ros::Publisher mTwistPublisher;
   ros::Publisher mCarlaControlPublisher;
-  ros::Publisher mEgoVehicleControlManualOverridePublisher;
+  ros::Publisher mVehicleControlManualOverridePublisher;
   ros::Subscriber mCarlaStatusSubscriber;
-  ros::Subscriber mEgoVehicleStatusSubscriber;
-  ros::Subscriber mEgoVehicleOdometrySubscriber;
+  ros::Subscriber mVehicleStatusSubscriber;
+  ros::Subscriber mVehicleOdometrySubscriber;
   ros::ServiceClient mExecuteScenarioClient;
   ros::Subscriber mScenarioSubscriber;
   ros::Subscriber mScenarioRunnerStatusSubscriber;

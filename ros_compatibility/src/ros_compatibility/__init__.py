@@ -72,7 +72,8 @@ elif ROS_VERSION == 2:
     _shutdown_hooks = []
 
     def init(name, args=None):
-        rclpy.init(args=args)
+        if not rclpy.ok():
+            rclpy.init(args=args)
 
     def ok():
         return rclpy.ok()
@@ -81,7 +82,8 @@ elif ROS_VERSION == 2:
         global _shutdown_hooks
         for h in _shutdown_hooks:
             h()
-        rclpy.shutdown()
+        if ok():
+            rclpy.shutdown()
 
     def _add_shutdown_hook(hook):
         if not callable(hook):

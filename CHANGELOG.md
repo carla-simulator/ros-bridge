@@ -1,5 +1,26 @@
 ## Latest
 
+## CARLA-ROS-Bridge 0.9.16-dev
+*   Apat to built-in ROS2 interface
+*   Removed not required parts of the old ros-bridge implementation as those
+    are covered by the ROS2 enabled CARLA server directly
+*   Added derived_objects_visualizer to replace /carla/markers published by
+    the old ros bridge
+*   carla_ad_agent: 
+    - make local_planner subscription to CarlaVehicleStatus best effort
+    - don't execute planner step if no odometry message was received
+*   ros_compatibility:
+    - Allows use of multiple carla_ad_agents within a scenario
+    - Extend ros compatibility qos setting
+    - Fix use of duplicated topic names for different message types in ROS2
+*   carla_spawn_objects:
+    - remove not existing pseudo sensors
+    - remove not available control_id
+*   carla_control_panel:
+    - allow dynamic selection of vehicle to be controlled
+*   carla_twist_to_control:
+    - allow setting control_priority
+
 ## CARLA-ROS-Bridge 0.9.12
 
 *   Fixed scenario runner node shutdown for foxy

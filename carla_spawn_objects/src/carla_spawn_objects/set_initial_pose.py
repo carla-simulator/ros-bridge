@@ -17,25 +17,45 @@ position.
 /initialpose might be published via RVIZ '2D Pose Estimate" button.
 """
 
+import json
+import os
+
 import ros_compatibility as roscomp
 from ros_compatibility.node import CompatibleNode
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose
-
 
 class SetInitialPose(CompatibleNode):
 
     def __init__(self):
         super(SetInitialPose, self).__init__("set_initial_pose")
 
-        self.role_name = self.get_param("role_name", "ego_vehicle")
-        # control_id should correspond to the id of the actor.pseudo.control
-        # actor that is set in the config file used to spawn it
-        self.control_id = self.get_param("control_id", "control")
+        self.vehicle_role_names = []
+
+        # Read vehicle role_name from file if provided
+        self.objects_definition_file = self.get_param('objects_definition_file', '')
+        if self.objects_definition_file:
+            if not os.path.exists(self.objects_definition_file):
+                raise RuntimeError(
+                    "Could not read object definitions from {}".format(self.objects_definition_file))
+            with open(self.objects_definition_file) as handle:
+                json_actors = json.loads(handle.read())
+
+        for actor in json_actors["objects"]:
+            actor_type_split = actor["type"].split('.')
+            actor_type = actor_type_split[0]
+            if actor_type == "vehicle":
+                self.vehicle_role_names.append(actor["id"])
+
+        if len(self.vehicle_role_names) == 0:
+            self.vehicle_role_names = self.get_param("role_name", "ego_vehicle")
+
+        if len(self.vehicle_role_names) > 1:
+            self.logwarn("Set initial pose only supports one single vehicle. Using {} from [{}]".format(self.vehicle_role_names[0], self.vehicle_role_names))
 
         self.transform_publisher = self.new_publisher(
             Pose,
-            "/carla/{}/{}/set_transform".format(self.role_name, self.control_id),
+            "/carla/vehicles/{}/control/set_transform".format(self.vehicle_role_names[0]),
             qos_profile=10)
 
         self.initial_pose_subscriber = self.new_subscription(
@@ -62,7 +82,8 @@ def main():
     except KeyboardInterrupt:
         roscomp.loginfo("Cancelled by user.")
     finally:
-        roscomp.shutdown()
+        if roscomp.ok():
+            roscomp.shutdown()
 
 if __name__ == '__main__':
     main()

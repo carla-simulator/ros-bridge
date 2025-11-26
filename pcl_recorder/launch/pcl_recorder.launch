@@ -6,7 +6,7 @@
 
   <!-- enable autopilot -->
   <node pkg="rostopic" type="rostopic" name="enable_autopilot_rostopic"
-        args="pub -l /carla/$(arg role_name)/enable_autopilot std_msgs/Bool '{ data: true}' " />
+        args="pub -l /carla/vehicles/$(arg role_name)/enable_autopilot std_msgs/Bool '{ data: true}' " />
 
   <!-- pcl map capturing -->
   <node pkg="pcl_recorder" type="pcl_recorder_node" name="pcl_recorder_node" output="screen">

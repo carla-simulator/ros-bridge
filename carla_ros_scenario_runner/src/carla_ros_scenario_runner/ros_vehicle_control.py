@@ -51,15 +51,15 @@ class RosVehicleControl(BasicControl):
 
         self._target_speed_publisher = self.node.new_publisher(
             Float64,
-            "/carla/{}/target_speed".format(self._role_name),
+            "/carla/vehicles/{}/target_speed".format(self._role_name),
             QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
-        self.node.loginfo("Publishing target_speed on /carla/{}/target_speed".format(self._role_name))
+        self.node.loginfo("Publishing target_speed on /carla/vehicles/{}/target_speed".format(self._role_name))
 
         self._path_publisher = self.node.new_publisher(
             Path,
-            "/carla/{}/{}".format(self._role_name, self._path_topic_name),
+            "/carla/vehicles/{}/{}".format(self._role_name, self._path_topic_name),
             QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL))
-        self.node.loginfo("Publishing path on /carla/{}/{}".format(self._role_name, self._path_topic_name))
+        self.node.loginfo("Publishing path on /carla/vehicles/{}/{}".format(self._role_name, self._path_topic_name))
 
         if "launch" in args and "launch-package" in args:
 

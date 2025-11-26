@@ -20,7 +20,7 @@
   <!-- ===================================================== -->
 
   <!-- Publish the target speed -->
-  <node pkg="rostopic" type="rostopic" name="rostopic" args="pub /carla/$(arg role_name)/target_speed std_msgs/Float64 $(arg target_speed)"/>
+  <node pkg="rostopic" type="rostopic" name="rostopic" args="pub /carla/vehicles/$(arg role_name)/target_speed std_msgs/Float64 $(arg target_speed)"/>
   
   <!-- The ros bridge -->
   <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">

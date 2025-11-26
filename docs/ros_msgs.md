@@ -63,7 +63,7 @@ These messages control the simulation while in synchronous, non-passive mode. Th
 
 ---
 
-## CarlaEgoVehicleControl.msg
+## CarlaVehicleControl.msg
 
 Messages sent to apply a control to a vehicle in both modes, autopilot and manual. These are published in a stack. 
 
@@ -77,10 +77,11 @@ Messages sent to apply a control to a vehicle in both modes, autopilot and manua
 | `reverse`                                                                                               | bool                                                                                                    | If **True**, the vehicle will move reverse.                                                             |
 | `gear`                                                                                                  | int32                                                                                                   | Changes between the available gears in a vehicle.                                                       |
 | `manual_gear_shift`                                                                                     | bool                                                                                                    | If **True**, the gears will be shifted using `gear`.                                                    |
+| `control_priority`                                                                                     | uint8                                                                                                    | This provides the priority of the control command input. 4 <= control_priority <= 255. Higher numbers of control input override lower ones                                                 |
 
 ---
 
-## CarlaEgoVehicleInfo.msg
+## CarlaVehicleInfo.msg
 
 Static information regarding a vehicle, mostly the attributes used to define the vehicle's physics.  
 
@@ -90,7 +91,7 @@ Static information regarding a vehicle, mostly the attributes used to define the
 | `type`                                                         | string                                                         | The identifier of the blueprint this vehicle was based on.     |
 | `type`                                                         | string                                                         | The identifier of the blueprint this vehicle was based on.     |
 | `rolename`                                                     | string                                                         | Role assigned to the vehicle.                                  |
-| `wheels`                                                       | [CarlaEgoVehicleInfoWheel](<#carlaegovehicleinfowheelmsg>)     | List of messages with information regarding wheels.            |
+| `wheels`                                                       | [CarlaVehicleInfoWheel](<#carlavehicleinfowheelmsg>)     | List of messages with information regarding wheels.            |
 | `max_rpm`                                                      | float32                                                        | Maximum RPM of the vehicle's engine.                           |
 | `moi`                                                          | float32                                                        | Moment of inertia of the vehicle's engine.                     |
 | `damping_rate_full_throttle`                                   | float32                                                        | Damping rate when the throttle is at maximum.                  |
@@ -105,9 +106,9 @@ Static information regarding a vehicle, mostly the attributes used to define the
 
 ---
 
-## CarlaEgoVehicleInfoWheel.msg
+## CarlaVehicleInfoWheel.msg
 
-Static information regarding a wheel that will be part of a [CarlaEgoVehicleInfo.msg](#carlaegovehicleinfomsg) message.
+Static information regarding a wheel that will be part of a [CarlaVehicleInfo.msg](#carlavehicleinfomsg) message.
 
 | Field                                                    | Type                                                     | Description                                              |
 | -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
@@ -121,17 +122,16 @@ Static information regarding a wheel that will be part of a [CarlaEgoVehicleInfo
 
 ---
 
-## CarlaEgoVehicleStatus.msg
+## CarlaVehicleControlStatus.msg
 
-Current status of the vehicle as an object in the world.  
+Current status of the vehicle control settings.  
 
 | Field                                                                     | Type                                                                      | Description                                                               |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `header`                                                                  | [Header](https://docs.ros.org/en/melodic/api/std_msgs/html/msg/Header.html) | Time stamp and frame ID when the message is published.                    |
-| `velocity`                                                                | float32                                                                   | Current speed of the vehicle.                                             |
-| `acceleration`                                                            | geometry\_msgs/Accel                                                      | Current acceleration of the vehicle.                                      |
-| `orientation`                                                             | geometry\_msgs/Quaternion                                                 | Current orientation of the vehicle.                                       |
-| `control`                                                                 | [CarlaEgoVehicleControl](<#carlaegovehiclecontrolmsg>)                    | Current control values as reported by CARLA.                              |
+| `active_control_type`                                                                 | {VEHICLE_CONTROL, ACKERMANN_CONTROL}                                | Current active control type as reported by CARLA.                              |
+| `last_applied_vehicle_control`                                                        | [CarlaVehicleControl](<#carlavehiclecontrolmsg>)                    | Current control values as reported by CARLA.                              |
+| `last_applied_ackermann_control`                                                        | AckermannDriveStamped                                             | Current ackermann control values as reported by CARLA.                              |
+
 
 ---
 
@@ -280,7 +280,7 @@ Current values within an Ackermann controller. These messages are useful for deb
 | `target`                                                                  | [EgoVehicleControlTarget](<#egovehiclecontroltargetmsg>)                  | Limits to the controller values.                                          |
 | `current`                                                                 | [EgoVehicleControlCurrent](<#egovehiclecontrolcurrentmsg>)                | Limits to the controller values.                                          |
 | `status`                                                                  | [EgoVehicleControlStatus](<#egovehiclecontrolstatusmsg>)                  | Limits to the controller values.                                          |
-| `output`                                                                  | [CarlaEgoVehicleControl](<#carlaegovehiclecontrolmsg>)                    | Limits to the controller values.                                          |
+| `output`                                                                  | [CarlaVehicleControl](<#carlavehiclecontrolmsg>)                    | Limits to the controller values.                                          |
 
 ---
 
