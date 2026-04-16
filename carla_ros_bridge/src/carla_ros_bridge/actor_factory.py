@@ -147,8 +147,11 @@ class ActorFactory(object):
                     continue
 
     def clear(self):
-        for _, actor in self.actors.items():
-            actor.destroy()
+        for uid, actor in list(self.actors.items()):
+            try:
+                actor.destroy()
+            except Exception as e:  # pylint: disable=broad-except
+                self.node.logwarn("Failed to clear actor {}: {}".format(uid, e))
         self.actors.clear()
 
     def spawn_actor(self, req):

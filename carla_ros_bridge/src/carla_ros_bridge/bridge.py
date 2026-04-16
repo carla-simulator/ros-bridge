@@ -361,8 +361,11 @@ class CarlaRosBridge(CompatibleNode):
         self.destroy_subscription(self.carla_weather_subscriber)
         self.carla_control_queue.put(CarlaControl.STEP_ONCE)
 
-        for uid in self._registered_actors:
-            self.actor_factory.destroy_actor(uid)
+        for uid in list(self._registered_actors):
+            try:
+                self.actor_factory.destroy_actor(uid)
+            except Exception as e:  # pylint: disable=broad-except
+                self.logwarn("Failed to destroy actor {}: {}".format(uid, e))
         self.actor_factory.update_available_objects()
         self.actor_factory.clear()
         super(CarlaRosBridge, self).destroy()
