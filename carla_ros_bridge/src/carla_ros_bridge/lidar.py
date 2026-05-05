@@ -76,10 +76,10 @@ class Lidar(Sensor):
             PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
         ]
 
-        lidar_data = numpy.fromstring(
-            bytes(carla_lidar_measurement.raw_data), dtype=numpy.float32)
+        lidar_data = numpy.frombuffer(
+            carla_lidar_measurement.raw_data, dtype=numpy.float32)
         lidar_data = numpy.reshape(
-            lidar_data, (int(lidar_data.shape[0] / 4), 4))
+            lidar_data, (int(lidar_data.shape[0] / 4), 4)).copy()
         # we take the opposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
         lidar_data[:, 1] *= -1
@@ -148,15 +148,15 @@ class SemanticLidar(Sensor):
             PointField(name='ObjTag', offset=20, datatype=PointField.UINT32, count=1)
         ]
 
-        lidar_data = numpy.fromstring(bytes(carla_lidar_measurement.raw_data),
-                                      dtype=numpy.dtype([
+        lidar_data = numpy.frombuffer(carla_lidar_measurement.raw_data,
+                                     dtype=numpy.dtype([
                                           ('x', numpy.float32),
                                           ('y', numpy.float32),
                                           ('z', numpy.float32),
                                           ('CosAngle', numpy.float32),
                                           ('ObjIdx', numpy.uint32),
                                           ('ObjTag', numpy.uint32)
-                                      ]))
+                                      ])).copy()
 
         # we take the oposite of y axis
         # (as lidar point are express in left handed coordinate system, and ros need right handed)
