@@ -21,10 +21,6 @@ The PCL recorder package will spawn an ego vehicle that can be controlled with t
 __1.__ After starting a CARLA server, in a new terminal run the following command to launch the PCL recorder package:
 
 ```sh
-# ROS 1
-roslaunch pcl_recorder pcl_recorder.launch
-
-# ROS 2
 ros2 launch pcl_recorder pcl_recorder.launch.py
 ```
 __2.__ When the capture drive is finished, reduce the overall size of the point cloud:

@@ -23,10 +23,6 @@ def generate_launch_description():
             name='spawn_sensors_only',
             default_value='False'
         ),
-        launch.actions.DeclareLaunchArgument(
-            name='control_id',
-            default_value='control'
-        ),
         launch.actions.IncludeLaunchDescription(
             launch.launch_description_sources.PythonLaunchDescriptionSource(
                 os.path.join(get_package_share_directory(
@@ -44,8 +40,7 @@ def generate_launch_description():
                     'carla_spawn_objects'), 'set_initial_pose.launch.py')
             ),
             launch_arguments={
-                'role_name': launch.substitutions.LaunchConfiguration('role_name'),
-                'control_id': launch.substitutions.LaunchConfiguration('control_id')
+                'role_name': launch.substitutions.LaunchConfiguration('role_name')
             }.items()
         )
     ])

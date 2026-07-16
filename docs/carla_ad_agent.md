@@ -19,15 +19,6 @@ The PID parameters were gathered by [Ziegler-Nichols method](https://en.wikipedi
 
 ---
 
-## Requirements
-
-To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spawned (see [Carla Spawn Objects](carla_spawn_objects.md) for information on how to spawn sensors):
-
-- An odometry pseudo sensor (`sensor.pseudo.odom`) with role-name `odometry` attached to the vehicle.
-- An object pseudo sensor (`sensor.pseudo.objects`) with role-name `objects` attached to the vehicle.
-- A traffic light pseudo sensor (`sensor.pseudo.traffic_lights`) with role-name `traffic_lights`.
-
----
 
 ## ROS API 
 
@@ -77,6 +68,7 @@ To be able to use the `carla_ad_agent`, a minimal set of sensors need to be spaw
 | `Kp_longitudinal` | float (default `0.206`) | Proportional term longitudinal PID controller |
 | `Ki_longitudinal` | float (default `0.0206`) | Integral term longitudinal PID controller |
 | `Kd_longitudinal` | float (default `0.515`) | Derivative term longitudinal PID controller |
+| `control_priority` | uint8 (default: `10`) | The priority of the control commands according to  CarlaEgoVehicleControl |
 
 <br>
 

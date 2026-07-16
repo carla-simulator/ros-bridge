@@ -5,6 +5,12 @@ The [`carla_twist_to_control` package](https://github.com/carla-simulator/ros-br
 ---
 ## ROS API
 
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `control_priority` | uint8 (default: `6`) | The priority of the control commands according to  CarlaEgoVehicleControl |
+
 ### Subscriptions
 
 | Topic | Type | Description |

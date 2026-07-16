@@ -13,8 +13,8 @@ def generate_launch_description():
             default_value='ego_vehicle'
         ),
         launch.actions.DeclareLaunchArgument(
-            name='control_id',
-            default_value='control'
+            name='objects_definition_file',
+            default_value=''
         ),
         launch_ros.actions.Node(
             package='carla_spawn_objects',
@@ -24,10 +24,10 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[
                 {
-                    'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                    'objects_definition_file': launch.substitutions.LaunchConfiguration('objects_definition_file')
                 },
                 {
-                    'control_id': launch.substitutions.LaunchConfiguration('control_id')
+                    'role_name': launch.substitutions.LaunchConfiguration('role_name')
                 }
             ]
         )

@@ -1,4 +1,4 @@
 [submodule "carla_msgs"]
 	path = carla_msgs
-	url = https://github.com/carla-simulator/ros-carla-msgs
-	branch = master
+	url = https://github.com/Motor-Ai/carla-simulator-ros-carla-msgs
+	branch = ue4-extend-ros2

@@ -1,50 +1,56 @@
 /*
- * Copyright (c) 2019 Intel Corporation
+ * Copyright (c) 2019-2020 Intel Corporation
  *
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
-#include "PclRecorder.h"
-#include <string>
-#include <pcl/io/pcd_io.h>
-#include <pcl_ros/transforms.h>
 #include <sstream>
+#include <string>
 
-PclRecorder::PclRecorder()
+#include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
+
+#include "PclRecorder.h"
+
+PclRecorderROS2::PclRecorderROS2() : Node("pcl_recorder")
 {
-  tfListener = new tf2_ros::TransformListener(tf_buffer_);
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tfListener = new tf2_ros::TransformListener(*tf_buffer_);
 
   if (mkdir("/tmp/pcl_capture", 0777) == -1) {
-    ROS_WARN("Could not create directory!");
+    RCLCPP_WARN(this->get_logger(), "Could not create directory!");
   }
 
   // Create a ROS subscriber for the input point cloud
   std::string roleName;
-  if (!ros::param::get("~role_name", roleName)) {
+  if (!this->get_parameter("role_name", roleName)) {
     roleName = "ego_vehicle";
   }
-  sub = nh.subscribe("/carla/" + roleName + "/lidar", 1, &PclRecorder::callback, this);
+  auto sub_opt = rclcpp::SubscriptionOptions();
+  sub_opt.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("/carla/" + roleName + "/lidar", 10, std::bind(&PclRecorderROS2::callback, this, std::placeholders::_1), sub_opt);
 }
 
-void PclRecorder::callback(const boost::shared_ptr<const pcl::PCLPointCloud2>& cloud)
+void PclRecorderROS2::callback(const sensor_msgs::msg::PointCloud2::SharedPtr cloud)
 {
   if ((cloud->width * cloud->height) == 0) {
     return;
   }
 
   std::stringstream ss;
-  ss << "/tmp/pcl_capture/capture" << cloud->header.stamp << ".pcd";
+  ss << "/tmp/pcl_capture/capture" << cloud->header.stamp.sec << cloud->header.stamp.nanosec << ".pcd";
 
-  ROS_INFO ("Received %d data points. Storing in %s",
+
+  RCLCPP_INFO (this->get_logger(), "Received %d data points. Storing in %s",
            (int)cloud->width * cloud->height,
            ss.str().c_str());
 
   Eigen::Affine3d transform;
   try {
-    transform = tf2::transformToEigen (tf_buffer_.lookupTransform(fixed_frame_, cloud->header.frame_id,  pcl_conversions::fromPCL (cloud->header.stamp), ros::Duration(1)));
+    transform = tf2::transformToEigen (tf_buffer_->lookupTransform(fixed_frame_, cloud->header.frame_id,  cloud->header.stamp, rclcpp::Duration::from_seconds(1)));
 
     pcl::PointCloud<pcl::PointXYZ> pclCloud;
-    pcl::fromPCLPointCloud2(*cloud, pclCloud);
+    pcl::fromROSMsg(*cloud, pclCloud);
 
     pcl::PointCloud<pcl::PointXYZ> transformedCloud;
     pcl::transformPointCloud (pclCloud, transformedCloud, transform);
@@ -54,6 +60,6 @@ void PclRecorder::callback(const boost::shared_ptr<const pcl::PCLPointCloud2>& c
   }
   catch (tf2::TransformException &ex)
   {
-    ROS_WARN("Could NOT transform: %s", ex.what());
+    RCLCPP_WARN(this->get_logger(), "Could NOT transform: %s", ex.what());
   }
 }

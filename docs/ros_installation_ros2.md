@@ -16,14 +16,13 @@ This section is a guide on how to install the ROS bridge on Linux for use with R
 
 You will need to fulfill the following software requirements before using the ROS bridge:
 
-- Install ROS:
-    - [__ROS 2 Foxy__](https://docs.ros.org/en/foxy/Installation.html) — For Ubuntu 20.04 (Focal)
-- Additional ROS packages may be required depending on your needs. [rviz](https://wiki.ros.org/rviz) is highly recommended to visualize ROS data.
-- CARLA 0.9.11 or later — Previous versions are not compatible with the ROS bridge. Follow the [quick start installation](https://carla.readthedocs.io/en/latest/start_quickstart/) or make the build for [Linux](https://carla.readthedocs.io/en/latest/build_linux/). It is recommended to match the ROS bridge version to the CARLA version when possible.
+- Install basic ROS2 packages according to your distribution
+- Additional ROS2 packages may be required depending on your needs. rviz2 is highly recommended to visualize ROS data.
+- CARLA 0.9.17 or later — Previous versions are not compatible with the CARLA built-in ROS2 interfaces. Follow the [quick start installation](https://carla.readthedocs.io/en/latest/start_quickstart/) or make the build for [Linux](https://carla.readthedocs.io/en/latest/build_linux/). It is recommended to match the ROS bridge version to the CARLA version when possible.
 
 ---
 
-## ROS bridge installation
+## installation
 
 !!! Note
     The Debian package installation is not yet available for ROS 2.
@@ -38,17 +37,16 @@ __1.__ Set up the project directory and clone the ROS bridge repository and subm
 __2.__ Set up the ROS environment:
 
 ```sh
-    source /opt/ros/foxy/setup.bash
+    source /opt/ros/humble/setup.bash
 ```
 
-__3.__ Install the ROS dependencies:
+__3.__ Install the ROS2 dependencies:
 
 ```sh
-    rosdep update
-    rosdep install --from-paths src --ignore-src -r
+    ./install_dependencies.sh
 ```
 
-__4.__ Build the ROS bridge workspace using colcon:
+__4.__ Build the ROS workspace using colcon:
 
 ```sh
     colcon build
@@ -56,7 +54,7 @@ __4.__ Build the ROS bridge workspace using colcon:
 
 ---
 
-## Run the ROS bridge
+## Run ROS clients
 
 __1.__ Start a CARLA server according to the installation method used to install CARLA:
 
@@ -68,29 +66,33 @@ __1.__ Start a CARLA server according to the installation method used to install
     ./CarlaUE4.sh
 
     # Build from source version in carla root folder
-    make launch
+    make launch ARGS="--ros2"
 ```
 
-__2.__ Add the correct CARLA modules to your Python path:
+__2.__ [optional] Add the correct CARLA modules to your Python path if required:
+The CARLA python enviroment is only required for `carla_ros_client` which implements some CARLA interfaces that are not provided by the CARLA server,
+because these are only handled within client code; i.e.:
+- enable_autopilot
+- lane_invasion_sensor
+All other ROS2 interfaces are directly provided by CARLA server if running in ROS mode.
 
+Usually, CARLA installs the python packages at build-time. The packages can also be installed via PyPi,
+but you have to ensure the version matches to your CARLA server. If in doubt, you can set the PYTHONPATH manually:  
 ```sh
     export CARLA_ROOT=<path-to-carla>
     export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/carla-<carla_version_and_arch>.egg:$CARLA_ROOT/PythonAPI/carla
 ```
-__3.__ Add the source path for the ROS bridge workspace:
+__3.__ Add the source path for the ROS workspace:
 
 ```sh
     source ./install/setup.bash
 ```
 
-__4.__ In another terminal, start the ROS 2 bridge. You can run one of the two options below:
+__4.__ In another terminal, you can exemplary start e.g. the carla_manual_control client. To have the ego vehicle spawned with respective sensor setup and
+carla_control_client to allow setting the autopilot you can call:
 
 ```sh
-    # Option 1, start the basic ROS bridge package
-    ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
-
-    # Option 2, start the ROS bridge with an example ego vehicle
-    ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py
+    ros2 launch carla_ros_client carla_ros_client_with_example_ego_vehicle.launch.py
 ```
 
 !!! Note
@@ -115,12 +117,14 @@ __4.__ In another terminal, start the ROS 2 bridge. You can run one of the two o
 
 ## Testing
 
+TODO: update the tests to native ROS2 interface and maybe move the general ones into some CARLA test folder
+
 To execute tests using colcon:
 
 __1.__ Build the package:
 
 ```sh
-    colcon build --packages-up-to carla_ros_bridge
+    colcon build --packages-up-to carla_ros_client
 ```
 
 __2.__ Run the tests:

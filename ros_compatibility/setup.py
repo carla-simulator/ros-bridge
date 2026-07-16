@@ -36,6 +36,5 @@ elif ROS_VERSION == 2:
         maintainer_email='carla.simulator@gmail.com',
         description='The ros_compatibility package',
         license='MIT',
-        tests_require=['pytest'],
         package_dir={'': 'src'},
     )

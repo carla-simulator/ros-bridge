@@ -123,7 +123,7 @@ def generate_launch_description():
             remappings=[
                 (
                     "carla/ego_vehicle/spectator_pose",
-                    "/carla/ego_vehicle/rgb_view/control/set_transform"
+                    "/carla/ego_vehicle/rgb_view/set_transform"
                 )
             ],
             arguments=[

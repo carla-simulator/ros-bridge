@@ -45,8 +45,6 @@ except ImportError:
         Please add <CARLA_DIR>/PythonAPI/carla to your PYTHONPATH.")
     sys.exit(1)
 
-ROS_VERSION = roscomp.get_ros_version()
-
 
 class CarlaRosScenarioRunner(CompatibleNode):
     """
@@ -64,6 +62,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
         wait_for_ego = self.get_param("wait_for_ego", "True")
         host = self.get_param("host", "localhost")
         port = self.get_param("port", 2000)
+        debug = self.get_param("debug", "False")
 
         self._status_publisher = self.new_publisher(
             CarlaScenarioRunnerStatus,
@@ -75,6 +74,7 @@ class CarlaRosScenarioRunner(CompatibleNode):
             host,
             port,
             wait_for_ego,
+            debug,
             self.scenario_runner_status_updated,
             self.scenario_runner_log)
         self._request_queue = queue.Queue()
@@ -169,9 +169,8 @@ def main(args=None):
 
     scenario_runner = CarlaRosScenarioRunner()
 
-    if ROS_VERSION == 2:
-        spin_thread = threading.Thread(target=scenario_runner.spin, daemon=True)
-        spin_thread.start()
+    spin_thread = threading.Thread(target=scenario_runner.spin, daemon=True)
+    spin_thread.start()
 
     try:
         scenario_runner.run()
@@ -184,8 +183,7 @@ def main(args=None):
         del scenario_runner
 
         roscomp.shutdown()
-        if ROS_VERSION == 2:
-            spin_thread.join()
+        spin_thread.join()
 
 
 if __name__ == "__main__":

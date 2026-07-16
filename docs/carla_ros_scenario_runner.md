@@ -50,20 +50,12 @@ The above code example shows an instance of [`carla_ad_agent`](carla_ad_agent.md
 __1.__ Run the ROS Scenario Runner package:
 
 ```sh
-# ROS 1
-roslaunch carla_ros_scenario_runner carla_ros_scenario_runner.launch scenario_runner_path:=<path_to_scenario_runner>
-
-# ROS 2
 ros2 launch carla_ros_scenario_runner carla_ros_scenario_runner.launch.py scenario_runner_path:=<path_to_scenario_runner>
 ```
 
 __2.__ Run a scenario:
 
 ```sh
-# ROS 1
-rosservice call /scenario_runner/execute_scenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
-
-# ROS 2
 ros2 service call /scenario_runner/execute_scenario carla_ros_scenario_runner_types/srv/ExecuteScenario "{ 'scenario': { 'scenario_file': '<full_path_to_openscenario_file>' } }"
 ```
 

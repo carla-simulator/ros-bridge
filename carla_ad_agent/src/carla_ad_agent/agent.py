@@ -65,10 +65,23 @@ class Agent(CompatibleNode):
         self.loginfo("Vehicle info received.")
         self._ego_vehicle_id = vehicle_info.id
 
-        self._get_waypoint_client = self.new_client(
-            GetWaypoint,
-            '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name),
-            callback_group=MutuallyExclusiveCallbackGroup())
+        # get_waypoint() (used only by _is_vehicle_hazard()/_is_light_red(), both only called when
+        # avoid_risk=True) needs carla_waypoint_publisher's service. When avoid_risk=False that
+        # node isn't launched at all, so wait with a timeout instead of new_client()'s default
+        # infinite wait_for_service() - otherwise this constructor (and therefore the whole node,
+        # including its actual subscriptions/publishers set up by subclasses after super().__init__())
+        # would hang forever.
+        try:
+            self._get_waypoint_client = self.new_client(
+                GetWaypoint,
+                '/carla_waypoint_publisher/{}/get_waypoint'.format(role_name),
+                timeout_sec=5.0,
+                callback_group=MutuallyExclusiveCallbackGroup())
+        except ROSException:
+            self.logwarn(
+                "carla_waypoint_publisher's get_waypoint service not available after 5s - "
+                "continuing without it (only relevant when avoid_risk=True)")
+            self._get_waypoint_client = None
 
     def get_waypoint(self, location):
         """

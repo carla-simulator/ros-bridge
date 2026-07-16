@@ -104,10 +104,10 @@ class CarlaControlPlugin(Plugin):
         callback whenever carla status changes
         """
         self.carla_status = status
-        if status.synchronous_mode:
+        if status.episode_settings.synchronous_mode:
             self._widget.pushButtonPlayPause.setDisabled(False)
             self._widget.pushButtonStepOnce.setDisabled(False)
-            if status.synchronous_mode_running:
+            if status.game_running:
                 self._widget.pushButtonPlayPause.setIcon(self.pause_icon)
             else:
                 self._widget.pushButtonPlayPause.setIcon(self.play_icon)

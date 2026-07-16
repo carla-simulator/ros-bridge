@@ -40,6 +40,10 @@ def generate_launch_description():
             name='control_time_step',
             default_value='0.05'
         ),
+        launch.actions.DeclareLaunchArgument(
+            name='control_priority',
+            default_value='10'
+        ),
         launch_ros.actions.Node(
             package='carla_ad_agent',
             executable='ad_agent',
@@ -86,6 +90,9 @@ def generate_launch_description():
                 },
                 {
                     'control_time_step': launch.substitutions.LaunchConfiguration('control_time_step')
+                },
+                {
+                    'control_priority': launch.substitutions.LaunchConfiguration('control_priority')
                 }
             ]
         )

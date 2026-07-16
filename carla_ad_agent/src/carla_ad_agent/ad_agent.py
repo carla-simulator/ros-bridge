@@ -47,6 +47,7 @@ class CarlaAdAgent(Agent):
         self.data_lock = threading.Lock()
 
         self._ego_vehicle_pose = None
+        self._ego_vehicle_id = None
         self._objects = {}
         self._lights_status = {}
         self._lights_info = {}
@@ -61,6 +62,13 @@ class CarlaAdAgent(Agent):
             "/carla/{}/odometry".format(role_name),
             self.odometry_cb,
             qos_profile=10
+        )
+
+        self._vehicle_info_subscriber = self.new_subscription(
+            CarlaEgoVehicleInfo,
+            "/carla/{}/vehicle_info".format(role_name),
+            self.vehicle_info_cb,
+            qos_profile=1
         )
 
         self._target_speed_subscriber = self.new_subscription(
@@ -91,6 +99,11 @@ class CarlaAdAgent(Agent):
                 qos_profile=QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             )
 
+    def vehicle_info_cb(self, vehicle_info_msg):
+        with self.data_lock:
+            self._ego_vehicle_id = vehicle_info_msg.id
+            self._objects.pop(self._ego_vehicle_id)
+
     def odometry_cb(self, odometry_msg):
         with self.data_lock:
             self._ego_vehicle_pose = odometry_msg.pose.pose
@@ -102,7 +115,8 @@ class CarlaAdAgent(Agent):
     def objects_cb(self, objects_msg):
         objects = {}
         for obj in objects_msg.objects:
-            objects[obj.id] = obj
+            if obj.id != self._ego_vehicle_id:
+                objects[obj.id] = obj
 
         with self.data_lock:
             self._objects = objects
@@ -188,14 +202,19 @@ def main(args=None):
     try:
         executor = roscomp.executors.MultiThreadedExecutor()
         controller = CarlaAdAgent()
-        executor.add_node(controller)
+        if not executor.add_node(controller):
+            controller.get_logger().error("Can't add ad_agent controller to executor")
 
         roscomp.on_shutdown(controller.emergency_stop)
 
         update_timer = controller.new_timer(
             0.05, lambda timer_event=None: controller.run_step())
 
-        controller.spin()
+        # spin the executor directly (matching every other MultiThreadedExecutor user in this
+        # tree, e.g. derived_objects_visualizer_main.py) - controller.spin() goes through
+        # rclpy.spin(node, executor) instead, which never actually served this node's timer in
+        # practice, so run_step() (and therefore /speed_command) never fired.
+        executor.spin()
 
     except (ROSInterruptException, ROSException) as e:
         if roscomp.ok():

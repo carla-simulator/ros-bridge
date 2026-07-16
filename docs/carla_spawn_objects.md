@@ -16,10 +16,6 @@ The [`carla_spawn_objects` package](https://github.com/carla-simulator/ros-bridg
 Objects and their attached sensors are defined through a `.json` file. The default location of this file is within `carla_spawn_objects/config/objects.json`. To change the location, pass the path to the file via the private ROS parameter, `objects_definition_file`, when you launch the package:
 
 ```sh
-    # ROS 1
-    roslaunch carla_spawn_objects carla_spawn_objects.launch objects_definition_file:=path/to/objects.json
-
-    # ROS 2
     ros2 launch carla_spawn_objects carla_spawn_objects.launch.py objects_definition_file:=path/to/objects.json
 ```
 
@@ -69,10 +65,6 @@ All sensor attributes are defined as described in the [blueprint library](https:
 
     - Pass the desired position to a ROS parameter `spawn_point_<VEHICLE-NAME>`. `<VEHICLE-NAME>` will be the `id` you gave the vehicle in the `.json` file:
 
-            # ROS 1
-            roslaunch carla_spawn_objects carla_spawn_objects.launch spawn_point_<VEHICLE-NAME>:=x,y,z,roll,pitch,yaw
-
-            # ROS 2
             ros2 launch carla_spawn_objects carla_spawn_objects.launch.py spawn_point_<VEHICLE-NAME>:=x,y,z,roll,pitch,yaw
 
     - Define the initial position directly in the `.json` file:
@@ -85,27 +77,15 @@ All sensor attributes are defined as described in the [blueprint library](https:
 
 ### Respawning vehicles
 
-A vehicle can be respawned to a different location during a simulation by publishing to the topic `/carla/<ROLE NAME>/<CONTROLLER_ID>/initialpose`. To use this functionality:
+A vehicle can be respawned to a different location during a simulation by publishing to the topic `/initialpose`. To use this functionality:
 
-1. Attach an `actor.pseudo.control` pseudo-actor to the vehicle in the `.json` file. It should have the same `id` value as the value passed as `<CONTROLLER_ID>` used to publish to the topic:
+1. Launch the `set_inital_pose` node, passing the `<ROLE_NAME>` as an argument to the ROS parameter `role_name` (default = 'ego_vehicle'):
 
-        {
-        "type": "vehicle.*",
-        "id": "ego_vehicle",
-        "sensors":
-        [
-            {
-            "type": "actor.pseudo.control",
-            "id": "control"
-            }
-        ]
-        }
+```sh
+  ros2 launch carla_spawn_objects set_initial_pose.launch.py role_name:=<ROLE_NAME>
+```
 
-2. Launch the `set_inital_pose` node, passing the `<CONTROLLER_ID>` as an argument to the ROS parameter `controller_id` (default = 'control'):
-
-        roslaunch carla_spawn_objects set_initial_pose.launch controller_id:=<CONTROLLER_ID>
-
-3. The preferred way to publish the message to set the new position is by using the __2D Pose Estimate__ button available in the RVIZ interface. You can then click on the viewport of the map to respawn in that position. This will delete the current `ego_vehicle` and respawn it at the specified position.
+2. The preferred way to publish the message to set the new position is by using the __2D Pose Estimate__ button available in the RVIZ interface. You can then click on the viewport of the map to respawn in that position. This will delete the current `ego_vehicle` and respawn it at the specified position.
 
 > ![rviz_set_start_goal](images/rviz_set_start_goal.png)
 
@@ -120,23 +100,13 @@ A vehicle can be respawned to a different location during a simulation by publis
 
 Sensors can be attached to an already existing vehicle. To do so:
 
-1. Define the pseudo sensor `sensor.pseudo.actor_list` in the `.json` file. This will give access to a list of already existing actors.
-
-        ...
-        {
-            "type": "sensor.pseudo.actor_list",
-            "id": "actor_list"
-        },
-
+1. The list of already existing actors is provided under '/carla/actor_list'
 2. Define the rest of the sensors as required.
 3. Launch the node with the `spawn_sensors_only` parameter set to True. This will check if an actor with the same `id` and `type` as the one specified in the `.json` file is already active and if so, attach the sensors to this actor.
 
-        # ROS 1
-        roslaunch carla_spawn_objects carla_spawn_objects.launch spawn_sensors_only:=True
-
-        # ROS 2
-        ros2 launch carla_spawn_objects carla_spawn_objects.launch.py spawn_sensors_only:=True
-
+```sh
+    ros2 launch carla_spawn_objects carla_spawn_objects.launch.py spawn_sensors_only:=True
+```
 
 ---
 

@@ -20,29 +20,18 @@ The RVIZ plugin expects an ego vehicle named `ego_vehicle`. To see an example of
 __1.__ Start the ROS bridge with RVIZ enabled:
 
 ```sh
-# ROS 1
-roslaunch carla_ros_bridge carla_ros_bridge.launch
-
-# ROS 2
 ros2 launch carla_ros_bridge carla_ros_bridge.launch.py
 ```
 
 __2.__ Start RVIZ:
 
 ```sh
-# ROS 1
-rosrun rviz rviz
-
-# ROS 2
 ros2 run rviz2 rviz2
 ```
 
 __2.__ Spawn an ego vehicle with the `carla_spawn_objects` package:
 
 ```sh
-# ROS 1
-roslaunch carla_spawn_objects carla_spawn_objects.launch
-
 # ROS 2
 ros2 launch carla_spawn_objects carla_spawn_objects.launch.py
 ```
@@ -50,10 +39,6 @@ ros2 launch carla_spawn_objects carla_spawn_objects.launch.py
 __3.__ Control the ego vehicle with the `carla_manual_control` package (press `B` to enable manual steering):
 
 ```sh
-# ROS 1
-roslaunch carla_manual_control carla_manual_control.launch
-
-# ROS 2
 ros2 launch carla_manual_control carla_manual_control.launch.py
 ```
 
@@ -77,7 +62,7 @@ ros2 launch carla_manual_control carla_manual_control.launch.py
 | Topic | Type | Description |
 |-------|------|-------------|
 | `/carla/status` | [carla_msgs/CarlaStatus](ros_msgs.md#carlastatusmsg) | Read the current status of CARLA |
-| `/carla/ego_vehicle/vehicle_status` | [carla_msgs/CarlaEgoVehicleStatus](ros_msgs.md#carlaegovehiclestatusmsg) | Display the current state of the ego vehicle |
+| `/carla/ego_vehicle/vehicle_status` | [carla_msgs/CarlaEgoVehicleStatus](ros_msgs.md#carlavehiclecontrolstatusmsg) | Display the current state of the ego vehicle |
 | `/carla/ego_vehicle/odometry` | [nav_msgs/Odometry](https://docs.ros.org/en/api/nav_msgs/html/msg/Odometry.html) | Display the current pose of the ego vehicle |
 | `/scenario_runner/status` | [carla_ros_scenario_runner_types/CarlaScenarioRunnerStatus](ros_msgs.md#carlascenariorunnerstatusmsg) | Visualize the scenario runner status |
 | `/carla/available_scenarios` | [carla_ros_scenario_runner_types/CarlaScenarioList](ros_msgs.md#carlascenariolistmsg) | Provides a list of scenarios to execute (disabled in combo box)|

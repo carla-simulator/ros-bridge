@@ -77,6 +77,7 @@ Messages sent to apply a control to a vehicle in both modes, autopilot and manua
 | `reverse`                                                                                               | bool                                                                                                    | If **True**, the vehicle will move reverse.                                                             |
 | `gear`                                                                                                  | int32                                                                                                   | Changes between the available gears in a vehicle.                                                       |
 | `manual_gear_shift`                                                                                     | bool                                                                                                    | If **True**, the gears will be shifted using `gear`.                                                    |
+| `control_priority`                                                                                     | uint8                                                                                                    | This provides the priority of the control command input. 4 <= control_priority <= 255. Higher numbers of control input override lower ones                                                 |
 
 ---
 
@@ -131,7 +132,10 @@ Current status of the vehicle as an object in the world.
 | `velocity`                                                                | float32                                                                   | Current speed of the vehicle.                                             |
 | `acceleration`                                                            | geometry\_msgs/Accel                                                      | Current acceleration of the vehicle.                                      |
 | `orientation`                                                             | geometry\_msgs/Quaternion                                                 | Current orientation of the vehicle.                                       |
-| `control`                                                                 | [CarlaEgoVehicleControl](<#carlaegovehiclecontrolmsg>)                    | Current control values as reported by CARLA.                              |
+| `active_control_type`                                                                 | {VEHICLE_CONTROL, ACKERMANN_CONTROL}                                | Current active control type as reported by CARLA.                              |
+| `last_applied_vehicle_control`                                                        | [CarlaEgoVehicleControl](<#carlavehiclecontrolmsg>)                    | Current control values as reported by CARLA.                              |
+| `last_applied_ackermann_control`                                                        | AckermannDriveStamped                                             | Current ackermann control values as reported by CARLA.                              |
+
 
 ---
 

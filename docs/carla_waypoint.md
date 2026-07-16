@@ -16,10 +16,6 @@ The [CARLA Waypoint Publisher](https://github.com/carla-simulator/ros-bridge/tre
 With a CARLA server running, execute the following command:
 
 ```sh
-# ROS 1
-roslaunch carla_waypoint_publisher carla_waypoint_publisher.launch
-
-# ROS 2
 ros2 launch carla_waypoint_publisher carla_waypoint_publisher.launch.py
 ```
 

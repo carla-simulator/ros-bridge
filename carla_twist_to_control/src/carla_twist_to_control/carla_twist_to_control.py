@@ -37,6 +37,7 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
         super(TwistToVehicleControl, self).__init__("twist_to_control")
 
         self.role_name = self.get_param("role_name", "ego_vehicle")
+        self.control_priority = self.get_param("control_priority", "6")
         self.max_steering_angle = None
 
         self.new_subscription(
@@ -80,6 +81,7 @@ class TwistToVehicleControl(CompatibleNode):  # pylint: disable=too-few-public-m
             return
 
         control = CarlaEgoVehicleControl()
+        control.control_priority = self.control_priority
         if twist == Twist():
             # stop
             control.throttle = 0.

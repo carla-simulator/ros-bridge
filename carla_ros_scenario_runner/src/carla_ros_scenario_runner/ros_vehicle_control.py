@@ -24,9 +24,6 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from std_msgs.msg import Float64
 
-ROS_VERSION = roscomp.get_ros_version()
-
-
 class RosVehicleControl(BasicControl):
 
     def __init__(self, actor, args=None):
@@ -66,12 +63,8 @@ class RosVehicleControl(BasicControl):
             launch_file = args["launch"]
             launch_package = args["launch-package"]
 
-            if ROS_VERSION == 1:
-                executable = "roslaunch"
-                cli_args = [launch_package, launch_file]
-            elif ROS_VERSION == 2:
-                executable = "ros2 launch"
-                cli_args = [launch_package, launch_file + '.py']
+            executable = "ros2 launch"
+            cli_args = [launch_package, launch_file + '.py']
             cli_args.append('role_name:={}'.format(self._role_name))
 
             # add additional launch parameters

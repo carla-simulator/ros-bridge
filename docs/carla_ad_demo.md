@@ -28,10 +28,6 @@ export SCENARIO_RUNNER_PATH=<path_to_scenario_runner>
 To start a demo where the ego vehicle follows a randomly generated route, run the following command after you have started a CARLA server:
 
 ```sh
-# ROS 1
-roslaunch carla_ad_demo carla_ad_demo.launch
-
-# ROS 2
 ros2 launch carla_ad_demo carla_ad_demo.launch.py
 ```
 
@@ -48,10 +44,6 @@ python3 spawn_npc.py
 To execute the demo with a predefined scenario, run the following command after you have started a CARLA server:
 
 ```sh
-# ROS1
-roslaunch carla_ad_demo carla_ad_demo_with_scenario.launch
-
-# ROS2
 ros2 launch carla_ad_demo carla_ad_demo_with_scenario.launch.py
 ```
 

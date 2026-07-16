@@ -16,7 +16,7 @@ import threading
 
 import ros_compatibility as roscomp
 from ros_compatibility.node import CompatibleNode
-from ros_compatibility.qos import QoSProfile, DurabilityPolicy
+from ros_compatibility.qos import QoSProfile, DurabilityPolicy, QoSProfileSubscriber
 
 from carla_ad_agent.vehicle_pid_controller import VehiclePIDController
 from carla_ad_agent.misc import distance_vehicle
@@ -46,6 +46,7 @@ class LocalPlanner(CompatibleNode):
 
         role_name = self.get_param("role_name", "ego_vehicle")
         self.control_time_step = self.get_param("control_time_step", 0.05)
+        self.control_priority = self.get_param("control_priority", 10)
 
         args_lateral_dict = {}
         args_lateral_dict['K_P'] = self.get_param("Kp_lateral", 0.9)
@@ -59,6 +60,7 @@ class LocalPlanner(CompatibleNode):
 
         self.data_lock = threading.Lock()
 
+        self._current_header = None
         self._current_pose = None
         self._current_speed = None
         self._target_speed = 0.0
@@ -72,7 +74,7 @@ class LocalPlanner(CompatibleNode):
             Odometry,
             "/carla/{}/odometry".format(role_name),
             self.odometry_cb,
-            qos_profile=10)
+            QoSProfileSubscriber(depth=10))
         self._path_subscriber = self.new_subscription(
             Path,
             "/carla/{}/waypoints".format(role_name),
@@ -100,6 +102,8 @@ class LocalPlanner(CompatibleNode):
 
     def odometry_cb(self, odometry_msg):
         with self.data_lock:
+            self._current_header = odometry_msg.header
+            self._current_header.frame_id = odometry_msg.child_frame_id
             self._current_pose = odometry_msg.pose.pose
             self._current_speed = math.sqrt(odometry_msg.twist.twist.linear.x ** 2 +
                                             odometry_msg.twist.twist.linear.y ** 2 +
@@ -108,12 +112,14 @@ class LocalPlanner(CompatibleNode):
     def target_speed_cb(self, target_speed_msg):
         with self.data_lock:
             self._target_speed = target_speed_msg.data
+            self.logdebug("Receiving target_speed: target_speed={}".format(self._target_speed))
 
     def path_cb(self, path_msg):
         with self.data_lock:
             self._waypoint_buffer.clear()
             self._waypoints_queue.clear()
             self._waypoints_queue.extend([pose.pose for pose in path_msg.poses])
+            self.logdebug("Receiving route: resulting queue {}".format(self._waypoints_queue))
 
     def pose_to_marker_msg(self, pose):
         marker_msg = Marker()
@@ -138,6 +144,11 @@ class LocalPlanner(CompatibleNode):
                 self.emergency_stop()
                 return
 
+            if (self._current_pose is None) or (self._current_speed is None) or (self._current_header is None):
+                self.loginfo("Waiting for first odometry message...")
+                self.emergency_stop()
+                return
+
             # when target speed is 0, brake.
             if self._target_speed == 0.0:
                 self.emergency_stop()
@@ -158,6 +169,8 @@ class LocalPlanner(CompatibleNode):
             # move using PID controllers
             control_msg = self._vehicle_controller.run_step(
                 self._target_speed, self._current_speed, self._current_pose, target_pose)
+            control_msg.header = self._current_header
+            control_msg.control_priority = self.control_priority
 
             # purge the queue of obsolete waypoints
             max_index = -1
@@ -175,7 +188,19 @@ class LocalPlanner(CompatibleNode):
             self._control_cmd_publisher.publish(control_msg)
 
     def emergency_stop(self):
+        # publish an explicit "no target" marker (rather than simply going silent) so consumers of
+        # next_target can immediately tell "local_planner has nothing to drive toward right now"
+        # apart from "local_planner just hasn't ticked yet" - this fires whenever emergency_stop is
+        # invoked (empty queue, missing odometry, target_speed == 0, or shutdown).
+        no_target_msg = Marker()
+        no_target_msg.header.frame_id = "map"
+        no_target_msg.action = Marker.DELETE
+        self._target_pose_publisher.publish(no_target_msg)
+
         control_msg = CarlaEgoVehicleControl()
+        control_msg.control_priority = self.control_priority
+        if self._current_header:
+            control_msg.header = self._current_header
         control_msg.steer = 0.0
         control_msg.throttle = 0.0
         control_msg.brake = 1.0

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>carla_ros_client</name>
+  <version>0.0.1</version>
+  <description>The carla_ros_client package</description>
+  <maintainer email="carla.simulator@gmail.com">CARLA Simulator Team</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>carla_common</exec_depend>
+  <exec_depend>carla_msgs</exec_depend>
+  <exec_depend>carla_spawn_objects</exec_depend>
+  <exec_depend>carla_manual_control</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python-transforms3d-pip</exec_depend>
+  <exec_depend>ros_compatibility</exec_depend>
+
+  <depend>rclpy</depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

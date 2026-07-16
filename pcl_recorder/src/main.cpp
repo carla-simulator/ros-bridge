@@ -4,12 +4,17 @@
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
-#include <ros/ros.h>
 #include "PclRecorder.h"
+
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "pcl_recorder");
-  PclRecorder pclRecorder;
-  ros::spin();
-};
+  rclcpp::init(argc, argv);
+  rclcpp::executors::MultiThreadedExecutor executor;
+  auto recorder = std::make_shared<PclRecorderROS2>();
+  executor.add_node(recorder);
+  executor.spin();
+  rclcpp::shutdown();
+  return 0;
+}

@@ -1,9 +1,0 @@
-<library path="rviz_carla_plugin">
-  <class name="rviz_carla_plugin/CarlaControl"
-         type="rviz_carla_plugin::CarlaControlPanel"
-         base_class_type="rviz_common::Panel">
-    <description>
-      A panel widget for controlling carla nodes
-    </description>
-  </class>
-</library>

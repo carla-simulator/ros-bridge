@@ -11,15 +11,22 @@ def generate_launch_description():
             name='role_name',
             default_value='ego_vehicle'
         ),
+        launch.actions.DeclareLaunchArgument(
+            name='control_priority',
+            default_value='6'
+        ),
         launch_ros.actions.Node(
             package='carla_twist_to_control',
             executable='carla_twist_to_control',
-            name=launch.substitutions.LaunchConfiguration('role_name'),
+            name= ['carla_twist_to_control_',launch.substitutions.LaunchConfiguration('role_name')],
             output='screen',
             emulate_tty='True',
             parameters=[
                 {
                     'role_name': launch.substitutions.LaunchConfiguration('role_name')
+                },
+                {
+                    'control_priority': launch.substitutions.LaunchConfiguration('control_priority')
                 }
             ]
         )
