@@ -129,7 +129,10 @@ class ActorFactory(object):
                 elif task_type == ActorFactory.TaskType.SPAWN_PSEUDO_ACTOR and not self.node.shutdown.is_set():
                     self._create_object(actor_id, req.type, req.id, req.attach_to, req.transform)
                 elif task_type == ActorFactory.TaskType.DESTROY_ACTOR:
-                    self._destroy_object(actor_id, delete_actor=True)
+                    try:
+                        self._destroy_object(actor_id, delete_actor=True)
+                    except Exception as e:  # pylint: disable=broad-except
+                        self.node.logwarn("Failed to destroy actor {}: {}".format(actor_id, e))
 
         self.lock.release()
 

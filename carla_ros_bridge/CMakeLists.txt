@@ -16,6 +16,7 @@ if(${ROS_VERSION} EQUAL 1)
   if(CATKIN_ENABLE_TESTING)
     roslaunch_add_file_check(launch)
     roslaunch_add_file_check(test)
+    catkin_add_nosetests(test/test_actor_factory_cleanup.py)
   endif()
 
   include_directories(${catkin_INCLUDE_DIRS})
