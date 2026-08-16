@@ -310,36 +310,51 @@ class CarlaSpawnObjects(CompatibleNode):
         destroy all the players and sensors
         """
         self.loginfo("Destroying spawned objects...")
-        try:
-            # destroy vehicles sensors
-            for actor_id in self.vehicles_sensors:
+        failed = []
+
+        # destroy vehicles sensors
+        for actor_id in list(self.vehicles_sensors):
+            try:
                 destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
                                   destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
-            self.vehicles_sensors = []
+            except Exception as e:  # pylint: disable=broad-except
+                self.logwarn("Failed to destroy object {}: {}".format(actor_id, e))
+                failed.append(actor_id)
+        self.vehicles_sensors = []
 
-            # destroy global sensors
-            for actor_id in self.global_sensors:
+        # destroy global sensors
+        for actor_id in list(self.global_sensors):
+            try:
                 destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = actor_id
                 self.call_service(self.destroy_object_service,
                                   destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(actor_id))
-            self.global_sensors = []
+            except Exception as e:  # pylint: disable=broad-except
+                self.logwarn("Failed to destroy object {}: {}".format(actor_id, e))
+                failed.append(actor_id)
+        self.global_sensors = []
 
-            # destroy player
-            for player_id in self.players:
+        # destroy players
+        for player_id in list(self.players):
+            try:
                 destroy_object_request = roscomp.get_service_request(DestroyObject)
                 destroy_object_request.id = player_id
                 self.call_service(self.destroy_object_service,
                                   destroy_object_request, timeout=0.5, spin_until_response_received=True)
                 self.loginfo("Object {} successfully destroyed.".format(player_id))
-            self.players = []
-        except ServiceException:
+            except Exception as e:  # pylint: disable=broad-except
+                self.logwarn("Failed to destroy player {}: {}".format(player_id, e))
+                failed.append(player_id)
+        self.players = []
+
+        if failed:
             self.logwarn(
-                'Could not call destroy service on objects, the ros bridge is probably already shutdown')
+                "Could not destroy {} object(s): {}. "
+                "The ros bridge may have already shut down.".format(len(failed), failed))
 
 # ==============================================================================
 # -- main() --------------------------------------------------------------------
