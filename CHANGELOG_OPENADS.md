@@ -3,7 +3,7 @@
 ## General
 
 - Support the CARLA ROS 2 native interface via the [`native_interface`](./docs/run_ros.md) launch argument. When enabled, native CARLA sensor publishers are used and bridge-side sensor actors are skipped where possible.
-- Bump the supported CARLA version to [0.10.0](./carla_ros_bridge/src/carla_ros_bridge/CARLA_VERSION) using Unreal Engine 5 and the corresponding Python API updates.
+- Bump the supported CARLA version to [1.0](./carla_ros_bridge/src/carla_ros_bridge/CARLA_VERSION) using Unreal Engine 5.8 and the corresponding Python API updates.
 - Use a [`SingleThreadedExecutor`](./carla_ros_bridge/src/carla_ros_bridge/bridge.py) for the bridge node. The CARLA world tick already runs in a separate thread, so a `MultiThreadedExecutor` can conflict with the tick/update flow.
 
 ## Timing Related
