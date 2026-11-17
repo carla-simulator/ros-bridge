@@ -1,5 +1,6 @@
 apiVersion: v2
 name: carla-manual-control
+# TODO(openads): bump to 1.0.0-x.y.z when releasing.
 version: 0.10.0-1.2.0-carla-manual-control
 appVersion: 0.10.0-1.2.0
 description: Bidirectional communication bridge between CARLA simulation and ROS ecosystems
