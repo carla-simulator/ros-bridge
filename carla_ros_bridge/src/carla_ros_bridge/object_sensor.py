@@ -123,9 +123,14 @@ class ObjectSensor(PseudoActor):
     def _get_environment_object_world_vertices(self, environment_object):
         return environment_object.bounding_box.get_world_vertices(carla.Transform())
 
-    def _get_static_vehicles(self, ros_objects):
-        # static vehicles do not move, so they are queried only once: each query is a round trip
-        # that waits while the server computes a frame
+    def _get_static_vehicles(self):
+        """
+        Get the static vehicles of the map as pairs of the CARLA environment object and its object
+        message. The header of the object message is set when it is published.
+
+        Static vehicles do not move, so they are queried and converted only once: each query is a
+        round trip that waits while the server computes a frame.
+        """
         if self._static_vehicles is None:
             self._static_vehicles = []
             # iterate over all possible static vehicles
@@ -134,13 +139,10 @@ class ObjectSensor(PseudoActor):
                 for vehicle in static_vehicles:
                     # take only vehicles with bounding_box attribute set
                     if hasattr(vehicle, "bounding_box"):
-                        self._static_vehicles.append((vehicle, object_value))
-
-        for vehicle, object_value in self._static_vehicles:
-            vehicle_obj = self._get_vehicle_from_environment_objects(vehicle, object_value)
-            ros_objects.objects.append(vehicle_obj)
-
-        return ros_objects
+                        vehicle_obj = self._get_vehicle_from_environment_objects(
+                            vehicle, object_value)
+                        self._static_vehicles.append((vehicle, vehicle_obj))
+        return self._static_vehicles
 
     def _should_publish(self, timestamp):
         """Check and advance this sensor's simulation-time publication deadline."""
@@ -177,12 +179,15 @@ class ObjectSensor(PseudoActor):
             if self.parent is None or self.parent.uid != actor_id:
                 actor = self.actor_list[actor_id]
                 if isinstance(actor, Vehicle):
-                    ros_objects.objects.append(actor.get_object_info())
+                    ros_objects.objects.append(actor.get_object_info(frame))
                 elif isinstance(actor, Walker):
-                    ros_objects.objects.append(actor.get_object_info())
-        
+                    ros_objects.objects.append(actor.get_object_info(frame))
+
         if(self.node.parameters['publish_static_vehicles']):
             # add also static vehicles to ros_objects.object array
-            ros_objects = self._get_static_vehicles(ros_objects)
+            header = self.get_msg_header("carla_map")
+            for _, vehicle_obj in self._get_static_vehicles():
+                vehicle_obj.header = header
+                ros_objects.objects.append(vehicle_obj)
 
         self.object_publisher.publish(ros_objects)

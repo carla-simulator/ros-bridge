@@ -12,6 +12,7 @@ import ros_compatibility as roscomp
 ROS_VERSION = roscomp.get_ros_version()
 
 import math
+import sys
 import carla
 import carla_common.transforms as trans
 from carla_ros_bridge.vehicle import Vehicle
@@ -19,10 +20,9 @@ from carla_ros_bridge.walker import Walker
 from carla_ros_bridge.object_sensor import ObjectSensor
 
 from derived_object_msgs.msg import ObjectArray
-from geometry_msgs.msg import Point, PointStamped
+from geometry_msgs.msg import Point
 
 import tf2_ros
-from tf2_geometry_msgs import do_transform_point
 
 if ROS_VERSION == 2:
     from rclpy.time import Time
@@ -70,6 +70,9 @@ class IdealObjectSensor(ObjectSensor):
         # The bridge resolves the ground altitude once when the sensor is spawned, so that this
         # sensor uses the same ground as the actors it is mounted next to.
         self._ground_offset = 0.0
+
+        # static vehicles as visibility targets, see _get_static_targets()
+        self._static_targets = None
 
         # Skip init if ROS_VERSION is 1
         if ROS_VERSION == 1:
@@ -186,9 +189,9 @@ class IdealObjectSensor(ObjectSensor):
             return carla_location
         return self._lower(carla_location, -self._ground_offset)
 
-    def _ground_relative(self, carla_location, carla_corners):
+    def _ground_relative(self, carla_location):
         """
-        Bring a target into the ground-relative frame this sensor is expressed in.
+        Bring a location of a target into the ground-relative frame this sensor is expressed in.
 
         CARLA reports the targets at their absolute altitude, while a ground-relative
         spawn point makes the transform of this sensor report a height above the
@@ -196,13 +199,20 @@ class IdealObjectSensor(ObjectSensor):
         consistent with the sensor transform the field-of-view check is made against.
 
         :param carla_location: the location of the target
-        :param carla_corners: the corners of the target's bounding box
-        :return: the location and the corners, lowered by the ground offset
+        :return: the location, lowered by the ground offset
         """
         if not self._ground_offset:
-            return carla_location, carla_corners
-        return (self._lower(carla_location, self._ground_offset),
-                [self._lower(corner, self._ground_offset) for corner in carla_corners])
+            return carla_location
+        return self._lower(carla_location, self._ground_offset)
+
+    def _ground_relative_corners(self, carla_corners):
+        """
+        Bring the corners of a target's bounding box into the ground-relative frame, see
+        _ground_relative().
+        """
+        if not self._ground_offset:
+            return carla_corners
+        return [self._lower(corner, self._ground_offset) for corner in carla_corners]
 
     def _update_ground_offset_from_parent(self):
         """
@@ -233,13 +243,16 @@ class IdealObjectSensor(ObjectSensor):
         return "sensor.pseudo.ideal_objects"
 
     def calculate_azimuth_elevation(self, target_point_in_sensor_frame, distance):
+        """
+        :param target_point_in_sensor_frame: the target point in the sensor frame as (x, y, z)
+        :param distance: the distance between sensor and target point
+        :return: azimuth and elevation of the target point in degrees
+        """
         if distance <= 0.0:
             return 0.0, 0.0
 
         # Get location values of pose
-        dx = target_point_in_sensor_frame.x
-        dy = target_point_in_sensor_frame.y
-        dz = target_point_in_sensor_frame.z
+        dx, dy, dz = target_point_in_sensor_frame
 
         # Calculate azimuth and elevation between target and sensor based on sensor frame
         azimuth = math.degrees(math.atan2(dy, dx))
@@ -248,41 +261,50 @@ class IdealObjectSensor(ObjectSensor):
 
         return azimuth, elevation
 
-    def check_visibility(self, carla_location_sensor_in_carla_map, carla_location_target_in_carla_map, carla_corners_target_in_carla_map, ros_tf_carla_map_to_sensor):
+    def is_in_center_range(self, carla_location_sensor_in_carla_map,
+                           carla_location_target_in_carla_map):
+        """
+        FILTER 1: Filter targets that are far outside the sensor range based on the target center.
 
-        # FILTER 1
-        # Calculate distance between sensor and target
+        It is checked before the bounding-box corners of a target are computed, so that targets
+        far away are cheap.
+        """
         distance = carla_location_sensor_in_carla_map.distance(carla_location_target_in_carla_map)
+        return distance <= self.range + self.target_center_range_margin
 
-        # Filter objects that are far outside the sensor range based on the target center.
-        if distance > self.range + self.target_center_range_margin:
-            return False
+    def check_visibility(self, carla_location_sensor_in_carla_map,
+                         carla_corners_target_in_carla_map, carla_map_to_sensor):
+        """
+        Check FILTER 2 to 4 for a target that passed FILTER 1 (see is_in_center_range()).
+
+        :param carla_map_to_sensor: transform from carla_map to the sensor frame, see
+            _get_carla_map_to_sensor()
+        """
 
         # FILTER 2
         # Filter corners that are outside the sensor range and return if not enough corners are visible
         corner_list_filter_2 = list()
 
-        for corner_num, corner in enumerate(carla_corners_target_in_carla_map):
+        for corner in carla_corners_target_in_carla_map:
             corner_distance = carla_location_sensor_in_carla_map.distance(corner)
             if corner_distance > self.range:
                 continue
-            corner_list_filter_2.append([corner_num, corner, corner_distance])
+            corner_list_filter_2.append([corner, corner_distance])
 
         if len(corner_list_filter_2) < self.min_corner_amount:
             return False
 
         # FILTER 3
         # Filter corners outside the sensor FOV and return if not enough corners are visible
-        # convert corner locations from CARLA carla_map to ROS sensor frame
-        ros_corners_in_sensor_frame = self.convert_target_corners(carla_corners_target_in_carla_map, ros_tf_carla_map_to_sensor)
         corner_list_filter_3 = list()
 
-        for corner in corner_list_filter_2:
-            # Get correct Position of corner in sensor frame (ROS environment)
-            ros_corner_pointstamped = ros_corners_in_sensor_frame[corner[0]]
+        for corner, corner_distance in corner_list_filter_2:
+            # Get position of corner in sensor frame (ROS environment)
+            ros_corner_in_sensor_frame = self._to_sensor_frame(corner, carla_map_to_sensor)
 
             # Calculate azimuth and elevation
-            azimuth, elevation = self.calculate_azimuth_elevation(ros_corner_pointstamped.point, corner[2])
+            azimuth, elevation = self.calculate_azimuth_elevation(
+                ros_corner_in_sensor_frame, corner_distance)
 
             # Check if corner is inside the sensor FOV
             if azimuth < self.left_fov: continue
@@ -290,8 +312,8 @@ class IdealObjectSensor(ObjectSensor):
             if elevation > self.upper_fov: continue
             if elevation < self.lower_fov: continue
 
-            corner_list_filter_3.append(corner[1])
-        
+            corner_list_filter_3.append(corner)
+
         if len(corner_list_filter_3) < self.min_corner_amount:
             return False
 
@@ -329,23 +351,63 @@ class IdealObjectSensor(ObjectSensor):
 
         return True
 
-    def point_to_pointstamped(self, point):
-        # Convert ROS geometry_msgs/Point to ROS geometry_msgs/PointStamped
-        point_stamped = PointStamped()
-        point_stamped.point = point
+    @staticmethod
+    def _get_carla_map_to_sensor(ros_tf_carla_map_to_sensor):
+        """
+        Get the rotation matrix and the translation of a ROS transform from carla_map to the
+        sensor frame.
 
-        return point_stamped
+        This is the computation of tf2_geometry_msgs.do_transform_point(), which is done once
+        per update instead of for every corner of every target.
 
-    def convert_target_corners(self, carla_corners_in_carla_map, ros_tf_carla_map_to_sensor):
+        :return: rotation matrix as rows and translation
+        """
+        rotation = ros_tf_carla_map_to_sensor.transform.rotation
+        translation = ros_tf_carla_map_to_sensor.transform.translation
+        w, x, y, z = rotation.w, rotation.x, rotation.y, rotation.z
+        norm = w * w + x * x + y * y + z * z
+        if norm < sys.float_info.epsilon:
+            matrix = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        else:
+            # the quaternion does not need to be normalized
+            s = 2.0 / norm
+            wx, wy, wz = w * x * s, w * y * s, w * z * s
+            xx, xy, xz = x * x * s, x * y * s, x * z * s
+            yy, yz, zz = y * y * s, y * z * s, z * z * s
+            matrix = ((1.0 - (yy + zz), xy - wz, xz + wy),
+                      (xy + wz, 1.0 - (xx + zz), yz - wx),
+                      (xz - wy, yz + wx, 1.0 - (xx + yy)))
+        return matrix, (translation.x, translation.y, translation.z)
 
-        # Convert target corners from CARLA.Location to ROS geometry_msgs/PointStamped
-        ros_corners_in_carla_map_point = [trans.carla_location_to_ros_point(corner) for corner in carla_corners_in_carla_map]
-        ros_corners_in_carla_map_pointstamped = [self.point_to_pointstamped(corner) for corner in ros_corners_in_carla_map_point]
+    @staticmethod
+    def _to_sensor_frame(carla_location, carla_map_to_sensor):
+        """
+        Transform a CARLA location in carla_map into a ROS point in the sensor frame.
 
-        # Transform target corners from carla_map frame to sensor frame
-        ros_corners_in_sensor_frame = [do_transform_point(corner, ros_tf_carla_map_to_sensor) for corner in ros_corners_in_carla_map_pointstamped]
+        :param carla_map_to_sensor: see _get_carla_map_to_sensor()
+        :return: the point in the sensor frame as (x, y, z)
+        """
+        (row_x, row_y, row_z), (tx, ty, tz) = carla_map_to_sensor
+        # from CARLA's left-handed to ROS' right-handed coordinate system
+        x, y, z = carla_location.x, -carla_location.y, carla_location.z
+        return (row_x[0] * x + row_x[1] * y + row_x[2] * z + tx,
+                row_y[0] * x + row_y[1] * y + row_y[2] * z + ty,
+                row_z[0] * x + row_z[1] * y + row_z[2] * z + tz)
 
-        return ros_corners_in_sensor_frame
+    def _get_static_targets(self):
+        """
+        Get the static vehicles of the map as visibility targets: tuples of the location of the
+        center, the corners of the bounding box, and the object message, in CARLA's absolute frame.
+
+        Static vehicles do not move, so their geometry is computed only once.
+        """
+        if self._static_targets is None:
+            self._static_targets = [
+                (self._get_environment_object_transform(vehicle).location,
+                 list(self._get_environment_object_world_vertices(vehicle)),
+                 vehicle_obj)
+                for vehicle, vehicle_obj in self._get_static_vehicles()]
+        return self._static_targets
 
     def get_ros_transform(self, timestamp):
         # Get transform of idealObjectSensor
@@ -431,6 +493,8 @@ class IdealObjectSensor(ObjectSensor):
         )
         carla_location_sensor_in_carla_map = trans.ros_point_to_carla_location(ros_point_sensor_in_carla_map)
 
+        carla_map_to_sensor = self._get_carla_map_to_sensor(ros_tf_carla_map_to_sensor)
+
         # Iterate over all dynamic actors
         for actor_id in self.actor_list.keys():
 
@@ -440,46 +504,43 @@ class IdealObjectSensor(ObjectSensor):
                 if isinstance(actor, Vehicle) or isinstance(actor, Walker):
 
                     # Get CARLA target location in carla_map
-                    carla_location_target_in_carla_map = actor.carla_actor.get_location()
+                    carla_location_target_in_carla_map = self._ground_relative(
+                        actor.carla_actor.get_location())
+                    if not self.is_in_center_range(carla_location_sensor_in_carla_map,
+                                                   carla_location_target_in_carla_map):
+                        continue
 
                     # Get corners from target BoundingBox
                     carla_tf_carla_map_to_target = actor.carla_actor.get_transform()
                     bounding_box = actor.carla_actor.bounding_box
-                    carla_corners_target_in_carla_map = bounding_box.get_world_vertices(carla_tf_carla_map_to_target)
-
-                    carla_location_target_in_carla_map, carla_corners_target_in_carla_map = \
-                        self._ground_relative(carla_location_target_in_carla_map,
-                                              carla_corners_target_in_carla_map)
+                    carla_corners_target_in_carla_map = self._ground_relative_corners(
+                        bounding_box.get_world_vertices(carla_tf_carla_map_to_target))
 
                     # Check visibility of the target
-                    if self.check_visibility(carla_location_sensor_in_carla_map, carla_location_target_in_carla_map, carla_corners_target_in_carla_map, ros_tf_carla_map_to_sensor):
-                        ros_objects.objects.append(actor.get_object_info())
+                    if self.check_visibility(carla_location_sensor_in_carla_map,
+                                             carla_corners_target_in_carla_map,
+                                             carla_map_to_sensor):
+                        ros_objects.objects.append(actor.get_object_info(frame))
 
         # Iterate over all static vehicles
         if(self.node.parameters['publish_static_vehicles']):
-            for object_key, object_value in self.OBJECT_LABELS.items():
+            header = self.get_msg_header("carla_map")
+            for carla_location_target_in_carla_map, carla_corners_target_in_carla_map, vehicle_obj \
+                    in self._get_static_targets():
 
-                static_vehicles = self.world.get_environment_objects(object_key)
+                carla_location_target_in_carla_map = self._ground_relative(
+                    carla_location_target_in_carla_map)
+                if not self.is_in_center_range(carla_location_sensor_in_carla_map,
+                                               carla_location_target_in_carla_map):
+                    continue
+                carla_corners_target_in_carla_map = self._ground_relative_corners(
+                    carla_corners_target_in_carla_map)
 
-                for vehicle in static_vehicles:
-                    # Take only vehicles with bounding_box attribute set
-                    if hasattr(vehicle, "bounding_box"):
-
-                        # Get target location in carla_map
-                        vehicle_transform = self._get_environment_object_transform(vehicle)
-                        carla_location_target_in_carla_map = vehicle_transform.location
-
-                        # Get corners from target BoundingBox
-                        carla_corners_target_in_carla_map = \
-                            self._get_environment_object_world_vertices(vehicle)
-
-                        carla_location_target_in_carla_map, carla_corners_target_in_carla_map = \
-                            self._ground_relative(carla_location_target_in_carla_map,
-                                                  carla_corners_target_in_carla_map)
-
-                        # Check visibility of the target
-                        if self.check_visibility(carla_location_sensor_in_carla_map, carla_location_target_in_carla_map, carla_corners_target_in_carla_map, ros_tf_carla_map_to_sensor):
-                            vehicle_obj = self._get_vehicle_from_environment_objects(vehicle, object_value)
-                            ros_objects.objects.append(vehicle_obj)
+                # Check visibility of the target
+                if self.check_visibility(carla_location_sensor_in_carla_map,
+                                         carla_corners_target_in_carla_map,
+                                         carla_map_to_sensor):
+                    vehicle_obj.header = header
+                    ros_objects.objects.append(vehicle_obj)
 
         self.object_publisher.publish(ros_objects)

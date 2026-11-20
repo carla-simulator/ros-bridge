@@ -42,6 +42,8 @@ class TrafficParticipant(Actor):
         :type carla_actor: carla.Actor
         """
         self.classification_age = 0
+        self._object_info = None
+        self._object_info_frame = None
         super(TrafficParticipant, self).__init__(uid=uid,
                                                  name=name,
                                                  parent=parent,
@@ -62,14 +64,21 @@ class TrafficParticipant(Actor):
         self.classification_age += 1
         super(TrafficParticipant, self).update(frame, timestamp)
 
-    def get_object_info(self):
+    def get_object_info(self, frame=None):
         """
         Function to send object messages of this traffic participant.
 
         A derived_object_msgs.msg.Object is prepared to be published via '/carla/objects'
 
+        :param frame: the CARLA frame the object is requested for. The object of a frame is
+            created once and shared by all object sensors that request it in this frame, so it
+            must not be modified. Without a frame, a new object is created.
+        :type frame: int
         :return:
         """
+        if frame is not None and frame == self._object_info_frame:
+            return self._object_info
+
         obj = Object(header=self.get_msg_header("carla_map"))
         # ID
         obj.id = self.get_id()
@@ -101,6 +110,9 @@ class TrafficParticipant(Actor):
             obj.classification_certainty = 255
             obj.classification_age = self.classification_age
 
+        if frame is not None:
+            self._object_info = obj
+            self._object_info_frame = frame
         return obj
 
     def get_classification(self):  # pylint: disable=no-self-use
