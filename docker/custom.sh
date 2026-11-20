@@ -17,7 +17,7 @@ export CARLA_SETUP_SCRIPT="/opt/carla/setup.bash"
 mkdir -p /opt/carla
 # TODO(openads): replace the pre-release with the release (v1.0.0-x.y.z) when carla-simulator is released.
 # The carla-simulator pre-release pre-v1.0.0 holds the PythonAPI artifact of CI run 44042737863 (feature/carla-1.0).
-curl --location --output artifacts.tar.gz "https://github.com/openads-project/carla-simulator/releases/download/pre-v1.0.0/PythonAPI.tar.gz"
+curl --location --output artifacts.tar.gz "https://github.com/openads-project/carla-simulator/releases/download/v1.0.0-1.0.0/PythonAPI.tar.gz"
 tar -xzf "artifacts.tar.gz" -C .
 mv PythonAPI "$CARLA_API_PATH"
 
