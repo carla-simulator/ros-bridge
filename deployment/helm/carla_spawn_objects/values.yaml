@@ -1,7 +1,6 @@
 openadservice:
   name: carla-spawn-objects
-  # TODO(openads): replace the feature-branch CI image with the release tag (v1.0.0-x.y.z) when releasing.
-  image: ghcr.io/openads-project/carla-ros-bridge:latest_feature-carla-1-0_ci
+  image: ghcr.io/openads-project/carla-ros-bridge:v1.0.0-1.0.0
   env:
     # --- name ------
     NAMESPACE: /
