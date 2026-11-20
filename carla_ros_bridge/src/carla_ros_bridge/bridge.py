@@ -55,6 +55,11 @@ class CarlaRosBridge(CompatibleNode):
     # wait for this time until a next tick is triggered.
     VEHICLE_CONTROL_TIMEOUT = 1.
 
+    # in synchronous mode with a real-time factor, catch up at most this much wall time after
+    # a delay; an overload or pause beyond it is dropped instead of being ticked through faster
+    # than the real-time factor afterwards.
+    MAX_CATCH_UP_TIME = 1.
+
     def __init__(self):
         """
         Constructor
@@ -323,10 +328,12 @@ class CarlaRosBridge(CompatibleNode):
                                                                                 self._expected_ego_vehicle_control_command_ids))
                     self._all_vehicle_control_commands_received.clear()
 
-            # retain the schedule across cycles so delays are caught up without skipping ticks.
+            # retain the schedule across cycles so delays are caught up without skipping ticks,
+            # but keep the backlog within MAX_CATCH_UP_TIME.
             if self.rt_factor > 0.0:
                 desired_cycle_time = world_snapshot.timestamp.delta_seconds / self.rt_factor
-                next_tick += desired_cycle_time
+                next_tick = max(next_tick + desired_cycle_time,
+                                time.perf_counter() - CarlaRosBridge.MAX_CATCH_UP_TIME)
                 sleep_time = next_tick - time.perf_counter()
                 if sleep_time > 0:
                     time.sleep(sleep_time)

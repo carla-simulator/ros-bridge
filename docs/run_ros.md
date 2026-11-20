@@ -79,7 +79,7 @@ The following launch arguments are available for `carla_ros_bridge.launch` and `
 | `fixed_delta_seconds` | `0.05` | Simulation time step in seconds. It must be lower than `0.1`; see the [CARLA documentation](https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/). |
 | `start_unix_time_stamp` | `0` | Start timestamp offset for ROS simulation time. Values below `0` use the current Unix time. |
 | `town` | empty | Load a CARLA town, such as `Town01`, or an OpenDRIVE file ending in `.xodr`. If empty, keep the currently loaded CARLA world. |
-| `rt_factor` | `1.0` | Desired real-time factor. Values above `0.0` pace synchronous ticks against a monotonic schedule, catching up after delays without skipping ticks. Values at or below `0.0` disable throttling. |
+| `rt_factor` | `1.0` | Desired real-time factor. Values above `0.0` pace synchronous ticks against a monotonic schedule, catching up after delays of up to 1 s without skipping ticks; a longer overload or pause is not caught up. Values at or below `0.0` disable throttling. |
 | `register_all_sensors` | `True` | Register all sensors already present in the simulation. If `False`, only sensors spawned by the bridge are registered. |
 | `native_interface` | `True` | Enable CARLA native DDS interfaces. The bridge will not create bridge-side sensor publishers or control subscribers for native sensors. |
 | `ego_vehicle_role_name` | `['hero', 'ego_vehicle', 'hero0', 'hero1', 'hero2', 'hero3']` | Role names used to identify ego vehicles. Relevant ROS topics are created for matching vehicles. |
