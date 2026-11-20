@@ -1,7 +1,7 @@
 services:
 
   carla-ros-bridge:
-    image: ghcr.io/openads-project/carla-ros-bridge:v0.10.0-1.2.0
+    image: ghcr.io/openads-project/carla-ros-bridge:v1.0.0-1.0.0
     environment:
       # --- name ------
       NAMESPACE: /

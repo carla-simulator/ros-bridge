@@ -15,7 +15,7 @@ export CARLA_SETUP_SCRIPT="/opt/carla/setup.bash"
 
 # Download PythonAPI as artifact from CARLA CI pipeline
 mkdir -p /opt/carla
-curl --location --output artifacts.tar.gz "https://github.com/openads-project/carla-simulator/releases/download/v0.10.0-1.0.0/PythonAPI.tar.gz"
+curl --location --output artifacts.tar.gz "https://github.com/openads-project/carla-simulator/releases/download/v1.0.0-1.0.0/PythonAPI.tar.gz"
 tar -xzf "artifacts.tar.gz" -C .
 mv PythonAPI "$CARLA_API_PATH"
 

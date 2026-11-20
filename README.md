@@ -6,7 +6,7 @@
   <a href="https://github.com/openads-project/carla-ros-bridge/blob/main/LICENSE"><img src="https://img.shields.io/github/license/openads-project/carla-ros-bridge"/></a>
   <br>
   <img src="https://img.shields.io/badge/Ubuntu-24.04-E95420"/>
-  <img src="https://img.shields.io/badge/CARLA-0.10.0-blueviolet"/>
+  <img src="https://img.shields.io/badge/CARLA-1.0-blueviolet"/>
   <img src="https://img.shields.io/badge/ROS 2-jazzy-22314e"/>
   <img src="https://img.shields.io/badge/Python-3.12-blueviolet"/>
   <a href="https://github.com/openads-project/carla-ros-bridge/actions/workflows/docker-ros.yml"><img src="https://github.com/openads-project/carla-ros-bridge/actions/workflows/docker-ros.yml/badge.svg"/></a>
